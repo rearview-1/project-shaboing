@@ -1,0 +1,29 @@
+# Heavy debug data — regenerated each bot run, no learning value
+trace_logs/
+**/trace_logs/
+error_snapshots/
+**/error_snapshots/
+
+# Hachimi raw hook dumps — over GitHub's 100MB single-file limit and
+# are diagnostic state, not learning data. Per-turn captures live in
+# turn_events.jsonl / summary_events.jsonl which we still keep.
+hachimi_exact_hooks*.jsonl
+**/hachimi_exact_hooks*.jsonl
+
+# Temp files and dev session state
+*.tmp
+dev_session*.json
+!dev_session.redacted.json
+dev_session*.tmp
+*.swp
+*.lock
+
+# Logs (the live bot writes these continuously)
+backend_start.out.log
+crash_trace.txt
+*.out.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini

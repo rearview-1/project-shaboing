@@ -1,0 +1,17 @@
+{
+  "trace_file": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\trace_logs\\api_payloads\\20260609_060946_95779d_payloads.jsonl",
+  "career_log": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260609_065259.json",
+  "g1_losses": [],
+  "summary": {
+    "count": 0,
+    "average_gap": {
+      "speed": 0,
+      "stamina": 0,
+      "power": 0,
+      "guts": 0,
+      "wit": 0
+    },
+    "worst_stat": null,
+    "worst_stat_average_gap": 0
+  }
+}

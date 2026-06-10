@@ -1,0 +1,724 @@
+{
+  "trace_file": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\trace_logs\\api_payloads\\20260609_065812_4f88ea_payloads.jsonl",
+  "career_log": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260609_140016.json",
+  "g1_losses": [
+    {
+      "turn": 23,
+      "program_id": 623,
+      "race_name": "Hanshin Juvenile Fillies",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 312,
+        "stamina": 278,
+        "power": 346,
+        "guts": 170,
+        "wit": 304
+      },
+      "effective_player_stats": {
+        "speed": 712,
+        "stamina": 678,
+        "power": 746,
+        "guts": 570,
+        "wit": 704
+      },
+      "field_max_stats": {
+        "speed": 214,
+        "stamina": 181,
+        "power": 213,
+        "guts": 171,
+        "wit": 178
+      },
+      "field_median_stats": {
+        "speed": 171,
+        "stamina": 128,
+        "power": 151,
+        "guts": 130,
+        "wit": 123
+      },
+      "field_max_gap_over_player": {
+        "speed": -98,
+        "stamina": -97,
+        "power": -133,
+        "guts": 1,
+        "wit": -126
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 1,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 1,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 910110,
+      "opponent_style_counts": {
+        "3": 9,
+        "2": 7,
+        "1": 1
+      },
+      "common_opponent_skills": [],
+      "weather": 1,
+      "ground_condition": 1
+    },
+    {
+      "turn": 33,
+      "program_id": 164,
+      "race_name": "NHK Mile Cup",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 3,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 389,
+        "stamina": 354,
+        "power": 455,
+        "guts": 235,
+        "wit": 421
+      },
+      "effective_player_stats": {
+        "speed": 789,
+        "stamina": 754,
+        "power": 855,
+        "guts": 635,
+        "wit": 821
+      },
+      "field_max_stats": {
+        "speed": 291,
+        "stamina": 248,
+        "power": 264,
+        "guts": 303,
+        "wit": 268
+      },
+      "field_median_stats": {
+        "speed": 192,
+        "stamina": 167,
+        "power": 222,
+        "guts": 200,
+        "wit": 195
+      },
+      "field_max_gap_over_player": {
+        "speed": -98,
+        "stamina": -106,
+        "power": -191,
+        "guts": 68,
+        "wit": -153
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 1,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 68,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 911056,
+      "opponent_style_counts": {
+        "2": 5,
+        "3": 8,
+        "1": 3,
+        "4": 1
+      },
+      "common_opponent_skills": [],
+      "weather": 1,
+      "ground_condition": 1
+    },
+    {
+      "turn": 34,
+      "program_id": 166,
+      "race_name": "Tokyo Yushun (Japanese Derby)",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 389,
+        "stamina": 358,
+        "power": 455,
+        "guts": 235,
+        "wit": 434
+      },
+      "effective_player_stats": {
+        "speed": 789,
+        "stamina": 758,
+        "power": 855,
+        "guts": 635,
+        "wit": 834
+      },
+      "field_max_stats": {
+        "speed": 340,
+        "stamina": 252,
+        "power": 323,
+        "guts": 227,
+        "wit": 272
+      },
+      "field_median_stats": {
+        "speed": 240,
+        "stamina": 194,
+        "power": 236,
+        "guts": 195,
+        "wit": 199
+      },
+      "field_max_gap_over_player": {
+        "speed": -49,
+        "stamina": -106,
+        "power": -132,
+        "guts": -8,
+        "wit": -162
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 0,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": -8,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 1409810,
+      "opponent_style_counts": {
+        "3": 7,
+        "2": 8,
+        "1": 1,
+        "4": 1
+      },
+      "common_opponent_skills": [],
+      "weather": 1,
+      "ground_condition": 1
+    },
+    {
+      "turn": 44,
+      "program_id": 168,
+      "race_name": "Kikuka Sho",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 520,
+        "stamina": 412,
+        "power": 520,
+        "guts": 275,
+        "wit": 451
+      },
+      "effective_player_stats": {
+        "speed": 920,
+        "stamina": 812,
+        "power": 920,
+        "guts": 675,
+        "wit": 851
+      },
+      "field_max_stats": {
+        "speed": 284,
+        "stamina": 382,
+        "power": 300,
+        "guts": 308,
+        "wit": 307
+      },
+      "field_median_stats": {
+        "speed": 201,
+        "stamina": 278,
+        "power": 229,
+        "guts": 222,
+        "wit": 191
+      },
+      "field_max_gap_over_player": {
+        "speed": -236,
+        "stamina": -30,
+        "power": -220,
+        "guts": 33,
+        "wit": -144
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 2,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 33,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 3
+      },
+      "player_running_style": 3,
+      "player_skill_array": [],
+      "player_result_time": 1829657,
+      "opponent_style_counts": {
+        "2": 5,
+        "4": 3,
+        "3": 7,
+        "1": 2
+      },
+      "common_opponent_skills": [],
+      "weather": 1,
+      "ground_condition": 1
+    },
+    {
+      "turn": 46,
+      "program_id": 81,
+      "race_name": "Arima Kinen",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 3,
+      "field_size": 16,
+      "player_stats": {
+        "speed": 523,
+        "stamina": 442,
+        "power": 526,
+        "guts": 285,
+        "wit": 469
+      },
+      "effective_player_stats": {
+        "speed": 923,
+        "stamina": 842,
+        "power": 926,
+        "guts": 685,
+        "wit": 869
+      },
+      "field_max_stats": {
+        "speed": 380,
+        "stamina": 383,
+        "power": 350,
+        "guts": 339,
+        "wit": 362
+      },
+      "field_median_stats": {
+        "speed": 258,
+        "stamina": 271,
+        "power": 280,
+        "guts": 247,
+        "wit": 241
+      },
+      "field_max_gap_over_player": {
+        "speed": -143,
+        "stamina": -59,
+        "power": -176,
+        "guts": 54,
+        "wit": -107
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 2,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 54,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 1490057,
+      "opponent_style_counts": {
+        "2": 7,
+        "3": 7,
+        "4": 1
+      },
+      "common_opponent_skills": [],
+      "weather": 2,
+      "ground_condition": 1
+    },
+    {
+      "turn": 46,
+      "program_id": 3,
+      "race_name": "Osaka Hai",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 16,
+      "player_stats": {
+        "speed": 548,
+        "stamina": 498,
+        "power": 573,
+        "guts": 327,
+        "wit": 538
+      },
+      "effective_player_stats": {
+        "speed": 948,
+        "stamina": 898,
+        "power": 973,
+        "guts": 727,
+        "wit": 938
+      },
+      "field_max_stats": {
+        "speed": 519,
+        "stamina": 431,
+        "power": 489,
+        "guts": 425,
+        "wit": 438
+      },
+      "field_median_stats": {
+        "speed": 315,
+        "stamina": 235,
+        "power": 275,
+        "guts": 271,
+        "wit": 263
+      },
+      "field_max_gap_over_player": {
+        "speed": -29,
+        "stamina": -67,
+        "power": -84,
+        "guts": 98,
+        "wit": -100
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 5,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 98,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 1178173,
+      "opponent_style_counts": {
+        "2": 8,
+        "3": 6,
+        "4": 1
+      },
+      "common_opponent_skills": [],
+      "weather": 1,
+      "ground_condition": 1
+    },
+    {
+      "turn": 46,
+      "program_id": 4,
+      "race_name": "Tenno Sho (Spring)",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 566,
+        "stamina": 502,
+        "power": 628,
+        "guts": 334,
+        "wit": 604
+      },
+      "effective_player_stats": {
+        "speed": 966,
+        "stamina": 902,
+        "power": 1028,
+        "guts": 734,
+        "wit": 1004
+      },
+      "field_max_stats": {
+        "speed": 317,
+        "stamina": 573,
+        "power": 384,
+        "guts": 527,
+        "wit": 509
+      },
+      "field_median_stats": {
+        "speed": 254,
+        "stamina": 390,
+        "power": 279,
+        "guts": 293,
+        "wit": 303
+      },
+      "field_max_gap_over_player": {
+        "speed": -249,
+        "stamina": 71,
+        "power": -244,
+        "guts": 193,
+        "wit": -95
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 1,
+        "power": 0,
+        "guts": 1,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 193,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 3
+      },
+      "player_running_style": 3,
+      "player_skill_array": [],
+      "player_result_time": 1952650,
+      "opponent_style_counts": {
+        "3": 4,
+        "2": 10,
+        "1": 3
+      },
+      "common_opponent_skills": [],
+      "weather": 2,
+      "ground_condition": 1
+    },
+    {
+      "turn": 46,
+      "program_id": 5,
+      "race_name": "Victoria Mile",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 571,
+        "stamina": 517,
+        "power": 628,
+        "guts": 334,
+        "wit": 604
+      },
+      "effective_player_stats": {
+        "speed": 971,
+        "stamina": 917,
+        "power": 1028,
+        "guts": 734,
+        "wit": 1004
+      },
+      "field_max_stats": {
+        "speed": 522,
+        "stamina": 350,
+        "power": 573,
+        "guts": 428,
+        "wit": 452
+      },
+      "field_median_stats": {
+        "speed": 293,
+        "stamina": 266,
+        "power": 305,
+        "guts": 254,
+        "wit": 240
+      },
+      "field_max_gap_over_player": {
+        "speed": -49,
+        "stamina": -167,
+        "power": -55,
+        "guts": 94,
+        "wit": -152
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 0,
+        "power": 0,
+        "guts": 1,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 94,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 907676,
+      "opponent_style_counts": {
+        "3": 10,
+        "2": 4,
+        "4": 3
+      },
+      "common_opponent_skills": [],
+      "weather": 3,
+      "ground_condition": 3
+    },
+    {
+      "turn": 46,
+      "program_id": 79,
+      "race_name": "Japan Cup",
+      "race_distance": "",
+      "race_terrain": "",
+      "grade": "G1",
+      "player_finish_rank": 2,
+      "field_size": 18,
+      "player_stats": {
+        "speed": 640,
+        "stamina": 551,
+        "power": 644,
+        "guts": 395,
+        "wit": 703
+      },
+      "effective_player_stats": {
+        "speed": 1040,
+        "stamina": 951,
+        "power": 1044,
+        "guts": 795,
+        "wit": 1103
+      },
+      "field_max_stats": {
+        "speed": 611,
+        "stamina": 621,
+        "power": 593,
+        "guts": 509,
+        "wit": 612
+      },
+      "field_median_stats": {
+        "speed": 399,
+        "stamina": 378,
+        "power": 382,
+        "guts": 291,
+        "wit": 274
+      },
+      "field_max_gap_over_player": {
+        "speed": -29,
+        "stamina": 70,
+        "power": -51,
+        "guts": 114,
+        "wit": -91
+      },
+      "opponents_above_player_per_stat": {
+        "speed": 0,
+        "stamina": 1,
+        "power": 0,
+        "guts": 1,
+        "wit": 0
+      },
+      "primary_gap_stat": "guts",
+      "primary_gap_value": 114,
+      "player_aptitude": {
+        "distance_short": 1,
+        "distance_mile": 7,
+        "distance_medium": 7,
+        "distance_long": 7,
+        "ground_turf": 7,
+        "ground_dirt": 1,
+        "running_style_front": 1,
+        "running_style_pace": 6,
+        "running_style_late": 7,
+        "running_style_end": 4,
+        "running_style": 1
+      },
+      "player_running_style": 1,
+      "player_skill_array": [],
+      "player_result_time": 1416058,
+      "opponent_style_counts": {
+        "3": 5,
+        "2": 6,
+        "4": 3,
+        "1": 3
+      },
+      "common_opponent_skills": [],
+      "weather": 2,
+      "ground_condition": 1
+    }
+  ],
+  "summary": {
+    "count": 9,
+    "average_field_max_gap": {
+      "speed": -108.9,
+      "stamina": -54.6,
+      "power": -142.9,
+      "guts": 71.9,
+      "wit": -125.6
+    },
+    "worst_stat": "guts",
+    "worst_stat_average_gap": 71.9
+  }
+}

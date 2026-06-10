@@ -1,0 +1,51 @@
+{
+  "schema": "sweepy_deck_policy_cache_v1",
+  "policies": {
+    "d5df4a344c1c83d5": {
+      "trainee_card_id": 106701,
+      "support_card_ids": [
+        20031,
+        30010,
+        30028,
+        30054,
+        30074
+      ],
+      "scenario_id": 4,
+      "friend_card_id": 30036,
+      "learned_hyperparameters": {
+        "speed_priority_bonus_late": 0.32,
+        "speed_priority_bonus_mid": 0.22,
+        "speed_priority_bonus_early": 0.1,
+        "postmortem_bonus_cap": 0.4,
+        "race_specific_demand_cap": 0.4,
+        "calendar_race_prebuy_budget": 1800,
+        "calendar_race_prebuy_max_skills": 10,
+        "calendar_race_prebuy_keep_sp": 0,
+        "calendar_race_prebuy_min_sp": 80,
+        "race_success_bonus_cap": 0.2,
+        "checkpoint_pressure_base": 0.12,
+        "wit_soft_cap": 1200,
+        "speed_soft_cap": 1200,
+        "power_soft_cap": 1200,
+        "stamina_soft_cap": 1200,
+        "guts_soft_cap": 1200,
+        "stamina_floor_target": 1000,
+        "power_floor_target": 1100,
+        "wit_priority_bonus_mid": 0.24,
+        "wit_priority_bonus_late": 0.42,
+        "wit_priority_floor_raw": 1150,
+        "race_heavy_rest_threshold_penalty": 18,
+        "low_hp_wit_training_max_failure": 25,
+        "low_hp_wit_training_min_score": 0.06,
+        "low_hp_wit_training_substitute_min_score": 0.01,
+        "power_priority_bonus_late": 0.18
+      },
+      "baseline_rating_mean": 15706.5,
+      "optimized_rating_mean": 15706.5,
+      "rating_lift": 0.0,
+      "n_baseline_sims": 4,
+      "n_optimized_sims": 4,
+      "optimized_at": ""
+    }
+  }
+}

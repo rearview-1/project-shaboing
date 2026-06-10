@@ -1,3 +1,27 @@
 *.pyc
+__pycache__/
 /node_modules
-/uma_runtime
+
+# uma_runtime is included so collaborators have parent memory, bot logs,
+# sim observations, instance learning preset, calibrations, etc.
+# The paths below are excluded because they contain account
+# authentication credentials, session tokens, viewer/steam/device IDs,
+# or raw API payloads that include the same. NEVER unignore these.
+
+# Live game auth - auth_key, steam_id, viewer_id, udid, device_id
+/uma_runtime/instances/*/dev_session.json
+/uma_runtime/instances/*/reusable_auth_profiles.json
+
+# Raw API request/response captures - contain auth headers + session tokens
+/uma_runtime/instances/*/trace_logs/
+/uma_runtime/instances/*/error_snapshots/
+
+# Per-turn raw event captures - viewer_id leaks in event payloads
+/uma_runtime/instances/*/manual_career_logs/
+
+# Per-race result captures - the embedded race_start_info has viewer_id
+/uma_runtime/instances/*/hakuraku_races/latest_career_log/
+
+# Latest scratch files that may capture in-flight session data
+/uma_runtime/latest_raw.json
+/uma_runtime/latest_summary.json

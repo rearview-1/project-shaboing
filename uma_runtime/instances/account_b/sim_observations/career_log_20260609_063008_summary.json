@@ -1,0 +1,6350 @@
+{
+  "schema": "sweepy_sim_observation_summary_v1",
+  "career_id": "career_log_20260609_063008",
+  "source_log": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260609_063008.json",
+  "runtime_instance": "account_b",
+  "status": "finished",
+  "preset_name": "xguri parent",
+  "record_count": 629,
+  "counts": {
+    "setup": 1,
+    "parent_inspiration_setup": 1,
+    "training_snapshot": 70,
+    "event_choice": 185,
+    "event_resolution": 185,
+    "race_result": 37,
+    "shop_item_phase": 66,
+    "pre_race_calendar_skill_attempt": 19,
+    "skill_purchase": 2,
+    "pre_race_stamina_skill_skip": 2,
+    "pre_race_stamina_skill_attempt": 1,
+    "pre_race": 19,
+    "g1_result": 19,
+    "inspiration_event": 2,
+    "race_result_sample": 19,
+    "final": 1
+  },
+  "training_snapshot_count": 70,
+  "race_result_count": 37,
+  "shop_item_phase_count": 66,
+  "skill_purchase_count": 2,
+  "event_choice_count": 185,
+  "event_resolution_count": 185,
+  "inspiration_event_count": 2,
+  "event_summary": {
+    "by_source": {
+      "chara": 67,
+      "scenario": 85,
+      "support_card": 33
+    },
+    "by_kind": {
+      "trainee_event": 42,
+      "scenario_event": 83,
+      "support_card_event": 33,
+      "race_win_recurring": 11,
+      "race_loss_or_place_recurring": 14,
+      "inheritance_inspiration": 4
+    },
+    "unique_story_count": 103,
+    "recurring_stories": {
+      "801068003": 3,
+      "400000005": 5,
+      "501067715": 3,
+      "400000009": 2,
+      "501067600": 14,
+      "501067708": 11,
+      "501067700": 3,
+      "400000035": 8,
+      "400004013": 15,
+      "501067709": 14,
+      "501067516": 2,
+      "400004016": 5,
+      "501067732": 2,
+      "400000040": 2,
+      "501067733": 2,
+      "400000041": 2,
+      "400000043": 2,
+      "501067508": 3,
+      "400000012": 2,
+      "501067713": 1,
+      "501067701": 2
+    },
+    "inspiration_events": 2,
+    "mood_up_events": 10,
+    "hp_delta_events": 64,
+    "sp_gain_events": 59,
+    "stat_gain_events": 120,
+    "resolution_by_turn": {
+      "1": 3,
+      "2": 2,
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 3,
+      "7": 3,
+      "8": 3,
+      "9": 1,
+      "10": 1,
+      "11": 3,
+      "12": 2,
+      "13": 3,
+      "14": 1,
+      "15": 2,
+      "16": 3,
+      "17": 3,
+      "18": 2,
+      "19": 4,
+      "20": 3,
+      "21": 3,
+      "22": 3,
+      "23": 1,
+      "24": 6,
+      "25": 3,
+      "26": 1,
+      "27": 5,
+      "28": 2,
+      "29": 3,
+      "30": 4,
+      "31": 4,
+      "32": 2,
+      "33": 3,
+      "34": 2,
+      "35": 2,
+      "36": 4,
+      "40": 1,
+      "41": 3,
+      "42": 2,
+      "43": 4,
+      "44": 3,
+      "45": 4,
+      "46": 6,
+      "47": 1,
+      "48": 5,
+      "49": 4,
+      "50": 3,
+      "51": 1,
+      "52": 2,
+      "53": 2,
+      "54": 1,
+      "55": 4,
+      "56": 2,
+      "57": 2,
+      "58": 1,
+      "59": 3,
+      "60": 3,
+      "61": 1,
+      "64": 1,
+      "65": 4,
+      "66": 2,
+      "67": 2,
+      "68": 2,
+      "69": 2,
+      "70": 4,
+      "71": 1,
+      "72": 5,
+      "73": 1,
+      "74": 2,
+      "75": 1,
+      "76": 2,
+      "77": 1,
+      "78": 4
+    },
+    "resolution_by_turn_label": {
+      "Junior Early Jan": 3,
+      "Junior Late Jan": 2,
+      "Junior Early Feb": 1,
+      "Junior Late Feb": 1,
+      "Junior Early Mar": 1,
+      "Junior Late Mar": 3,
+      "Junior Early Apr": 3,
+      "Junior Late Apr": 3,
+      "Junior Early May": 1,
+      "Junior Late May": 1,
+      "Junior Early Jun": 3,
+      "Junior Late Jun": 2,
+      "Junior Early Jul": 3,
+      "Junior Late Jul": 1,
+      "Junior Early Aug": 2,
+      "Junior Late Aug": 3,
+      "Junior Early Sep": 3,
+      "Junior Late Sep": 2,
+      "Junior Early Oct": 4,
+      "Junior Late Oct": 3,
+      "Junior Early Nov": 3,
+      "Junior Late Nov": 3,
+      "Junior Early Dec": 1,
+      "Junior Late Dec": 6,
+      "Classic Early Jan": 3,
+      "Classic Late Jan": 1,
+      "Classic Early Feb": 5,
+      "Classic Late Feb": 2,
+      "Classic Early Mar": 3,
+      "Classic Late Mar": 4,
+      "Classic Early Apr": 4,
+      "Classic Late Apr": 2,
+      "Classic Early May": 3,
+      "Classic Late May": 2,
+      "Classic Early Jun": 2,
+      "Classic Late Jun": 4,
+      "Classic Late Aug": 1,
+      "Classic Early Sep": 3,
+      "Classic Late Sep": 2,
+      "Classic Early Oct": 4,
+      "Classic Late Oct": 3,
+      "Classic Early Nov": 4,
+      "Classic Late Nov": 6,
+      "Classic Early Dec": 1,
+      "Classic Late Dec": 5,
+      "Senior Early Jan": 4,
+      "Senior Late Jan": 3,
+      "Senior Early Feb": 1,
+      "Senior Late Feb": 2,
+      "Senior Early Mar": 2,
+      "Senior Late Mar": 1,
+      "Senior Early Apr": 4,
+      "Senior Late Apr": 2,
+      "Senior Early May": 2,
+      "Senior Late May": 1,
+      "Senior Early Jun": 3,
+      "Senior Late Jun": 3,
+      "Senior Early Jul": 1,
+      "Senior Late Aug": 1,
+      "Senior Early Sep": 4,
+      "Senior Late Sep": 2,
+      "Senior Early Oct": 2,
+      "Senior Late Oct": 2,
+      "Senior Early Nov": 2,
+      "Senior Late Nov": 4,
+      "Senior Early Dec": 1,
+      "Senior Late Dec": 5,
+      "TS Climax Turn 73": 1,
+      "TS Climax Turn 74": 2,
+      "TS Climax Turn 75": 1,
+      "TS Climax Turn 76": 2,
+      "TS Climax Turn 77": 1,
+      "TS Climax Turn 78": 4
+    },
+    "resolution_by_phase": {
+      "junior": 58,
+      "classic": 64,
+      "senior": 52,
+      "climax": 11
+    },
+    "event_profiles": [
+      {
+        "story_id": "501067900",
+        "event_id": 4000,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "1": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 1,
+        "top_turn_label": "Junior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "skill_point": 120
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 120,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000400",
+        "event_id": 1001,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "1": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 1,
+        "top_turn_label": "Junior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004400",
+        "event_id": 203026,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "1": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 1,
+        "top_turn_label": "Junior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006002",
+        "event_id": 21020,
+        "event_name": "Riko Kashimoto, the Hard Worker",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "2": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 2,
+        "top_turn_label": "Junior Late Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 6,
+          "guts": 6,
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830010001",
+        "event_id": 10002,
+        "event_name": "Lovely Training Weather ♪",
+        "source": "support_card",
+        "source_id": "30010",
+        "event_kind": "support_card_event",
+        "support_card_id": 30010,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "2": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 2,
+        "top_turn_label": "Junior Late Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 5,
+          "skill_point": 20
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 5,
+          "sp_gain": true,
+          "sp_delta": 20,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004002",
+        "event_id": 203301,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "3": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 3,
+        "top_turn_label": "Junior Early Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830054001",
+        "event_id": 10002,
+        "event_name": "The Extraordinary Nature",
+        "source": "support_card",
+        "source_id": "30054",
+        "event_kind": "support_card_event",
+        "support_card_id": 30054,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "4": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 4,
+        "top_turn_label": "Junior Late Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 5,
+          "wit": 5,
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "801068003",
+        "event_id": 20053,
+        "event_name": "",
+        "source": "support_card",
+        "source_id": "1068",
+        "event_kind": "support_card_event",
+        "support_card_id": 1068,
+        "chara_id": 0,
+        "count": 3,
+        "career_count": 1,
+        "turns": {
+          "5": 1,
+          "7": 1,
+          "21": 1
+        },
+        "turn_buckets": {
+          "1": 2,
+          "13": 1
+        },
+        "phases": {
+          "junior": 3
+        },
+        "top_turn": 5,
+        "top_turn_label": "Junior Early Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 0.3333,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000005",
+        "event_id": 203019,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 5,
+        "career_count": 1,
+        "turns": {
+          "6": 1,
+          "11": 1,
+          "14": 1,
+          "55": 1,
+          "75": 1
+        },
+        "turn_buckets": {
+          "1": 2,
+          "13": 1,
+          "49": 1,
+          "73": 1
+        },
+        "phases": {
+          "junior": 3,
+          "senior": 1,
+          "climax": 1
+        },
+        "top_turn": 6,
+        "top_turn_label": "Junior Late Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 0.2,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004245",
+        "event_id": 203545,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "6": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 6,
+        "top_turn_label": "Junior Late Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 20
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830074001",
+        "event_id": 10002,
+        "event_name": "Marvelous Guidance ☆",
+        "source": "support_card",
+        "source_id": "30074",
+        "event_kind": "support_card_event",
+        "support_card_id": 30074,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "6": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 6,
+        "top_turn_label": "Junior Late Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067715",
+        "event_id": 7017,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 3,
+        "career_count": 1,
+        "turns": {
+          "7": 1,
+          "10": 1,
+          "49": 1
+        },
+        "turn_buckets": {
+          "1": 2,
+          "49": 1
+        },
+        "phases": {
+          "junior": 2,
+          "senior": 1
+        },
+        "top_turn": 7,
+        "top_turn_label": "Junior Early Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 0.3333,
+        "effect_medians": {
+          "speed": 5,
+          "hp": -5,
+          "wit": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -5,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830010002",
+        "event_id": 10002,
+        "event_name": "Lovely Concert Weather ♪",
+        "source": "support_card",
+        "source_id": "30010",
+        "event_kind": "support_card_event",
+        "support_card_id": 30010,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "7": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 7,
+        "top_turn_label": "Junior Early Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 10,
+          "skill_point": 10
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 10,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004207",
+        "event_id": 203507,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "8": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 8,
+        "top_turn_label": "Junior Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 8
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006003",
+        "event_id": 21021,
+        "event_name": "Good Work",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "8": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 8,
+        "top_turn_label": "Junior Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 4
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 4,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "820002001",
+        "event_id": 10002,
+        "event_name": "",
+        "source": "support_card",
+        "source_id": "20002",
+        "event_kind": "support_card_event",
+        "support_card_id": 20002,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "8": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 8,
+        "top_turn_label": "Junior Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 5,
+          "hp": 15
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 5,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 15,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004242",
+        "event_id": 203542,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "9": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 9,
+        "top_turn_label": "Junior Early May",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 8
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000009",
+        "event_id": 203046,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "11": 1,
+          "25": 1
+        },
+        "turn_buckets": {
+          "1": 1,
+          "25": 1
+        },
+        "phases": {
+          "junior": 1,
+          "classic": 1
+        },
+        "top_turn": 11,
+        "top_turn_label": "Junior Early Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "skill_point": 2
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 2,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "801043001",
+        "event_id": 20000,
+        "event_name": "Chomp Extermination!",
+        "source": "support_card",
+        "source_id": "20031",
+        "event_kind": "support_card_event",
+        "support_card_id": 20031,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "11": 1
+        },
+        "turn_buckets": {
+          "1": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 11,
+        "top_turn_label": "Junior Early Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 3
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 3,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067600",
+        "event_id": 3016,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 14,
+        "career_count": 1,
+        "turns": {
+          "12": 1,
+          "19": 1,
+          "24": 1,
+          "27": 1,
+          "30": 1,
+          "43": 1,
+          "44": 1,
+          "46": 1,
+          "48": 1,
+          "50": 1,
+          "59": 1,
+          "60": 1,
+          "70": 1,
+          "72": 1
+        },
+        "turn_buckets": {
+          "1": 1,
+          "13": 2,
+          "25": 2,
+          "37": 4,
+          "49": 3,
+          "61": 2
+        },
+        "phases": {
+          "junior": 3,
+          "classic": 6,
+          "senior": 5
+        },
+        "top_turn": 12,
+        "top_turn_label": "Junior Late Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 0.0714,
+        "effect_medians": {
+          "wit": 5,
+          "stamina": 5,
+          "guts": 5,
+          "power": 5,
+          "speed": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067708",
+        "event_id": 7005,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "race_win_recurring",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 11,
+        "career_count": 1,
+        "turns": {
+          "12": 1,
+          "17": 1,
+          "27": 1,
+          "29": 1,
+          "34": 1,
+          "36": 1,
+          "43": 1,
+          "45": 1,
+          "50": 1,
+          "53": 1,
+          "65": 1
+        },
+        "turn_buckets": {
+          "1": 1,
+          "13": 1,
+          "25": 4,
+          "37": 2,
+          "49": 2,
+          "61": 1
+        },
+        "phases": {
+          "junior": 2,
+          "classic": 6,
+          "senior": 3
+        },
+        "top_turn": 12,
+        "top_turn_label": "Junior Late Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 0.0909,
+        "effect_medians": {
+          "speed": 4,
+          "stamina": 13,
+          "guts": 13,
+          "hp": -20,
+          "skill_point": 41,
+          "wit": 13,
+          "power": 16
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 59,
+          "sp_gain": true,
+          "sp_delta": 41,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067700",
+        "event_id": 7009,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 3,
+        "career_count": 1,
+        "turns": {
+          "13": 1,
+          "15": 1,
+          "51": 1
+        },
+        "turn_buckets": {
+          "13": 2,
+          "49": 1
+        },
+        "phases": {
+          "junior": 2,
+          "senior": 1
+        },
+        "top_turn": 13,
+        "top_turn_label": "Junior Early Jul",
+        "top_turn_count": 1,
+        "top_turn_share": 0.3333,
+        "effect_medians": {
+          "hp": 30
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 30,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004229",
+        "event_id": 203529,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "13": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 13,
+        "top_turn_label": "Junior Early Jul",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 8
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004407",
+        "event_id": 203027,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "13": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 13,
+        "top_turn_label": "Junior Early Jul",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830010003",
+        "event_id": 10002,
+        "event_name": "Lovely Racing Weather ♪",
+        "source": "support_card",
+        "source_id": "30010",
+        "event_kind": "support_card_event",
+        "support_card_id": 30010,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "15": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 15,
+        "top_turn_label": "Junior Early Aug",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 5,
+          "wit": 10,
+          "hp": -10,
+          "skill_point": 15
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 15,
+          "sp_gain": true,
+          "sp_delta": 15,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000035",
+        "event_id": 1011,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 8,
+        "career_count": 1,
+        "turns": {
+          "16": 1,
+          "19": 1,
+          "22": 1,
+          "24": 1,
+          "30": 1,
+          "41": 1,
+          "46": 1,
+          "67": 1
+        },
+        "turn_buckets": {
+          "13": 4,
+          "25": 1,
+          "37": 2,
+          "61": 1
+        },
+        "phases": {
+          "junior": 4,
+          "classic": 3,
+          "senior": 1
+        },
+        "top_turn": 16,
+        "top_turn_label": "Junior Late Aug",
+        "top_turn_count": 1,
+        "top_turn_share": 0.125,
+        "effect_medians": {
+          "guts": 13,
+          "hp": -20,
+          "skill_point": 41,
+          "motivation": 1,
+          "wit": 14,
+          "stamina": 13
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 40,
+          "sp_gain": true,
+          "sp_delta": 41,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004013",
+        "event_id": 203025,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 15,
+        "career_count": 1,
+        "turns": {
+          "16": 1,
+          "17": 1,
+          "19": 1,
+          "24": 1,
+          "27": 1,
+          "29": 1,
+          "30": 1,
+          "34": 1,
+          "36": 1,
+          "43": 1,
+          "45": 1,
+          "46": 1,
+          "50": 1,
+          "53": 1,
+          "67": 1
+        },
+        "turn_buckets": {
+          "13": 4,
+          "25": 5,
+          "37": 3,
+          "49": 2,
+          "61": 1
+        },
+        "phases": {
+          "junior": 4,
+          "classic": 8,
+          "senior": 3
+        },
+        "top_turn": 16,
+        "top_turn_label": "Junior Late Aug",
+        "top_turn_count": 1,
+        "top_turn_share": 0.0667,
+        "effect_medians": {
+          "stamina": 5,
+          "power": 5,
+          "speed": 5,
+          "wit": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 20,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "820031001",
+        "event_id": 10002,
+        "event_name": "Dig Here, Windy!",
+        "source": "support_card",
+        "source_id": "20031",
+        "event_kind": "support_card_event",
+        "support_card_id": 20031,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "16": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 16,
+        "top_turn_label": "Junior Late Aug",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006004",
+        "event_id": 21022,
+        "event_name": "Unexpected Side",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "17": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 17,
+        "top_turn_label": "Junior Early Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "hp": 19
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 13,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 19,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "801068001",
+        "event_id": 20000,
+        "event_name": "Ah, Friendship",
+        "source": "support_card",
+        "source_id": "30028",
+        "event_kind": "support_card_event",
+        "support_card_id": 30028,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "18": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 18,
+        "top_turn_label": "Junior Late Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 5,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006005",
+        "event_id": 21023,
+        "event_name": "Sing from the Heart",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "18": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 18,
+        "top_turn_label": "Junior Late Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "hp": 32
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 13,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 32,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "820031002",
+        "event_id": 10002,
+        "event_name": "C'mon Gates, Open Already!",
+        "source": "support_card",
+        "source_id": "20031",
+        "event_kind": "support_card_event",
+        "support_card_id": 20031,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "19": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 19,
+        "top_turn_label": "Junior Early Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10,
+          "skill_point": 15
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": true,
+          "sp_delta": 15,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067709",
+        "event_id": 7006,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "race_loss_or_place_recurring",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 14,
+        "career_count": 1,
+        "turns": {
+          "20": 1,
+          "23": 1,
+          "31": 1,
+          "33": 1,
+          "44": 1,
+          "48": 1,
+          "54": 1,
+          "56": 1,
+          "59": 1,
+          "60": 1,
+          "68": 1,
+          "69": 1,
+          "70": 1,
+          "72": 1
+        },
+        "turn_buckets": {
+          "13": 2,
+          "25": 2,
+          "37": 2,
+          "49": 4,
+          "61": 4
+        },
+        "phases": {
+          "junior": 2,
+          "classic": 4,
+          "senior": 8
+        },
+        "top_turn": 20,
+        "top_turn_label": "Junior Late Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 0.0714,
+        "effect_medians": {
+          "wit": 13,
+          "hp": -25,
+          "skill_point": 57,
+          "stamina": 11,
+          "power": 8,
+          "guts": 10,
+          "speed": 11
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 53,
+          "sp_gain": true,
+          "sp_delta": 57,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -25,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004353",
+        "event_id": 203653,
+        "event_name": "Pondering over Perennials",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "20": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 20,
+        "top_turn_label": "Junior Late Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 6,
+          "power": 6
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830074002",
+        "event_id": 10002,
+        "event_name": "Dazzling and Marvelous ☆",
+        "source": "support_card",
+        "source_id": "30074",
+        "event_kind": "support_card_event",
+        "support_card_id": 30074,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "20": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 20,
+        "top_turn_label": "Junior Late Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 10
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067518",
+        "event_id": 10012,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "21": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 21,
+        "top_turn_label": "Junior Early Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": -10,
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004287",
+        "event_id": 203587,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "21": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 21,
+        "top_turn_label": "Junior Early Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 6,
+          "wit": 6
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067516",
+        "event_id": 7019,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "22": 1,
+          "52": 1
+        },
+        "turn_buckets": {
+          "13": 1,
+          "49": 1
+        },
+        "phases": {
+          "junior": 1,
+          "senior": 1
+        },
+        "top_turn": 22,
+        "top_turn_label": "Junior Late Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "hp": 10,
+          "skill_point": 5
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 5,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004010",
+        "event_id": 203059,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "24": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 24,
+        "top_turn_label": "Junior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 10,
+          "skill_point": 20
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 20,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 24,
+        "static_mant_expected_turn_label": "Junior Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 20
+        }
+      },
+      {
+        "story_id": "400004401",
+        "event_id": 203010,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "24": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 24,
+        "top_turn_label": "Junior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 5,
+          "stamina": 5,
+          "power": 5,
+          "guts": 5,
+          "wit": 5,
+          "skill_point": 30
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 24,
+        "static_mant_expected_turn_label": "Junior Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "830054002",
+        "event_id": 10002,
+        "event_name": "Irrepressible Feelings",
+        "source": "support_card",
+        "source_id": "30054",
+        "event_kind": "support_card_event",
+        "support_card_id": 30054,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "24": 1
+        },
+        "turn_buckets": {
+          "13": 1
+        },
+        "phases": {
+          "junior": 1
+        },
+        "top_turn": 24,
+        "top_turn_label": "Junior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 10
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004299",
+        "event_id": 203599,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "25": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 25,
+        "top_turn_label": "Classic Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 12
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006011",
+        "event_id": 21019,
+        "event_name": "Bonding with Riko: No More Regrets",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "25": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 25,
+        "top_turn_label": "Classic Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "guts": 6
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 19,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067719",
+        "event_id": 7022,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "26": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 26,
+        "top_turn_label": "Classic Late Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": -5,
+          "hp": 15,
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 15,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004301",
+        "event_id": 203601,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "27": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 27,
+        "top_turn_label": "Classic Early Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 10,
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006006",
+        "event_id": 21024,
+        "event_name": "A Change of Pace",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "28": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 28,
+        "top_turn_label": "Classic Late Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "guts": 13,
+          "hp": 26
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 26,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 26,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830079001",
+        "event_id": 10002,
+        "event_name": "Doomsday for the Overlord?!",
+        "source": "support_card",
+        "source_id": "30079",
+        "event_kind": "support_card_event",
+        "support_card_id": 30079,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "28": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 28,
+        "top_turn_label": "Classic Late Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 10
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004253",
+        "event_id": 203553,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "29": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 29,
+        "top_turn_label": "Classic Early Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 10,
+          "hp": 20
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004255",
+        "event_id": 203555,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "30": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 30,
+        "top_turn_label": "Classic Late Mar",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 12
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067732",
+        "event_id": 7044,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "31": 1,
+          "55": 1
+        },
+        "turn_buckets": {
+          "25": 1,
+          "49": 1
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 1
+        },
+        "top_turn": 31,
+        "top_turn_label": "Classic Early Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067733",
+        "event_id": 7045,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "31": 1,
+          "55": 1
+        },
+        "turn_buckets": {
+          "25": 1,
+          "49": 1
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 1
+        },
+        "top_turn": 31,
+        "top_turn_label": "Classic Early Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000040",
+        "event_id": 7040,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "inheritance_inspiration",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "31": 1,
+          "55": 1
+        },
+        "turn_buckets": {
+          "25": 1,
+          "49": 1
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 1
+        },
+        "top_turn": 31,
+        "top_turn_label": "Classic Early Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "power": 51,
+          "wit": 52
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 103,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006007",
+        "event_id": 21025,
+        "event_name": "Picture Their Joy",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "32": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 32,
+        "top_turn_label": "Classic Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "guts": 6,
+          "hp": 26
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 19,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 26,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830028001",
+        "event_id": 10002,
+        "event_name": "Chasing Brilliance",
+        "source": "support_card",
+        "source_id": "30028",
+        "event_kind": "support_card_event",
+        "support_card_id": 30028,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "32": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 32,
+        "top_turn_label": "Classic Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 2,
+          "power": 2,
+          "wit": 2
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 6,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067517",
+        "event_id": 10012,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "33": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 33,
+        "top_turn_label": "Classic Early May",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004312",
+        "event_id": 203612,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "33": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 33,
+        "top_turn_label": "Classic Early May",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 4,
+          "guts": 4
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000041",
+        "event_id": 1027,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "35": 1,
+          "59": 1
+        },
+        "turn_buckets": {
+          "25": 1,
+          "49": 1
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 1
+        },
+        "top_turn": 35,
+        "top_turn_label": "Classic Early Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "809006008",
+        "event_id": 21026,
+        "event_name": "Confused by Kindness",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "35": 1
+        },
+        "turn_buckets": {
+          "25": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 35,
+        "top_turn_label": "Classic Early Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 13,
+          "stamina": 6,
+          "power": 6,
+          "hp": 26,
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 26,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004016",
+        "event_id": 203827,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 5,
+        "career_count": 1,
+        "turns": {
+          "22": 1,
+          "27": 1,
+          "36": 2,
+          "65": 1
+        },
+        "turn_buckets": {
+          "13": 1,
+          "25": 3,
+          "61": 1
+        },
+        "phases": {
+          "junior": 1,
+          "classic": 3,
+          "senior": 1
+        },
+        "top_turn": 36,
+        "top_turn_label": "Classic Late Jun",
+        "top_turn_count": 2,
+        "top_turn_share": 0.4,
+        "effect_medians": {
+          "speed": 5,
+          "stamina": 5,
+          "power": 5,
+          "wit": 5,
+          "guts": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000043",
+        "event_id": 7049,
+        "event_name": "Get Well Soon!",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "40": 1,
+          "64": 1
+        },
+        "turn_buckets": {
+          "37": 1,
+          "61": 1
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 1
+        },
+        "top_turn": 40,
+        "top_turn_label": "Classic Late Aug",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "speed": -5,
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004305",
+        "event_id": 203605,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "41": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 41,
+        "top_turn_label": "Classic Early Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 4,
+          "wit": 4
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830028002",
+        "event_id": 10002,
+        "event_name": "Paying It Forward",
+        "source": "support_card",
+        "source_id": "30028",
+        "event_kind": "support_card_event",
+        "support_card_id": 30028,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "41": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 41,
+        "top_turn_label": "Classic Early Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "hp": 10,
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004277",
+        "event_id": 203577,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "42": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 42,
+        "top_turn_label": "Classic Late Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830036001",
+        "event_id": 21027,
+        "event_name": "A Peek at Her Heart",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "42": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 42,
+        "top_turn_label": "Classic Late Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 13,
+          "guts": 13,
+          "hp": 32
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 26,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 32,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830054003",
+        "event_id": 10002,
+        "event_name": "Revenge with a Quiz!",
+        "source": "support_card",
+        "source_id": "30054",
+        "event_kind": "support_card_event",
+        "support_card_id": 30054,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "43": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 43,
+        "top_turn_label": "Classic Early Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 5,
+          "wit": 5,
+          "hp": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 10,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830074003",
+        "event_id": 10002,
+        "event_name": "Pure White Marvelousness ☆",
+        "source": "support_card",
+        "source_id": "30074",
+        "event_kind": "support_card_event",
+        "support_card_id": 30074,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "44": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 44,
+        "top_turn_label": "Classic Late Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 5,
+          "skill_point": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 5,
+          "sp_gain": true,
+          "sp_delta": 10,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067520",
+        "event_id": 10000,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "45": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 45,
+        "top_turn_label": "Classic Early Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 10,
+          "guts": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 15,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067601",
+        "event_id": 3017,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "45": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 45,
+        "top_turn_label": "Classic Early Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067508",
+        "event_id": 7003,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 3,
+        "career_count": 1,
+        "turns": {
+          "46": 1,
+          "69": 1,
+          "70": 1
+        },
+        "turn_buckets": {
+          "37": 1,
+          "61": 2
+        },
+        "phases": {
+          "classic": 1,
+          "senior": 2
+        },
+        "top_turn": 46,
+        "top_turn_label": "Classic Late Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 0.3333,
+        "effect_medians": {
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004279",
+        "event_id": 203579,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "46": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 46,
+        "top_turn_label": "Classic Late Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 12
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "801060002",
+        "event_id": 20000,
+        "event_name": "(Delicious) Burden",
+        "source": "support_card",
+        "source_id": "30054",
+        "event_kind": "support_card_event",
+        "support_card_id": 30054,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "46": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 46,
+        "top_turn_label": "Classic Late Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "830028003",
+        "event_id": 10002,
+        "event_name": "We Walk Together",
+        "source": "support_card",
+        "source_id": "30028",
+        "event_kind": "support_card_event",
+        "support_card_id": 30028,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "47": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 47,
+        "top_turn_label": "Classic Early Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 5,
+          "power": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004011",
+        "event_id": 203060,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "48": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 48,
+        "top_turn_label": "Classic Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 5,
+          "stamina": 5,
+          "power": 5,
+          "guts": 5,
+          "wit": 5,
+          "skill_point": 30
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 48,
+        "static_mant_expected_turn_label": "Classic Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "400004294",
+        "event_id": 203594,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "48": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 48,
+        "top_turn_label": "Classic Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 6,
+          "guts": 6
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 12,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004403",
+        "event_id": 203011,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "48": 1
+        },
+        "turn_buckets": {
+          "37": 1
+        },
+        "phases": {
+          "classic": 1
+        },
+        "top_turn": 48,
+        "top_turn_label": "Classic Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 6,
+          "stamina": 6,
+          "power": 6,
+          "guts": 6,
+          "wit": 6,
+          "skill_point": 40
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 30,
+          "sp_gain": true,
+          "sp_delta": 40,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 48,
+        "static_mant_expected_turn_label": "Classic Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 6,
+          "Stamina": 6,
+          "Power": 6,
+          "Guts": 6,
+          "Wisdom": 6,
+          "Skill Pts": 40
+        }
+      },
+      {
+        "story_id": "501067506",
+        "event_id": 10000,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "49": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 49,
+        "top_turn_label": "Senior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400000012",
+        "event_id": 203049,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "49": 1,
+          "73": 1
+        },
+        "turn_buckets": {
+          "49": 1,
+          "73": 1
+        },
+        "phases": {
+          "senior": 1,
+          "climax": 1
+        },
+        "top_turn": 49,
+        "top_turn_label": "Senior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "skill_point": 5
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 5,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004225",
+        "event_id": 203525,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "49": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 49,
+        "top_turn_label": "Senior Early Jan",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "power": 4,
+          "wit": 4
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067713",
+        "event_id": 7043,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "52": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 52,
+        "top_turn_label": "Senior Late Feb",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": -5,
+          "motivation": -1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": true,
+          "mood_delta": -1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004215",
+        "event_id": 203515,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "56": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 56,
+        "top_turn_label": "Senior Late Apr",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 8
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067710",
+        "event_id": 7007,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "57": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 57,
+        "top_turn_label": "Senior Early May",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 6,
+          "hp": -20,
+          "skill_point": 24
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 6,
+          "sp_gain": true,
+          "sp_delta": 24,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": true,
+          "hp_delta": -20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004246",
+        "event_id": 203546,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "57": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 57,
+        "top_turn_label": "Senior Early May",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "guts": 8
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 8,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067701",
+        "event_id": 7011,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 2,
+        "career_count": 1,
+        "turns": {
+          "58": 1,
+          "66": 1
+        },
+        "turn_buckets": {
+          "49": 1,
+          "61": 1
+        },
+        "phases": {
+          "senior": 2
+        },
+        "top_turn": 58,
+        "top_turn_label": "Senior Late May",
+        "top_turn_count": 1,
+        "top_turn_share": 0.5,
+        "effect_medians": {
+          "hp": 70
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 70,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004259",
+        "event_id": 203559,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "60": 1
+        },
+        "turn_buckets": {
+          "49": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 60,
+        "top_turn_label": "Senior Late Jun",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10,
+          "hp": 20
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 60,
+        "static_mant_expected_turn_label": "Senior Late Jun",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10
+        }
+      },
+      {
+        "story_id": "801043003",
+        "event_id": 20063,
+        "event_name": "",
+        "source": "support_card",
+        "source_id": "1043",
+        "event_kind": "support_card_event",
+        "support_card_id": 1043,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "61": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 61,
+        "top_turn_label": "Senior Early Jul",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004015",
+        "event_id": 203821,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "65": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 65,
+        "top_turn_label": "Senior Early Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 10,
+          "guts": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 20,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004227",
+        "event_id": 203527,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "65": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 65,
+        "top_turn_label": "Senior Early Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "skill_point": 20
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 20,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067514",
+        "event_id": 3114,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "66": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 66,
+        "top_turn_label": "Senior Late Sep",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 20
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 20,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004285",
+        "event_id": 203585,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "68": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 68,
+        "top_turn_label": "Senior Late Oct",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 10
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 68,
+        "static_mant_expected_turn_label": "Senior Late Oct",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Wisdom": 10,
+          "Mood": 1
+        }
+      },
+      {
+        "story_id": "400004203",
+        "event_id": 203503,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "70": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 70,
+        "top_turn_label": "Senior Late Nov",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "motivation": 1
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "501067507",
+        "event_id": 10001,
+        "event_name": "",
+        "source": "chara",
+        "source_id": "106701",
+        "event_kind": "trainee_event",
+        "support_card_id": 0,
+        "chara_id": 1067,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "71": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 71,
+        "top_turn_label": "Senior Early Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "motivation": 1,
+          "skill_point": 30
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004012",
+        "event_id": 203061,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "72": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 72,
+        "top_turn_label": "Senior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10,
+          "stamina": 10,
+          "power": 10,
+          "guts": 10,
+          "wit": 10,
+          "skill_point": 30
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 72,
+        "static_mant_expected_turn_label": "Senior Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "400004297",
+        "event_id": 203597,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "72": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 72,
+        "top_turn_label": "Senior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 10,
+          "hp": 30
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 30,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004405",
+        "event_id": 203012,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "72": 1
+        },
+        "turn_buckets": {
+          "61": 1
+        },
+        "phases": {
+          "senior": 1
+        },
+        "top_turn": 72,
+        "top_turn_label": "Senior Late Dec",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 7,
+          "stamina": 7,
+          "power": 7,
+          "guts": 7,
+          "wit": 7,
+          "skill_point": 50
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 35,
+          "sp_gain": true,
+          "sp_delta": 50,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 72,
+        "static_mant_expected_turn_label": "Senior Late Dec",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 7,
+          "Stamina": 7,
+          "Power": 7,
+          "Guts": 7,
+          "Wisdom": 7,
+          "Skill Pts": 50
+        }
+      },
+      {
+        "story_id": "400004050",
+        "event_id": 203101,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "74": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 74,
+        "top_turn_label": "TS Climax Turn 74",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 74,
+        "static_mant_expected_turn_label": "TS Climax Turn 74",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004051",
+        "event_id": 203102,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "74": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 74,
+        "top_turn_label": "TS Climax Turn 74",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 21,
+          "stamina": 21,
+          "power": 21,
+          "guts": 21,
+          "wit": 21,
+          "skill_point": 66
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 105,
+          "sp_gain": true,
+          "sp_delta": 66,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 74,
+        "static_mant_expected_turn_label": "TS Climax Turn 74",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "400004060",
+        "event_id": 203103,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "76": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 76,
+        "top_turn_label": "TS Climax Turn 76",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 76,
+        "static_mant_expected_turn_label": "TS Climax Turn 76",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004061",
+        "event_id": 203104,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "76": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 76,
+        "top_turn_label": "TS Climax Turn 76",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 19,
+          "stamina": 19,
+          "power": 19,
+          "guts": 19,
+          "wit": 19,
+          "skill_point": 58
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 95,
+          "sp_gain": true,
+          "sp_delta": 58,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 76,
+        "static_mant_expected_turn_label": "TS Climax Turn 76",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "400000034",
+        "event_id": 1010,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "77": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 77,
+        "top_turn_label": "TS Climax Turn 77",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "wit": 5
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 5,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004070",
+        "event_id": 203105,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "78": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 78,
+        "top_turn_label": "TS Climax Turn 78",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {},
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 78,
+        "static_mant_expected_turn_label": "TS Climax Turn 78",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {}
+      },
+      {
+        "story_id": "400004071",
+        "event_id": 203106,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "78": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 78,
+        "top_turn_label": "TS Climax Turn 78",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 16,
+          "stamina": 16,
+          "power": 16,
+          "guts": 16,
+          "wit": 16,
+          "skill_point": 49
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 80,
+          "sp_gain": true,
+          "sp_delta": 49,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 78,
+        "static_mant_expected_turn_label": "TS Climax Turn 78",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "story_id": "400004601",
+        "event_id": 203202,
+        "event_name": "",
+        "source": "scenario",
+        "source_id": "4",
+        "event_kind": "scenario_event",
+        "support_card_id": 0,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "78": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 78,
+        "top_turn_label": "TS Climax Turn 78",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "speed": 10,
+          "stamina": 10,
+          "power": 10,
+          "guts": 10,
+          "wit": 10,
+          "skill_point": 40
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 40,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        },
+        "is_static_mant_fixed_event": true,
+        "static_mant_expected_turn": 78,
+        "static_mant_expected_turn_label": "TS Climax Turn 78",
+        "static_mant_turn_match": true,
+        "static_mant_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 40
+        }
+      },
+      {
+        "story_id": "809006009",
+        "event_id": 14,
+        "event_name": "A Priceless Connection",
+        "source": "support_card",
+        "source_id": "30036",
+        "event_kind": "support_card_event",
+        "support_card_id": 30036,
+        "chara_id": 0,
+        "count": 1,
+        "career_count": 1,
+        "turns": {
+          "78": 1
+        },
+        "turn_buckets": {
+          "73": 1
+        },
+        "phases": {
+          "climax": 1
+        },
+        "top_turn": 78,
+        "top_turn_label": "TS Climax Turn 78",
+        "top_turn_count": 1,
+        "top_turn_share": 1.0,
+        "effect_medians": {
+          "stamina": 20,
+          "guts": 20,
+          "skill_point": 40
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 40,
+          "sp_gain": true,
+          "sp_delta": 40,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        },
+        "is_static_mant_fixed_event": false,
+        "static_mant_expected_turn": 0,
+        "static_mant_expected_turn_label": "",
+        "static_mant_turn_match": false,
+        "static_mant_effects": {}
+      }
+    ],
+    "fixed_turn_events": [],
+    "static_mant_fixed_events": [
+      {
+        "turn": 24,
+        "turn_label": "Junior Late Dec",
+        "story_id": "400004401",
+        "event_id": 203010,
+        "expected_turn": 24,
+        "expected_turn_label": "Junior Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 5,
+          "stamina": 5,
+          "power": 5,
+          "guts": 5,
+          "wit": 5,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 30,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 24,
+        "turn_label": "Junior Late Dec",
+        "story_id": "400004010",
+        "event_id": 203059,
+        "expected_turn": 24,
+        "expected_turn_label": "Junior Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 20
+        },
+        "observed_delta": {
+          "speed": 0,
+          "stamina": 0,
+          "power": 0,
+          "guts": 10,
+          "wit": 0,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 20,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 20,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 48,
+        "turn_label": "Classic Late Dec",
+        "story_id": "400004403",
+        "event_id": 203011,
+        "expected_turn": 48,
+        "expected_turn_label": "Classic Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 6,
+          "Stamina": 6,
+          "Power": 6,
+          "Guts": 6,
+          "Wisdom": 6,
+          "Skill Pts": 40
+        },
+        "observed_delta": {
+          "speed": 6,
+          "stamina": 6,
+          "power": 6,
+          "guts": 6,
+          "wit": 6,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 40,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 30,
+          "sp_gain": true,
+          "sp_delta": 40,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 48,
+        "turn_label": "Classic Late Dec",
+        "story_id": "400004011",
+        "event_id": 203060,
+        "expected_turn": 48,
+        "expected_turn_label": "Classic Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 5,
+          "stamina": 5,
+          "power": 5,
+          "guts": 5,
+          "wit": 5,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 30,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 25,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 60,
+        "turn_label": "Senior Late Jun",
+        "story_id": "400004259",
+        "event_id": 203559,
+        "expected_turn": 60,
+        "expected_turn_label": "Senior Late Jun",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10
+        },
+        "observed_delta": {
+          "speed": 10,
+          "stamina": 0,
+          "power": 0,
+          "guts": 0,
+          "wit": 0,
+          "hp": 20,
+          "motivation": 0,
+          "skill_point": 0,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": true,
+          "hp_loss": false,
+          "hp_delta": 20,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 68,
+        "turn_label": "Senior Late Oct",
+        "story_id": "400004285",
+        "event_id": 203585,
+        "expected_turn": 68,
+        "expected_turn_label": "Senior Late Oct",
+        "turn_match": true,
+        "expected_effects": {
+          "Wisdom": 10,
+          "Mood": 1
+        },
+        "observed_delta": {
+          "speed": 0,
+          "stamina": 0,
+          "power": 0,
+          "guts": 0,
+          "wit": 10,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 0,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 10,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": true,
+          "mood_down": false,
+          "mood_delta": 1,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 72,
+        "turn_label": "Senior Late Dec",
+        "story_id": "400004405",
+        "event_id": 203012,
+        "expected_turn": 72,
+        "expected_turn_label": "Senior Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 7,
+          "Stamina": 7,
+          "Power": 7,
+          "Guts": 7,
+          "Wisdom": 7,
+          "Skill Pts": 50
+        },
+        "observed_delta": {
+          "speed": 7,
+          "stamina": 7,
+          "power": 7,
+          "guts": 7,
+          "wit": 7,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 50,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 35,
+          "sp_gain": true,
+          "sp_delta": 50,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 72,
+        "turn_label": "Senior Late Dec",
+        "story_id": "400004012",
+        "event_id": 203061,
+        "expected_turn": 72,
+        "expected_turn_label": "Senior Late Dec",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 10,
+          "stamina": 10,
+          "power": 10,
+          "guts": 10,
+          "wit": 10,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 30,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 30,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 74,
+        "turn_label": "TS Climax Turn 74",
+        "story_id": "400004050",
+        "event_id": 203101,
+        "expected_turn": 74,
+        "expected_turn_label": "TS Climax Turn 74",
+        "turn_match": true,
+        "expected_effects": {},
+        "observed_delta": {
+          "speed": 0,
+          "stamina": 0,
+          "power": 0,
+          "guts": 0,
+          "wit": 0,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 0,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        }
+      },
+      {
+        "turn": 74,
+        "turn_label": "TS Climax Turn 74",
+        "story_id": "400004051",
+        "event_id": 203102,
+        "expected_turn": 74,
+        "expected_turn_label": "TS Climax Turn 74",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 21,
+          "stamina": 21,
+          "power": 21,
+          "guts": 21,
+          "wit": 21,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 66,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 105,
+          "sp_gain": true,
+          "sp_delta": 66,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 76,
+        "turn_label": "TS Climax Turn 76",
+        "story_id": "400004060",
+        "event_id": 203103,
+        "expected_turn": 76,
+        "expected_turn_label": "TS Climax Turn 76",
+        "turn_match": true,
+        "expected_effects": {},
+        "observed_delta": {
+          "speed": 0,
+          "stamina": 0,
+          "power": 0,
+          "guts": 0,
+          "wit": 0,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 0,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        }
+      },
+      {
+        "turn": 76,
+        "turn_label": "TS Climax Turn 76",
+        "story_id": "400004061",
+        "event_id": 203104,
+        "expected_turn": 76,
+        "expected_turn_label": "TS Climax Turn 76",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 19,
+          "stamina": 19,
+          "power": 19,
+          "guts": 19,
+          "wit": 19,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 58,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 95,
+          "sp_gain": true,
+          "sp_delta": 58,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004070",
+        "event_id": 203105,
+        "expected_turn": 78,
+        "expected_turn_label": "TS Climax Turn 78",
+        "turn_match": true,
+        "expected_effects": {},
+        "observed_delta": {
+          "speed": 0,
+          "stamina": 0,
+          "power": 0,
+          "guts": 0,
+          "wit": 0,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 0,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": false,
+          "stat_gain_total": 0,
+          "sp_gain": false,
+          "sp_delta": 0,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": false
+        }
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004071",
+        "event_id": 203106,
+        "expected_turn": 78,
+        "expected_turn_label": "TS Climax Turn 78",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        },
+        "observed_delta": {
+          "speed": 16,
+          "stamina": 16,
+          "power": 16,
+          "guts": 16,
+          "wit": 16,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 49,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 80,
+          "sp_gain": true,
+          "sp_delta": 49,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004601",
+        "event_id": 203202,
+        "expected_turn": 78,
+        "expected_turn_label": "TS Climax Turn 78",
+        "turn_match": true,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 40
+        },
+        "observed_delta": {
+          "speed": 10,
+          "stamina": 10,
+          "power": 10,
+          "guts": 10,
+          "wit": 10,
+          "hp": 0,
+          "motivation": 0,
+          "skill_point": 40,
+          "mant_coin": 0
+        },
+        "effect_flags": {
+          "stat_gain": true,
+          "stat_gain_total": 50,
+          "sp_gain": true,
+          "sp_delta": 40,
+          "mood_up": false,
+          "mood_down": false,
+          "mood_delta": 0,
+          "hp_gain": false,
+          "hp_loss": false,
+          "hp_delta": 0,
+          "mant_coin_gain": false,
+          "mant_coin_delta": 0,
+          "has_known_static_effect": true
+        }
+      }
+    ],
+    "static_mant_fixed_event_catalog": [
+      {
+        "turn": 24,
+        "turn_label": "Junior Late Dec",
+        "story_id": "400004010",
+        "event_id": 203059,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 20
+        }
+      },
+      {
+        "turn": 24,
+        "turn_label": "Junior Late Dec",
+        "story_id": "400004401",
+        "event_id": 203010,
+        "expected_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 48,
+        "turn_label": "Classic Late Dec",
+        "story_id": "400004011",
+        "event_id": 203060,
+        "expected_effects": {
+          "Speed": 5,
+          "Stamina": 5,
+          "Power": 5,
+          "Guts": 5,
+          "Wisdom": 5,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 48,
+        "turn_label": "Classic Late Dec",
+        "story_id": "400004403",
+        "event_id": 203011,
+        "expected_effects": {
+          "Speed": 6,
+          "Stamina": 6,
+          "Power": 6,
+          "Guts": 6,
+          "Wisdom": 6,
+          "Skill Pts": 40
+        }
+      },
+      {
+        "turn": 60,
+        "turn_label": "Senior Late Jun",
+        "story_id": "400004259",
+        "event_id": 203559,
+        "expected_effects": {
+          "Speed": 10
+        }
+      },
+      {
+        "turn": 60,
+        "turn_label": "Senior Late Jun",
+        "story_id": "400004260",
+        "event_id": 203560,
+        "expected_effects": {
+          "Stamina": 10
+        }
+      },
+      {
+        "turn": 68,
+        "turn_label": "Senior Late Oct",
+        "story_id": "400004285",
+        "event_id": 203585,
+        "expected_effects": {
+          "Wisdom": 10,
+          "Mood": 1
+        }
+      },
+      {
+        "turn": 68,
+        "turn_label": "Senior Late Oct",
+        "story_id": "400004286",
+        "event_id": 203586,
+        "expected_effects": {
+          "Speed": 10,
+          "Mood": 1
+        }
+      },
+      {
+        "turn": 72,
+        "turn_label": "Senior Late Dec",
+        "story_id": "400004012",
+        "event_id": 203061,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 72,
+        "turn_label": "Senior Late Dec",
+        "story_id": "400004405",
+        "event_id": 203012,
+        "expected_effects": {
+          "Speed": 7,
+          "Stamina": 7,
+          "Power": 7,
+          "Guts": 7,
+          "Wisdom": 7,
+          "Skill Pts": 50
+        }
+      },
+      {
+        "turn": 74,
+        "turn_label": "TS Climax Turn 74",
+        "story_id": "400004050",
+        "event_id": 203101,
+        "expected_effects": {}
+      },
+      {
+        "turn": 74,
+        "turn_label": "TS Climax Turn 74",
+        "story_id": "400004051",
+        "event_id": 203102,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 76,
+        "turn_label": "TS Climax Turn 76",
+        "story_id": "400004060",
+        "event_id": 203103,
+        "expected_effects": {}
+      },
+      {
+        "turn": 76,
+        "turn_label": "TS Climax Turn 76",
+        "story_id": "400004061",
+        "event_id": 203104,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004070",
+        "event_id": 203105,
+        "expected_effects": {}
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004071",
+        "event_id": 203106,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 30
+        }
+      },
+      {
+        "turn": 78,
+        "turn_label": "TS Climax Turn 78",
+        "story_id": "400004601",
+        "event_id": 203202,
+        "expected_effects": {
+          "Speed": 10,
+          "Stamina": 10,
+          "Power": 10,
+          "Guts": 10,
+          "Wisdom": 10,
+          "Skill Pts": 40
+        }
+      }
+    ]
+  },
+  "final": {
+    "schema": "sweepy_sim_observation_v1",
+    "career_id": "career_log_20260609_063008",
+    "source_log": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260609_063008.json",
+    "runtime_instance": "account_b",
+    "preset_name": "xguri parent",
+    "status": "finished",
+    "scenario_id": 4,
+    "record_type": "final",
+    "turn": 78,
+    "final_stats": {
+      "hp": 28,
+      "max_hp": 100,
+      "motivation": 5,
+      "speed": 856,
+      "stamina": 651,
+      "power": 819,
+      "guts": 514,
+      "wit": 982,
+      "skill_point": 130
+    },
+    "final_sp": 130,
+    "race_count": 37,
+    "race_wins": 22,
+    "race_losses": 15,
+    "g1_losses": 14
+  },
+  "generated_at": 1781011808,
+  "jsonl_path": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\sim_observations\\career_log_20260609_063008.jsonl",
+  "summary_path": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\sim_observations\\career_log_20260609_063008_summary.json"
+}

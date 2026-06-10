@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        try {
+            const theme = localStorage.getItem('theme') === 'blue' ? 'blue' : 'pink';
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.classList.toggle('theme-blue', theme === 'blue');
+        } catch (e) {}
+    </script>
+    <title>Sweepy改二</title>
+    <link rel="stylesheet" href="styles.css?v=6">
+
+</head>
+<body>
+        <div id="loading-screen" class="loading-screen">
+        <div class="loading-shell">
+            <div class="loading-art">
+                <div class="loading-broom-aura"></div>
+                <img class="loading-broom" src="/broom.png" alt="">
+                <img class="loading-sweep" src="/sweep.png" alt="">
+            </div>
+            <div class="loading-text">Girls are preparing<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+        </div>
+    </div>
+    <div id="app">
+        <header class="navbar">
+            <div class="brand">
+                <h1 id="theme-toggle" class="title">SWEEPY<span>改二</span></h1>
+            </div>
+            <div class="navbar-actions">
+                <div id="turn-delay-control" class="turn-delay-control">
+                    <span class="turn-delay-label">MIN TURN DELAY(S)</span>
+                    <input id="turn-delay-min" class="turn-delay-input" type="number" min="0" step="0.001" value="1.6">
+                    <span class="turn-delay-separator">–</span>
+                    <input id="turn-delay-max" class="turn-delay-input" type="number" min="0" step="0.001" value="3.7">
+                    <button id="tempt-fate-btn" class="btn btn-sm turn-delay-button" type="button">DANCHUD PLEASER 9000</button>
+                </div>
+                <div id="team-bundle-menu" class="team-bundle-menu" style="display:none">
+                    <button id="team-bundle-toggle-btn" class="btn btn-sm team-bundle-toggle" type="button" aria-expanded="false">TEAM PRESETS</button>
+                    <div id="team-bundle-popover" class="team-bundle-popover" hidden>
+                        <div class="team-bundle-title">Deck + Friend + Trainee + P1 + P2</div>
+                        <label class="team-bundle-field" for="team-bundle-preset-select">
+                            <span>Preset</span>
+                            <select id="team-bundle-preset-select" class="team-bundle-select">
+                                <option value="">No saved bundle</option>
+                            </select>
+                        </label>
+                        <label class="team-bundle-field" for="team-bundle-preset-name-input">
+                            <span>Name</span>
+                            <input id="team-bundle-preset-name-input" class="team-bundle-input" type="text" maxlength="64" placeholder="Kita 40-race bundle">
+                        </label>
+                        <div class="team-bundle-actions">
+                            <button id="team-bundle-preset-apply-btn" class="btn btn-sm" type="button" disabled>APPLY</button>
+                            <button id="team-bundle-preset-save-btn" class="btn btn-sm" type="button">SAVE</button>
+                            <button id="team-bundle-preset-delete-btn" class="btn btn-sm" type="button" disabled>DELETE</button>
+                        </div>
+                        <div id="team-bundle-preset-status" class="team-bundle-status"></div>
+                    </div>
+                </div>
+                <div id="account-strip" class="account-strip"></div>
+                <button id="top-auth-refresh-btn" class="btn btn-sm" type="button" style="display:none">REFRESH AUTH</button>
+                <button id="career-notify-toggle-btn" class="btn btn-sm" type="button" style="display:none">NOTIFY ON</button>
+                <button id="team-trials-screen-btn" class="btn btn-sm" type="button" style="display:none">TEAM TRIALS</button>
+                <button id="sync-dashboard-btn" class="btn btn-sm" type="button" style="display:none">SYNC GAME DATA</button>
+                <button id="refresh-backend-btn" class="btn btn-sm" type="button" style="display:none">REFRESH BACKEND</button>
+                <button id="logout-btn" class="btn btn-sm" style="display:none">LOGOUT</button>
+            </div>
+        </header>
+        <main class="main-container">
+            <div id="login-view" class="login-wrapper">
+                <div class="login-panel">
+                    <form id="login-form" autocomplete="on">
+                        <div id="standard-fields">
+                            <div class="form-group">
+                                <label class="form-label" for="username">STEAM USERNAME</label>
+                                <input id="username" name="username" type="text" class="form-input" placeholder="..." autocomplete="username">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="password">STEAM PASSWORD</label>
+                                <input id="password" name="password" type="password" class="form-input" placeholder="..." autocomplete="current-password">
+                            </div>
+                        </div>
+                        <div id="2fa-fields" style="display:none">
+                            <div class="form-group">
+                                <label class="form-label" for="code">STEAM GUARD CODE</label>
+                                <input id="code" name="code" type="text" class="form-input" placeholder="..." maxlength="5" autocomplete="one-time-code">
+                            </div>
+                        </div>
+                        <div id="error-msg" class="status-msg"></div>
+                        <button id="login-btn" type="submit" class="btn btn-primary">LOGIN</button>
+                        <button id="auth-refresh-btn" type="button" class="btn btn-secondary" style="margin-top: 0.5rem;">REFRESH AUTH</button>
+                    </form>
+                </div>
+            </div>
+            <div id="dashboard-view" class="dashboard-container">
+                <div class="team-bar" id="team-bar">
+                    <div class="team-slots">
+                        <div class="team-item" id="team-slot-deck">
+                            <span class="team-item-role">Deck</span>
+                            <span class="team-item-empty">select a deck</span>
+                        </div>
+                        <div class="team-item" id="team-slot-friend">
+                            <span class="team-item-role">Friend</span>
+                            <span class="team-item-empty">select a friend support</span>
+                        </div>
+                        <div class="team-item" id="team-slot-trainee">
+                            <span class="team-item-role">Trainee</span>
+                            <span class="team-item-empty">select a trainee</span>
+                        </div>
+                        <div class="team-item" id="team-slot-vet1">
+                            <span class="team-item-role">Parent 1</span>
+                            <span class="team-item-empty">select a parent</span>
+                        </div>
+                        <div class="team-item" id="team-slot-vet2">
+                            <span class="team-item-role">Parent 2</span>
+                            <span class="team-item-empty">select a parent</span>
+                        </div>
+                        <button id="start-career-bar-btn" class="team-run-btn" type="button" disabled>
+                            <span>▶ RUN</span>
+                            <span class="sub">CAREER</span>
+                        </button>
+                    </div>
+                    <div id="team-combo-affinity" class="team-combo-affinity" hidden></div>
+                </div>
+                <div id="deck-advice-panel" class="deck-advice-panel" hidden>
+                    <div class="deck-advice-head">
+                        <span class="deck-advice-title">DECK ADVICE</span>
+                        <div class="deck-advice-head-actions">
+                            <button id="deck-advice-toggle" class="deck-advice-toggle" type="button" hidden>SHOW DETAILS</button>
+                            <span id="deck-advice-confidence" class="deck-advice-chip"></span>
+                        </div>
+                    </div>
+                    <div id="deck-advice-message" class="deck-advice-message">Select a deck and preset to score your saved deck options.</div>
+                    <div id="deck-advice-meta" class="deck-advice-meta"></div>
+                    <div id="deck-advice-list" class="deck-advice-list"></div>
+                </div>
+                <div class="split-left" id="setup-panel">
+                    <div class="panel-header">
+                        <span class="panel-header-title">SETUP</span>
+                    </div>
+                    <div class="panel-body">
+                        <section class="dashboard-section race-calendar-launcher" id="race-schedule-section">
+                                <button id="open-race-calendar-btn" class="btn btn-primary race-calendar-launch-btn" type="button">📅 Open Race Calendar</button>
+                                <div id="race-slot-popup-overlay" class="race-slot-popup-overlay" style="display: none;">
+                                    <div class="race-slot-popup">
+                                        <div class="race-slot-popup-header">
+                                            <div id="race-slot-popup-title" class="race-slot-popup-title">Select Race</div>
+                                            <button id="race-slot-popup-close" class="race-slot-popup-close">&times;</button>
+                                        </div>
+                                        <div id="race-slot-popup-body" class="race-slot-popup-body"></div>
+                                    </div>
+                                </div>
+                                <div class="race-plan-hidden" hidden aria-hidden="true">
+                                    <summary style="cursor:pointer;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Advanced — JSON / paste</summary>
+                                <div class="race-plan-panel">
+                                    <div class="race-plan-head">
+                                        <div>
+                                            <div class="race-plan-title">CUSTOM RACE PLAN</div>
+                                            <div class="race-plan-copy">Paste scheduler JSON or lines like <span>Classic Year Late Oct @ Kikuka Sho | late surger</span>.</div>
+                                        </div>
+                                        <label class="btn btn-sm race-plan-file-btn" for="race-plan-file">LOAD JSON</label>
+                                        <input id="race-plan-file" class="race-plan-file" type="file" accept=".json,application/json">
+                                    </div>
+                                    <textarea id="race-plan-input" class="race-plan-input" spellcheck="false" placeholder='[
+  {"raceName":"Niigata Junior Stakes","year":"First Year","turn":"08_02"}
+]'></textarea>
+                                    <div class="race-plan-actions">
+                                        <button id="race-plan-save-btn" class="btn btn-sm race-plan-save-btn" type="button">IMPORT PLAN</button>
+                                    </div>
+                                    <div id="race-plan-status" class="race-plan-status"></div>
+                                </div>
+                                <div class="race-options-content" id="race-options-content"></div>
+                                </div>
+                        </section>
+
+                        <section class="dashboard-section" id="skill-plan-section">
+                            <h2 class="dashboard-section-title section-title-toggle" id="skills-toggle">
+                                <span class="collapse-chevron" id="skills-chevron">&#9658;</span>
+                                SKILL PLAN
+                            </h2>
+                            <div id="skills-body" class="collapsible-body">
+                                <div class="skill-plan-panel">
+                                    <div class="skill-plan-head">
+                                        <div>
+                                            <div class="skill-plan-title">END-OF-CAREER SKILLS</div>
+                                            <div class="skill-plan-copy">Priority skills are bought first during the final skill-buy phase. Blacklisted skills are never bought. The profile fills in style and distance skills after those rules.</div>
+                                        </div>
+                                    </div>
+                                    <div class="seg-field">
+                                        <span class="seg-field-label">Style</span>
+                                        <div class="seg-group" data-seg-target="skill-style-select">
+                                            <button type="button" class="seg-btn active accent" data-seg-value="">Auto</button>
+                                            <button type="button" class="seg-btn" data-seg-value="front_runner">Front</button>
+                                            <button type="button" class="seg-btn" data-seg-value="pace_chaser">Pace</button>
+                                            <button type="button" class="seg-btn" data-seg-value="late_surger">Late</button>
+                                            <button type="button" class="seg-btn" data-seg-value="end_closer">End</button>
+                                        </div>
+                                        <select id="skill-style-select" class="skill-profile-select" hidden>
+                                            <option value="">AUTO / DEFAULT</option>
+                                            <option value="front_runner">FRONT RUNNER</option>
+                                            <option value="pace_chaser">PACE CHASER</option>
+                                            <option value="late_surger">LATE SURGER</option>
+                                            <option value="end_closer">END CLOSER</option>
+                                        </select>
+                                    </div>
+                                    <div class="seg-field">
+                                        <span class="seg-field-label">Distance</span>
+                                        <div class="seg-group" data-seg-target="skill-distance-select">
+                                            <button type="button" class="seg-btn active accent" data-seg-value="">Auto</button>
+                                            <button type="button" class="seg-btn" data-seg-value="sprint">Sprint</button>
+                                            <button type="button" class="seg-btn" data-seg-value="mile">Mile</button>
+                                            <button type="button" class="seg-btn" data-seg-value="medium">Medium</button>
+                                            <button type="button" class="seg-btn" data-seg-value="long">Long</button>
+                                        </div>
+                                        <select id="skill-distance-select" class="skill-profile-select" hidden>
+                                            <option value="">AUTO / DEFAULT</option>
+                                            <option value="sprint">SPRINT</option>
+                                            <option value="mile">MILE</option>
+                                            <option value="medium">MEDIUM</option>
+                                            <option value="long">LONG</option>
+                                        </select>
+                                    </div>
+                                    <div class="seg-field">
+                                        <span class="seg-field-label">Buy timing</span>
+                                        <div class="seg-group" data-seg-target="skill-buy-timing-select">
+                                            <button type="button" class="seg-btn active accent" data-seg-value="end_of_career">End of career</button>
+                                            <button type="button" class="seg-btn" data-seg-value="throughout">Throughout</button>
+                                        </div>
+                                        <select id="skill-buy-timing-select" class="skill-profile-select" hidden>
+                                            <option value="end_of_career">END OF CAREER (+ STAMINA RESCUE)</option>
+                                            <option value="throughout">THROUGHOUT THE RUN</option>
+                                        </select>
+                                    </div>
+                                    <div class="seg-field race-continue-field">
+                                        <span class="seg-field-label">Alarm clocks</span>
+                                        <div class="seg-group" data-seg-target="alarm-clock-mode-select">
+                                            <button type="button" class="seg-btn" data-seg-value="normal">Normal</button>
+                                            <button type="button" class="seg-btn active accent" data-seg-value="carats">+ Carats</button>
+                                            <button type="button" class="seg-btn" data-seg-value="none">None</button>
+                                        </div>
+                                        <select id="alarm-clock-mode-select" class="skill-profile-select" hidden>
+                                            <option value="normal">NORMAL CLOCKS ONLY</option>
+                                            <option value="carats">CLOCKS + CARAT EXCHANGE</option>
+                                            <option value="none">DISABLED</option>
+                                        </select>
+                                        <div class="alarm-clock-row">
+                                            <label class="alarm-clock-limit-label" for="alarm-clock-limit-input">
+                                                <span>Max uses/career</span>
+                                                <input id="alarm-clock-limit-input" class="seg-input alarm-clock-limit-input" type="number" min="0" max="5" step="1" value="5">
+                                            </label>
+                                            <button id="alarm-clock-save-btn" class="btn btn-sm" type="button">SAVE CLOCKS</button>
+                                        </div>
+                                        <div id="alarm-clock-status" class="skill-plan-status"></div>
+                                    </div>
+                                    <label class="skill-text-field" for="skill-buy-input">
+                                        <span>FINAL PRIORITY</span>
+                                        <textarea id="skill-buy-input" class="skill-plan-input" spellcheck="false" placeholder="Groundwork&#10;Corner Adept&#10;Straightaway Spurt"></textarea>
+                                    </label>
+                                    <label class="skill-text-field" for="skill-blacklist-input">
+                                        <span>BLACKLIST</span>
+                                        <textarea id="skill-blacklist-input" class="skill-plan-input compact" spellcheck="false" placeholder="List skills the bot should never buy"></textarea>
+                                    </label>
+                                    <div class="parent-goals-grid">
+                                        <label class="skill-text-field" for="parent-goal-blue-input">
+                                            <span>DESIRED 3-STAR BLUE</span>
+                                            <textarea id="parent-goal-blue-input" class="skill-plan-input compact" spellcheck="false" placeholder="Stamina&#10;Power"></textarea>
+                                        </label>
+                                        <label class="skill-text-field" for="parent-goal-pink-input">
+                                            <span>DESIRED 3-STAR PINK</span>
+                                            <textarea id="parent-goal-pink-input" class="skill-plan-input compact" spellcheck="false" placeholder="Medium&#10;Mile"></textarea>
+                                        </label>
+                                        <label class="skill-text-field" for="parent-goal-green-input">
+                                            <span>DESIRED GREEN</span>
+                                            <textarea id="parent-goal-green-input" class="skill-plan-input compact" spellcheck="false" placeholder="Unique spark names"></textarea>
+                                        </label>
+                                        <label class="skill-text-field" for="parent-goal-white-input">
+                                            <span>DESIRED WHITE</span>
+                                            <textarea id="parent-goal-white-input" class="skill-plan-input compact" spellcheck="false" placeholder="NHK Mile C.&#10;Firm Conditions"></textarea>
+                                        </label>
+                                    </div>
+                                    <div class="planner-profile-panel">
+                                        <div class="planner-profile-head">
+                                            <div>
+                                                <div class="planner-profile-title">PLANNER PROFILE JSON</div>
+                                                <div class="planner-profile-copy">Save or load just the skill plan, desired sparks, alarm-clock rules, and race scheduler for the current preset.</div>
+                                            </div>
+                                            <label class="btn btn-sm planner-profile-file-btn" for="planner-profile-file">IMPORT JSON</label>
+                                            <input id="planner-profile-file" class="planner-profile-file" type="file" accept=".json,application/json">
+                                        </div>
+                                        <div class="planner-profile-grid">
+                                            <label class="planner-profile-field" for="planner-profile-name-input">
+                                                <span>Profile name</span>
+                                                <input id="planner-profile-name-input" class="planner-profile-input" type="text" placeholder="SR Power Parent Farm">
+                                            </label>
+                                            <label class="planner-profile-field" for="planner-profile-select">
+                                                <span>Saved profiles</span>
+                                                <select id="planner-profile-select" class="planner-profile-select">
+                                                    <option value="">Current UI state</option>
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <div class="planner-profile-actions">
+                                            <button id="planner-profile-save-btn" class="btn btn-sm" type="button">SAVE PROFILE</button>
+                                            <button id="planner-profile-load-btn" class="btn btn-sm" type="button">LOAD PROFILE</button>
+                                            <button id="planner-profile-export-btn" class="btn btn-sm" type="button">EXPORT JSON</button>
+                                        </div>
+                                        <div id="planner-profile-status" class="skill-plan-status"></div>
+                                    </div>
+                                    <div class="skill-plan-actions">
+                                        <button id="skill-plan-save-btn" class="btn btn-sm skill-plan-save-btn" type="button">SAVE SKILL PLAN</button>
+                                    </div>
+                                    <div id="skill-plan-status" class="skill-plan-status"></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="start-panel">
+                            <div class="seg-field">
+                                <span class="seg-field-label">TP recovery</span>
+                                <div class="seg-group" data-seg-target="tp-recovery-select">
+                                    <button type="button" class="seg-btn active accent" data-seg-value="2">T30</button>
+                                    <button type="button" class="seg-btn" data-seg-value="1">Carats</button>
+                                    <button type="button" class="seg-btn" data-seg-value="3">Both</button>
+                                    <button type="button" class="seg-btn" data-seg-value="0">None</button>
+                                </div>
+                                <select id="tp-recovery-select" class="tp-recovery-select" hidden>
+                                    <option value="0">NONE</option>
+                                    <option value="2">TOUGHNESS 30</option>
+                                    <option value="1">CARATS</option>
+                                    <option value="3">BOTH</option>
+                                </select>
+                            </div>
+                            <div class="seg-field">
+                                <span class="seg-field-label">Loop</span>
+                                <div class="seg-group" id="loop-seg-group">
+                                    <button type="button" class="seg-btn active" data-loop="off">Off</button>
+                                    <button type="button" class="seg-btn seg-with-input" data-loop="careers">
+                                        <span>Careers</span>
+                                        <input id="loop-career-limit-input" class="seg-input" type="number" min="1" max="999" step="1" value="10" aria-label="Number of careers">
+                                    </button>
+                                    <button type="button" class="seg-btn seg-with-input" data-loop="fans">
+                                        <span>Fans</span>
+                                        <input id="loop-fan-limit-input" class="seg-input seg-input-wide" type="number" min="1" max="999999999" step="1000000" value="100000000" aria-label="Fans target">
+                                    </button>
+                                    <button type="button" class="seg-btn" data-loop="forever">Forever</button>
+                                </div>
+                                <button id="loop-toggle-btn" class="btn btn-sm loop-toggle-btn" type="button" aria-pressed="false" hidden>LOOP OFF</button>
+                                <select id="loop-mode-select" class="loop-field-input" hidden>
+                                    <option value="forever">FOREVER</option>
+                                    <option value="careers">CAREERS</option>
+                                    <option value="fans">FANS</option>
+                                </select>
+                            </div>
+                            <div id="setup-legacy-section" class="setup-legacy-section" hidden>
+                                <details id="setup-legacy-details" class="setup-legacy-details">
+                                    <summary>
+                                        <span class="setup-legacy-summary-title">Advanced Legacy</span>
+                                        <span id="setup-legacy-summary" class="setup-legacy-summary-line"></span>
+                                    </summary>
+                                    <div id="setup-legacy-details-body" class="setup-legacy-details-body"></div>
+                                </details>
+                            </div>
+                            <div id="career-stats-panel" class="career-stats-panel" hidden>
+                                <div class="career-stats-header">
+                                    <div class="career-stats-identity">
+                                        <div id="career-stats-portrait" class="career-stats-portrait"></div>
+                                        <div class="career-stats-meta">
+                                            <span id="career-stats-name" class="career-stats-name">Current trainee</span>
+                                            <span id="career-stats-sub" class="career-stats-sub">Stats update live while the career runs.</span>
+                                        </div>
+                                    </div>
+                                    <div class="career-stats-kpis">
+                                        <span id="career-stats-hp" class="career-stats-kpi">HP --/--</span>
+                                        <span id="career-stats-mood" class="career-stats-kpi">Mood --</span>
+                                        <span id="career-stats-sp" class="career-stats-kpi">SP --</span>
+                                        <span id="career-stats-clocks" class="career-stats-kpi" title="Alarm clocks used this career" hidden>⏰ 0</span>
+                                    </div>
+                                </div>
+                                <div id="career-stats-grid" class="career-stats-grid"></div>
+                            </div>
+                            <div class="start-row" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+                                <button id="start-career-btn" class="btn btn-primary" type="button" disabled>RUN CAREER</button>
+                                <button id="verify-start-btn" class="btn btn-sm" type="button" disabled>VERIFY START</button>
+                                <button id="calibrate-btn" class="btn btn-sm" type="button" title="Run 3-5 min sim sweep to tune strategy for this exact deck before the next career">CALIBRATE</button>
+                                <button id="end-career-btn" class="btn btn-sm btn-danger stop-runner-btn" type="button" style="display:none">END CAREER</button>
+                                <button id="stop-runner-btn" class="btn btn-sm btn-danger stop-runner-btn" type="button" style="display:none">STOP</button>
+                            </div>
+                            <div id="start-status" class="start-status"></div>
+                            <div id="calibrate-status" class="start-status" style="display:none; margin-top:4px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-right" id="content-panel">
+                    <div class="panel-header">
+                        <span class="panel-header-title">LIBRARY</span>
+                        <span id="lib-current-label" class="lib-pane-label">PARENTS</span>
+                    </div>
+                    <div class="lib-layout">
+                        <nav class="lib-rail" id="lib-rail">
+                            <button type="button" class="rail-item" data-cat="decks">
+                                <span class="rail-name">Decks</span>
+                                <span class="rail-count" id="rail-count-decks"></span>
+                            </button>
+                            <button type="button" class="rail-item" data-cat="trainees">
+                                <span class="rail-name">Trainees</span>
+                                <span class="rail-count" id="rail-count-trainees"></span>
+                            </button>
+                            <button type="button" class="rail-item active" data-cat="parents">
+                                <span class="rail-name">Parents</span>
+                                <span class="rail-count" id="rail-count-parents"></span>
+                            </button>
+                            <button type="button" class="rail-item" data-cat="session">
+                                <span class="rail-name">Session</span>
+                                <span class="rail-count" id="rail-count-session"></span>
+                            </button>
+                            <button type="button" class="rail-item" data-cat="borrow">
+                                <span class="rail-name">Borrow</span>
+                                <span class="rail-count" id="rail-count-borrow"></span>
+                            </button>
+                            <button type="button" class="rail-item" data-cat="card-borrow">
+                                <span class="rail-name">Card Borrow</span>
+                                <span class="rail-count" id="rail-count-card-borrow"></span>
+                            </button>
+                            <button type="button" class="rail-item" data-cat="friends">
+                                <span class="rail-name">Friends</span>
+                                <span class="rail-count" id="rail-count-friends"></span>
+                            </button>
+                            <div class="rail-divider"></div>
+                            <button type="button" class="rail-item rail-item-secondary" data-cat="cards">
+                                <span class="rail-name">Owned Cards</span>
+                                <span class="rail-count" id="rail-count-cards"></span>
+                            </button>
+                            <button type="button" class="rail-item rail-item-secondary" data-cat="bot">
+                                <span class="rail-name">Bot View</span>
+                                <span class="rail-count rail-count-tag">debug</span>
+                            </button>
+                        </nav>
+                        <div class="lib-content">
+                            <div class="lib-pane" data-pane="decks">
+                                <div class="deck-list-view" id="deck-list-view">
+                                    <div class="lib-toolbar">
+                                        <input id="deck-search-input" class="library-search-input" type="search" placeholder="Search decks or cards">
+                                    </div>
+                                    <div id="deck-list"></div>
+                                </div>
+                                <div class="deck-detail-view" id="deck-detail-view">
+                                    <div class="deck-detail-head">
+                                        <button class="btn btn-sm" id="deck-back-btn" type="button">&lsaquo; Back to decks</button>
+                                        <div class="deck-detail-title">
+                                            <span class="deck-detail-name" id="deck-detail-name">—</span>
+                                            <span class="deck-detail-meta" id="deck-detail-meta">—</span>
+                                        </div>
+                                        <button class="btn btn-sm" id="deck-reset-btn" type="button">RESET SYNCED</button>
+                                    </div>
+                                    <div class="deck-editor-status" id="deck-editor-status">Add or remove support cards. Changes are saved for bot starts.</div>
+                                    <div class="deck-slots" id="deck-slots"></div>
+                                    <div class="deck-editor-picker">
+                                        <input id="deck-editor-card-search" class="library-search-input" type="search" placeholder="Search owned cards to add">
+                                        <div id="deck-editor-card-list" class="deck-editor-card-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lib-pane" data-pane="trainees">
+                                <div class="filter-bar">
+                                    <div class="filter-bar-top">
+                                        <input id="trainee-search-input" class="library-search-input" type="search" placeholder="Search trainees, e.g. ogu">
+                                        <button class="btn btn-sm filter-add-btn" id="trainee-add-filter-btn" type="button">+ Add filter</button>
+                                    </div>
+                                    <div class="filter-rows" id="trainee-filter-rows"></div>
+                                    <div class="filter-summary" id="trainee-filter-summary"></div>
+                                </div>
+                                <div id="uma-grid" class="data-grid"></div>
+                            </div>
+                            <div class="lib-pane active" data-pane="parents">
+                                <div class="filter-bar filter-bar-legacy">
+                                    <div class="filter-bar-top filter-bar-top-legacy">
+                                        <input id="parent-search-input" class="library-search-input" type="search" placeholder="Search parents, e.g. kitasan">
+                                        <label class="filter-mini-field">
+                                            <span>Sort</span>
+                                            <select id="parent-sort-mode">
+                                                <option value="best-fit">Best Match</option>
+                                                <option value="bot">BOT Tag</option>
+                                                <option value="starred">Starred</option>
+                                                <option value="date-made">Date Made</option>
+                                                <option value="affinity">Affinity</option>
+                                                <option value="score">Score</option>
+                                                <option value="wins">Wins</option>
+                                                <option value="whites">White Factors</option>
+                                                <option value="blue-stars">Blue Stars</option>
+                                                <option value="pink-stars">Pink Stars</option>
+                                                <option value="green-stars">Green Stars</option>
+                                                <option value="white-stars">White Stars</option>
+                                                <option value="name">Name</option>
+                                            </select>
+                                        </label>
+                                        <label class="filter-mini-field">
+                                            <span>Direction</span>
+                                            <select id="parent-sort-dir">
+                                                <option value="desc">Desc</option>
+                                                <option value="asc">Asc</option>
+                                            </select>
+                                        </label>
+                                        <button class="btn btn-sm filter-toggle-btn" id="parent-filter-toggle-btn" type="button">Hide Filters</button>
+                                        <button class="btn btn-sm filter-clear-btn" id="parent-filter-clear-btn" type="button">Clear Filters</button>
+                                    </div>
+                                    <div class="legacy-filter-panel" id="parent-filter-panel">
+                                        <div class="legacy-filter-grid">
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Inheritance Factors</span>
+                                                    <span class="legacy-filter-note">Direct grandparents only</span>
+                                                </div>
+                                                <div class="legacy-filter-actions" data-filter-kind="parent" data-scope="inheritance">
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="stat">+ Blue</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="aptitude">+ Pink</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="green">+ Green</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white">+ White</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white" data-preferred="1">+ Pref White</button>
+                                                </div>
+                                                <div class="legacy-filter-list" id="parent-inheritance-factor-list"></div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Main Parent Factors</span>
+                                                    <span class="legacy-filter-note">Self node only</span>
+                                                </div>
+                                                <div class="legacy-filter-actions" data-filter-kind="parent" data-scope="main">
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="stat">+ Blue</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="aptitude">+ Pink</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="green">+ Green</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white">+ White</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white" data-preferred="1">+ Pref White</button>
+                                                </div>
+                                                <div class="legacy-filter-list" id="parent-main-factor-list"></div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Main White Count</span>
+                                                        <input id="parent-main-min-whites" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">General Criteria</span>
+                                                    <span class="legacy-filter-note">Effective nodes only</span>
+                                                </div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Affinity</span>
+                                                        <input id="parent-min-affinity" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Wins</span>
+                                                        <input id="parent-min-wins" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min White Count</span>
+                                                        <input id="parent-min-whites" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Score</span>
+                                                        <input id="parent-min-score" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Total Star Count</span>
+                                                    <span class="legacy-filter-note">Self + direct parents</span>
+                                                </div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Blue</span>
+                                                        <input id="parent-total-blue" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Pink</span>
+                                                        <input id="parent-total-pink" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Green</span>
+                                                        <input id="parent-total-green" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total White</span>
+                                                        <input id="parent-total-white" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                        </div>
+                                        <div class="active-filter-chips" id="parent-active-filter-chips"></div>
+                                    </div>
+                                    <div class="filter-summary" id="parent-filter-summary"></div>
+                                </div>
+                                <div id="parent-grid" class="data-grid"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="session">
+                                <div class="lib-toolbar">
+                                    <span class="friend-status">Parents created this session. Clears on page refresh.</span>
+                                </div>
+                                <div id="session-parent-summary" class="filter-summary"></div>
+                                <div id="session-parent-grid" class="data-grid"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="borrow">
+                                <div class="filter-bar filter-bar-legacy">
+                                    <div class="filter-bar-top filter-bar-top-legacy">
+                                        <input id="borrow-uma-search-input" class="library-search-input" type="search" placeholder="Search borrowable parents (trainer or chara)">
+                                        <label class="filter-mini-field">
+                                            <span>Sort</span>
+                                            <select id="borrow-sort-mode">
+                                                <option value="best-fit">Best Match</option>
+                                                <option value="bot">BOT Tag</option>
+                                                <option value="starred">Starred</option>
+                                                <option value="date-made">Date Made</option>
+                                                <option value="affinity">Affinity</option>
+                                                <option value="score">Score</option>
+                                                <option value="wins">Wins</option>
+                                                <option value="whites">White Factors</option>
+                                                <option value="blue-stars">Blue Stars</option>
+                                                <option value="pink-stars">Pink Stars</option>
+                                                <option value="green-stars">Green Stars</option>
+                                                <option value="white-stars">White Stars</option>
+                                                <option value="name">Name</option>
+                                            </select>
+                                        </label>
+                                        <label class="filter-mini-field">
+                                            <span>Direction</span>
+                                            <select id="borrow-sort-dir">
+                                                <option value="desc">Desc</option>
+                                                <option value="asc">Asc</option>
+                                            </select>
+                                        </label>
+                                        <button class="btn btn-sm filter-toggle-btn" id="borrow-filter-toggle-btn" type="button">Hide Filters</button>
+                                        <button class="btn btn-sm filter-clear-btn" id="borrow-filter-clear-btn" type="button">Clear Filters</button>
+                                        <button id="borrow-uma-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
+                                    </div>
+                                    <div class="legacy-filter-panel" id="borrow-filter-panel">
+                                        <div class="legacy-filter-grid">
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Inheritance Factors</span>
+                                                    <span class="legacy-filter-note">Direct grandparents only</span>
+                                                </div>
+                                                <div class="legacy-filter-actions" data-filter-kind="borrow" data-scope="inheritance">
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="stat">+ Blue</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="aptitude">+ Pink</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="green">+ Green</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white">+ White</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white" data-preferred="1">+ Pref White</button>
+                                                </div>
+                                                <div class="legacy-filter-list" id="borrow-inheritance-factor-list"></div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Main Parent Factors</span>
+                                                    <span class="legacy-filter-note">Self node only</span>
+                                                </div>
+                                                <div class="legacy-filter-actions" data-filter-kind="borrow" data-scope="main">
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="stat">+ Blue</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="aptitude">+ Pink</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="green">+ Green</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white">+ White</button>
+                                                    <button type="button" class="filter-action-btn" data-action="add-factor" data-category="white" data-preferred="1">+ Pref White</button>
+                                                </div>
+                                                <div class="legacy-filter-list" id="borrow-main-factor-list"></div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Main White Count</span>
+                                                        <input id="borrow-main-min-whites" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">General Criteria</span>
+                                                    <span class="legacy-filter-note">Effective nodes only</span>
+                                                </div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Affinity</span>
+                                                        <input id="borrow-min-affinity" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Wins</span>
+                                                        <input id="borrow-min-wins" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min White Count</span>
+                                                        <input id="borrow-min-whites" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Min Score</span>
+                                                        <input id="borrow-min-score" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                            <section class="legacy-filter-section">
+                                                <div class="legacy-filter-head">
+                                                    <span class="legacy-filter-title">Total Star Count</span>
+                                                    <span class="legacy-filter-note">Self + direct parents</span>
+                                                </div>
+                                                <div class="legacy-inline-grid">
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Blue</span>
+                                                        <input id="borrow-total-blue" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Pink</span>
+                                                        <input id="borrow-total-pink" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total Green</span>
+                                                        <input id="borrow-total-green" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                    <label class="filter-mini-field">
+                                                        <span>Total White</span>
+                                                        <input id="borrow-total-white" type="number" min="0" step="1" value="0">
+                                                    </label>
+                                                </div>
+                                            </section>
+                                        </div>
+                                        <div class="active-filter-chips" id="borrow-active-filter-chips"></div>
+                                    </div>
+                                    <div class="filter-summary" id="borrow-filter-summary"></div>
+                                </div>
+                                <div class="fallback-bar">
+                                    <span class="fallback-label">Fallback when out of borrows</span>
+                                    <div id="borrow-fallback-picker" class="fallback-picker">
+                                        <div class="picker-portrait">+</div>
+                                        <span class="picker-name">Pick a 2nd parent — used as fallback when guest is exhausted</span>
+                                        <span class="picker-arrow">&rsaquo;</span>
+                                    </div>
+                                    <button id="borrow-fallback-clear-btn" class="btn btn-sm" type="button">Clear</button>
+                                </div>
+                                <div id="borrow-uma-status" class="friend-status">Click REFRESH to load borrowable parents.</div>
+                                <div class="friend-status" style="margin-top:6px;font-size:11px;opacity:.7">When you run out of daily borrows mid-loop, the bot drops the guest and uses your fallback parent automatically.</div>
+                                <div id="borrow-uma-grid" class="data-grid"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="friends">
+                                <div class="lib-toolbar">
+                                    <input id="friend-search-input" class="library-search-input" type="search" placeholder="Search following trainers">
+                                    <button id="friend-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
+                                </div>
+                                <div class="lib-toolbar friend-id-toolbar">
+                                    <input id="friend-id-input" class="library-search-input" type="search" inputmode="numeric" placeholder="Add trainer ID for follows + borrows">
+                                    <button id="friend-id-add-btn" class="btn btn-sm" type="button">ADD ID</button>
+                                </div>
+                                <div id="friend-id-status" class="friend-status friend-id-status"></div>
+                                <div class="friend-following-head">
+                                    <div class="friend-following-tab is-active">Following</div>
+                                    <div id="friend-following-quota" class="friend-following-quota">Following --/--</div>
+                                </div>
+                                <div id="friend-status" class="friend-status">Loading friends...</div>
+                                <div id="friend-grid" class="friend-following-list"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="card-borrow">
+                                <div class="lib-toolbar">
+                                    <input id="card-borrow-search-input" class="library-search-input" type="search" placeholder="Search friend support borrows">
+                                    <button id="card-borrow-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
+                                </div>
+                                <div id="card-borrow-status" class="friend-status">Friend support borrows will appear here.</div>
+                                <div id="card-borrow-grid" class="friend-following-list"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="cards">
+                                <div class="lib-toolbar">
+                                    <input id="card-search-input" class="library-search-input" type="search" placeholder="Search owned cards">
+                                    <button id="card-uncap-all-btn" class="btn btn-sm" type="button">UNCAP ALL DUPES</button>
+                                </div>
+                                <div id="card-inventory-status" class="friend-status">No duplicate support uncaps currently available.</div>
+                                <div id="card-grid" class="data-grid"></div>
+                            </div>
+                            <div class="lib-pane" data-pane="bot">
+                                <div class="lib-toolbar">
+                                    <button id="bot-view-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
+                                    <span style="font-size:10px;color:var(--text-dim);margin-left:auto;">live bot state JSON</span>
+                                </div>
+                                <pre id="bot-view-output" class="bot-view-output">Click refresh to inspect what the bot parsed.</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- legacy collapsible IDs kept for code that touches makeSectionToggle hooks -->
+                    <span id="decks-toggle" hidden></span><span id="decks-chevron" hidden></span><span id="decks-body" hidden></span>
+                    <span id="trainees-toggle" hidden></span><span id="trainees-chevron" hidden></span><span id="trainees-body" hidden></span>
+                    <span id="parents-toggle" hidden></span><span id="parents-chevron" hidden></span><span id="parents-body" hidden></span>
+                    <span id="friends-toggle" hidden></span><span id="friends-chevron" hidden></span><span id="friends-body" hidden></span>
+                    <span id="borrow-umas-toggle" hidden></span><span id="borrow-umas-chevron" hidden></span><span id="borrow-umas-body" hidden></span>
+                    <span id="cards-toggle" hidden></span><span id="cards-chevron" hidden></span><span id="card-grid-wrapper" hidden></span>
+                    <span id="bot-view-toggle" hidden></span><span id="bot-view-chevron" hidden></span><span id="bot-view-body" hidden></span>
+                    <span id="friend-count" hidden></span><span id="uma-count" hidden></span><span id="parent-count" hidden></span><span id="borrow-uma-count" hidden></span><span id="card-count" hidden></span>
+                </div>
+                <div class="split-gutter-controls" aria-label="Panel controls">
+                    <button class="panel-collapse-btn panel-collapse-btn-left" id="setup-collapse-btn" type="button" data-panel-label="Setup" title="Collapse setup" aria-label="Collapse setup"></button>
+                    <button class="panel-collapse-btn panel-collapse-btn-right" id="content-collapse-btn" type="button" data-panel-label="Library" title="Collapse library" aria-label="Collapse library"></button>
+                </div>
+            </div>
+            <section id="team-trials-screen" class="team-trials-screen" hidden>
+                <div class="team-trials-screen-head">
+                    <button id="team-trials-back-dashboard-btn" class="btn btn-sm" type="button">&lsaquo; Dashboard</button>
+                    <div class="team-trials-screen-title-block">
+                        <div class="team-trials-screen-title">Team Trials Leaderboard</div>
+                        <div class="team-trials-screen-copy">Read-only in-game leaderboard view. Local saved exports are available only as fallback evidence.</div>
+                    </div>
+                    <button id="team-trials-refresh-btn" class="btn btn-primary btn-sm" type="button">REFRESH LIVE LEADERBOARD</button>
+                    <button id="team-trials-local-btn" class="btn btn-sm" type="button">LOAD LOCAL FALLBACK</button>
+                </div>
+                <div id="team-trials-list-view" class="team-trials-view">
+                    <div class="team-trials-toolbar">
+                        <input id="team-trials-search-input" class="library-search-input" type="search" placeholder="Search players, IDs, umas, ranks, skills, decks">
+                        <span id="team-trials-source-label" class="team-trials-source-label">Source not loaded</span>
+                    </div>
+                    <div id="team-trials-status" class="friend-status">Click REFRESH LIVE LEADERBOARD to load the in-game Team Trials ranking.</div>
+                    <div id="team-trials-player-list" class="team-trials-player-list"></div>
+                </div>
+                <div id="team-trials-team-view" class="team-trials-view" hidden>
+                    <div class="team-trials-view-head">
+                        <button id="team-trials-team-back-btn" class="btn btn-sm" type="button">&lsaquo; Back to players</button>
+                        <div>
+                            <div id="team-trials-team-title" class="team-trials-view-title">Team</div>
+                            <div id="team-trials-team-meta" class="team-trials-view-meta"></div>
+                        </div>
+                    </div>
+                    <div id="team-trials-team-layout" class="team-trials-team-layout"></div>
+                </div>
+                <div id="team-trials-character-view" class="team-trials-view" hidden>
+                    <div class="team-trials-view-head">
+                        <button id="team-trials-character-back-btn" class="btn btn-sm" type="button">&lsaquo; Back to team</button>
+                        <div>
+                            <div id="team-trials-character-title" class="team-trials-view-title">Umamusume Details</div>
+                            <div id="team-trials-character-meta" class="team-trials-view-meta"></div>
+                        </div>
+                    </div>
+                    <div id="team-trials-character-detail" class="team-trials-character-detail"></div>
+                </div>
+            </section>
+        </main>
+        <div class="status-bar" id="status-bar">
+            <span class="indicator"><span class="dot"></span><span id="status-text">Idle</span></span>
+            <span class="warn" id="status-warn"></span>
+            <span class="right">localhost:8071</span>
+        </div>
+        <div class="friend-profile-modal-overlay" id="friend-profile-modal-overlay">
+            <div class="friend-profile-modal">
+                <div class="friend-profile-modal-head">
+                    <div class="friend-profile-modal-title">Trainer Info</div>
+                    <button class="friend-profile-modal-close" id="friend-profile-modal-close" type="button">&times;</button>
+                </div>
+                <div class="friend-profile-hero" id="friend-profile-hero"></div>
+                <div class="friend-profile-primary-actions">
+                    <button id="friend-profile-use-btn" class="btn btn-sm" type="button">USE SUPPORT</button>
+                    <button id="friend-profile-unfollow-btn" class="btn btn-sm btn-danger" type="button">UNFOLLOW</button>
+                </div>
+                <div class="friend-profile-tabs">
+                    <button type="button" class="friend-profile-tab is-active">Profile</button>
+                    <button type="button" class="friend-profile-tab" disabled>Progress</button>
+                    <button type="button" class="friend-profile-tab" disabled>Team Details</button>
+                </div>
+                <div class="friend-profile-modal-body" id="friend-profile-modal-body"></div>
+                <div class="friend-profile-modal-footer">
+                    <div id="friend-profile-status" class="friend-status"></div>
+                    <button id="friend-profile-close-btn" class="btn btn-sm" type="button">CLOSE</button>
+                </div>
+            </div>
+        </div>
+        <div class="race-modal-overlay" id="race-modal-overlay">
+            <div class="race-modal race-modal--agenda">
+                <div class="race-modal-header">
+                    <div class="race-modal-head-copy">
+                        <span class="race-modal-title">Agenda Planner</span>
+                        <span id="race-modal-status" class="race-modal-status">Build a clean three-year race agenda, then save it back into the preset.</span>
+                    </div>
+                    <button class="race-modal-close" id="race-modal-close" type="button">&times;</button>
+                </div>
+                <div class="race-modal-actionbar">
+                    <div class="race-modal-actions">
+                        <button id="race-modal-save-btn" class="btn btn-primary btn-sm agenda-btn agenda-btn-save" type="button">Save</button>
+                        <button id="race-modal-load-btn" class="btn btn-sm agenda-btn" type="button">Load</button>
+                        <button id="race-modal-import-btn" class="btn btn-sm agenda-btn" type="button">Import</button>
+                        <button id="race-modal-reset-btn" class="btn btn-sm agenda-btn agenda-btn-danger" type="button">Reset</button>
+                    </div>
+                    <input id="race-modal-import-file" type="file" accept=".json,application/json" hidden>
+                </div>
+                <div class="race-modal-toolbar agenda-toolbar">
+                    <div class="agenda-toolbar-summary">
+                        <span id="race-style-count" class="race-style-count">0 selected</span>
+                        <span class="agenda-toolbar-sep">•</span>
+                        <span class="agenda-toolbar-note">Click a slot to add, replace, or clear a race.</span>
+                    </div>
+                </div>
+                <div class="race-modal-body">
+                    <div class="cal-years">
+                        <div class="cal-year-col" data-year="junior">
+                            <div class="cal-year-banner cal-banner-junior">Junior Year</div>
+                            <div class="cal-month-grid" id="cal-grid-junior"></div>
+                        </div>
+                        <div class="cal-year-col" data-year="classic">
+                            <div class="cal-year-banner cal-banner-classic">Classic Year</div>
+                            <div class="cal-month-grid" id="cal-grid-classic"></div>
+                        </div>
+                        <div class="cal-year-col" data-year="senior">
+                            <div class="cal-year-banner cal-banner-senior">Senior Year</div>
+                            <div class="cal-month-grid" id="cal-grid-senior"></div>
+                        </div>
+                    </div>
+                    <aside class="race-style-sidebar" id="race-modal-sidebar">
+                        <div class="race-style-sidebar-head">
+                            <span class="race-style-sidebar-title">Search &amp; Overrides</span>
+                        </div>
+                        <div class="race-style-sidebar-copy">Search races across the full calendar, then override only the picks that actually need a different tactic.</div>
+                        <input id="race-modal-search" class="modal-search library-search-input" type="search" placeholder="Search races, venues, terrain, distance...">
+                        <div id="race-style-list" class="race-style-list"></div>
+                    </aside>
+                </div>
+                <div class="race-modal-footer">
+                    <div class="cal-legend">
+                        <span class="legend-chip legend-g1">G1</span>
+                        <span class="legend-chip legend-g2">G2</span>
+                        <span class="legend-chip legend-g3">G3</span>
+                    </div>
+                    <div style="margin-left:auto;display:flex;gap:8px;">
+                        <button id="race-modal-cancel-btn" class="btn btn-sm" type="button">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sparks-modal-overlay" id="sparks-modal-overlay">
+            <div class="sparks-modal">
+                <div class="sparks-modal-header">
+                    <div class="sparks-modal-head-left">
+                        <div class="sparks-modal-portrait" id="sparks-modal-portrait"></div>
+                        <div class="sparks-modal-meta">
+                            <div class="sparks-modal-name" id="sparks-modal-name">—</div>
+                            <div class="sparks-modal-sub" id="sparks-modal-sub">—</div>
+                        </div>
+                    </div>
+                    <div class="sparks-modal-kpis" id="sparks-modal-kpis"></div>
+                    <button class="sparks-modal-close" id="sparks-modal-close" type="button">&times;</button>
+                </div>
+                <div class="sparks-modal-statline" id="sparks-modal-statline"></div>
+                <div class="sparks-modal-body">
+                    <div class="sparks-modal-lineage" id="sparks-modal-lineage"></div>
+                    <div class="sparks-modal-pills-section">
+                        <div class="sparks-mode-toggle">
+                            <button class="seg-btn active accent" data-sparks-mode="per-run" id="sparks-mode-per-run">Per-run %</button>
+                            <button class="seg-btn" data-sparks-mode="per-insp" id="sparks-mode-per-insp">Per-inspiration %</button>
+                            <button class="seg-btn" data-sparks-mode="skills" id="sparks-mode-skills">Skills</button>
+                            <button class="seg-btn" data-sparks-mode="races" id="sparks-mode-races">Race History</button>
+                        </div>
+                        <div class="sparks-scope-toggle">
+                            <button class="seg-btn active accent" data-sparks-scope="lineage" id="sparks-scope-lineage">Lineage</button>
+                            <button class="seg-btn" data-sparks-scope="self" id="sparks-scope-self">Parent only</button>
+                        </div>
+                        <div class="sparks-modal-skills" id="sparks-modal-skills"></div>
+                        <div class="sparks-modal-races" id="sparks-modal-races"></div>
+                        <div class="sparks-modal-pills-group" id="sparks-modal-pills-blue">
+                            <div class="sparks-pill-group-header">Stat sparks <span class="sparks-pill-group-bar bar-stat"></span></div>
+                            <div class="sparks-pill-list"></div>
+                        </div>
+                        <div class="sparks-modal-pills-group" id="sparks-modal-pills-pink">
+                            <div class="sparks-pill-group-header">Aptitude sparks <span class="sparks-pill-group-bar bar-apt"></span></div>
+                            <div class="sparks-pill-list"></div>
+                        </div>
+                        <div class="sparks-modal-pills-group" id="sparks-modal-pills-green">
+                            <div class="sparks-pill-group-header">Unique sparks <span class="sparks-pill-group-bar bar-unique"></span></div>
+                            <div class="sparks-pill-list"></div>
+                        </div>
+                        <div class="sparks-modal-pills-group" id="sparks-modal-pills-white">
+                            <div class="sparks-pill-group-header">White sparks <span class="sparks-pill-group-bar bar-white"></span></div>
+                            <div class="sparks-pill-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="career-modal" class="modal-backdrop">
+            <div class="modal-panel">
+                <div class="modal-title">Delete Career?</div>
+                <div id="career-modal-copy" class="modal-copy">This will force-delete the ongoing career.</div>
+                <div class="modal-actions">
+                    <button id="career-cancel-btn" type="button" class="btn btn-sm">CANCEL</button>
+                    <button id="career-delete-btn" type="button" class="btn btn-sm btn-danger">DELETE</button>
+                </div>
+            </div>
+        </div>
+        <datalist id="factor-options-stat"></datalist>
+        <datalist id="factor-options-aptitude"></datalist>
+        <datalist id="factor-options-green"></datalist>
+        <datalist id="factor-options-white"></datalist>
+    </div>
+    <script src="app.js?v=6"></script>
+</body>
+</html>

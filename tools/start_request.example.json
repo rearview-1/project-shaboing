@@ -1,0 +1,20 @@
+{
+  "card_id": 100101,
+  "support_card_ids": [30101, 30102, 30103, 30104, 30105],
+  "friend_viewer_id": 123456789,
+  "friend_card_id": 30106,
+  "parent_id_1": 9001,
+  "parent_id_2": 9002,
+  "scenario_id": 4,
+  "deck_id": 1,
+  "use_tp": 30,
+  "difficulty_id": 0,
+  "difficulty": 0,
+  "is_boost": 0,
+  "boost_story_event_id": 0,
+  "allow_recover_tp": 0,
+  "preset_name": "xguri parent",
+  "max_steps": 2500,
+  "loop_enabled": false,
+  "loop_count": 1
+}

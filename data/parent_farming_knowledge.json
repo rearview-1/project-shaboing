@@ -1,0 +1,363 @@
+{
+  "schema": "sweepy_parent_farming_knowledge_v3",
+  "server": "global",
+  "compatibility_system": "legacy",
+  "source_note": "Structured, paraphrased local notes from Crazyfellow's Parenting & Gene guide plus Hakuraku observed spark research. This stores mechanics, observed rates, and policy rules, not copied article text.",
+  "source_files": [
+    "Copy of Crazyfellow's Parenting & Gene guide.txt",
+    "Copy of Crazyfellow's Parenting & Gene guide.pdf",
+    "Copy of Crazyfellow's Parenting & Gene guide.docx",
+    "Copy of Crazyfellow's Parenting & Gene guide.odt",
+    "Copy of Crazyfellow's Parenting & Gene guide.rtf"
+  ],
+  "source_urls": [
+    "https://hakuraku.moe/notes/sparks",
+    "https://hakuraku.moe/notes/spark_generation"
+  ],
+  "extraction_policy": {
+    "format": "paraphrased_structured_rules",
+    "goal": "Give the learner broad parent-farming context: compatibility, race routing, scenario tradeoffs, factor generation, inheritance rates, observed spark-generation rates, rank bands, deck/SP/hint priorities, and diagnostics.",
+    "do_not_specialize_only_on": ["white_spark_rank_correlation"],
+    "use_current_global_rules_first": true,
+    "keep_future_jp_rules_as_warnings": true
+  },
+  "terminology": {
+    "parents": "legacy",
+    "grandparents": "sub-legacies",
+    "factors": "sparks",
+    "red": "pink",
+    "int": "wit",
+    "nige": "front_runner",
+    "senkou": "pace_chaser",
+    "sashi": "late_surger",
+    "oikomi": "end_closer"
+  },
+  "compatibility_rules": {
+    "applies_to": "current_global_pre_2_0",
+    "symbols": {
+      "great": { "label": "double_circle", "minimum_points": 151 },
+      "good": { "label": "single_circle", "minimum_points": 51, "maximum_points": 150 },
+      "poor": { "label": "triangle", "maximum_points": 50 }
+    },
+    "overlap_win_grades": ["G1", "G2", "G3"],
+    "excluded_overlap_grades": ["OP", "Pre-OP", "Debut"],
+    "same_race_duplicate_bonus": false,
+    "title_epithet_bonus": true,
+    "race_overlap_points": 1,
+    "title_epithet_points": 1,
+    "lineage_depth_limit": "parents_and_grandparents",
+    "individual_link_model": true,
+    "overall_symbol_is_sum_of_individual_links": true,
+    "parent_to_parent_overlap_current_global": false,
+    "race_policy": [
+      "For Global legacy, overlap and win as many shared G1/G2/G3 races as practical across the parent line.",
+      "Do not count duplicate wins of the same race twice for compatibility.",
+      "Do not count OP races for compatibility, even if they can be useful for other goals.",
+      "Prioritize double-circle compatibility for parent use; single-circle is a floor, not a target.",
+      "Use dirt or additional distance coverage only when it helps bridge compatibility without poisoning desired red-spark eligibility."
+    ],
+    "future_jp_post_2_0_warning": {
+      "applies_to": "future_global_after_2_0_or_current_jp_grand_masters_plus",
+      "overlap_win_grades": ["G1"],
+      "g2_g3_compatibility_removed": true,
+      "title_epithet_bonus_removed": true,
+      "g1_overlap_points": 3,
+      "parent_to_parent_overlap_counts": true,
+      "planner_warning": "Parents relying mainly on G2/G3 overlap are excellent for current Global legacy but will lose compatibility value after the rework."
+    }
+  },
+  "title_epithet_sets": [
+    { "name": "Classic Triple Crown", "race_names": ["Satsuki Sho", "Japanese Derby", "Kikuka Sho"], "compatibility_bonus": 1 },
+    { "name": "Triple Tiara", "race_names": ["Oka Sho", "Japanese Oaks", "Shuka Sho"], "compatibility_bonus": 1 },
+    { "name": "Spring Senior Triple Crown", "race_names": ["Osaka Hai", "Tenno Sho Spring", "Takarazuka Kinen"], "compatibility_bonus": 1 },
+    { "name": "Autumn Senior Triple Crown", "race_names": ["Tenno Sho Autumn", "Japan Cup", "Arima Kinen"], "compatibility_bonus": 1 },
+    { "name": "Tenno Sweep", "race_names": ["Tenno Sho Spring", "Tenno Sho Autumn"], "compatibility_bonus": 1 },
+    { "name": "Dual Grand Prix", "race_names": ["Takarazuka Kinen", "Arima Kinen"], "compatibility_bonus": 1 },
+    { "name": "Dual Miles", "race_names": ["Yasuda Kinen", "Mile Championship"], "compatibility_bonus": 1 },
+    { "name": "Dual Sprints", "race_names": ["Takamatsunomiya Kinen", "Sprinters Stakes"], "compatibility_bonus": 1 },
+    { "name": "Dual Dirt", "race_names": ["Champions Cup", "February Stakes"], "compatibility_bonus": 1 }
+  ],
+  "inheritance_mechanics": {
+    "evidence_sources": ["Crazyfellow guide", "Hakuraku sparks note", "BourBon_Polaris observed trials summarized by Hakuraku"],
+    "formula": "base_inheritance_odds_per_type * (1 + individual_compatibility_score / 100)",
+    "individual_affinity_model": {
+      "confidence": "high_observed_fit",
+      "parent_values": "Each parent is modeled with its own individual affinity value rather than using only the displayed total affinity symbol.",
+      "grandparent_values": "Each grandparent is modeled from base affinity contribution plus race bonus to the parent side it belongs to.",
+      "displayed_total_affinity": "Useful as a warning/summary, but it can hide uneven individual parent or grandparent links.",
+      "learner_policy": "Prefer improving individual side quality, race overlap, and base compatibility instead of only targeting a displayed double-circle result."
+    },
+    "grandparent_relative_rate": "roughly_half_parent_due_to_lower_individual_link_weight",
+    "gold_inheritance_event": {
+      "known_effect": "indicator_that_at_least_one_2_or_3_star_proc_happened",
+      "do_not_treat_as_extra_rate": true
+    },
+    "initial_green_inheritance": {
+      "affected_by_compatibility": true,
+      "deterministic_hint_level_for_same_setup": true
+    },
+    "caps": {
+      "white": "no_known_limit",
+      "red": "no_known_limit",
+      "scenario_gene_proc_count": 3
+    },
+    "base_proc_rates_without_compatibility": {
+      "blue_stats": { "1_star": 0.70, "2_star": 0.80, "3_star": 0.90 },
+      "red_and_aptitude_white": { "1_star": 0.01, "2_star": 0.03, "3_star": 0.05 },
+      "green_unique": { "1_star": 0.05, "2_star": 0.10, "3_star": 0.15 },
+      "race": { "1_star": 0.01, "2_star": 0.02, "3_star": 0.03 },
+      "skill_scenario_hidden_white": { "1_star": 0.03, "2_star": 0.06, "3_star": 0.09 }
+    }
+  },
+  "factor_generation_rules": {
+    "blue": {
+      "eligible_stats": ["Speed", "Stamina", "Power", "Guts", "Wit"],
+      "generation_driver": "final_stat_grade",
+      "observed_type_distribution": {
+        "source": "Hakuraku CM10-CM12 deduped room-match data",
+        "sample_count": 107159,
+        "hypothesis": "five blue types roughly equal",
+        "result": "near_uniform_but_statline_biased",
+        "observed_rates": {
+          "Speed": 0.2035,
+          "Stamina": 0.1985,
+          "Power": 0.2032,
+          "Guts": 0.1961,
+          "Wit": 0.1987
+        },
+        "learner_policy": "Do not assume lineage blue copies materially force the child blue type; observed immediate-lineage correlation was not meaningful. Treat stronger final stats as a small prior toward their blue type, not a guarantee."
+      },
+      "star_rate_by_corresponding_stat": [
+        { "band": "below_600", "stat_max_exclusive": 600, "1_star": 0.90, "2_star": 0.10, "3_star": 0.0 },
+        { "band": "600_to_1099", "stat_min": 600, "stat_max_exclusive": 1100, "1_star": 0.50, "2_star": 0.45, "3_star": 0.05, "observed_3_star": 0.0529 },
+        { "band": "1100_plus", "stat_min": 1100, "1_star": 0.20, "2_star": 0.70, "3_star": 0.10, "observed_3_star": 0.1043 }
+      ],
+      "target_3_star_estimate": {
+        "b_stat": 0.01,
+        "ss_or_higher_stat": 0.02
+      },
+      "strategy": [
+        "Push the desired blue stat high, ideally SS or higher when possible.",
+        "For current Global under URA/Aoharu/MANT, Speed, Stamina, and Power remain broadly useful.",
+        "Use support cards that help the desired blue stat instead of expecting random rolls to fix a weak stat."
+      ]
+    },
+    "pink_red": {
+      "eligible_if_aptitude_is_at_least": "A",
+      "star_distribution": { "1_star": 0.20, "2_star": 0.70, "3_star": 0.10 },
+      "observed_data": {
+        "source": "Hakuraku CM10-CM12 deduped room-match data",
+        "sample_count": 107159,
+        "type_model": "uniform_among_A_or_S_aptitudes",
+        "type_model_fit": "good",
+        "star_model_fit": "very_good"
+      },
+      "priority_order": ["distance", "ground", "strategy"],
+      "strategy": [
+        "Plan red targets before the run.",
+        "Avoid raising unwanted proficiencies to A because every eligible A+ aptitude competes in the red roll pool.",
+        "Distance red is usually highest value for PvP because distance S is a major speed advantage."
+      ]
+    },
+    "green": {
+      "generation_principle": "unique factor star count follows rank-score bands, not learned unique skill level",
+      "observed_data": {
+        "source": "Hakuraku addendum using large team-trial dataset",
+        "sample_count_approx": 22000000,
+        "skill_level_effect": "not_detected",
+        "learner_policy": "Do not overvalue raising unique skill level for unique-factor star rarity; final score band matters more."
+      },
+      "rank_score_bands": [
+        { "band": "low", "score_min": 1000, "score_max_exclusive": 6500, "1_star": 0.8999, "2_star": 0.1001, "3_star": 0.0 },
+        { "band": "mid", "score_min": 6500, "score_max_exclusive": 17500, "1_star": 0.4997, "2_star": 0.4501, "3_star": 0.0502 },
+        { "band": "high", "score_min": 17500, "score_max_exclusive": null, "1_star": 0.1994, "2_star": 0.7005, "3_star": 0.1000 }
+      ]
+    },
+    "white": {
+      "categories": ["race", "skill", "scenario", "hidden"],
+      "race_gene_requirement": "win_the_race",
+      "skill_gene_requirement": "learn_the_skill",
+      "same_white_in_lineage_bonus": true,
+      "observed_generation_data": {
+        "source": "Hakuraku CM10-CM12 deduped room-match data",
+        "white_score_band_samples": {
+          "score_17500_plus": 23786,
+          "score_6500_to_17499": 83169
+        },
+        "lineage_boost_finding": "community linear formulas are directionally right but overpredict low lineage counts; nonlinear or piecewise models fit better",
+        "community_formula": {
+          "white_circle": "0.20 + 0.025 * lineage_count",
+          "double_circle": "0.25 + 0.025 * lineage_count",
+          "gold": "0.40 + 0.05 * lineage_count"
+        },
+        "better_piecewise_at_2_fit": {
+          "white_circle": { "base": 0.20, "copies_1_to_2_each": 0.02, "copies_after_2_each": 0.0275 },
+          "double_circle": { "base": 0.25, "copies_1_to_2_each": 0.025, "copies_after_2_each": 0.034375 },
+          "gold": { "base": 0.40, "copies_1_to_2_each": 0.04, "copies_after_2_each": 0.055 }
+        },
+        "alternate_good_fit": "base_rate * 1.1^lineage_count",
+        "learner_policy": "Lineage copies help desired white generation, but the first one or two copies should be valued slightly less than old linear community formulas imply."
+      },
+      "g1_race_gene_generation_chance_estimate": { "min": 0.20, "max": 0.30 },
+      "white_skill_generation_chance_estimate": {
+        "normal_skill": { "min": 0.20, "max": 0.30 },
+        "gold_skill": { "min": 0.40, "max": 0.70 }
+      },
+      "star_rate_by_rank_score_band": [
+        { "band": "below_b", "score_max_exclusive": 6500, "1_star": 0.90, "2_star": 0.10, "3_star": 0.0 },
+        { "band": "below_ss", "score_min": 6500, "score_max_exclusive": 17500, "1_star": 0.50, "2_star": 0.45, "3_star": 0.05, "observed_3_star": 0.0496 },
+        { "band": "ss_to_below_ue", "score_min": 17500, "score_max_exclusive": null, "1_star": 0.20, "2_star": 0.70, "3_star": 0.10, "observed_3_star": 0.1004 },
+        { "band": "ue_and_above", "rank_min": "UE", "1_star": 0.175, "2_star": 0.70, "3_star": 0.125 }
+      ],
+      "diagnostic_use": [
+        "Compare actual parent-library white counts and 3-star white counts by final rank/score band.",
+        "Separate quantity of white sparks from usefulness; many off-plan whites are worse than fewer targeted whites."
+      ],
+      "strategy": [
+        "Buy useful skills before the end so they can become white skill candidates.",
+        "Win desired race-factor races; losses should not be counted as useful race factors.",
+        "Use repeated desired whites in the parent lineage as a positive feature, but apply nonlinear/piecewise diminishing confidence rather than a simple flat linear boost.",
+        "Prioritize rare or off-deck whites that cannot easily be obtained from normal support-card pools.",
+        "Do not overvalue parents with many irrelevant whites if the desired red/blue/compatibility goals are missing."
+      ]
+    },
+    "scenario_and_hidden_whites": {
+      "require_condition_completion": true,
+      "lineage_does_not_increase_new_hidden_condition_chance": true,
+      "note": "Hidden/new white genes appear only when their run conditions are met; inheriting them in the lineage does not replace meeting those conditions."
+    }
+  },
+  "observed_data_caveats": {
+    "hakuraku_room_match_bias": [
+      "Room-match and team-trial datasets are observed survivor data, not controlled account-generation logs.",
+      "Deleted low-quality characters can bias apparent blue type distribution and low-score spark distributions.",
+      "Treat Hakuraku rates as strong priors where sample sizes are large, but prefer local account data when the bot has enough synced parents."
+    ],
+    "statistical_policy": [
+      "Use high-sample observed rates for priors.",
+      "Report uncertainty when local sample size is small.",
+      "Do not overfit bot routing or skill buying from one run; learn across grouped results."
+    ]
+  },
+  "scenario_parenting_context": {
+    "current_global_primary": {
+      "scenario": "Make a New Track",
+      "alias": "MANT",
+      "rating": 5,
+      "why": [
+        "Current Global legacy counts G1/G2/G3 race overlap, and MANT can stack a very large shared race set.",
+        "MANT can reach roughly 50-63 useful overlap wins when the trainee can cover the route.",
+        "MANT scenario factors are Stamina and Guts, which are useful parent outputs.",
+        "Expected SP is roughly 2000-2500 depending on deck and race load."
+      ],
+      "constraints": [
+        "Mile and medium coverage are very important.",
+        "Characters with poor mile access can struggle.",
+        "G2/G3-heavy parents are future-fragile after the compatibility rework."
+      ]
+    },
+    "global_early_scenarios": {
+      "URA": {
+        "current_use": "mostly_early_or_specific_scenario_gene_farming",
+        "expected_sp": "launch_1000_plus_post_rework_around_2000",
+        "notes": ["Hard to consistently produce SS+ parents before later systems.", "URA scenario genes give Speed and Stamina style value."]
+      },
+      "Aoharu": {
+        "current_use": "specific_scenario_gene_or_hint_pool",
+        "expected_sp": "launch_1000_to_1500_post_rework_around_2000",
+        "notes": ["More random hints than URA via gauge bursts.", "Scenario gene gives Power and Wit style value."]
+      },
+      "Grand_Live": {
+        "current_use": "not_recommended_for_parenting_when_MANT_available",
+        "notes": ["Low parent-farming value relative to MANT for Global legacy race stacking."]
+      }
+    },
+    "future_or_jp_context": {
+      "Grand_Masters": {
+        "notes": ["Goddess card gives access to useful skills.", "Expected SP around 3000.", "Not every character benefits equally."]
+      },
+      "LARC": {
+        "notes": ["Shortened scenario with lower max compatibility ceiling.", "Temporarily raises Turf/Mid aptitude during the scenario but does not make those reds eligible unless natural aptitude is raised.", "Useful bridge for limited aptitudes, less useful for max compatibility."]
+      },
+      "UAF_GFF_Mecha": {
+        "notes": ["Introduce mini scenario genes instead of old big scenario genes.", "GFF can generate broad hint pools via pruning and can reach high SP.", "Mecha has less external hint generation than GFF."]
+      },
+      "Twinkle_Legends": {
+        "notes": ["Auto-enabled future parent option.", "No extra scenario-specific genes beyond the listed scenario output.", "Auto results can be very RNG dependent."]
+      },
+      "Design_Your_Island": {
+        "notes": ["Strong future auto parent scenario.", "High stable floor with strong decks.", "Can average roughly 4000-5000 SP depending on deck."]
+      },
+      "Onsen": {
+        "notes": ["Can be strong for low G1-only race loads with good decks.", "Heavy race rotations can hurt SP and hints.", "Race counts above roughly 28-30 can become risky depending on route/deck."]
+      },
+      "Breeders_Cup": {
+        "notes": ["Shortened future scenario with route-specific G1 compatibility quirks.", "Manual can outperform auto with strong decks.", "Auto parenting can suffer due to scenario mechanics and SP/hint constraints."]
+      }
+    }
+  },
+  "run_planning_policy": {
+    "parent_goal_order": [
+      "Define target use: CM, LoH, GGP, GP, main parent, or internal bridge parent.",
+      "Define desired pink/red first, especially distance.",
+      "Define desired blue stat and deck to support it.",
+      "Define desired whites, including rare off-deck skills and key race factors.",
+      "Plan compatibility route and overlap with the intended target.",
+      "Pick a rental or internal parent that covers missing aptitude, compatibility, or desired skill pool."
+    ],
+    "race_route_policy": [
+      "Current Global parent farms should overlap G1/G2/G3 wins aggressively when the run can still win reliably.",
+      "G1 races are highest future-proof value.",
+      "G2/G3 are allowed and valuable for current Global compatibility, but should not blindly replace strong training if the target is high-rank/high-white output.",
+      "Optional races should be skipped when training is meaningfully better, especially double-rainbow or high-value scenario turns.",
+      "Do not use race losses as useful parent data; if the bot cannot win the route, it needs stats/skills/aptitude fixes or alarm clocks."
+    ],
+    "aptitude_policy": [
+      "C aptitude can sometimes win but is not reliable enough for blind race spam.",
+      "Raise dirt/mile only when it improves route coverage or target compatibility.",
+      "Avoid accidental A-rank unwanted red candidates."
+    ],
+    "skill_sp_policy": [
+      "Buy skills relevant to the target style/distance and race reliability.",
+      "Drain SP near career end to maximize rating and white skill candidates.",
+      "Skill pruning can improve later hint quality in scenarios where outside/deck hints can be manipulated.",
+      "Verify final SP is low; high leftover SP means the parent run is wasting rating and white-gene opportunities."
+    ],
+    "parent_selection_policy": [
+      "Use strong rentals instead of random weak parents.",
+      "A parent with many irrelevant whites is not automatically good.",
+      "A parent with correct red/blue, strong compatibility, useful whites, and high stats should be preferred over a high-count junk-white parent.",
+      "Bot-created parents should be tagged and re-evaluated against manual/user parents for improvement."
+    ]
+  },
+  "optimization_priorities": [
+    "Win every attempted race; losses damage parent reliability and reduce useful race-factor evidence.",
+    "Prefer broad overlapping G1/G2/G3 wins on current Global legacy, especially MANT parent runs.",
+    "Keep final stats high enough to improve blue/green/white star bands; SS score threshold around 17500 materially improves 3-star white/green rates.",
+    "Spend SP intelligently before finish; unspent SP is both lost rating and lost skill-factor opportunity.",
+    "Track desired 3-star blue, pink, green, and white sparks separately.",
+    "Distinguish raw white count from desired/useful white count.",
+    "Treat future JP compatibility rules as warnings, not current Global behavior."
+  ],
+  "desired_spark_categories": {
+    "blue": "stat sparks such as Speed, Stamina, Power, Guts, Wit",
+    "pink": "aptitude sparks such as Turf, Dirt, Sprint, Mile, Medium, Long, Front Runner, Pace Chaser, Late Surger, End Closer",
+    "green": "unique skill sparks",
+    "white": "race, skill, scenario, and hidden sparks"
+  },
+  "learner_diagnostics": {
+    "white_spark_rank_diagnostic": {
+      "enabled": true,
+      "question": "Does this local account's parent library show more or better white sparks at specific final ranks or score bands?",
+      "required_data": ["parent_library rank", "parent_library score", "factor list"],
+      "minimum_groups": 2,
+      "minimum_samples_per_group_for_confidence": 3,
+      "outputs": ["avg_white_count", "avg_3_star_white_count", "avg_white_star_total", "best_rank_band", "sample_size_warning"]
+    },
+    "guide_vs_observed_data_policy": [
+      "Use guide rules as priors.",
+      "Use local parent/career logs as observed evidence.",
+      "When observed sample size is low, report uncertainty instead of pretending the ML knows."
+    ]
+  }
+}

@@ -1,0 +1,5121 @@
+{
+  "errors": {},
+  "observed": {
+    "chara_events": {
+      "100201": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Dance Lesson",
+          "story_id": "501002506"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Teaching Suzuka's Style",
+          "story_id": "501002510"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Party Time",
+          "story_id": "501002511"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "The Color of the Landscape",
+          "story_id": "501002513"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Hobbies and Talents",
+          "story_id": "501002514"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Victory!",
+          "story_id": "501002708"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Solid Showing",
+          "story_id": "501002709"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Get Well Soon!",
+          "story_id": "501002713"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Extra Training",
+          "story_id": "501002715"
+        }
+      ],
+      "100401": [
+        {
+          "choice_counts": {
+            "0": 899
+          },
+          "count": 899,
+          "event_name": "Victory!",
+          "story_id": "501004708"
+        },
+        {
+          "choice_counts": {
+            "0": 384
+          },
+          "count": 384,
+          "event_name": "Solid Showing",
+          "story_id": "501004709"
+        },
+        {
+          "choice_counts": {
+            "1": 78
+          },
+          "count": 78,
+          "event_name": "Defeat",
+          "story_id": "501004710"
+        },
+        {
+          "choice_counts": {
+            "1": 51
+          },
+          "count": 51,
+          "event_name": "Extra Training",
+          "story_id": "501004715"
+        },
+        {
+          "choice_counts": {
+            "1": 49
+          },
+          "count": 49,
+          "event_name": "A Lady's Style ☆",
+          "story_id": "501004520"
+        },
+        {
+          "choice_counts": {
+            "1": 48
+          },
+          "count": 48,
+          "event_name": "Dance Lesson",
+          "story_id": "501004506"
+        },
+        {
+          "choice_counts": {
+            "1": 48
+          },
+          "count": 48,
+          "event_name": "Hot Rod",
+          "story_id": "501004510"
+        },
+        {
+          "choice_counts": {
+            "1": 47
+          },
+          "count": 47,
+          "event_name": "Let's Play ♪",
+          "story_id": "501004511"
+        },
+        {
+          "choice_counts": {
+            "1": 43
+          },
+          "count": 43,
+          "event_name": "Sewing Star",
+          "story_id": "501004514"
+        },
+        {
+          "choice_counts": {
+            "1": 42
+          },
+          "count": 42,
+          "event_name": "My Favorite Things",
+          "story_id": "501004515"
+        },
+        {
+          "choice_counts": {
+            "1": 40
+          },
+          "count": 40,
+          "event_name": "Trendsetter",
+          "story_id": "501004513"
+        },
+        {
+          "choice_counts": {
+            "0": 40
+          },
+          "count": 40,
+          "event_name": "Nostalgia Fever ☆",
+          "story_id": "501004516"
+        },
+        {
+          "choice_counts": {
+            "0": 3,
+            "1": 13
+          },
+          "count": 16,
+          "event_name": "Get Well Soon!",
+          "story_id": "501004713"
+        },
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Don't Overdo It!",
+          "story_id": "501004714"
+        },
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Just an Acupuncturist, No Worries! ☆",
+          "story_id": "501004720"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Victory!",
+          "story_id": "501002708"
+        }
+      ],
+      "102001": [
+        {
+          "choice_counts": {
+            "0": 1604
+          },
+          "count": 1604,
+          "event_name": "Victory!",
+          "story_id": "501020708"
+        },
+        {
+          "choice_counts": {
+            "0": 479
+          },
+          "count": 479,
+          "event_name": "Solid Showing",
+          "story_id": "501020709"
+        },
+        {
+          "choice_counts": {
+            "1": 83
+          },
+          "count": 83,
+          "event_name": "Extra Training",
+          "story_id": "501020715"
+        },
+        {
+          "choice_counts": {
+            "1": 81
+          },
+          "count": 81,
+          "event_name": "Shady Dealings",
+          "story_id": "501020511"
+        },
+        {
+          "choice_counts": {
+            "1": 80
+          },
+          "count": 80,
+          "event_name": "Dance Lesson",
+          "story_id": "501020506"
+        },
+        {
+          "choice_counts": {
+            "1": 77
+          },
+          "count": 77,
+          "event_name": "Is Cat Language Real?",
+          "story_id": "501020510"
+        },
+        {
+          "choice_counts": {
+            "1": 77
+          },
+          "count": 77,
+          "event_name": "Sei's Escape Plan",
+          "story_id": "501020520"
+        },
+        {
+          "choice_counts": {
+            "0": 65
+          },
+          "count": 65,
+          "event_name": "I Can Unwind Outdoors Too",
+          "story_id": "501020516"
+        },
+        {
+          "choice_counts": {
+            "1": 64
+          },
+          "count": 64,
+          "event_name": "Who Do You Run For?",
+          "story_id": "501020515"
+        },
+        {
+          "choice_counts": {
+            "1": 62
+          },
+          "count": 62,
+          "event_name": "Sleepy Time Incense",
+          "story_id": "501020513"
+        },
+        {
+          "choice_counts": {
+            "1": 62
+          },
+          "count": 62,
+          "event_name": "Tactician vs. King",
+          "story_id": "501020514"
+        },
+        {
+          "choice_counts": {
+            "1": 40,
+            "2": 1
+          },
+          "count": 41,
+          "event_name": "Defeat",
+          "story_id": "501020710"
+        },
+        {
+          "choice_counts": {
+            "1": 30
+          },
+          "count": 30,
+          "event_name": "Get Well Soon!",
+          "story_id": "501020713"
+        },
+        {
+          "choice_counts": {
+            "1": 9
+          },
+          "count": 9,
+          "event_name": "Just an Acupuncturist, No Worries! ☆",
+          "story_id": "501020720"
+        },
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Don't Overdo It!",
+          "story_id": "501020714"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Cat Expert",
+          "story_id": "501020702"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Cloudy, Followed By...",
+          "story_id": "501020706"
+        }
+      ],
+      "102401": [
+        {
+          "choice_counts": {
+            "0": 99
+          },
+          "count": 99,
+          "event_name": "Victory!",
+          "story_id": "501024708"
+        },
+        {
+          "choice_counts": {
+            "0": 89
+          },
+          "count": 89,
+          "event_name": "Solid Showing",
+          "story_id": "501024709"
+        },
+        {
+          "choice_counts": {
+            "0": 21
+          },
+          "count": 21,
+          "event_name": "Victory!",
+          "story_id": "501068708"
+        },
+        {
+          "choice_counts": {
+            "1": 10
+          },
+          "count": 10,
+          "event_name": "Extra Training",
+          "story_id": "501024715"
+        },
+        {
+          "choice_counts": {
+            "0": 9
+          },
+          "count": 9,
+          "event_name": "Hearty Chanko! ☆",
+          "story_id": "501024516"
+        },
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "Tips from a Top Model!",
+          "story_id": "501024511"
+        },
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "Maya's Race Class ☆",
+          "story_id": "501024520"
+        },
+        {
+          "choice_counts": {
+            "1": 7
+          },
+          "count": 7,
+          "event_name": "Dance Lesson",
+          "story_id": "501024506"
+        },
+        {
+          "choice_counts": {
+            "1": 7
+          },
+          "count": 7,
+          "event_name": "Maya Will Teach You ☆",
+          "story_id": "501024510"
+        },
+        {
+          "choice_counts": {
+            "1": 6
+          },
+          "count": 6,
+          "event_name": "Defeat",
+          "story_id": "501024710"
+        },
+        {
+          "choice_counts": {
+            "0": 4
+          },
+          "count": 4,
+          "event_name": "Solid Showing",
+          "story_id": "501068709"
+        },
+        {
+          "choice_counts": {
+            "0": 1,
+            "1": 1
+          },
+          "count": 2,
+          "event_name": "Get Well Soon!",
+          "story_id": "501024713"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Kitasan and the Witch",
+          "story_id": "501068510"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "My Dependable Upperclassman!",
+          "story_id": "501068511"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Forget Me Not!",
+          "story_id": "501068513"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Rain or Shine",
+          "story_id": "501068514"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "A Prime Time Cameo",
+          "story_id": "501068520"
+        }
+      ],
+      "102602": [
+        {
+          "choice_counts": {
+            "0": 1691
+          },
+          "count": 1691,
+          "event_name": "Victory!",
+          "story_id": "501026708"
+        },
+        {
+          "choice_counts": {
+            "0": 1073
+          },
+          "count": 1073,
+          "event_name": "Solid Showing",
+          "story_id": "501026709"
+        },
+        {
+          "choice_counts": {
+            "1": 111,
+            "2": 2
+          },
+          "count": 113,
+          "event_name": "Defeat",
+          "story_id": "501026710"
+        },
+        {
+          "choice_counts": {
+            "1": 113
+          },
+          "count": 113,
+          "event_name": "Extra Training",
+          "story_id": "501026715"
+        },
+        {
+          "choice_counts": {
+            "1": 101
+          },
+          "count": 101,
+          "event_name": "Not Found",
+          "story_id": "501026801"
+        },
+        {
+          "choice_counts": {
+            "1": 99
+          },
+          "count": 99,
+          "event_name": "Operation: Execute Orders",
+          "story_id": "501026510"
+        },
+        {
+          "choice_counts": {
+            "1": 96
+          },
+          "count": 96,
+          "event_name": "Operation: Excursion Trouble",
+          "story_id": "501026520"
+        },
+        {
+          "choice_counts": {
+            "1": 95
+          },
+          "count": 95,
+          "event_name": "Operation: Extra Classes",
+          "story_id": "501026511"
+        },
+        {
+          "choice_counts": {
+            "1": 91
+          },
+          "count": 91,
+          "event_name": "Dance Lesson",
+          "story_id": "501026506"
+        },
+        {
+          "choice_counts": {
+            "0": 88
+          },
+          "count": 88,
+          "event_name": "The Perfect Dessert",
+          "story_id": "501026516"
+        },
+        {
+          "choice_counts": {
+            "0": 3,
+            "1": 27,
+            "2": 1
+          },
+          "count": 31,
+          "event_name": "Get Well Soon!",
+          "story_id": "501026713"
+        },
+        {
+          "choice_counts": {
+            "1": 9
+          },
+          "count": 9,
+          "event_name": "Just an Acupuncturist, No Worries! ☆",
+          "story_id": "501026720"
+        },
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Don't Overdo It!",
+          "story_id": "501026714"
+        },
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Let's Make Memories",
+          "story_id": "501026702"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Operation: Festival Fun",
+          "story_id": "501026706"
+        }
+      ],
+      "106101": [
+        {
+          "choice_counts": {
+            "0": 12
+          },
+          "count": 12,
+          "event_name": "Victory!",
+          "story_id": "501061708"
+        },
+        {
+          "choice_counts": {
+            "0": 11
+          },
+          "count": 11,
+          "event_name": "Solid Showing",
+          "story_id": "501061709"
+        },
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Extra Training",
+          "story_id": "501061715"
+        },
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "Sweet Tooth Temptation",
+          "story_id": "501061516"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Dance Lesson",
+          "story_id": "501061506"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Movies Are Full of Learning Opportunities",
+          "story_id": "501061510"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "The King Knows No Exhaustion",
+          "story_id": "501061511"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "First-Rate in Studies Too",
+          "story_id": "501061520"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "First-Rate Spot",
+          "story_id": "501061702"
+        }
+      ],
+      "106801": [
+        {
+          "choice_counts": {
+            "0": 798
+          },
+          "count": 798,
+          "event_name": "Victory!",
+          "story_id": "501068708"
+        },
+        {
+          "choice_counts": {
+            "0": 263
+          },
+          "count": 263,
+          "event_name": "Solid Showing",
+          "story_id": "501068709"
+        },
+        {
+          "choice_counts": {
+            "1": 49
+          },
+          "count": 49,
+          "event_name": "Extra Training",
+          "story_id": "501068715"
+        },
+        {
+          "choice_counts": {
+            "1": 43
+          },
+          "count": 43,
+          "event_name": "Kitasan and the Witch",
+          "story_id": "501068510"
+        },
+        {
+          "choice_counts": {
+            "1": 39
+          },
+          "count": 39,
+          "event_name": "Dance Lesson",
+          "story_id": "501068506"
+        },
+        {
+          "choice_counts": {
+            "1": 39
+          },
+          "count": 39,
+          "event_name": "My Dependable Upperclassman!",
+          "story_id": "501068511"
+        },
+        {
+          "choice_counts": {
+            "1": 38
+          },
+          "count": 38,
+          "event_name": "A Prime Time Cameo",
+          "story_id": "501068520"
+        },
+        {
+          "choice_counts": {
+            "1": 37
+          },
+          "count": 37,
+          "event_name": "A Talent for Cuteness!",
+          "story_id": "501068515"
+        },
+        {
+          "choice_counts": {
+            "0": 37
+          },
+          "count": 37,
+          "event_name": "Eat up the Festival!",
+          "story_id": "501068516"
+        },
+        {
+          "choice_counts": {
+            "1": 31
+          },
+          "count": 31,
+          "event_name": "Forget Me Not!",
+          "story_id": "501068513"
+        },
+        {
+          "choice_counts": {
+            "1": 31
+          },
+          "count": 31,
+          "event_name": "Rain or Shine",
+          "story_id": "501068514"
+        },
+        {
+          "choice_counts": {
+            "1": 23,
+            "2": 1
+          },
+          "count": 24,
+          "event_name": "Defeat",
+          "story_id": "501068710"
+        },
+        {
+          "choice_counts": {
+            "0": 3,
+            "1": 21
+          },
+          "count": 24,
+          "event_name": "Get Well Soon!",
+          "story_id": "501068713"
+        },
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "Come, One and All!",
+          "story_id": "501068702"
+        },
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "Toffee-Tinted Memories",
+          "story_id": "501068705"
+        },
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "A Voice Like None Other",
+          "story_id": "501068706"
+        },
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Just an Acupuncturist, No Worries! ☆",
+          "story_id": "501068720"
+        },
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Don't Overdo It!",
+          "story_id": "501068714"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "I’m Not Afraid of Any Ghosts!",
+          "story_id": "501068703"
+        }
+      ]
+    },
+    "guest_events": {},
+    "scenario_events": {
+      "4": [
+        {
+          "choice_counts": {
+            "1": 132,
+            "3": 2
+          },
+          "count": 134,
+          "event_name": "Etsuko's Exhaustive Coverage",
+          "story_id": "400000036"
+        },
+        {
+          "choice_counts": {
+            "0": 5,
+            "1": 82,
+            "2": 1
+          },
+          "count": 88,
+          "event_name": "Get Well Soon!",
+          "story_id": "400000043"
+        },
+        {
+          "choice_counts": {
+            "1": 35,
+            "2": 3
+          },
+          "count": 38,
+          "event_name": "All on the Line",
+          "story_id": "400004329"
+        },
+        {
+          "choice_counts": {
+            "1": 34,
+            "2": 1
+          },
+          "count": 35,
+          "event_name": "An Unusual Addition",
+          "story_id": "400004347"
+        },
+        {
+          "choice_counts": {
+            "1": 32,
+            "2": 3
+          },
+          "count": 35,
+          "event_name": "Leave It to the Great Detective!",
+          "story_id": "400004354"
+        },
+        {
+          "choice_counts": {
+            "1": 33,
+            "2": 1
+          },
+          "count": 34,
+          "event_name": "Ordinary? Or Full Throttle?!",
+          "story_id": "400004342"
+        },
+        {
+          "choice_counts": {
+            "1": 32
+          },
+          "count": 32,
+          "event_name": "Fear the Fearless",
+          "story_id": "400004349"
+        },
+        {
+          "choice_counts": {
+            "1": 31,
+            "2": 1
+          },
+          "count": 32,
+          "event_name": "Gullible Socialites",
+          "story_id": "400004350"
+        },
+        {
+          "choice_counts": {
+            "1": 30,
+            "2": 1
+          },
+          "count": 31,
+          "event_name": "The Little Marvelous Match Girl",
+          "story_id": "400004324"
+        },
+        {
+          "choice_counts": {
+            "1": 29,
+            "2": 2
+          },
+          "count": 31,
+          "event_name": "A Trip to the Victory Club!",
+          "story_id": "400004331"
+        },
+        {
+          "choice_counts": {
+            "1": 27,
+            "2": 4
+          },
+          "count": 31,
+          "event_name": "Tamamo's Struggle at the Arcade",
+          "story_id": "400004344"
+        },
+        {
+          "choice_counts": {
+            "1": 29,
+            "2": 1
+          },
+          "count": 30,
+          "event_name": "Vega and Spica",
+          "story_id": "400004328"
+        },
+        {
+          "choice_counts": {
+            "1": 26,
+            "2": 4
+          },
+          "count": 30,
+          "event_name": "Keeping It Cute!",
+          "story_id": "400004333"
+        },
+        {
+          "choice_counts": {
+            "1": 28
+          },
+          "count": 28,
+          "event_name": "Under the Same Umbrella",
+          "story_id": "400004335"
+        },
+        {
+          "choice_counts": {
+            "1": 27,
+            "2": 1
+          },
+          "count": 28,
+          "event_name": "Taiki and Pearl's Language Exchange",
+          "story_id": "400004343"
+        },
+        {
+          "choice_counts": {
+            "1": 26,
+            "2": 2
+          },
+          "count": 28,
+          "event_name": "Idle Committee Banter",
+          "story_id": "400004346"
+        },
+        {
+          "choice_counts": {
+            "1": 27,
+            "2": 1
+          },
+          "count": 28,
+          "event_name": "Expressing My Feelings to Maruzen",
+          "story_id": "400004348"
+        },
+        {
+          "choice_counts": {
+            "1": 27
+          },
+          "count": 27,
+          "event_name": "A Family (?) Shopping Trip!",
+          "story_id": "400004325"
+        },
+        {
+          "choice_counts": {
+            "1": 26,
+            "2": 1
+          },
+          "count": 27,
+          "event_name": "Mission: Big Surprise!",
+          "story_id": "400004338"
+        },
+        {
+          "choice_counts": {
+            "1": 26,
+            "2": 1
+          },
+          "count": 27,
+          "event_name": "Pondering over Perennials",
+          "story_id": "400004353"
+        },
+        {
+          "choice_counts": {
+            "1": 25,
+            "2": 1
+          },
+          "count": 26,
+          "event_name": "I Wanna Join the Discussion!",
+          "story_id": "400004334"
+        },
+        {
+          "choice_counts": {
+            "1": 24,
+            "2": 1
+          },
+          "count": 25,
+          "event_name": "The Perfect Combo",
+          "story_id": "400004326"
+        },
+        {
+          "choice_counts": {
+            "1": 25
+          },
+          "count": 25,
+          "event_name": "Agnes Digital Explodes",
+          "story_id": "400004341"
+        },
+        {
+          "choice_counts": {
+            "1": 25
+          },
+          "count": 25,
+          "event_name": "A Grandkid Get-Together",
+          "story_id": "400004352"
+        },
+        {
+          "choice_counts": {
+            "1": 23,
+            "2": 1
+          },
+          "count": 24,
+          "event_name": "Hungry for Affection",
+          "story_id": "400004332"
+        },
+        {
+          "choice_counts": {
+            "1": 23,
+            "2": 1
+          },
+          "count": 24,
+          "event_name": "What's Wrong with Golshi?!",
+          "story_id": "400004351"
+        },
+        {
+          "choice_counts": {
+            "1": 23
+          },
+          "count": 23,
+          "event_name": "Don't Overdo It!",
+          "story_id": "400000044"
+        },
+        {
+          "choice_counts": {
+            "1": 22
+          },
+          "count": 22,
+          "event_name": "Living Alone",
+          "story_id": "400004339"
+        },
+        {
+          "choice_counts": {
+            "1": 20,
+            "2": 1
+          },
+          "count": 21,
+          "event_name": "Worldwide Windy",
+          "story_id": "400004327"
+        },
+        {
+          "choice_counts": {
+            "1": 20,
+            "2": 1
+          },
+          "count": 21,
+          "event_name": "Golshi Games: Who Is the Werewolf?!",
+          "story_id": "400004336"
+        },
+        {
+          "choice_counts": {
+            "1": 20
+          },
+          "count": 20,
+          "event_name": "The Exciting Fruit Fest",
+          "story_id": "400004337"
+        },
+        {
+          "choice_counts": {
+            "1": 19,
+            "2": 1
+          },
+          "count": 20,
+          "event_name": "The Inescapable Ardan",
+          "story_id": "400004345"
+        },
+        {
+          "choice_counts": {
+            "1": 17
+          },
+          "count": 17,
+          "event_name": "Brian Gets Jealous?",
+          "story_id": "400004340"
+        },
+        {
+          "choice_counts": {
+            "1": 13,
+            "2": 1
+          },
+          "count": 14,
+          "event_name": "The Strongest, Mightiest Cinderella!",
+          "story_id": "400004330"
+        }
+      ]
+    },
+    "support_card_events": {
+      "1001": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Watch Where You're Going!",
+          "story_id": "801001001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "So Many Options!",
+          "story_id": "801001002"
+        }
+      ],
+      "1003": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "My Way, Or...",
+          "story_id": "801003001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "My Weapon",
+          "story_id": "801003002"
+        }
+      ],
+      "1004": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Drive Destination",
+          "story_id": "801004002"
+        }
+      ],
+      "1005": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Sleight of Hand",
+          "story_id": "801005001"
+        }
+      ],
+      "1007": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Adventurer Gold Ship",
+          "story_id": "801007001"
+        }
+      ],
+      "1009": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "I'm Going to Win Tomorrow!",
+          "story_id": "801009001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "This Is Nothing!",
+          "story_id": "801009002"
+        }
+      ],
+      "1010": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Yes! Let's Hug ☆",
+          "story_id": "801010001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Yeehaw! Party Tonight ☆",
+          "story_id": "801010002"
+        }
+      ],
+      "1013": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "To Maintain My Weight",
+          "story_id": "801013001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "To Reach the Greatest Heights",
+          "story_id": "801013002"
+        }
+      ],
+      "1015": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Etude to Victory",
+          "story_id": "801015001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Beyond Our Limited Time",
+          "story_id": "801015002"
+        }
+      ],
+      "1017": [
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "The Student Council President's Thoughtfulness",
+          "story_id": "801017002"
+        }
+      ],
+      "1019": [
+        {
+          "choice_counts": {
+            "0": 5
+          },
+          "count": 5,
+          "event_name": "Heavy Romance",
+          "story_id": "801019002"
+        },
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Umamusume Deficiency!",
+          "story_id": "801019001"
+        }
+      ],
+      "1021": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "A Battle I Can't Lose!",
+          "story_id": "801021002"
+        }
+      ],
+      "1023": [
+        {
+          "choice_counts": {
+            "0": 3
+          },
+          "count": 3,
+          "event_name": "Step-Out-of-Your-Comfort-Zone Theory",
+          "story_id": "801023002"
+        }
+      ],
+      "1024": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Snack Advice for Mayano!",
+          "story_id": "801024001"
+        }
+      ],
+      "1027": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "It's Not Like I Like Romance!",
+          "story_id": "801027002"
+        }
+      ],
+      "1028": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Eat Up ♪",
+          "story_id": "801028001"
+        }
+      ],
+      "1029": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "For a Spiffy Concert",
+          "story_id": "801029001"
+        }
+      ],
+      "1030": [
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "A Page About Cloudy Weather",
+          "story_id": "801030002"
+        }
+      ],
+      "1031": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "It's a Game of Tag!",
+          "story_id": "801031001"
+        }
+      ],
+      "1033": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Awkward Triangulum",
+          "story_id": "801033001"
+        }
+      ],
+      "1034": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Mikoshi, Heave Ho!",
+          "story_id": "801034002"
+        }
+      ],
+      "1036": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "//Absolute Desire",
+          "story_id": "801036002"
+        }
+      ],
+      "1037": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Unforeseen Lunch",
+          "story_id": "801037001"
+        }
+      ],
+      "1038": [
+        {
+          "choice_counts": {
+            "0": 4
+          },
+          "count": 4,
+          "event_name": "#Cuteness4U ☆",
+          "story_id": "801038002"
+        }
+      ],
+      "1040": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "13:12 / Lunch Break, Gotta Get Myself Together",
+          "story_id": "801040002"
+        }
+      ],
+      "1042": [
+        {
+          "choice_counts": {
+            "0": 3
+          },
+          "count": 3,
+          "event_name": "Full-Power Thinking!",
+          "story_id": "801042002"
+        }
+      ],
+      "1045": [
+        {
+          "choice_counts": {
+            "0": 6
+          },
+          "count": 6,
+          "event_name": "Leave it to Me to Be Considerate! ♪",
+          "story_id": "801045002"
+        }
+      ],
+      "1047": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Book-lover Quirks",
+          "story_id": "801047001"
+        }
+      ],
+      "1049": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Sundown Showdown",
+          "story_id": "801049001"
+        }
+      ],
+      "1051": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Warmth, Love, and Lunch",
+          "story_id": "801051001"
+        }
+      ],
+      "1052": [
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "Urara's ☆ Long Shot Dash!",
+          "story_id": "801052002"
+        }
+      ],
+      "1053": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Overthrow the Rival!",
+          "story_id": "801053001"
+        }
+      ],
+      "1054": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "A Hero's Woes",
+          "story_id": "801054001"
+        }
+      ],
+      "1057": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Even if I Ruffle Feathers",
+          "story_id": "801057002"
+        }
+      ],
+      "1058": [
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "Please... Buy Some Carrots",
+          "story_id": "801058002"
+        }
+      ],
+      "1061": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "You May Socialize With Me!",
+          "story_id": "801061001"
+        }
+      ],
+      "1062": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Just Your Typical Hard Work!",
+          "story_id": "801062001"
+        }
+      ],
+      "1063": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Ikuno-Style Flawless Method",
+          "story_id": "801063001"
+        }
+      ],
+      "1064": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "An Inescapable Choice?",
+          "story_id": "801064001"
+        }
+      ],
+      "1065": [
+        {
+          "choice_counts": {
+            "0": 3
+          },
+          "count": 3,
+          "event_name": "Smiles Forever",
+          "story_id": "801065002"
+        }
+      ],
+      "1066": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Just Start Running!",
+          "story_id": "801066001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "I'm All Fired Up!",
+          "story_id": "801066002"
+        }
+      ],
+      "1069": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Today's Words of Wisdom!",
+          "story_id": "801069001"
+        }
+      ],
+      "1070": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Want Me to Teach You?",
+          "story_id": "801070001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "Want Me to Help You?",
+          "story_id": "801070002"
+        }
+      ],
+      "1072": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Firm and Plain, Yet Close to Virtue",
+          "story_id": "801072001"
+        }
+      ],
+      "1074": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Slow and Leisurely",
+          "story_id": "801074001"
+        }
+      ],
+      "20003": [
+        {
+          "choice_counts": {
+            "1": 21
+          },
+          "count": 21,
+          "event_name": "",
+          "story_id": "801012001"
+        },
+        {
+          "choice_counts": {
+            "0": 9
+          },
+          "count": 9,
+          "event_name": "",
+          "story_id": "801012002"
+        }
+      ],
+      "20008": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "",
+          "story_id": "801025001"
+        },
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "",
+          "story_id": "801025002"
+        }
+      ],
+      "20009": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "I'm Not a Cyborg",
+          "story_id": "820009001"
+        }
+      ],
+      "20012": [
+        {
+          "choice_counts": {
+            "0": 15
+          },
+          "count": 15,
+          "event_name": "",
+          "story_id": "801032002"
+        },
+        {
+          "choice_counts": {
+            "1": 10
+          },
+          "count": 10,
+          "event_name": "",
+          "story_id": "801032001"
+        }
+      ],
+      "20014": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "",
+          "story_id": "801050001"
+        },
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "",
+          "story_id": "801050002"
+        }
+      ],
+      "20022": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Rhapsody of Kindness",
+          "story_id": "820022001"
+        }
+      ],
+      "20023": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "",
+          "story_id": "820023001"
+        },
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "",
+          "story_id": "820023002"
+        }
+      ],
+      "20024": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "#BFF #Party!",
+          "story_id": "820024001"
+        }
+      ],
+      "20028": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "The Bookworm and the Magical Girl",
+          "story_id": "820028001"
+        }
+      ],
+      "20031": [
+        {
+          "choice_counts": {
+            "1": 61
+          },
+          "count": 61,
+          "event_name": "",
+          "story_id": "820031001"
+        },
+        {
+          "choice_counts": {
+            "1": 25
+          },
+          "count": 25,
+          "event_name": "",
+          "story_id": "801043001"
+        },
+        {
+          "choice_counts": {
+            "0": 15
+          },
+          "count": 15,
+          "event_name": "",
+          "story_id": "801043002"
+        }
+      ],
+      "20034": [
+        {
+          "choice_counts": {
+            "1": 9
+          },
+          "count": 9,
+          "event_name": "Special Drinks Made with Friends ♪",
+          "story_id": "820034001"
+        }
+      ],
+      "20035": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Nail Artist on the Turf",
+          "story_id": "820035001"
+        }
+      ],
+      "20039": [
+        {
+          "choice_counts": {
+            "1": 6
+          },
+          "count": 6,
+          "event_name": "Slacking Off at Sundown",
+          "story_id": "820039001"
+        }
+      ],
+      "20041": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "The Joy of Being Together",
+          "story_id": "820041001"
+        }
+      ],
+      "20042": [
+        {
+          "choice_counts": {
+            "1": 50
+          },
+          "count": 50,
+          "event_name": "",
+          "story_id": "820042001"
+        },
+        {
+          "choice_counts": {
+            "0": 23
+          },
+          "count": 23,
+          "event_name": "",
+          "story_id": "801041002"
+        },
+        {
+          "choice_counts": {
+            "1": 17
+          },
+          "count": 17,
+          "event_name": "",
+          "story_id": "801041001"
+        }
+      ],
+      "20044": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "#AWildCurrenAppeared",
+          "story_id": "820044001"
+        }
+      ],
+      "20045": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "What Is an Umadol?",
+          "story_id": "820045001"
+        }
+      ],
+      "20046": [
+        {
+          "choice_counts": {
+            "0": 45
+          },
+          "count": 45,
+          "event_name": "",
+          "story_id": "820046002"
+        },
+        {
+          "choice_counts": {
+            "1": 20
+          },
+          "count": 20,
+          "event_name": "",
+          "story_id": "801044001"
+        },
+        {
+          "choice_counts": {
+            "0": 10
+          },
+          "count": 10,
+          "event_name": "",
+          "story_id": "801044002"
+        }
+      ],
+      "30005": [
+        {
+          "choice_counts": {
+            "0": 1
+          },
+          "count": 1,
+          "event_name": "",
+          "story_id": "801008002"
+        }
+      ],
+      "30007": [
+        {
+          "choice_counts": {
+            "0": 56
+          },
+          "count": 56,
+          "event_name": "",
+          "story_id": "830007002"
+        },
+        {
+          "choice_counts": {
+            "0": 20
+          },
+          "count": 20,
+          "event_name": "",
+          "story_id": "801014002"
+        },
+        {
+          "choice_counts": {
+            "1": 13
+          },
+          "count": 13,
+          "event_name": "",
+          "story_id": "801014001"
+        }
+      ],
+      "30008": [
+        {
+          "choice_counts": {
+            "1": 6
+          },
+          "count": 6,
+          "event_name": "Be Strategic ☆",
+          "story_id": "830008001"
+        }
+      ],
+      "30010": [
+        {
+          "choice_counts": {
+            "1": 189
+          },
+          "count": 189,
+          "event_name": "",
+          "story_id": "830010001"
+        },
+        {
+          "choice_counts": {
+            "1": 67
+          },
+          "count": 67,
+          "event_name": "",
+          "story_id": "801022001"
+        },
+        {
+          "choice_counts": {
+            "0": 38
+          },
+          "count": 38,
+          "event_name": "",
+          "story_id": "801022002"
+        }
+      ],
+      "30017": [
+        {
+          "choice_counts": {
+            "1": 233
+          },
+          "count": 233,
+          "event_name": "",
+          "story_id": "830017001"
+        },
+        {
+          "choice_counts": {
+            "0": 85
+          },
+          "count": 85,
+          "event_name": "",
+          "story_id": "801046002"
+        },
+        {
+          "choice_counts": {
+            "1": 47
+          },
+          "count": 47,
+          "event_name": "",
+          "story_id": "801046001"
+        }
+      ],
+      "30026": [
+        {
+          "choice_counts": {
+            "1": 10
+          },
+          "count": 10,
+          "event_name": "I'm Not Afraid!",
+          "story_id": "830026001"
+        }
+      ],
+      "30027": [
+        {
+          "choice_counts": {
+            "1": 9
+          },
+          "count": 9,
+          "event_name": "Run Away to First Base",
+          "story_id": "830027001"
+        }
+      ],
+      "30028": [
+        {
+          "choice_counts": {
+            "0": 169
+          },
+          "count": 169,
+          "event_name": "",
+          "story_id": "830028002"
+        },
+        {
+          "choice_counts": {
+            "1": 70
+          },
+          "count": 70,
+          "event_name": "",
+          "story_id": "801068001"
+        },
+        {
+          "choice_counts": {
+            "0": 42
+          },
+          "count": 42,
+          "event_name": "",
+          "story_id": "801068002"
+        }
+      ],
+      "30030": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Seeking Uniqueness!",
+          "story_id": "830030001"
+        }
+      ],
+      "30031": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Cozy Memories of Wanko Soba",
+          "story_id": "830031001"
+        }
+      ],
+      "30034": [
+        {
+          "choice_counts": {
+            "1": 5
+          },
+          "count": 5,
+          "event_name": "Rainy Day, Floating Flowers",
+          "story_id": "830034001"
+        }
+      ],
+      "30039": [
+        {
+          "choice_counts": {
+            "1": 11
+          },
+          "count": 11,
+          "event_name": "",
+          "story_id": "830039001"
+        },
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "",
+          "story_id": "801039001"
+        },
+        {
+          "choice_counts": {
+            "0": 2
+          },
+          "count": 2,
+          "event_name": "",
+          "story_id": "801039002"
+        },
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "",
+          "story_id": "830039003"
+        }
+      ],
+      "30041": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "One Step Forward",
+          "story_id": "830041001"
+        }
+      ],
+      "30043": [
+        {
+          "choice_counts": {
+            "1": 9
+          },
+          "count": 9,
+          "event_name": "Night of Ill Portent",
+          "story_id": "830043001"
+        }
+      ],
+      "30045": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Fickle Genius Magical Girl Sweepy ☆",
+          "story_id": "830045001"
+        }
+      ],
+      "30047": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "Number One Reactions?",
+          "story_id": "830047001"
+        }
+      ],
+      "30048": [
+        {
+          "choice_counts": {
+            "1": 5
+          },
+          "count": 5,
+          "event_name": "Flustered Afternoon Tea!",
+          "story_id": "830048001"
+        }
+      ],
+      "30054": [
+        {
+          "choice_counts": {
+            "0": 206
+          },
+          "count": 206,
+          "event_name": "",
+          "story_id": "830054002"
+        },
+        {
+          "choice_counts": {
+            "0": 86
+          },
+          "count": 86,
+          "event_name": "",
+          "story_id": "801060002"
+        },
+        {
+          "choice_counts": {
+            "1": 67
+          },
+          "count": 67,
+          "event_name": "",
+          "story_id": "801060001"
+        }
+      ],
+      "30055": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Sudden Murder Mystery! Part 1",
+          "story_id": "830055001"
+        }
+      ],
+      "30056": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "A Captivating Invitation",
+          "story_id": "830056001"
+        }
+      ],
+      "30057": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Raising the Uma Lord's Castle",
+          "story_id": "830057001"
+        }
+      ],
+      "30062": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "A Winning Vocalist",
+          "story_id": "830062001"
+        }
+      ],
+      "30064": [
+        {
+          "choice_counts": {
+            "1": 5
+          },
+          "count": 5,
+          "event_name": "Mummy Hunt! Drop the Jokes!",
+          "story_id": "830064001"
+        }
+      ],
+      "30066": [
+        {
+          "choice_counts": {
+            "1": 82
+          },
+          "count": 82,
+          "event_name": "",
+          "story_id": "830066001"
+        },
+        {
+          "choice_counts": {
+            "0": 33
+          },
+          "count": 33,
+          "event_name": "",
+          "story_id": "801026002"
+        },
+        {
+          "choice_counts": {
+            "1": 31
+          },
+          "count": 31,
+          "event_name": "",
+          "story_id": "801026001"
+        }
+      ],
+      "30068": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "#CurrenPotential",
+          "story_id": "830068001"
+        }
+      ],
+      "30071": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "A Legendary Smile in the House!",
+          "story_id": "830071001"
+        }
+      ],
+      "30072": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Just Because ♪",
+          "story_id": "830072001"
+        }
+      ],
+      "30074": [
+        {
+          "choice_counts": {
+            "0": 159
+          },
+          "count": 159,
+          "event_name": "",
+          "story_id": "830074002"
+        },
+        {
+          "choice_counts": {
+            "0": 62
+          },
+          "count": 62,
+          "event_name": "",
+          "story_id": "801055002"
+        },
+        {
+          "choice_counts": {
+            "1": 38
+          },
+          "count": 38,
+          "event_name": "",
+          "story_id": "801055001"
+        }
+      ],
+      "30076": [
+        {
+          "choice_counts": {
+            "1": 61
+          },
+          "count": 61,
+          "event_name": "",
+          "story_id": "801002001"
+        },
+        {
+          "choice_counts": {
+            "0": 26
+          },
+          "count": 26,
+          "event_name": "",
+          "story_id": "801002002"
+        }
+      ],
+      "30077": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Ayabe Shows Concern",
+          "story_id": "830077001"
+        }
+      ],
+      "30078": [
+        {
+          "choice_counts": {
+            "1": 55,
+            "2": 1
+          },
+          "count": 56,
+          "event_name": "",
+          "story_id": "830078001"
+        },
+        {
+          "choice_counts": {
+            "0": 22,
+            "1": 13
+          },
+          "count": 35,
+          "event_name": "",
+          "story_id": "830078002"
+        },
+        {
+          "choice_counts": {
+            "0": 18
+          },
+          "count": 18,
+          "event_name": "",
+          "story_id": "801056002"
+        },
+        {
+          "choice_counts": {
+            "1": 15
+          },
+          "count": 15,
+          "event_name": "",
+          "story_id": "801056001"
+        }
+      ],
+      "30079": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Doomsday for the Overlord?!",
+          "story_id": "830079001"
+        }
+      ],
+      "30083": [
+        {
+          "choice_counts": {
+            "1": 4
+          },
+          "count": 4,
+          "event_name": "Uma Kids Footrace Meet",
+          "story_id": "830083001"
+        }
+      ],
+      "30086": [
+        {
+          "choice_counts": {
+            "0": 53
+          },
+          "count": 53,
+          "event_name": "",
+          "story_id": "830086002"
+        },
+        {
+          "choice_counts": {
+            "0": 21
+          },
+          "count": 21,
+          "event_name": "",
+          "story_id": "801077002"
+        },
+        {
+          "choice_counts": {
+            "1": 16
+          },
+          "count": 16,
+          "event_name": "",
+          "story_id": "801077001"
+        }
+      ],
+      "30087": [
+        {
+          "choice_counts": {
+            "1": 10
+          },
+          "count": 10,
+          "event_name": "I'll Help Search!",
+          "story_id": "830087001"
+        }
+      ],
+      "30089": [
+        {
+          "choice_counts": {
+            "1": 1
+          },
+          "count": 1,
+          "event_name": "Marvelous☆Dive!",
+          "story_id": "830089001"
+        }
+      ],
+      "30091": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Those with the Name of Symboli",
+          "story_id": "830091001"
+        }
+      ],
+      "30092": [
+        {
+          "choice_counts": {
+            "1": 8
+          },
+          "count": 8,
+          "event_name": "Both High and Low",
+          "story_id": "830092001"
+        }
+      ],
+      "30093": [
+        {
+          "choice_counts": {
+            "1": 3
+          },
+          "count": 3,
+          "event_name": "Distant Feelings",
+          "story_id": "830093001"
+        }
+      ],
+      "30094": [
+        {
+          "choice_counts": {
+            "1": 2
+          },
+          "count": 2,
+          "event_name": "The Ultimate Omlet Training Arc",
+          "story_id": "830094001"
+        }
+      ]
+    }
+  },
+  "schema": "sweepy_event_id_index_v1",
+  "sources": {
+    "observed_events": "uma_runtime/**/bot_logs/career_log_*.json",
+    "support_events": "https://umamusu.wiki/Module:Game/TrainingEvents and https://umamusu.wiki/Module:Game/Supports/Data/Events"
+  },
+  "support_card_events": {
+    "20003": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Power +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Speed": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "True to Myself",
+        "story_id": "820003001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Masterful Gambit Masterful Gambit 仕掛け抜群 Slightly move up in preparation to close the gap when positioned toward the back late-race. (End Closer) Hint +1",
+            "effects": {
+              "Skill Hint": 1.0,
+              "Speed": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "A Hishiama Solution",
+        "story_id": "820003002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Wisdom": 5.0
+            },
+            "label": "Surround her from all sides and trap her. 挟み撃ちにして捕まえよう"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Speed 10, Guts 5, Bond 5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 5.0,
+              "HP": -10.0,
+              "Speed": 10.0
+            },
+            "label": "Lure her out to the track. グラウンドまで誘導しよう"
+          }
+        ],
+        "event_name": "Hishiama's Struggles: Problem Children",
+        "story_id": "801012001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Hesitant End Closers Hesitant End Closers 追込ためらい Slightly decrease velocity of end closers late-race. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Blow the other racers away with sheer force of will. 気迫でライバルを圧倒する"
+          },
+          {
+            "choice": "1",
+            "description": "Power +5, Skill Points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Skill Pts": 15.0
+            },
+            "label": "Go wide on the outside, then make your move. 大きく外側から攻めてみる"
+          }
+        ],
+        "event_name": "Hishiama's Struggles: Final Stretch",
+        "story_id": "801012002"
+      }
+    ],
+    "20008": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Skill Points +15",
+            "effects": {
+              "HP": 10.0,
+              "Skill Pts": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Invitation on a Rainy Day",
+        "story_id": "820008001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +15, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Studious Studious 読解力 Slightly widen field of view with heightened observation mid-race. (Late Surger) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Stamina": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Invitation on a Stormy Day",
+        "story_id": "820008002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Stamina": 10.0
+            },
+            "label": "Do you always run so much? ……いつもこんなに走りこんでいるのか？"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Stamina +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Stamina": 5.0
+            },
+            "label": "You sure are focused. ……すごい集中力だな"
+          }
+        ],
+        "event_name": "Solo Nighttime Run",
+        "story_id": "801025001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +15, Skill Points +15, Bond +6",
+            "effects": {
+              "Friendship": 6.0,
+              "Skill Pts": 15.0,
+              "Stamina": 15.0
+            },
+            "label": "Were you trying to relax? リラックスタイムだったのか？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Non-Standard Distance ○ Non-Standard Distance ○ 非根幹距離○ Moderately increase performance over non-standard distances (non-multiples of 400m). Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "You're not scared being in the dark all alone? こんな暗い所にひとりでも、怖くないんだな"
+          }
+        ],
+        "event_name": "A Taste of Silence",
+        "story_id": "801025002"
+      }
+    ],
+    "20012": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Wit +5, Skill points +15",
+            "effects": {
+              "Skill Pts": 15.0,
+              "Wisdom": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Report: Potential of Specialized Training",
+        "story_id": "820012001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Wit +10, Skill points +15, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Subdued Front Runners Subdued Front Runners 逃げけん制 Slightly increase fatigue for front runners early-race. Hint +1",
+            "effects": {
+              "Skill Hint": 1.0,
+              "Skill Pts": 15.0,
+              "Wisdom": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Report: N/A (On Break)",
+        "story_id": "820012002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +5, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Wisdom": 5.0
+            },
+            "label": "You're just going to power through it? パワフルなんだな"
+          },
+          {
+            "choice": "1",
+            "description": "Wit +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Wisdom": 10.0
+            },
+            "label": "Sounds like you're writing a pretty complicated thesis. 難しい論文に取り組んでるんだな"
+          }
+        ],
+        "event_name": "The Correlation between Sleep and Efficiency",
+        "story_id": "801032001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Late Surger Savvy ○ Late Surger Savvy ○ 差しのコツ○ Moderately increase ability to get into a good position. (Late Surger) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "A running style. 走法"
+          },
+          {
+            "choice": "1",
+            "description": "Wit +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Wisdom": 10.0
+            },
+            "label": "Decision-making. 判断力"
+          }
+        ],
+        "event_name": "Happenstance Introduced Through Intervention",
+        "story_id": "801032002"
+      }
+    ],
+    "20014": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Stamina +5",
+            "effects": {
+              "Speed": 5.0,
+              "Stamina": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Nighttime Secret",
+        "story_id": "820014001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed/Stamina/Power +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} I Can See Right Through You I Can See Right Through You お見通し Slightly widen field of view with situational awareness when moving sideways. (End Closer) Hint +1",
+            "effects": {
+              "Power": 5.0,
+              "Skill Hint": 1.0,
+              "Speed": 5.0,
+              "Stamina": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Enjoy the Musical!",
+        "story_id": "820014002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Stamina +5, Skill Points +15",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 15.0,
+              "Stamina": 5.0
+            },
+            "label": "At least let me cheer you on! せめて応援させて！"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Power +5, Skill points +15",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Skill Pts": 15.0
+            },
+            "label": "I just want to help. でも、力になりたいんだ"
+          }
+        ],
+        "event_name": "Just Leave Me Alone",
+        "story_id": "801050001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Pressure Pressure 追い上げ Slightly increase velocity when passing another runner late-race. (Long) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Okay, just don't be late... 遅くならないようにな"
+          },
+          {
+            "choice": "1",
+            "description": "Skill Points +30, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 30.0
+            },
+            "label": "Don't overdo it. 無理はよくない"
+          }
+        ],
+        "event_name": "Just Don't Bother Me",
+        "story_id": "801050002"
+      }
+    ],
+    "20015": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Guts +5, Wit +5",
+            "effects": {
+              "Guts": 5.0,
+              "Wisdom": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Marvelous World Plan ☆",
+        "story_id": "820015001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Guts +15, Wit +15",
+            "effects": {
+              "Guts": 15.0,
+              "Wisdom": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Marvelously Marvelous ☆",
+        "story_id": "820015002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Speed": 5.0
+            },
+            "label": "I feel really tired lately. 最近、力が出なくて"
+          },
+          {
+            "choice": "1",
+            "description": "Mood +1, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Speed": 5.0
+            },
+            "label": "I want to be more motivated. もっとやる気を出したいんだ"
+          }
+        ],
+        "event_name": "Marvelous, No Question ☆",
+        "story_id": "801055001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Mood +1, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Mood": 1.0
+            },
+            "label": "Throw everything you've got at it? 自分から全力でぶつかっていくとか…？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Hanshin Racecourse ○ Hanshin Racecourse ○ 阪神レース場○ Moderately increase performance at Hanshin Racecourse. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Maybe chill out a little and let things happen as they will? 関西人みたいなノリと勢いで、とか…？"
+          }
+        ],
+        "event_name": "How To Be More Marvelous ☆",
+        "story_id": "801055002"
+      }
+    ],
+    "20023": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Skill points +10, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Lucky Seven Lucky Seven ラッキーセブン Moderately good things may happen when in bracket 7. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Skill Pts": 10.0,
+              "Speed": 5.0
+            },
+            "label": "I think you should eat your vegetables. 野菜は食べた方がいい"
+          },
+          {
+            "choice": "1",
+            "description": "Mood -1, Maverick ○ Maverick ○ おひとり様○ Increase performance when no other runners are using the same strategy. Hint +5, Ends chain event",
+            "effects": {
+              "Mood": -1.0,
+              "Skill Hint": 5.0
+            },
+            "label": "Do whatever you want. やりたいようにやればいい"
+          }
+        ],
+        "event_name": "Some Very Green Friends",
+        "story_id": "820023001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10, Skill points +20, Bond +5, Levelheaded Levelheaded 冷静 Slightly regain composure by calming down when the way ahead is jammed. (End Closer) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Skill Pts": 20.0,
+              "Speed": 10.0
+            },
+            "label": "You only had Fuji Kiseki's best intentions in mind, right?! フジキセキのことを想って、だよな！"
+          },
+          {
+            "choice": "1",
+            "description": "Mood -1, Lone Wolf Lone Wolf 一匹狼 Moderately increase performance when no other runners have the heart of a lone wolf. Hint +1",
+            "effects": {
+              "Mood": -1.0,
+              "Skill Hint": 1.0
+            },
+            "label": "You should be honest and apologize. 正直に謝った方がいい"
+          }
+        ],
+        "event_name": "Premeditated Mischief",
+        "story_id": "820023002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Just admit defeat already. 補習を受けよう"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Speed +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Speed": 20.0
+            },
+            "label": "Run!"
+          }
+        ],
+        "event_name": "Miracle ☆ Escape!",
+        "story_id": "801044001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy -20, Skill points +40, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -20.0,
+              "Skill Pts": 40.0
+            },
+            "label": "How about I teach you a cool spell instead? 代わりにすごい呪文を教えよう"
+          },
+          {
+            "choice": "1",
+            "description": "Charming ○ , Bond +5",
+            "effects": {
+              "Friendship": 5.0
+            },
+            "label": "Let's look for it together. もう1度スズメを探しに行こう"
+          }
+        ],
+        "event_name": "Wonderful ☆ Mistake!",
+        "story_id": "801044002"
+      }
+    ],
+    "20031": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Speed": 10.0
+            },
+            "label": "Leave the rest to your trusty minion. あとは子分に任せてほしい"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -5, Skill points +30, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -5.0,
+              "Skill Pts": 30.0
+            },
+            "label": "Let's give this all we've got! とことん頑張ろう！"
+          }
+        ],
+        "event_name": "Dig Here, Windy!",
+        "story_id": "820031001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Speed +10, Skill points +15, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Shifting Gears Shifting Gears ギアシフト Slightly increase passing ability when positioned toward the front mid-race. (Mile) Hint +3 On Failure: Speed +5, Skill points +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 2.25,
+              "Skill Pts": 13.75,
+              "Speed": 8.75
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "C'mon Gates, Open Already!",
+        "story_id": "820031002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Mood +1, Speed +3, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Speed": 3.0
+            },
+            "label": "Just tell her the truth! 早く素直になろう！"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Skill points +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Skill Pts": 5.0
+            },
+            "label": "Come on, help lessen her burden. 疲れ、減らしてあげなよ"
+          }
+        ],
+        "event_name": "Chomp Extermination!",
+        "story_id": "801043001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Skill points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 15.0
+            },
+            "label": "What did I tell you? 言った通りになったな"
+          },
+          {
+            "choice": "1",
+            "description": "Speed +3, Bond +5, Unyielding Spirit Unyielding Spirit 負けん気 Slightly increase passing ability. (Mile) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Speed": 3.0
+            },
+            "label": "Guess this means you lost, huh? 負けを認める？"
+          }
+        ],
+        "event_name": "Chomp Attack!",
+        "story_id": "801043002"
+      }
+    ],
+    "20037": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +15, Power +5, Skill points +10",
+            "effects": {
+              "HP": 15.0,
+              "Power": 5.0,
+              "Skill Pts": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "What Even Is Normal?",
+        "story_id": "820037001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Skill points +20, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Steadfast Steadfast 食い下がり Slightly increase ability to fight back when passed by another runner on the final corner. (Medium) Hints +2",
+            "effects": {
+              "Skill Pts": 20.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Clovers For You Too ♪",
+        "story_id": "820037002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Skill points +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Ones that are lightweight so you can run fast in them. 軽くて速く走れそうなシューズ"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Stamina +5, Skill points +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Skill Pts": 20.0,
+              "Stamina": 5.0
+            },
+            "label": "Ones that are heavy but will be great for training. 重いけど鍛えられそうなシューズ"
+          }
+        ],
+        "event_name": "Wonderful New Shoes",
+        "story_id": "801022001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Corner Adept ○ Corner Adept ○ コーナー巧者○ Slightly increase velocity on a corner with skilled turning. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "The final corner. 最終コーナー"
+          },
+          {
+            "choice": "1",
+            "description": "Guts +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 15.0
+            },
+            "label": "The final straight. ラストの直線"
+          }
+        ],
+        "event_name": "Reminiscent Clover",
+        "story_id": "801022002"
+      }
+    ],
+    "20042": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [],
+        "event_name": "A Bakushin Greeting!",
+        "story_id": "820042001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [],
+        "event_name": "The Value of Greetings",
+        "story_id": "820042002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Speed": 15.0
+            },
+            "label": "Boost your speed by wiping the floor! 雑巾がけで、スピード強化！"
+          },
+          {
+            "choice": "1",
+            "description": "Speed +5, Power +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Boost your power by tidying the reference room! 資料室の整理で、パワーも強化！"
+          }
+        ],
+        "event_name": "Genius Efficiency!",
+        "story_id": "801041001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": ".mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Gap Closer Gap Closer 詰め寄り Slightly increase spurting ability when positioned toward the back late-race. (Sprint) hint +1, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Can I borrow it when you're done? 読み終わったら借りてもいいか？"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Speed +10, Power +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Power": 5.0,
+              "Speed": 10.0
+            },
+            "label": "Could you run for me so I can study your technique? 参考に、走りを見せてもらえるか？"
+          }
+        ],
+        "event_name": "Enough to Break into a Dash!",
+        "story_id": "801041002"
+      }
+    ],
+    "20046": [
+      {
+        "chain_max": 2,
+        "chain_num": 1,
+        "choices": [],
+        "event_name": "What's Behind the Foul Mood?",
+        "story_id": "820046001"
+      },
+      {
+        "chain_max": 2,
+        "chain_num": 2,
+        "choices": [],
+        "event_name": "The Trick to Perseverance!",
+        "story_id": "820046002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Just admit defeat already. 補習を受けよう"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Speed +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Speed": 20.0
+            },
+            "label": "Run!"
+          }
+        ],
+        "event_name": "Miracle ☆ Escape!",
+        "story_id": "801044001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy -20, Skill points +40, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -20.0,
+              "Skill Pts": 40.0
+            },
+            "label": "How about I teach you a cool spell instead? 代わりにすごい呪文を教えよう"
+          },
+          {
+            "choice": "1",
+            "description": "Charming ○ , Bond +5",
+            "effects": {
+              "Friendship": 5.0
+            },
+            "label": "Let's look for it together. もう1度スズメを探しに行こう"
+          }
+        ],
+        "event_name": "Wonderful ☆ Mistake!",
+        "story_id": "801044002"
+      }
+    ],
+    "30005": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +10, Skill Points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 10.0,
+              "Skill Pts": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Gotta Follow My Heart",
+        "story_id": "830005001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +15, Skill Points +15, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Updrafters Updrafters 上昇気流 Slightly increase passing ability when positioned toward the back late-race. (Mile) Hint +2",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 15.0,
+              "Skill Hint": 2.0,
+              "Skill Pts": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "A Vow to the Setting Sun",
+        "story_id": "830005002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +25, Skill Points +30, Bond +5, Breath of Fresh Air Breath of Fresh Air 好転一息 Recover endurance on a straight. Hint +2",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 25.0,
+              "Skill Hint": 2.0,
+              "Skill Pts": 30.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Put That on the Record, Okay?",
+        "story_id": "830005003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Power +10",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 10.0
+            },
+            "label": "Try making yourself look more threatening. 見た目をワイルドにしてみたら？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Power +5, Skill Points +15",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Skill Pts": 15.0
+            },
+            "label": "Ty striking an intimidation pose. ワイルドなポーズをとってみたら？"
+          }
+        ],
+        "event_name": "The Coolest Line",
+        "story_id": "801008001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Nimble Navigator Nimble Navigator 垂れウマ回避 Slightly increase maneuverability when the way ahead is blocked in the last spurt. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Use the side roads. 脇道を使う"
+          },
+          {
+            "choice": "1",
+            "description": "Power +5, Skill points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 5.0,
+              "Skill Pts": 15.0
+            },
+            "label": "Run as fast as you can. 全力疾走で向かう"
+          }
+        ],
+        "event_name": "Enemies on Main Street",
+        "story_id": "801008002"
+      }
+    ],
+    "30007": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +10, Guts +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 10.0,
+              "Power": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "World Class",
+        "story_id": "830007001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +30, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 30.0
+            },
+            "label": "Yeah, you need some original flavor! ああ、持ち味だ！"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Stamina to Spare Stamina to Spare スタミナキープ Slightly decrease fatigue upon approaching mid-race. (Pace Chaser) Hint +1, Ends chain event",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "No, it's all down to the recipe! いや、調理法だ！"
+          }
+        ],
+        "event_name": "Uma-me",
+        "story_id": "830007002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +15, Killer Tunes Killer Tunes キラーチューン Increase positioning ability when positioned toward the front mid-race. (Medium) Hint +2",
+            "effects": {
+              "Power": 15.0,
+              "Skill Hint": 2.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Luchadora El!",
+        "story_id": "830007003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Stamina": 10.0
+            },
+            "label": "You could eat a stamina-boosting meal. スタミナ定食を食べるのは？"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Power 20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Power": 20.0
+            },
+            "label": "You could try sprinting with a tire tied to you. タイヤ引きで全力ダッシュは？"
+          }
+        ],
+        "event_name": "Blazing Fire!",
+        "story_id": "801014001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Power +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 10.0
+            },
+            "label": "The El-Style Power Training Program. エル流パワートレメニュー"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Sunny Days ○ Sunny Days ○ 晴れの日○ Moderately increase performance in sunny weather. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Tips for Race Running on a Clear Day. 晴れたレースで走るコツ"
+          }
+        ],
+        "event_name": "Secret Notebook!",
+        "story_id": "801014002"
+      }
+    ],
+    "30010": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Wit +5, Bond +5, Skill Points +20",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 20.0,
+              "Wisdom": 5.0
+            },
+            "label": "Running with a friend is even more fun. 誰かと走ればもっと楽しくなる"
+          },
+          {
+            "choice": "1",
+            "description": "Speed +10, Stamina +5",
+            "effects": {
+              "Speed": 10.0,
+              "Stamina": 5.0
+            },
+            "label": "You should focus on training. 練習は真剣にすべき"
+          },
+          {
+            "choice": "2",
+            "description": "Practice Perfect ○ , Bond +5",
+            "effects": {
+              "Friendship": 5.0
+            },
+            "label": "It's important to train and have fun! 楽しく練習するのは大切"
+          }
+        ],
+        "event_name": "Lovely Training Weather ♪",
+        "story_id": "830010001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Skill Points +10",
+            "effects": {
+              "HP": 10.0,
+              "Skill Pts": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Lovely Concert Weather ♪",
+        "story_id": "830010002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Guts +5, Energy -10 On Success: Wit +10, Skill Points +15, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Speed Star Speed Star スピードスター Increase ability to break out of the pack on the final corner. (Pace Chaser) Hint +3 On Failure: Wit +5, Skill Points +5, Prepared to Pass Prepared to Pass 抜け出し準備 Slightly increase ability to break out of the pack on the final corner. (Pace Chaser) Hint +1",
+            "effects": {
+              "Guts": 5.0,
+              "HP": -10.0,
+              "Skill Hint": 2.5,
+              "Skill Pts": 12.5,
+              "Wisdom": 8.75
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Lovely Racing Weather ♪",
+        "story_id": "830010003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Skill points +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Ones that are lightweight so you can run fast in them. 軽くて速く走れそうなシューズ"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Stamina +5, Skill points +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Skill Pts": 20.0,
+              "Stamina": 5.0
+            },
+            "label": "Ones that are heavy but will be great for training. 重いけど鍛えられそうなシューズ"
+          }
+        ],
+        "event_name": "Wonderful New Shoes",
+        "story_id": "801022001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Corner Adept ○ Corner Adept ○ コーナー巧者○ Slightly increase velocity on a corner with skilled turning. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "The final corner. 最終コーナー"
+          },
+          {
+            "choice": "1",
+            "description": "Guts +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 15.0
+            },
+            "label": "The final straight. ラストの直線"
+          }
+        ],
+        "event_name": "Reminiscent Clover",
+        "story_id": "801022002"
+      }
+    ],
+    "30017": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Wit +10, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Groundwork Groundwork 地固め Slightly increase acceleration after activating many skills early-race. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Wisdom": 10.0
+            },
+            "label": "Don't cut corners when it comes to your studies! 勉強も手を抜かないで"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +25, Bond +5, Focus Focus 集中力 Slightly decrease time lost to slow starts. Hint +1, Ends chain event",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 25.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Always work toward achieving your dream! 夢に向かって頑張れ！"
+          }
+        ],
+        "event_name": "Always on Stage ☆",
+        "story_id": "830017001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10, Power +10, Top Pick Top Pick レコメンド Slightly increase velocity when engaged in a challenge mid-race. (Dirt) Hint +1",
+            "effects": {
+              "Power": 10.0,
+              "Skill Hint": 1.0,
+              "Speed": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Shining Always and Everywhere ☆",
+        "story_id": "830017002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Max Energy +4, Stamina +15, Power +15, Wit +15, Center Stage Center Stage 注目の踊り子 Greatly increase navigation early-race. Hint +3 On Failure: Max Energy +4, Stamina +5, Power +5, Wit +5, Prudent Positioning Prudent Positioning ポジションセンス Increase navigation early-race. Hint +1",
+            "effects": {
+              "Max Energy": 4.0,
+              "Power": 12.5,
+              "Skill Hint": 2.5,
+              "Stamina": 12.5,
+              "Wisdom": 12.5
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "My Umadol Way ☆",
+        "story_id": "830017003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +5, Guts +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 10.0,
+              "Stamina": 5.0
+            },
+            "label": "Faaaal-cooooo! ファ・ル・子～～～っ！"
+          },
+          {
+            "choice": "1",
+            "description": "Wit +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Wisdom": 15.0
+            },
+            "label": "I-I can't do this... ちょっと恥ずかしい……"
+          }
+        ],
+        "event_name": "Chants Are the Life of a Concert ☆",
+        "story_id": "801046001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy -10, Power +10, Bond +5, Final Push Final Push 押し切り準備 Slightly increase ability to keep the lead on the final corner. (Front Runner) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Power": 10.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Run away. 逃げる"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Wisdom": 5.0
+            },
+            "label": "Download it. ダウンロードしてみる"
+          }
+        ],
+        "event_name": "If I'm Cute, Come to My Show! ☆",
+        "story_id": "801046002"
+      }
+    ],
+    "30028": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed/Power/Wit +2, Bond +5, Mood +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Power": 2.0,
+              "Speed": 2.0,
+              "Wisdom": 2.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Chasing Brilliance",
+        "story_id": "830028001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Bond +5, Mood +1",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Mood": 1.0
+            },
+            "label": "Guess you better get well soon. 早く治さないとな"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5 On Success: Speed +10, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Straightaway Adept Straightaway Adept 直線巧者 Slightly increase velocity on a straight. Hint +3 On Failure: Speed +5, Straightaway Adept Straightaway Adept 直線巧者 Slightly increase velocity on a straight. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 2.5,
+              "Speed": 8.75
+            },
+            "label": "Bounce back even better than before! この元気に負けてられないぞ！"
+          }
+        ],
+        "event_name": "Paying It Forward",
+        "story_id": "830028002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5 On Success: Speed +10, Power +10, Professor of Curvature Professor of Curvature 弧線のプロフェッサー Increase velocity on a corner with skilled turning. Hint +3 On Failure: Speed +5, Power +5, Professor of Curvature Professor of Curvature 弧線のプロフェッサー Increase velocity on a corner with skilled turning. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 8.75,
+              "Skill Hint": 2.5,
+              "Speed": 8.75
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "We Walk Together",
+        "story_id": "830028003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Mood +1, Bond +5, Power +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Power": 5.0
+            },
+            "label": "You have a good set of pipes! すごく力強かったぞ！"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0
+            },
+            "label": "Now you've just gotta get ready for the test! 本番に備えるだけだな！"
+          }
+        ],
+        "event_name": "Ah, Friendship",
+        "story_id": "801068001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Power +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Power": 10.0,
+              "Speed": 5.0
+            },
+            "label": "Some good quality shoes would work. 質のよいシューズがいいかも"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Acquired \" Practice Perfect ○ \" Condition",
+            "effects": {
+              "Friendship": 5.0
+            },
+            "label": "A training guide would be good. トレーニング教本がよさそう"
+          }
+        ],
+        "event_name": "Ah, Home Sweet Home",
+        "story_id": "801068002"
+      }
+    ],
+    "30036": [
+      {
+        "chain_max": 5,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +32, Mood +1, Stamina +13, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 32.0,
+              "Mood": 1.0,
+              "Stamina": 13.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Sing from the Heart",
+        "story_id": "809006005"
+      },
+      {
+        "chain_max": 5,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +26, Mood +1, Stamina +13, Guts +13, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 13.0,
+              "HP": 26.0,
+              "Mood": 1.0,
+              "Stamina": 13.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "A Change of Pace",
+        "story_id": "809006006"
+      },
+      {
+        "chain_max": 5,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Energy +26, Mood +1, Stamina +13, Guts +6",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 6.0,
+              "HP": 26.0,
+              "Mood": 1.0,
+              "Stamina": 13.0
+            },
+            "label": "Go for the Extra-Large Honey Milk!"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Mood +1, Skill Pts +40",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Skill Pts": 40.0
+            },
+            "label": "Definitely the Umastagram-Worthly Soda!"
+          }
+        ],
+        "event_name": "Picture Their Joy",
+        "story_id": "809006007"
+      },
+      {
+        "chain_max": 5,
+        "chain_num": 4,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +26, Mood +1, Speed +13, Stamina +6, Power +6, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 26.0,
+              "Mood": 1.0,
+              "Power": 6.0,
+              "Speed": 13.0,
+              "Stamina": 6.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Confused by Kindness",
+        "story_id": "809006008"
+      },
+      {
+        "chain_max": 5,
+        "chain_num": 5,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Bond +5, Energy +32, Stamina +13, Guts +13, Mood +1, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Rushing Gale! Rushing Gale! 一陣の風 Increase acceleration on a straight. Hint +3 On Failure: Bond +5, Energy +32, Stamina +6, Guts +6, Mood +1, Rushing Gale! Rushing Gale! 一陣の風 Increase acceleration on a straight. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 11.25,
+              "HP": 32.0,
+              "Mood": 1.0,
+              "Skill Hint": 2.5,
+              "Stamina": 11.25
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "A Peek at Her Heart",
+        "story_id": "830036001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +20, Guts +20, Skill Pts +27",
+            "effects": {
+              "Guts": 20.0,
+              "Skill Pts": 27.0,
+              "Stamina": 20.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "We Need This Sometimes",
+        "story_id": "809006010"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +27, Guts +27, Skill Pts +40",
+            "effects": {
+              "Guts": 27.0,
+              "Skill Pts": 40.0,
+              "Stamina": 27.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "A Priceless Connection",
+        "story_id": "809006009"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Stamina +20",
+            "effects": {
+              "Friendship": 5.0,
+              "Stamina": 20.0
+            },
+            "label": "Could you take care of the trash?"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Guts +20",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 20.0
+            },
+            "label": "Could you sort the documents?"
+          }
+        ],
+        "event_name": "The Kashimoto Art of Tidying Up",
+        "story_id": "809006001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Mood +1, Stamina +13, Guts +13 Bond +10",
+            "effects": {
+              "Friendship": 10.0,
+              "Guts": 13.0,
+              "Mood": 1.0,
+              "Stamina": 13.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Riko Kashimoto, the Hard Worker",
+        "story_id": "809006002"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +4, Bond +7",
+            "effects": {
+              "Friendship": 7.0,
+              "Stamina": 4.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Good Work",
+        "story_id": "809006003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Bond +5, Energy +19?, Mood +1, Stamina +13?, Ramp Up Ramp Up ペースアップ Slightly increase velocity when passing another runner mid-race. Hint +3, Unlocks Recreation with Riko On Failure: Bond -10, Maverick ○ Maverick ○ おひとり様○ Increase performance when no other runners are using the same strategy. Hint +5, Ends Support Chain",
+            "effects": {
+              "Friendship": 1.25,
+              "HP": 14.25,
+              "Mood": 0.75,
+              "Skill Hint": 3.5,
+              "Stamina": 9.75
+            },
+            "label": "How about building up your stamina first?"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Mood +1, Guts +20, Unlocks Recreation with Riko",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 20.0,
+              "Mood": 1.0
+            },
+            "label": "Persistence is key!"
+          },
+          {
+            "choice": "2",
+            "description": "Bond -10, Lone Wolf Lone Wolf 一匹狼 Moderately increase performance when no other runners have the heart of a lone wolf. Hint +3, Ends Support Chain",
+            "effects": {
+              "Friendship": -10.0,
+              "Skill Hint": 3.0
+            },
+            "label": "Sorry, I'm in a bit of a rush today, so..."
+          }
+        ],
+        "event_name": "Unexpected Side",
+        "story_id": "809006004"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Stamina +20, Guts +13, Mood +1, Sympathy Sympathy シンパシー Moderately increase performance when many runners share a sympathetic heart. Hint +3",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 13.0,
+              "Mood": 1.0,
+              "Skill Hint": 3.0,
+              "Stamina": 20.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Bonding with Riko: No More Regrets",
+        "story_id": "809006011"
+      }
+    ],
+    "30039": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Mood +1, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Speed": 5.0
+            },
+            "label": "Do the Prettiest of the Princesses pose. 『姫たるもののポーズ』で"
+          },
+          {
+            "choice": "1",
+            "description": "Skill points +10, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Tether Tether 束縛 Slightly decrease velocity of runners ahead when positioned toward the back late-race. (Medium) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Skill Pts": 10.0
+            },
+            "label": "Mightiest of the Mighty sounds good to me. 『屈強なるもののポーズ』かな"
+          }
+        ],
+        "event_name": "Modestly! Boldly!",
+        "story_id": "830039001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Guts +5",
+            "effects": {
+              "Guts": 5.0,
+              "Speed": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Princess Power ☆ to the Max!",
+        "story_id": "830039002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +15, Guts +15, Bond +5, Center Stage Center Stage 注目の踊り子 Greatly increase navigation early-race. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 15.0,
+              "Skill Hint": 1.0,
+              "Speed": 15.0
+            },
+            "label": "Your prince will be the one to find you. きっと王子様の方から現れるよ"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +25, Skill points +25",
+            "effects": {
+              "HP": 25.0,
+              "Skill Pts": 25.0
+            },
+            "label": "You may just become a prince yourself. 君自身が王子様になる可能性もある"
+          }
+        ],
+        "event_name": "Hit It! Princess Road!",
+        "story_id": "830039003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Guts +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 10.0
+            },
+            "label": "Wint it up and go for a knockout punch! 次を最後の1発に！"
+          },
+          {
+            "choice": "1",
+            "description": "Mood +1, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0
+            },
+            "label": "How about imagining it's someone you want to hit? 倒す相手をイメージしてみるとか？"
+          }
+        ],
+        "event_name": "Princess Punch!",
+        "story_id": "801039001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0
+            },
+            "label": "Change who's it! 次は鬼を交代！"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Steadfast Steadfast 食い下がり Slightly increase ability to fight back when passed by another runner on the final corner. (Medium) hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Why not change the rules a little? もっとハンデをつけてあげたら？"
+          }
+        ],
+        "event_name": "Princess Escape!",
+        "story_id": "801039002"
+      }
+    ],
+    "30054": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Mood +1, Guts +5, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Guts": 5.0,
+              "Mood": 1.0,
+              "Wisdom": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "The Extraordinary Nature",
+        "story_id": "830054001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0
+            },
+            "label": "Go eat something sweet. 甘いお菓子を食べよう"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -5, Speed +5, Power +5, Bond +5, Cures all bad conditions",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -5.0,
+              "Power": 5.0,
+              "Speed": 5.0
+            },
+            "label": "Going for a run might clear your mind. 走って頭をからっぽにしよう"
+          }
+        ],
+        "event_name": "Irrepressible Feelings",
+        "story_id": "830054002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Speed +5, Wit +5, Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} On Your Left! On Your Left! 乗り換え上手 Increase acceleration late-race. (Late Surger) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Skill Hint": 1.0,
+              "Speed": 5.0,
+              "Wisdom": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Revenge with a Quiz!",
+        "story_id": "830054003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 20.0
+            },
+            "label": "Tell her it's important to unwind. 癒されることも大事だと伝える"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Wisdom": 5.0
+            },
+            "label": "Teach her how to take advantage of a cafe visit. クレバーに入店する方法を"
+          }
+        ],
+        "event_name": "Not like Meow",
+        "story_id": "801060001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Ramp Up Ramp Up ペースアップ Slightly increase velocity when passing another runner mid-race. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Eat it with grated daikon radish to make things easier! 大根おろしで食べるペースアップ！"
+          },
+          {
+            "choice": "1",
+            "description": "Mood +1, Max Energy +4, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Max Energy": 4.0,
+              "Mood": 1.0
+            },
+            "label": "You should hold a tempura party at the dorm! 寮で天ぷら祭りだ！"
+          }
+        ],
+        "event_name": "(Delicious) Burden",
+        "story_id": "801060002"
+      }
+    ],
+    "30066": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Speed +10, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Moxie Moxie 勢い任せ Slightly reduce fatigue on an uphill. (Front Runner) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0,
+              "Speed": 10.0
+            },
+            "label": "I think you're fine just as you are! 今のままでいいと思う！"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Wit +15",
+            "effects": {
+              "Friendship": 5.0,
+              "Wisdom": 15.0
+            },
+            "label": "How about a costume that'll match your usual expression? 表情を変えずに済む仮装は？"
+          }
+        ],
+        "event_name": "Status—Boring?",
+        "story_id": "830066001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +5, Wit +10",
+            "effects": {
+              "Stamina": 5.0,
+              "Wisdom": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Status—As I Am",
+        "story_id": "830066002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Stamina +5, Wit +10, Taking the Lead Taking the Lead 先手必勝 Increase ability to go to the front early-race. (Front Runner) Hint +1",
+            "effects": {
+              "Skill Hint": 1.0,
+              "Stamina": 5.0,
+              "Wisdom": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Status—Fun!",
+        "story_id": "830066003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy -10, Stamina +5, Power +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Power": 15.0,
+              "Stamina": 5.0
+            },
+            "label": "They look super heavy... すごく重そうだ……"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +10, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Wisdom": 5.0
+            },
+            "label": "They're kind of noisy for this late night... 夜だと、音が少し響くかもな"
+          }
+        ],
+        "event_name": "Do No Harm",
+        "story_id": "801026001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Focus Focus 集中力 Slightly decrease time lost to slow starts. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Get in line right before the store opens. 開店直前から待機しておこう"
+          },
+          {
+            "choice": "1",
+            "description": "Speed +10, Skill points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 15.0,
+              "Speed": 10.0
+            },
+            "label": "Make a break for it during lunch! 昼休みになったらダッシュ！"
+          }
+        ],
+        "event_name": "Orders Must Be Followed",
+        "story_id": "801026002"
+      }
+    ],
+    "30074": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10",
+            "effects": {
+              "Speed": 10.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Marvelous Guidance ☆",
+        "story_id": "830074001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0
+            },
+            "label": "Maybe we were seeing things because we're tired?"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Cloudy Days ○ Cloudy Days ○ 曇りの日○ Moderately increase performance in cloudy weather. Hint +2, Ends chain event",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 2.0
+            },
+            "label": "I want to see it again so I can figure out what it was!"
+          }
+        ],
+        "event_name": "Dazzling and Marvelous ☆",
+        "story_id": "830074002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Speed +5, Skill points +10, Bond +5, Fast & Furious Fast & Furious 迅速果断 Increase velocity mid-race. (Late Surger) Hint +3 On Failure: Speed +5, Skill points +5, Bond +5, Position Pilfer Position Pilfer 位置取り押し上げ Slightly increase velocity mid-race. (Late Surger) Hint +3",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 3.0,
+              "Skill Pts": 8.75,
+              "Speed": 5.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Pure White Marvelousness ☆",
+        "story_id": "830074003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Speed": 5.0
+            },
+            "label": "I feel really tired lately. 最近、力が出なくて"
+          },
+          {
+            "choice": "1",
+            "description": "Mood +1, Speed +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Mood": 1.0,
+              "Speed": 5.0
+            },
+            "label": "I want to be more motivated. もっとやる気を出したいんだ"
+          }
+        ],
+        "event_name": "Marvelous, No Question ☆",
+        "story_id": "801055001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Energy +10, Mood +1, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 10.0,
+              "Mood": 1.0
+            },
+            "label": "Throw everything you've got at it? 自分から全力でぶつかっていくとか…？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Hanshin Racecourse ○ Hanshin Racecourse ○ 阪神レース場○ Moderately increase performance at Hanshin Racecourse. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Maybe chill out a little and let things happen as they will? 関西人みたいなノリと勢いで、とか…？"
+          }
+        ],
+        "event_name": "How To Be More Marvelous ☆",
+        "story_id": "801055002"
+      }
+    ],
+    "30076": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +15",
+            "effects": {
+              "Speed": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Guided to Scenery",
+        "story_id": "830076001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Skill Points +20",
+            "effects": {
+              "Skill Pts": 20.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Shared Scenery",
+        "story_id": "830076002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +15, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Trackblazer Trackblazer 切り開く者 Decrease fatigue when positioned toward the front mid-race. (Medium) Hint +1",
+            "effects": {
+              "Skill Hint": 1.0,
+              "Speed": 15.0
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "The Scenery Ahead",
+        "story_id": "830076003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +10, Stamina +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Speed": 10.0,
+              "Stamina": 5.0
+            },
+            "label": "Of course. 構わないよ"
+          },
+          {
+            "choice": "1",
+            "description": "Speed +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Speed": 15.0
+            },
+            "label": "Sure!"
+          }
+        ],
+        "event_name": "On and On",
+        "story_id": "801002001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Speed +5, Stamina +5, Wit +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Speed": 5.0,
+              "Stamina": 5.0,
+              "Wisdom": 5.0
+            },
+            "label": "Why not do some partner running with her? 一緒に併走してあげるのは？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Left-Handed ○ Left-Handed ○ 左回り○ Moderately increase performance on left-handed tracks. Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "Maybe the trick is hidden in that left-handed loop you're in. その左回りにコツが隠されてるのかも"
+          }
+        ],
+        "event_name": "What Should I Do?",
+        "story_id": "801002002"
+      }
+    ],
+    "30078": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Speed +7, Stamina +7, Power +7, Guts +7, Wit +7, Bond +7 On Failure: Wit +4, Ends chain event",
+            "effects": {
+              "Friendship": 5.25,
+              "Guts": 5.25,
+              "Power": 5.25,
+              "Speed": 5.25,
+              "Stamina": 5.25,
+              "Wisdom": 6.25
+            },
+            "label": "Maybe it's a secret spell for extreme happiness?!"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +5, Bond +5, Ends chain event",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 5.0
+            },
+            "label": "Something that must be sealed away, perhaps?"
+          }
+        ],
+        "event_name": "Mystery Fortune Ritual!",
+        "story_id": "830078001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Speed +7, Stamina +7, Power +7, Guts +7, Wit +7, Bond +7 On Failure: Wit +4, Ends chain event",
+            "effects": {
+              "Friendship": 5.25,
+              "Guts": 5.25,
+              "Power": 5.25,
+              "Speed": 5.25,
+              "Stamina": 5.25,
+              "Wisdom": 6.25
+            },
+            "label": "But the treasure still remains a mystery!"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +5, Bond +5, Ends chain event",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 5.0
+            },
+            "label": "Make sure you keep the map safe from now on."
+          }
+        ],
+        "event_name": "Fortune Favors the Friends!",
+        "story_id": "830078002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "On Success: Speed +7, Stamina +7, Power +7, Guts +7, Wit +7, Skill Points +77, Bond +7, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Super Lucky Seven Super Lucky Seven スーパーラッキーセブン Good things may happen when in bracket 7. Hint +3 On Failure: Skill Points +7, Bond +7, Lucky Seven Lucky Seven ラッキーセブン Moderately good things may happen when in bracket 7. Hint +3",
+            "effects": {
+              "Friendship": 7.0,
+              "Guts": 5.25,
+              "Power": 5.25,
+              "Skill Hint": 3.0,
+              "Skill Pts": 59.5,
+              "Speed": 5.25,
+              "Stamina": 5.25,
+              "Wisdom": 5.25
+            },
+            "label": ""
+          }
+        ],
+        "event_name": "Finding Miraculous Joy!",
+        "story_id": "830078003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Wit +5, Skill points +15, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 15.0,
+              "Wisdom": 5.0
+            },
+            "label": "It's probably just from you rushing everything... ただ急いでいるだけの気が……"
+          },
+          {
+            "choice": "1",
+            "description": "Energy -10, Speed +5, Stamina +5, Power +5, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Power": 5.0,
+              "Speed": 5.0,
+              "Stamina": 5.0
+            },
+            "label": "Why don't you try being a little more enthusiastic? もう少し気合いも込めてみたら？"
+          }
+        ],
+        "event_name": "Maximum Spirituality",
+        "story_id": "801056001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Skill points +30, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Pts": 30.0
+            },
+            "label": "I guess I have a few favors to I'd like to ask... 片っ端から作業を振ってみる"
+          },
+          {
+            "choice": "1",
+            "description": "Energy +20, Bond +5",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 20.0
+            },
+            "label": "Why don't you try being kind to yourself? 自分に親切にしてみるとかはどう？"
+          }
+        ],
+        "event_name": "When Piety and Kindness Intersect",
+        "story_id": "801056002"
+      }
+    ],
+    "30086": [
+      {
+        "chain_max": 3,
+        "chain_num": 1,
+        "choices": [],
+        "event_name": "Anything for My Classmates",
+        "story_id": "830086001"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 2,
+        "choices": [],
+        "event_name": "Great Expectations",
+        "story_id": "830086002"
+      },
+      {
+        "chain_max": 3,
+        "chain_num": 3,
+        "choices": [],
+        "event_name": "Rivals Know Best",
+        "story_id": "830086003"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Energy +20",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": 20.0
+            },
+            "label": "いったん休憩にしたら？"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, Energy -10, Speed +25",
+            "effects": {
+              "Friendship": 5.0,
+              "HP": -10.0,
+              "Speed": 25.0
+            },
+            "label": "急いで終わらせよう！"
+          }
+        ],
+        "event_name": "A Thorough Inspection",
+        "story_id": "801077001"
+      },
+      {
+        "chain_max": 0,
+        "chain_num": 0,
+        "choices": [
+          {
+            "choice": "0",
+            "description": "Bond +5, Stamina +10",
+            "effects": {
+              "Friendship": 5.0,
+              "Stamina": 10.0
+            },
+            "label": "練習あるのみ！"
+          },
+          {
+            "choice": "1",
+            "description": "Bond +5, .mw-parser-output .skill.tooltip>.text{display:flex;gap:5px;min-width:300px;text-align:start}.mw-parser-output .skill.tooltip>.text .title{white-space:nowrap} Up-Tempo Up-Tempo テンポアップ Slightly increase positioning ability when positioned toward the front mid-race. (Medium) Hint +1",
+            "effects": {
+              "Friendship": 5.0,
+              "Skill Hint": 1.0
+            },
+            "label": "あえて曲のテンポを上げてみては？"
+          }
+        ],
+        "event_name": "A Diligent Effort",
+        "story_id": "801077002"
+      }
+    ]
+  }
+}

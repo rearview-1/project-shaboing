@@ -1,0 +1,485 @@
+{
+  "entries": {
+    "long_end": {
+      "guts": 0.75,
+      "power": 0.9,
+      "speed": 0.75,
+      "stamina": 1.27,
+      "thresholds": {
+        "classic": {
+          "guts": 240,
+          "power": 450,
+          "speed": 390,
+          "stamina": 533,
+          "wit": 198
+        },
+        "junior": {
+          "guts": 135,
+          "power": 234,
+          "speed": 210,
+          "stamina": 279,
+          "wit": 108
+        },
+        "senior": {
+          "guts": 345,
+          "power": 648,
+          "speed": 570,
+          "stamina": 787,
+          "wit": 279
+        }
+      },
+      "wit": 0.45
+    },
+    "long_front": {
+      "guts": 0.65,
+      "power": 0.78,
+      "speed": 0.75,
+      "stamina": 1.47,
+      "thresholds": {
+        "classic": {
+          "guts": 208,
+          "power": 390,
+          "speed": 390,
+          "stamina": 617,
+          "wit": 220
+        },
+        "junior": {
+          "guts": 117,
+          "power": 203,
+          "speed": 210,
+          "stamina": 323,
+          "wit": 120
+        },
+        "senior": {
+          "guts": 299,
+          "power": 562,
+          "speed": 570,
+          "stamina": 911,
+          "wit": 310
+        }
+      },
+      "wit": 0.5
+    },
+    "long_late": {
+      "guts": 0.73,
+      "power": 0.87,
+      "speed": 0.75,
+      "stamina": 1.3,
+      "thresholds": {
+        "classic": {
+          "guts": 234,
+          "power": 435,
+          "speed": 390,
+          "stamina": 546,
+          "wit": 198
+        },
+        "junior": {
+          "guts": 131,
+          "power": 226,
+          "speed": 210,
+          "stamina": 286,
+          "wit": 108
+        },
+        "senior": {
+          "guts": 336,
+          "power": 626,
+          "speed": 570,
+          "stamina": 806,
+          "wit": 279
+        }
+      },
+      "wit": 0.45
+    },
+    "long_pace": {
+      "guts": 0.65,
+      "power": 0.8,
+      "speed": 0.75,
+      "stamina": 1.45,
+      "thresholds": {
+        "classic": {
+          "guts": 208,
+          "power": 400,
+          "speed": 390,
+          "stamina": 609,
+          "wit": 211
+        },
+        "junior": {
+          "guts": 117,
+          "power": 208,
+          "speed": 210,
+          "stamina": 319,
+          "wit": 115
+        },
+        "senior": {
+          "guts": 299,
+          "power": 576,
+          "speed": 570,
+          "stamina": 899,
+          "wit": 298
+        }
+      },
+      "wit": 0.48
+    },
+    "medium_end": {
+      "guts": 0.6,
+      "power": 0.95,
+      "speed": 0.85,
+      "stamina": 0.82,
+      "thresholds": {
+        "classic": {
+          "guts": 192,
+          "power": 475,
+          "speed": 442,
+          "stamina": 344,
+          "wit": 220
+        },
+        "junior": {
+          "guts": 108,
+          "power": 247,
+          "speed": 238,
+          "stamina": 180,
+          "wit": 120
+        },
+        "senior": {
+          "guts": 276,
+          "power": 684,
+          "speed": 646,
+          "stamina": 508,
+          "wit": 310
+        }
+      },
+      "wit": 0.5
+    },
+    "medium_front": {
+      "guts": 0.5,
+      "power": 0.83,
+      "speed": 0.85,
+      "stamina": 1.02,
+      "thresholds": {
+        "classic": {
+          "guts": 160,
+          "power": 415,
+          "speed": 442,
+          "stamina": 428,
+          "wit": 242
+        },
+        "junior": {
+          "guts": 90,
+          "power": 216,
+          "speed": 238,
+          "stamina": 224,
+          "wit": 132
+        },
+        "senior": {
+          "guts": 230,
+          "power": 598,
+          "speed": 646,
+          "stamina": 632,
+          "wit": 341
+        }
+      },
+      "wit": 0.55
+    },
+    "medium_late": {
+      "guts": 0.58,
+      "power": 0.92,
+      "speed": 0.85,
+      "stamina": 0.85,
+      "thresholds": {
+        "classic": {
+          "guts": 186,
+          "power": 460,
+          "speed": 442,
+          "stamina": 357,
+          "wit": 220
+        },
+        "junior": {
+          "guts": 104,
+          "power": 239,
+          "speed": 238,
+          "stamina": 187,
+          "wit": 120
+        },
+        "senior": {
+          "guts": 267,
+          "power": 662,
+          "speed": 646,
+          "stamina": 527,
+          "wit": 310
+        }
+      },
+      "wit": 0.5
+    },
+    "medium_pace": {
+      "guts": 0.5,
+      "power": 0.85,
+      "speed": 0.85,
+      "stamina": 1.0,
+      "thresholds": {
+        "classic": {
+          "guts": 160,
+          "power": 425,
+          "speed": 442,
+          "stamina": 420,
+          "wit": 233
+        },
+        "junior": {
+          "guts": 90,
+          "power": 221,
+          "speed": 238,
+          "stamina": 220,
+          "wit": 127
+        },
+        "senior": {
+          "guts": 230,
+          "power": 612,
+          "speed": 646,
+          "stamina": 620,
+          "wit": 329
+        }
+      },
+      "wit": 0.53
+    },
+    "mile_end": {
+      "guts": 0.5,
+      "power": 1.0,
+      "speed": 0.9,
+      "stamina": 0.47,
+      "thresholds": {
+        "classic": {
+          "guts": 160,
+          "power": 500,
+          "speed": 468,
+          "stamina": 197,
+          "wit": 242
+        },
+        "junior": {
+          "guts": 90,
+          "power": 260,
+          "speed": 252,
+          "stamina": 103,
+          "wit": 132
+        },
+        "senior": {
+          "guts": 230,
+          "power": 720,
+          "speed": 684,
+          "stamina": 291,
+          "wit": 341
+        }
+      },
+      "wit": 0.55
+    },
+    "mile_front": {
+      "guts": 0.4,
+      "power": 0.88,
+      "speed": 0.9,
+      "stamina": 0.67,
+      "thresholds": {
+        "classic": {
+          "guts": 128,
+          "power": 440,
+          "speed": 468,
+          "stamina": 281,
+          "wit": 264
+        },
+        "junior": {
+          "guts": 72,
+          "power": 229,
+          "speed": 252,
+          "stamina": 147,
+          "wit": 144
+        },
+        "senior": {
+          "guts": 184,
+          "power": 634,
+          "speed": 684,
+          "stamina": 415,
+          "wit": 372
+        }
+      },
+      "wit": 0.6
+    },
+    "mile_late": {
+      "guts": 0.48,
+      "power": 0.97,
+      "speed": 0.9,
+      "stamina": 0.5,
+      "thresholds": {
+        "classic": {
+          "guts": 154,
+          "power": 485,
+          "speed": 468,
+          "stamina": 210,
+          "wit": 242
+        },
+        "junior": {
+          "guts": 86,
+          "power": 252,
+          "speed": 252,
+          "stamina": 110,
+          "wit": 132
+        },
+        "senior": {
+          "guts": 221,
+          "power": 698,
+          "speed": 684,
+          "stamina": 310,
+          "wit": 341
+        }
+      },
+      "wit": 0.55
+    },
+    "mile_pace": {
+      "guts": 0.4,
+      "power": 0.9,
+      "speed": 0.9,
+      "stamina": 0.65,
+      "thresholds": {
+        "classic": {
+          "guts": 128,
+          "power": 450,
+          "speed": 468,
+          "stamina": 273,
+          "wit": 255
+        },
+        "junior": {
+          "guts": 72,
+          "power": 234,
+          "speed": 252,
+          "stamina": 143,
+          "wit": 139
+        },
+        "senior": {
+          "guts": 184,
+          "power": 648,
+          "speed": 684,
+          "stamina": 403,
+          "wit": 360
+        }
+      },
+      "wit": 0.58
+    },
+    "sprint_end": {
+      "guts": 0.45,
+      "power": 1.05,
+      "speed": 0.95,
+      "stamina": 0.27,
+      "thresholds": {
+        "classic": {
+          "guts": 144,
+          "power": 525,
+          "speed": 494,
+          "stamina": 113,
+          "wit": 198
+        },
+        "junior": {
+          "guts": 81,
+          "power": 273,
+          "speed": 266,
+          "stamina": 59,
+          "wit": 108
+        },
+        "senior": {
+          "guts": 207,
+          "power": 756,
+          "speed": 722,
+          "stamina": 167,
+          "wit": 279
+        }
+      },
+      "wit": 0.45
+    },
+    "sprint_front": {
+      "guts": 0.35,
+      "power": 0.93,
+      "speed": 0.95,
+      "stamina": 0.47,
+      "thresholds": {
+        "classic": {
+          "guts": 112,
+          "power": 465,
+          "speed": 494,
+          "stamina": 197,
+          "wit": 220
+        },
+        "junior": {
+          "guts": 63,
+          "power": 242,
+          "speed": 266,
+          "stamina": 103,
+          "wit": 120
+        },
+        "senior": {
+          "guts": 161,
+          "power": 670,
+          "speed": 722,
+          "stamina": 291,
+          "wit": 310
+        }
+      },
+      "wit": 0.5
+    },
+    "sprint_late": {
+      "guts": 0.43,
+      "power": 1.02,
+      "speed": 0.95,
+      "stamina": 0.3,
+      "thresholds": {
+        "classic": {
+          "guts": 138,
+          "power": 510,
+          "speed": 494,
+          "stamina": 126,
+          "wit": 198
+        },
+        "junior": {
+          "guts": 77,
+          "power": 265,
+          "speed": 266,
+          "stamina": 66,
+          "wit": 108
+        },
+        "senior": {
+          "guts": 198,
+          "power": 734,
+          "speed": 722,
+          "stamina": 186,
+          "wit": 279
+        }
+      },
+      "wit": 0.45
+    },
+    "sprint_pace": {
+      "guts": 0.35,
+      "power": 0.95,
+      "speed": 0.95,
+      "stamina": 0.45,
+      "thresholds": {
+        "classic": {
+          "guts": 112,
+          "power": 475,
+          "speed": 494,
+          "stamina": 189,
+          "wit": 211
+        },
+        "junior": {
+          "guts": 63,
+          "power": 247,
+          "speed": 266,
+          "stamina": 99,
+          "wit": 115
+        },
+        "senior": {
+          "guts": 161,
+          "power": 684,
+          "speed": 722,
+          "stamina": 279,
+          "wit": 298
+        }
+      },
+      "wit": 0.48
+    }
+  },
+  "source": "Heuristic fallback calibrated from public mechanics guidance; manual_race_data overrides this when available."
+}

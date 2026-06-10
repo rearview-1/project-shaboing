@@ -1,0 +1,184 @@
+{
+  "facilities": {
+    "guts": {
+      "1": {
+        "energy": -22,
+        "guts": 8,
+        "power": 5,
+        "skill_pt": 4,
+        "speed": 5
+      },
+      "2": {
+        "energy": -22,
+        "guts": 10,
+        "power": 6,
+        "skill_pt": 5,
+        "speed": 6
+      },
+      "3": {
+        "energy": -22,
+        "guts": 12,
+        "power": 7,
+        "skill_pt": 6,
+        "speed": 7
+      },
+      "4": {
+        "energy": -22,
+        "guts": 14,
+        "power": 8,
+        "skill_pt": 7,
+        "speed": 8
+      },
+      "5": {
+        "energy": -22,
+        "guts": 16,
+        "power": 10,
+        "skill_pt": 8,
+        "speed": 10
+      }
+    },
+    "power": {
+      "1": {
+        "energy": -20,
+        "power": 9,
+        "skill_pt": 4,
+        "stamina": 6
+      },
+      "2": {
+        "energy": -20,
+        "power": 11,
+        "skill_pt": 5,
+        "stamina": 7
+      },
+      "3": {
+        "energy": -20,
+        "power": 13,
+        "skill_pt": 6,
+        "stamina": 9
+      },
+      "4": {
+        "energy": -20,
+        "power": 15,
+        "skill_pt": 7,
+        "stamina": 10
+      },
+      "5": {
+        "energy": -20,
+        "power": 18,
+        "skill_pt": 8,
+        "stamina": 12
+      }
+    },
+    "speed": {
+      "1": {
+        "energy": -21,
+        "power": 6,
+        "skill_pt": 4,
+        "speed": 11
+      },
+      "2": {
+        "energy": -21,
+        "power": 7,
+        "skill_pt": 5,
+        "speed": 13
+      },
+      "3": {
+        "energy": -21,
+        "power": 9,
+        "skill_pt": 6,
+        "speed": 16
+      },
+      "4": {
+        "energy": -21,
+        "power": 10,
+        "skill_pt": 7,
+        "speed": 19
+      },
+      "5": {
+        "energy": -21,
+        "power": 12,
+        "skill_pt": 8,
+        "speed": 22
+      }
+    },
+    "stamina": {
+      "1": {
+        "energy": -19,
+        "guts": 6,
+        "skill_pt": 4,
+        "stamina": 10
+      },
+      "2": {
+        "energy": -19,
+        "guts": 7,
+        "skill_pt": 5,
+        "stamina": 12
+      },
+      "3": {
+        "energy": -19,
+        "guts": 9,
+        "skill_pt": 6,
+        "stamina": 15
+      },
+      "4": {
+        "energy": -19,
+        "guts": 10,
+        "skill_pt": 7,
+        "stamina": 17
+      },
+      "5": {
+        "energy": -19,
+        "guts": 12,
+        "skill_pt": 8,
+        "stamina": 20
+      }
+    },
+    "wit": {
+      "1": {
+        "energy": 5,
+        "skill_pt": 5,
+        "speed": 2,
+        "wit": 10
+      },
+      "2": {
+        "energy": 5,
+        "skill_pt": 6,
+        "speed": 2,
+        "wit": 12
+      },
+      "3": {
+        "energy": 5,
+        "skill_pt": 7,
+        "speed": 3,
+        "wit": 15
+      },
+      "4": {
+        "energy": 5,
+        "skill_pt": 8,
+        "speed": 3,
+        "wit": 17
+      },
+      "5": {
+        "energy": 5,
+        "skill_pt": 10,
+        "speed": 4,
+        "wit": 20
+      }
+    }
+  },
+  "level_multipliers": {
+    "1": 1.0,
+    "2": 1.25,
+    "3": 1.5,
+    "4": 1.75,
+    "5": 2.0
+  },
+  "level_up_every_uses": 4,
+  "partner_count_distribution": {
+    "min_partners_per_tile": 1,
+    "nonpreferred_support_base_chance": 0.1,
+    "preferred_support_base_chance": 0.42,
+    "specialty_priority_divisor": 500.0
+  },
+  "source": "GameTora URA Finale base values + public training-level multipliers"
+}

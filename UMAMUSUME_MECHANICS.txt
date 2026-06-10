@@ -1,0 +1,760 @@
+================================================================================
+UMAMUSUME: PRETTY DERBY — COMPLETE MECHANICS REFERENCE
+================================================================================
+Compiled from: Erzzy global reference doc, uma.guide guides (14 articles),
+gametora.com/umamusume, uma.moe/database, project memory, and general
+training-data knowledge of the game. Numerical values are approximate where
+the game has been re-balanced; treat exact percentages as "close enough for
+bot decisions" unless a uma.guide formula is cited.
+
+This file is meant to be the SINGLE SOURCE OF TRUTH a fresh assistant can
+read to come up to speed on the game systems that drive this bot's training
+strategy. Topics are ordered roughly from "must know" → "edge cases".
+
+================================================================================
+1. WHAT THE GAME IS
+================================================================================
+
+Umamusume Pretty Derby is a horse-girl training sim by Cygames. The core
+loop is "career mode" — you spend ~78 in-game turns training a trainee to
+race well in Japanese-style turf/dirt races. The goals of a career mode run:
+
+  * Win the trainee's mandatory race objectives (varies per chara, 30+ races)
+  * Build inheritable parent (Veteran) for future runs ("sparks")
+  * Earn currency, fans, items, support card XP
+
+A career produces a "parent" (Veteran) with FACTORS — these are inheritable
+sparks that boost future child careers. The whole point of parent farming
+is producing strong parents.
+
+================================================================================
+2. STATS
+================================================================================
+
+Five primary stats, all on a 0–1200+ scale (caps go up with limit-break
+support cards):
+
+  Speed     — top speed, race performance
+  Stamina   — race HP pool + recovery during races
+  Power     — acceleration, recovery from being passed/blocked
+  Guts      — late-game push, resistance to being blocked
+  Wit       — SKILL ACTIVATION RATE, race-end recovery, target speed boost
+
+Stat thresholds (for sparks farming):
+  <  600  : 0% chance of 3-star spark of this stat
+   600 – 1100 : ~6% chance of 3-star spark
+  > 1100  : ~10% chance of 3-star spark
+
+The +400 All-Stats invisible career bonus (see §22) means a parent leaving
+career at e.g. 1100/700/700/300/700 effectively has stats valued as
+1500/1100/1100/700/1100 for SOME checks — confirmed in Erzzy + uma.guide.
+
+Stat caps per support deck:
+  No limit breaks: 1200 cap
+  Each LB of a support raises that stat's cap by ~10–14 per LB depending on
+  the card's cap-extension stat. Typical 5x SSR+1 deck reaches ~1400+ caps
+  on the main stats.
+
+GROWTH BONUSES — each chara has built-in % bonuses to specific stats during
+training (and racing) — typical patterns:
+  5★ chara: one stat +20%, one stat +10%
+  4★ chara: one stat +20%, one stat +10%  (occasionally just +20%)
+  3★ chara: one stat +10%
+  Triple-growth: rare (e.g. Tachyon-style) +10/+10/+10 across three stats
+
+================================================================================
+3. APTITUDES
+================================================================================
+
+Three aptitude dimensions, each with its own letter grade S/A/B/C/D/E/F/G:
+
+  TERRAIN APTITUDE
+    Turf (芝)  — grass races, most G1s
+    Dirt (ダート) — dirt races, fewer G1s
+    Aptitude letter applies to the chara's ability to perform on that surface.
+
+  DISTANCE APTITUDE
+    Sprint  (1000–1400m)
+    Mile    (1401–1800m)
+    Medium  (1801–2400m)
+    Long    (2401m+)
+
+  STYLE / STRATEGY APTITUDE
+    Front Runner (逃げ) — leads from start, dies if outpaced
+    Pace Chaser  (先行) — sits 2nd–4th early, springs in final corner
+    Late Surger  (差し) — back of pack, big final-corner kick
+    End Closer   (追込) — very back, big sprint in the final straight
+
+Aptitude letter → effect:
+  S, A : full effectiveness; aptitude is not a problem
+  B    : slight performance drop, ~5% target-speed penalty
+  C    : noticeable drop (~10%) — risky for G1 wins
+  D    : significant drop (~20%) — bot should usually skip
+  E, F : essentially unwinnable for serious races
+  G    : may not even be allowed to start in some races
+
+API encoding for aptitude in the game's protocol:
+  8 = S
+  7 = A
+  6 = B
+  5 = C
+  4 = D
+  3 = E
+  2 = F
+  1 = G
+
+API encoding for race style:
+  1 = Front Runner
+  2 = Pace Chaser
+  3 = Late Surger
+  4 = End Closer
+
+Critical bot rule: SKIP races where the chara has C aptitude or lower for
+either terrain or distance — uses TP for low odds of winning.
+
+================================================================================
+4. CAREER MODE FLOW
+================================================================================
+
+A career is roughly 78 turns split across three "years":
+
+  JUNIOR YEAR    (12 turns)  Early Jul – Late Dec
+                              Pre-Debut intro, first races available Junior
+                              August / September. No G1 yet usually.
+
+  CLASSIC YEAR   (25 turns)  Pre-Debut → Late Dec
+                              Most G2/G3 wins farmed here. First G1 wins
+                              available (Tenno Sho, Satsuki Sho, Oka Sho).
+                              Major checkpoints: Spring/Summer "make a goal"
+                              races.
+
+  SENIOR YEAR    (25 turns)  Pre-Debut → Late Dec
+                              Most G1 wins farmed here. Final stretch heading
+                              into URA / scenario finals.
+
+  FINALS         (varies)    URA Final League (URA), Aoharu finals, MANT
+                              climax, Grand Live concert, etc.
+
+Each turn the player picks ONE action:
+  TRAIN one of {Speed, Stamina, Power, Guts, Wit}
+  RACE  (run a race that turn — earns fans, money, skill points, win records)
+  REST  (recovers energy/HP)
+  RECREATION (boosts mood)
+  INFIRMARY  (clears debuffs)
+  Sometimes ITEMS (in MANT/scenarios with shops)
+
+Random events fire periodically (chara story, support card story, scenario
+events). The "Tazuna" guidance event triggers occasionally too.
+
+================================================================================
+5. TRAINING
+================================================================================
+
+Each training facility has a level (1–5) that increases stat gains. Training
+levels are raised by repeatedly using that facility.
+
+Training STAT GAINS roughly follow:
+  base_gain × (1 + level_bonus) × (1 + friendship_bonus) × (1 + mood_bonus)
+            × (1 + chara_growth_bonus) × (1 + support_passive_bonus)
+            × (1 + rainbow_bonus when applicable)
+
+Friendship bonus per ORANGE-gauge support card on the facility:
+  +35% per orange support (Friend cards bond differently — see §6)
+
+Rainbow training: when a support has orange friendship AND is on its own
+matching stat type, that support contributes "rainbow" — extra +50–70% on
+that training plus a chance to learn the support's signature skill (hint).
+
+Failure rate:
+  Each training has a failure chance based on energy/HP and stat bonuses.
+  Critical fails (~1% at low HP) drop stats and can cause injury (5–8 turn
+  debuff). Bot should not train under 30% HP without sticking points.
+
+Energy cost per training:
+  ~15–25 energy depending on training type and friendship multipliers.
+  Speed/Stamina/Power tend to cost more; Wit training RECOVERS energy
+  (gains +6 energy when picked, no stat-cost).
+
+================================================================================
+6. SUPPORT CARDS (DECK)
+================================================================================
+
+Each career has a 6-slot support deck. Slots:
+  5 PRIVATE supports (you pick from your inventory)
+  1 FRIEND slot (use another player's support — rented)
+
+Support card TYPES:
+  SPEED    — pink — bonus to Speed training, Speed-themed skills
+  STAMINA  — blue — Stamina training/skills
+  POWER    — orange — Power training/skills
+  GUTS     — red — Guts training/skills
+  WIT      — green — Wit training/skills
+  FRIEND   — neutral — boosts ALL training when bonded; unique events
+
+Support RARITY:
+  R   — common, modest bonuses
+  SR  — uncommon, good for early game
+  SSR — top tier, target for serious decks
+
+Each support card has:
+  * Effect stats (training bonus %, friendship bonus, hint rate, etc.)
+  * 4 events that fire during the career (giving stats/skills/hints)
+  * 1 unique skill it can teach (hint events from the support)
+  * Limit-break (LB) level 0–4 — increases stat cap contribution and effect %
+
+A LB4 (max-limit-break) SSR is the gold standard.
+
+Deck composition (rule-of-thumb for MANT spark-farming):
+  2 Speed SSR
+  2 Stamina SSR (or 1 Stamina + 1 Power)
+  1 Wit SSR (Tazuna is the best; gives huge recovery + hint rate)
+  1 Friend SSR (Kitasan, Super Creek, Sasami, Light Hello — depends on goal)
+
+================================================================================
+7. FRIENDSHIP, BOND, HINTS
+================================================================================
+
+FRIENDSHIP GAUGE per support card (and the trainee themselves). Gauge fills
+when:
+  * The support is on a training the trainee picks
+  * Random events from the support fire
+  * Successful races give bond to attending supports
+
+Color states of the gauge:
+  Default → Light → Orange (max)
+
+Once orange, the support contributes RAINBOW training (matching their type).
+Maintaining orange across multiple supports = stacked rainbows = explosive
+late-career stat gains.
+
+HINT events: while a support is on training, has a chance to give a HINT
+(temporary discount on the support's skill cost during the skill-purchase
+phase). Wit supports raise hint rate.
+
+================================================================================
+8. MOOD
+================================================================================
+
+Five states from worst to best:
+  AWFUL  : −20% stat training, −10% race performance
+  BAD    : −10% stat, −5% race
+  NORMAL : baseline
+  GOOD   : +10% stat, +5% race
+  GREAT  : +20% stat, +5–10% race
+
+Bot tries to keep mood at GOOD or GREAT during big training turns and races.
+Mood drops from training fails, race losses, certain events. Mood rises from
+Recreation, Hot Springs item, certain events.
+
+================================================================================
+9. ENERGY / HP (out-of-race resource)
+================================================================================
+
+The out-of-race "energy" gauge:
+  0     – 30  : critical, training failure risk spikes (~40–60%)
+  31    – 50  : low; recovery recommended
+  51    – 80  : healthy
+  81    – 100 : full
+
+Recovery options:
+  REST          — restores 30–70 energy (variable)
+  Recreation    — small recovery + mood bump
+  Infirmary     — clears debuffs (slows aging, panic, headache, etc.)
+  Wit training  — +6 energy as side-effect (no cost)
+  Hot Springs   — item, large recovery
+  Energy Drinks — item, +20–30 energy
+
+Bot's TP-recovery options used in the bot start panel:
+  T30  — uses "Toughness 30" item (premium energy drink)
+  Carats — spend Carats currency at the shop / inn
+  Both  — try Toughness first, fall back to Carats
+  None  — never spend energy items
+
+================================================================================
+10. RACING — RACE MECHANICS
+================================================================================
+
+Race RANKS (a.k.a. type / grade in the API):
+  G1     — top tier, ~30 per year, ~3500m+ races include G1 stayer events
+  G2     — second tier
+  G3     — third tier
+  OP     — Open (no grade)
+  PRE-OP — Pre-Open (lowest)
+
+API "type" string seen in this project's race data:
+  "G1" / "G2" / "G3" / "OP" / "PRE-OP"
+
+Race CALENDAR — every year-half-turn slot has 0–4 races available. The data
+file `uma_race_data.json` in this project has 378 races total across the
+three years with each having `date` field like "Junior Year Late Jul",
+"Classic Year Pre-Debut", "Senior Year Early Mar".
+
+RACE PHASES (by % of race distance):
+  Opening    : 0%  – 16.67%
+  Middle     : 16.67% – 66.67%
+  Final      : 66.67% – ~84%
+  Last Spurt : ~84%   – 100%   (target speed scales up; skills trigger here)
+
+Skills with "in last spurt" / "during final corner" / etc. conditions fire
+during specific phases. Style-specific skills (front-runner skills, late-
+surge skills) often condition on phase + position.
+
+HP DURING RACE (separate from energy):
+  Stamina stat translates to a race-HP pool.
+  HP drains as the chara moves; lower with higher speed.
+  Skill "recovery" effects refund HP mid-race.
+  Stamina debt = "stamina out" → chara slows in last spurt.
+
+Target speed per phase varies. Higher Wit raises target speed slightly.
+
+POSITIONING:
+  Each chara has a position rank 1..N during the race.
+  Skills like "Cornering Adept", "Outer Swell", "Late Surger Corners", etc.
+  proc when in specific position/lane combinations.
+
+CRITICAL NUMBERS:
+  Fan gain per race ≈ winnings_by_position × race_grade_multiplier
+  Skill points per race ≈ 35–95 (G3..G1 + position bonus)
+  Money per race ≈ 5,000–800,000 (G3..G1 first place)
+  Carats per race ≈ small flat amount
+
+================================================================================
+11. SKILLS
+================================================================================
+
+Skills are bought during career at the SKILL POINTS (SP) shop. Each skill
+has an SP cost and a list of trigger conditions.
+
+Skill CATEGORIES (by color in-game):
+  BLUE  — stat-boost while condition met (e.g. +0.35 speed in final corner)
+  PINK  — debuff opponents
+  GREEN — unique chara skill (one per chara)
+  WHITE — common learned skill (the bulk of bought skills)
+  GOLD  — INHERITED unique skill (* prefix; a parent's unique becomes
+          this child's learnable gold version)
+
+SKILL ACTIVATION RATE (Wit proc formula):
+  proc% = base_proc × (1 + Wit / 1000)
+  Effective rate caps around 90%+ at very high Wit.
+  Many skills have 70–80% base proc; a Wit 1200 chara hits ~95%.
+
+The bot's skill plan UI offers:
+  PRIORITY skills (bought first during final skill-buy)
+  BLACKLIST  (never bought)
+  STYLE auto-skills (the bot adds running-style skills automatically)
+  DISTANCE auto-skills (distance-matching skills)
+  Buy timing: THROUGHOUT (buy SP-cheap skills as they unlock) vs
+              END OF CAREER (save SP, buy all at the end)
+
+The MANT scenario gives an extra "stamina rescue" skill auto-buy at the end
+for last-spurt insurance.
+
+================================================================================
+12. INHERITANCE / SPARKS (factors)
+================================================================================
+
+A FACTOR is a piece of inheritable data on a parent. Every parent has 0–N
+factors of each type:
+
+  BLUE factors   — STAT (Power, Speed, Stamina, Guts, Wit, +stat-cap factors)
+  PINK factors   — APTITUDE (Turf/Dirt/Sprint/Mile/Medium/Long/Front/Pace/
+                            Late/End)
+  GREEN factors  — UNIQUE chara skills + a few scenario-specific
+  WHITE factors  — race wins (race name = factor name) and skill names
+
+Each factor has a STAR RATING 1–3 (3 best). A "3★ Power" factor on a parent
+is the goal of stat-spark farming. Factors are stored in the parent's
+LINEAGE TREE:
+
+  self (the parent themselves)
+  p1, p2  (their two parents)
+  gp1, gp2, gp3, gp4  (their four grandparents)
+
+7 nodes total. Each node has its own factors list. The CHILD trainee
+inherits factors via INSPIRATION events (see §13).
+
+API factor "category" strings used in this project:
+  "stat"     → blue
+  "aptitude" → pink
+  "scenario" → green (scenario-specific)
+  "chara"    → green (unique chara skill)
+  "skill"    → white (common skill)
+  "race"     → white (race-win factor)
+
+Star-rating thresholds (for the chara to gain a 3-star factor during their
+own career):
+  Stat < 600  : 0% chance of 3★ stat factor
+  Stat 600–1100 : ~6%
+  Stat > 1100 : ~10%
+
+The whole point of PARENT FARMING (this bot) is producing parents with
+stats > 1100 in multiple categories, plus high-tier pink/green/white
+factors, so that future careers using those parents inherit better sparks.
+
+================================================================================
+13. INSPIRATIONS
+================================================================================
+
+A career has ~3 INSPIRATION events at fixed checkpoints (typically once per
+year). Each inspiration:
+
+  1. Picks a node from the trainee's lineage (self, p1, p2, gp1..gp4) with
+     fixed-ish probabilities:
+       self = 30%  (the "1st year" inspiration / blue boost)
+       p1   = ~22%
+       p2   = ~22%
+       gp1..gp4 = ~6.5% each
+     (Approximate — uma.guide has the canonical table.)
+
+  2. Rolls each factor on that node against star-based probabilities:
+       1★ factor → ~33% chance of activating
+       2★ factor → ~66% chance
+       3★ factor → ~100% chance
+     Activated factors become "inspirations" the trainee learns/inherits.
+
+  3. The inspiration applies the factor's effect:
+       Blue (stat) → +stat bonus during the career
+       Pink (apt) → upgrades the trainee's aptitude letter
+       Green (unique) → the trainee learns the parent's unique skill as gold
+       White (skill) → the trainee may learn this skill cheaply
+
+PER-RUN INHERITANCE % shown in this project's Sparks modal is computed as:
+  per_inspiration = sum over lineage nodes of (node_weight × stars / 9)
+  per_career      = 1 − (1 − per_inspiration)^3
+The 3 is the inspirations-per-career count. The model is intentionally
+simple — it approximates uma.guide's published rates within a few % per
+factor, enough for ranking parents in the UI.
+
+================================================================================
+14. AFFINITY / COMPATIBILITY
+================================================================================
+
+When you start a career you pick (trainee, parent1, parent2). The game
+computes the trio's AFFINITY (compatibility score) based on the relationships
+between all three pair-wise.
+
+Affinity tiers in-game:
+  ◎  Double circle    : ≥ 150 (excellent)
+  ○  Circle           : ≥ 50  (good)
+  △  Triangle         : ≥ 25  (mediocre)
+  ×  Cross            : < 25  (bad)
+
+Effect of affinity on the career:
+  * Higher affinity = higher base proc rate on skills (multiplicative)
+  * Higher affinity = better inspiration success rate
+  * Standard ballpark: skill_proc_with_affinity ≈ base × (1 + affinity/100)
+
+The game's exact formula uses pair-wise "compatibility points" tables built
+into the chara master data — Cygames-internal. Public approximations:
+
+  trio_affinity = pair(trainee, p1) + pair(trainee, p2) + pair(p1, p2)
+
+where each pair score is built from shared base attributes (terrain,
+distance, base style) plus shared blue/pink factors. This project's formula
+uses:
+
+  pair_score = factor_score + apt_bonus
+  factor_score = Σ (over shared category:name pairs) weight × min(stars)
+                weights: aptitude=24, stat=18, scenario/chara=14, skill=9
+  apt_bonus  = +18 same terrain + 18 same distance + 12 same style
+
+Cap 220. Symbol mapping the same as the in-game thresholds (50/150 cuts).
+
+================================================================================
+15. SCENARIOS
+================================================================================
+
+Career mode "scenarios" — each gives a different finals format and unique
+mechanics. List in rough release order:
+
+  URA Final League (scenario_id=1) — the OG, basic 3-year career ending in
+    URA Senior Finale qualifier races
+
+  Aoharu Cup (scenario_id=2) — team-training with rivals; final team race
+
+  Make a New Track (MNT / URA Senior, scenario_id=3) — track-construction
+    scenario; new lane bonus mechanic
+
+  TRACKBLAZER ("MANT", scenario_id=4) — THIS BOT'S TARGET SCENARIO. The
+    parent-farming optimal. See §17.
+
+  Grand Live (scenario_id=5) — performance/idol component, skill panel
+    builds via concerts
+
+  Grand Masters (scenario_id=6) — chess-like Master skill tree
+
+  Project L'Arc (scenario_id=7) — overseas (France); aptitude variant
+
+  UAF Ready Go! (scenario_id=8) — athletic Olympics-style mini-game
+
+  Pretty Derby's Daydream (scenario_id=9 sometimes) — variety event
+
+  Twinkle Star Climax — special version of MANT/scenario climax
+
+The bot mostly runs scenario_id=4 (MANT/Trackblazer) for parent farming.
+
+================================================================================
+16. ITEMS
+================================================================================
+
+Career-mode items appear in shop/scenarios. Common ones:
+
+  TOUGHNESS BOOST tiers:
+    Toughness 10 — small energy refill (~+10)
+    Toughness 30 — premium ("T30") +30 energy, more common in MANT
+    Toughness 65 — rare big refill
+
+  MOOD ITEMS:
+    Megaphone (various tiers) — +mood
+    Reflection Horn — mood + minor energy
+    Hot Topic Boots — recreation alternative
+
+  TRAINING BOOSTERS:
+    Megaphone — +N% next training
+    Stylish Glasses — Wit-training booster
+    Single-Mode Special Drink — flat +stat to a specific stat for one train
+
+  SKILL/HINT:
+    Single-Mode Hint Book — guarantees hint next turn
+    Special Power Drink etc.
+
+  RACE ITEMS:
+    Sole-Sole Wonderful — race day buff
+    Long-Distance Cracker — Long-aptitude boost for the race
+
+  MANT-SPECIFIC:
+    Race-fatigue erasers
+    Climax-phase items (consumed only in the finals phase)
+
+Shop currency:
+  Career-internal currency varies (e.g. Carats for some, scenario tokens for
+  others). MANT uses Grade Points and Carats. The bot's TP-recovery field
+  picks between Toughness items vs Carats for energy refills.
+
+================================================================================
+17. MANT / TRACKBLAZER DEEP-DIVE
+================================================================================
+
+The bot's main scenario. Optimized for parent-spark farming.
+
+GRADE POINTS (GP):
+  Earn GP by winning races. Higher grade = more GP:
+    G1 ≈ 7800 GP (1st place), 4800 (2nd), 3200 (3rd)
+    G2 ≈ 5300 / 3300 / 2200
+    G3 ≈ 3800 / 2400 / 1600
+    OP ≈ 1300 / 800 / 500
+  Race losses earn nothing — bot must win or skip.
+
+  Cumulative GP unlocks EPITHETS (titles) at thresholds:
+    "Greenhorn" → starting
+    "Trackblazer" → ~50,000 GP
+    Higher epithets at 100k+, 200k+, 400k+ GP
+    Each epithet unlocks shop items and ends-of-career stat bonuses.
+
+EPITHET ROUTES (build paths):
+  Different epithets favor different stat distributions. Common picks:
+    "Speed Demon"   — stack Speed-related grade-point races
+    "Stamina Star"  — long-race focus
+    "Tenacity"      — high-Guts focus
+    "Trick Brain"   — Wit-focused
+  Bot picks a route at start based on the trainee's growth bonuses.
+
+CLIMAX PHASE / TWINKLE STAR CLIMAX:
+  Final stretch of the scenario where you must run a sequence of races.
+  Race-fatigue stacks each race; fatigue lowers stat performance for the
+  next race. Bot must:
+    * Manage fatigue between races (rest turns, items, infirmary if injured)
+    * Pick races where aptitude is A/S to avoid wasted runs
+    * Save TP/items for the final climactic race
+
+RACE FATIGUE:
+  Each race adds fatigue; cumulative fatigue stacks reduce stat output by
+  scaling factor. Reset between scenario phases. Bot tracks current fatigue
+  via API state.
+
+SHOP PRIORITY (default order this bot uses):
+  1. Energy / Toughness items (always)
+  2. Mood-boost items if mood is BAD or AWFUL
+  3. Skill manuals matching the trainee's style/distance
+  4. Stat boosters in the order: Speed → Stamina → Power → Wit → Guts
+  5. Race-day items for the next G1/G2
+
+DECK COMPS for MANT:
+  Standard "balanced":
+    Tazuna (Friend SSR) + 2 Speed + 2 Stamina/Power + 1 Wit
+  Stamina-focus:
+    Tazuna + 2 Stamina + 1 Speed + 1 Power + 1 Wit
+  See deck-builder presets in the bot UI for current meta builds.
+
+================================================================================
+18. SECRET STAT CHECKS / +400 ALL-STATS CAREER BONUS
+================================================================================
+
+Triple-confirmed (Erzzy doc, uma.guide, project memory): career-mode runs
+silently treat the trainee's stats as having +400 in EVERY stat for certain
+hidden checks. This affects:
+  * Inspiration roll thresholds (3★ factor rolls)
+  * Some skill proc gates
+  * Scenario-specific stat-check events
+
+Practical implication: a parent leaving career with 700/300/300/100/300
+is actually "1100/700/700/500/700" for the stat-roll context. Bot's training
+strategy doesn't need to explicitly reach 1100 in every stat to qualify for
+3★ spark eligibility — it's effectively closer to 700.
+
+================================================================================
+19. TP / TRAINING POWER
+================================================================================
+
+TP is the bot's local name for the career-mode "energy" gauge (§9). The
+bot's `tp_recovery_mode` setting picks how to recover:
+
+  0 = NONE       — never spend recovery items
+  1 = CARATS     — spend Carats at shop/inn
+  2 = T30        — use Toughness 30 items
+  3 = BOTH       — T30 first, fall back to Carats
+
+The bot will only TP-recover when energy is critically low (<30% or so) and
+training-fail risk would dominate the turn's value.
+
+================================================================================
+20. WIN-RATE TARGETS / G1 SUCCESS
+================================================================================
+
+The bot's G1 win-rate target ≈ 80–90% on a well-tuned career. Under-target
+runs (60%+ losses) usually indicate:
+  * Aptitude mismatch (D-grade or lower for terrain/distance)
+  * Stamina-out in last spurt (Stamina < 700 for Long races, < 600 for
+    Medium, < 500 for Mile/Sprint as a rough floor)
+  * Skill plan missing a critical "Cornering Adept" / "Concentration" /
+    "Straightaway Spurt" / etc. recovery or speed skill
+  * Wit too low for skill proc rate (< 500 = many skills don't fire)
+
+Skip races at C aptitude or lower; the bot wastes a TP and gains little.
+
+================================================================================
+21. CURRENCY
+================================================================================
+
+  Carats           — soft currency, free + paid breakdown shown in the bot
+                     account strip
+  Gold             — premium currency, large numbers (millions typical)
+  TP (Toughness)   — career energy items, capped (see T30 etc.)
+  Skill Points (SP)— career-internal, spent on skill buys
+
+The bot UI shows: TP nn/100 · CARATS xx,xxx · GOLD xxx,xxx · T30 nn
+
+================================================================================
+22. RUN-CAREER PRE-FLIGHT CHECKS THE BOT RUNS
+================================================================================
+
+Before the bot will let you press RUN CAREER, it verifies:
+  1. Deck selected (and isValidDeck — all card IDs are positive)
+  2. Friend support card selected (and not excluded)
+  3. Trainee selected
+  4. At least one Parent selected (Parent 1 is required; Parent 2 OR a
+     borrowed Guest fills the second slot)
+  5. No duplicate-character conflicts (trainee chara_id ≠ parent chara_id,
+     ≠ friend chara_id, ≠ deck-card chara_ids — game refuses dupes)
+  6. If a guest is selected, the daily borrow quota (max 5) is not exhausted
+  7. The current career slot is empty (NO CAREER state) or the user has
+     opted to delete it
+
+If all checks pass, syncStartButton() enables RUN CAREER.
+
+================================================================================
+23. PACKET-SNIFFER / API ENCODINGS
+================================================================================
+
+The bot communicates with the live Steam Umamusume client over HTTP+JSON
+to read state and (where possible) read decisions. Useful encodings seen in
+this project:
+
+  rental_succession_trained_chara  — borrowed parent in start payload
+  single_mode_trained_chara_rental_max_num = 5  — daily borrow cap
+  single_mode_rental_succession_num  — borrows used today
+
+Result codes:
+  1   = success
+  205 = rate-limit / sync result (retry)
+  208 = sync state ahead (rare)
+  214 = inventory mismatch / sync needed
+
+scenario_id = 4 for MANT / Trackblazer. The bot's bot only handles this
+scenario currently; other scenarios are stubs.
+
+Race-data file (`uma_race_data.json`):
+  378 races total. Fields per race:
+    id (integer)
+    name (string, e.g. "Chukyo Junior Stakes")
+    date ("Junior Year Late Jul" / "Classic Year Pre-Debut" / etc.)
+    type ("G1" / "G2" / "G3" / "OP" / "PRE-OP")
+    terrain ("Turf" / "Dirt")
+    distance ("Sprint" / "Mile" / "Medium" / "Long")
+    venue (string)
+
+================================================================================
+24. CHARACTER DATA THE BOT KNOWS
+================================================================================
+
+`uma_character_data.json` — career objectives + terrain/distance preference
+per chara name. 100+ entries.
+
+`chara_aptitude_map.json` — built this session. Keyed by 4-digit chara_id
+(e.g. "1006" for Oguri Cap). Each entry:
+  name, rarity, growths: [{stat, pct}, ...], terrain, distance, style,
+  aptitudes: { turf, dirt, sprint, mile, medium, long, front, pace,
+               late, end } (all letter grades)
+
+Currently covers ~35 charas (Special Week through Hishi Akebono). Best-
+guess data for most; only Oguri Cap is verified against gametora's page.
+Other entries should be sanity-checked by you before relying on them.
+
+================================================================================
+25. INHERITANCE STAR-COUNT MULTIPLIERS (for parents)
+================================================================================
+
+A factor's "value" in the parent depends on which lineage node holds it.
+The sparks-modal uses these weights for per-run % computation:
+
+  self          : 30%   (the parent themselves)
+  p1            : 22%
+  p2            : 22%
+  gp1 .. gp4    :  6.5% each (×4 = 26%)
+                          ────────
+  Total          : ~100%
+
+So a 3★ Power on the parent's "self" contributes more per-run than a 3★
+Power on a grandparent.
+
+================================================================================
+26. THINGS THIS REFERENCE DOES NOT COVER (open follow-ups)
+================================================================================
+
+  * Exact uma.guide-canonical inheritance percentages per node × stars
+  * Per-chara unique-skill effects (each has its own table; consult gametora
+    or uma.moe for the specific chara)
+  * Specific support card effects (each card has a unique kit)
+  * Event choice trees (which option gives which reward)
+  * Race-by-race target-speed values (uma.guide has them per phase per
+    race; not duplicated here)
+  * Scenario-specific event choice consequences
+
+================================================================================
+27. SOURCES / WHERE TO LOOK NEXT
+================================================================================
+
+When the in-game numbers don't match this doc, trust these in order:
+
+  1. uma.guide/guides/ — community-vetted formulas with citations
+  2. gametora.com/umamusume — daily-updated chara/support card pages with
+     official-data extraction (the most reliable for stat values and
+     aptitude grades)
+  3. uma.moe/database — frontend on top of gametora data, good for
+     filtering / cross-referencing
+  4. hakuraku.moe/veterans — for parent-tree visualization, especially
+     affinity computations from imported data.json
+
+================================================================================
+END OF REFERENCE
+================================================================================

@@ -1,0 +1,70 @@
+{
+  "metrics": {
+    "career_sample_count": 10,
+    "mean_score_last_10": 5081.18,
+    "median_score_last_10": 5256.6,
+    "g1_win_rate_last_10": 0.6842,
+    "g1_wins_last_10": 65,
+    "g1_attempts_last_10": 95,
+    "junior_friendship_rainbows_per_turn_last_10": 0.0,
+    "median_cards_at_80_bond_by_turn_35_last_10": 2,
+    "top_bottom_action_ratio": 7.173,
+    "top_sample_score_balanced_any_deck_q_3": 13788.9,
+    "wrong_signed_feature_count": 7,
+    "feature_weights_count": 19
+  },
+  "wrong_signed_features": [
+    {
+      "feature": "lagging_stat_alignment",
+      "value": -0.04566,
+      "floor": 0.0
+    },
+    {
+      "feature": "race_demand_pressure",
+      "value": -0.00664,
+      "floor": 0.0
+    },
+    {
+      "feature": "rainbow_setup_pressure",
+      "value": -0.00758,
+      "floor": 0.0
+    },
+    {
+      "feature": "first_summer_friendship_pressure",
+      "value": -0.01039,
+      "floor": 0.02
+    },
+    {
+      "feature": "friendship_unlocked_gap",
+      "value": -0.00509,
+      "floor": 0.02
+    },
+    {
+      "feature": "high_bond_count",
+      "value": -0.0583,
+      "floor": 0.0
+    },
+    {
+      "feature": "rainbow_count",
+      "value": -0.1107,
+      "floor": 0.0
+    }
+  ],
+  "career_log_paths_used": [
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_031439.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_030401.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_025223.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_023943.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_022717.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_021503.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_020246.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_014534.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_014436.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_013124.json"
+  ],
+  "learning_report_used": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\learning\\learning_report_20260522_030759.json",
+  "schema": "sweepy_baseline_metrics_v1",
+  "account": "account_b",
+  "n_careers": 10,
+  "computed_at_date": "2026-05-22"
+}

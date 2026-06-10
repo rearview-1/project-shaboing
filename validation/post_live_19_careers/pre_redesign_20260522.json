@@ -1,0 +1,43 @@
+{
+  "metrics": {
+    "career_sample_count": 19,
+    "mean_score_last_10": 5868.25,
+    "median_score_last_10": 5821.47,
+    "g1_win_rate_last_10": 0.6061,
+    "g1_wins_last_10": 120,
+    "g1_attempts_last_10": 198,
+    "junior_friendship_rainbows_per_turn_last_10": 0.0,
+    "median_cards_at_80_bond_by_turn_35_last_10": 3.0,
+    "top_bottom_action_ratio": 3.326,
+    "top_sample_score_balanced_any_deck_q_3": 13830.9,
+    "wrong_signed_feature_count": 0,
+    "feature_weights_count": 22
+  },
+  "wrong_signed_features": [],
+  "career_log_paths_used": [
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_175348.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_175107.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_173856.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_172646.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_171505.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_170246.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_165102.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_163838.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_162553.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_161414.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_160131.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_154917.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_153805.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_152624.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_151343.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_150215.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_145021.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_143757.json",
+    "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\bot_logs\\career_log_20260522_142526.json"
+  ],
+  "learning_report_used": "C:\\Users\\user\\Downloads\\umamusume-sweepy-main\\umamusume-sweepy-main\\uma_runtime\\instances\\account_b\\learning\\learning_report_20260522_174354.json",
+  "schema": "sweepy_baseline_metrics_v1",
+  "account": "account_b",
+  "n_careers": 19,
+  "computed_at_date": "2026-05-22"
+}

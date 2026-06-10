@@ -1,0 +1,30 @@
+{
+  "schema": "sweepy_stat_friend_recreation_payloads_v1",
+  "cards": {
+    "30036": {
+      "name": "Riko Kashimoto",
+      "status": "verified",
+      "notes": "Captured from old-project sniffer on 2026-06-03. Normal recreation is command_group_id 301/select_id 0; Riko outing is command_group_id 390/select_id 9006.",
+      "initial": {
+        "verified": true,
+        "captured": true,
+        "status": "verified",
+        "source": "captured_old_sniffer_20260603",
+        "command_type": 3,
+        "command_id": 0,
+        "command_group_id": 390,
+        "select_id": 9006
+      },
+      "after_initial": {
+        "verified": true,
+        "captured": true,
+        "status": "verified",
+        "source": "captured_old_sniffer_20260603_assumed_same_chain_payload",
+        "command_type": 3,
+        "command_id": 0,
+        "command_group_id": 390,
+        "select_id": 9006
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "presets": [
+    {
+      "name": "Satono Mile Farm",
+      "selection": {
+        "deck": {
+          "id": 4,
+          "name": "Deck 6"
+        },
+        "friend": {
+          "viewer_id": 0,
+          "support_card_id": 30036,
+          "name": "Cid",
+          "support_name": "Riko Kashimoto"
+        },
+        "trainee": {
+          "id": "106701",
+          "name": "Satono Diamond"
+        },
+        "veterans": [
+          {
+            "instance_id": 992,
+            "card_id": "101901",
+            "name": "Agnes Digital"
+          },
+          {
+            "instance_id": 1852,
+            "card_id": "102602",
+            "name": "Mihono Bourbon (Valentine)"
+          }
+        ],
+        "guestParent": null
+      },
+      "saved_at": 1781082129.288452
+    },
+    {
+      "name": "Seiun Sky / sussy",
+      "selection": {
+        "deck": {
+          "id": 3,
+          "name": "sussy"
+        },
+        "friend": {
+          "viewer_id": 0,
+          "support_card_id": 30017,
+          "name": "G",
+          "support_name": "Smart Falcon"
+        },
+        "trainee": {
+          "id": "102001",
+          "name": "Seiun Sky"
+        },
+        "veterans": [
+          {
+            "instance_id": 552,
+            "card_id": "101301",
+            "name": "Mejiro McQueen"
+          },
+          {
+            "instance_id": 1852,
+            "card_id": "102602",
+            "name": "Mihono Bourbon (Valentine)"
+          }
+        ],
+        "guestParent": null
+      },
+      "saved_at": 1780657493.9513996
+    }
+  ]
+}

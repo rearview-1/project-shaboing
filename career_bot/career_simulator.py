@@ -566,6 +566,7 @@ def _support_card_context_row(raw, *, position=None):
         "lb_level": _as_int(lb, 0),
         "limit_break_count": _as_int(lb, 0),
         "support_card_level": _as_int(level, 0),
+        "exp": _as_int(raw.get("exp"), 0),
     }
     if position is not None:
         row["position"] = position
@@ -612,7 +613,27 @@ def _extract_session_run_context(session):
     start_debug = session.get("start_debug") or {}
     request = start_debug.get("request") or {}
     proof_payload = ((start_debug.get("proof") or {}).get("payload") or {}).get("start_chara") or {}
-    dashboard_career = ((session.get("dashboard") or {}).get("account") or {}).get("career") or {}
+    dashboard = session.get("dashboard") or {}
+    dashboard_career = ((dashboard or {}).get("account") or {}).get("career") or {}
+    owned_support_by_id = {}
+    for row in (dashboard.get("supports") if isinstance(dashboard, dict) else []) or []:
+        if not isinstance(row, dict):
+            continue
+        support_id = _as_int(row.get("support_card_id") or row.get("id") or row.get("card_id"))
+        if support_id and support_id not in owned_support_by_id:
+            owned_support_by_id[support_id] = row
+
+    def _enriched_support_raw(raw):
+        raw_row = raw if isinstance(raw, dict) else {"support_card_id": raw}
+        support_id = _as_int(raw_row.get("support_card_id") or raw_row.get("id") or raw_row.get("card_id"))
+        owned = owned_support_by_id.get(support_id) or {}
+        if not owned:
+            return raw_row
+        merged = dict(raw_row)
+        for key in ("limit_break_count", "lb_level", "lb", "support_card_level", "level", "exp"):
+            if merged.get(key) is None and owned.get(key) is not None:
+                merged[key] = owned.get(key)
+        return merged
 
     ctx = {}
     deck = selection.get("deck") or {}
@@ -621,12 +642,12 @@ def _extract_session_run_context(session):
         _merge_context_field(ctx, "deck_name", deck.get("name"))
         cards = []
         for idx, raw in enumerate(deck.get("cards") or [], start=1):
-            row = _support_card_context_row(raw, position=idx)
+            row = _support_card_context_row(_enriched_support_raw(raw), position=idx)
             if row:
                 cards.append(row)
         if not cards:
             for idx, support_id in enumerate(request.get("support_card_ids") or proof_payload.get("support_card_ids") or [], start=1):
-                row = _support_card_context_row({"support_card_id": support_id}, position=idx)
+                row = _support_card_context_row(_enriched_support_raw({"support_card_id": support_id}), position=idx)
                 if row:
                     cards.append(row)
         if cards:
@@ -640,7 +661,7 @@ def _extract_session_run_context(session):
     elif request.get("support_card_ids") or proof_payload.get("support_card_ids"):
         cards = []
         for idx, support_id in enumerate(request.get("support_card_ids") or proof_payload.get("support_card_ids") or [], start=1):
-            row = _support_card_context_row({"support_card_id": support_id}, position=idx)
+            row = _support_card_context_row(_enriched_support_raw({"support_card_id": support_id}), position=idx)
             if row:
                 cards.append(row)
         if cards:
@@ -2424,6 +2445,13 @@ class CareerSimulator:
                     value = _as_int(row.get("instance_id") or row.get("trained_chara_id") or row.get("id"))
                     if value:
                         ids.append(value)
+        elif isinstance(parents, list):
+            for row in parents:
+                if not isinstance(row, dict):
+                    continue
+                value = _as_int(row.get("instance_id") or row.get("trained_chara_id") or row.get("id"))
+                if value:
+                    ids.append(value)
         out = []
         for value in ids:
             if value not in out:
@@ -2454,6 +2482,17 @@ class CareerSimulator:
                     rid = _as_int(row.get("instance_id") or row.get("id"))
                     if rid and all(_as_int(parent.get("instance_id") or parent.get("id")) != rid for parent in resolved):
                         resolved.append(row)
+        elif isinstance(inline, list):
+            for row in inline:
+                if not isinstance(row, dict) or not row.get("tree"):
+                    continue
+                rid = _as_int(row.get("instance_id") or row.get("trained_chara_id") or row.get("id"))
+                if not rid:
+                    continue
+                if self.selected_parent_ids and rid not in self.selected_parent_ids:
+                    continue
+                if all(_as_int(parent.get("instance_id") or parent.get("trained_chara_id") or parent.get("id")) != rid for parent in resolved):
+                    resolved.append(row)
         return resolved[:2]
 
     def _legacy_factor_entries(self, parents=None, nodes=LEGACY_NODES):
@@ -5759,7 +5798,15 @@ class CareerSimulator:
                 pass
         calibration = getattr(self, "skill_rating_calibration", {}) or {}
         if calibration.get("enabled"):
-            return max(1, int(calibration.get("skill_count_target") or SIM_TOTAL_SKILL_PURCHASE_MAX_DEFAULT))
+            # Parent memory often undercounts final skill purchases because
+            # old runs hoarded SP or the synced parent row only exposed a
+            # subset of final skills. Treat empirical counts as a guide, not a
+            # ceiling that prevents end-buy sims from spending thousands of SP.
+            return max(
+                SIM_TOTAL_SKILL_PURCHASE_MAX_DEFAULT,
+                int(calibration.get("skill_count_target") or 0),
+                int(calibration.get("skill_count_p85") or 0),
+            )
         return SIM_TOTAL_SKILL_PURCHASE_MAX_DEFAULT
 
     def _sim_skill_rating_score_cap(self):
@@ -5771,7 +5818,12 @@ class CareerSimulator:
                 pass
         calibration = getattr(self, "skill_rating_calibration", {}) or {}
         if calibration.get("enabled"):
-            return max(0, int(calibration.get("skill_rating_p85") or calibration.get("skill_rating_target") or 0))
+            return max(
+                SIM_SKILL_RATING_SCORE_CAP_DEFAULT,
+                int(calibration.get("skill_rating_target") or 0),
+                int(calibration.get("skill_rating_p85") or 0),
+                int(calibration.get("skill_rating_p95") or 0),
+            )
         return SIM_SKILL_RATING_SCORE_CAP_DEFAULT
 
     def _empirical_skill_rating_for_count(self, count):
@@ -6263,6 +6315,7 @@ class CareerSimulator:
             empirical_prob = float(model.get("win_probability") or 0.0)
             if manual:
                 manual_prob, manual_model = manual
+                manual_safe = self._manual_race_model_is_safe(manual_prob, manual_model)
                 # Manual threshold's stamina floor is authoritative: if it
                 # says the trainee is critically under-stamina, the empirical
                 # model is wrong about this trainee. Do not treat a merely
@@ -6281,6 +6334,21 @@ class CareerSimulator:
                     return self._blend_observed_race_probability(pid, manual_prob, blended)
                 empirical_model = str((model or {}).get("model") or "")
                 empirical_weight = 0.72 if "exact" in empirical_model else 0.58
+                if manual_safe and empirical_prob < float(manual_prob or 0.0):
+                    # Exact observed samples are mostly the bot's own old
+                    # careers. They are useful for marginal cases, but they
+                    # must not make a currently-safe statline look unsafe just
+                    # because previous runs entered the same race underbuilt.
+                    blended = dict(model)
+                    blended["model"] = "manual_safe_threshold_override"
+                    blended["empirical_model"] = model.get("model")
+                    blended["empirical_win_probability"] = round(empirical_prob, 4)
+                    blended["manual_win_probability"] = round(manual_prob, 4)
+                    blended["manual_threshold_safe"] = True
+                    blended["manual_model"] = manual_model
+                    blended_prob = max(empirical_prob, float(manual_prob or 0.0) - 0.04)
+                    blended["win_probability"] = round(blended_prob, 4)
+                    return self._blend_observed_race_probability(pid, blended_prob, blended)
                 if abs(float(manual_prob or 0.0) - empirical_prob) >= 0.08:
                     blended_prob = (empirical_prob * empirical_weight) + (float(manual_prob or 0.0) * (1.0 - empirical_weight))
                     blended = dict(model)
@@ -6292,6 +6360,11 @@ class CareerSimulator:
                     blended["manual_model"] = manual_model
                     blended["win_probability"] = round(blended_prob, 4)
                     return self._blend_observed_race_probability(pid, blended_prob, blended)
+                with_manual = dict(model)
+                with_manual["manual_win_probability"] = round(float(manual_prob or 0.0), 4)
+                with_manual["manual_threshold_safe"] = bool(manual_safe)
+                with_manual["manual_model"] = manual_model
+                return self._blend_observed_race_probability(pid, empirical_prob, with_manual)
             return self._blend_observed_race_probability(pid, empirical_prob, model)
         if manual:
             manual_prob, manual_model = manual
@@ -6301,6 +6374,40 @@ class CareerSimulator:
             pid,
             prob,
             {"model": "fallback_speed_probability", "win_probability": prob},
+        )
+
+    def _manual_race_model_is_safe(self, manual_prob, manual_model):
+        """Return true when the threshold model says current race stats are safely above requirements.
+
+        Historical observed race samples are generated by this bot, so they can
+        contain underbuilt losses from old policies. Use them to calibrate
+        marginal race risk, not to override a statline that clears the current
+        race thresholds with healthy margins.
+        """
+        if not isinstance(manual_model, dict):
+            return False
+        try:
+            prob = float(manual_prob if manual_prob is not None else manual_model.get("win_probability") or 0.0)
+            stamina_ratio = float(manual_model.get("true_stamina_ratio") or manual_model.get("ratio_stamina") or 0.0)
+            stamina_floor = float(manual_model.get("stamina_floor_ratio") or 0.0)
+            speed_ratio = float(manual_model.get("ratio_speed") or 0.0)
+            power_ratio = float(manual_model.get("ratio_power") or 0.0)
+            wit_ratio = float(manual_model.get("ratio_wit") or 0.0)
+            aptitude_factor = float(manual_model.get("aptitude_factor") or 1.0)
+        except (TypeError, ValueError):
+            return False
+        if bool(manual_model.get("stamina_critical")):
+            return False
+        distance = str(manual_model.get("distance") or "").lower()
+        stamina_margin = 0.15 if distance != "long" else 0.18
+        required_secondary = 1.08 if distance in {"long", "medium"} else 1.05
+        return (
+            prob >= 0.92
+            and stamina_ratio >= max(stamina_floor + stamina_margin, 1.0)
+            and speed_ratio >= required_secondary
+            and power_ratio >= required_secondary
+            and wit_ratio >= 1.05
+            and aptitude_factor >= 0.90
         )
 
     def _observed_race_probability(self, pid):
@@ -6337,6 +6444,17 @@ class CareerSimulator:
         if current_score > 0 and score_p75_loss > 0 and current_score >= score_p75_loss:
             confidence *= 0.70
             current_beats_bad_history = True
+        manual_model = (model or {}).get("manual_model")
+        if not isinstance(manual_model, dict) and str((model or {}).get("model") or "") == "manual_threshold_probability":
+            manual_model = model
+        manual_prob = (model or {}).get("manual_win_probability")
+        if manual_prob is None and isinstance(manual_model, dict):
+            manual_prob = manual_model.get("win_probability")
+        manual_safe = bool((model or {}).get("manual_threshold_safe")) or self._manual_race_model_is_safe(manual_prob, manual_model)
+        if manual_safe:
+            confidence *= 0.15
+            current_beats_bad_history = True
+            base_prob = max(base_prob, min(0.96, float(manual_prob or 0.0) - 0.03 if manual_prob is not None else base_prob))
         blended_prob = (base_prob * (1.0 - confidence)) + (obs_prob * confidence)
         # When exact observed logs say a race is consistently safe, do not let
         # a weak manual threshold model push it into coin-flip territory.
@@ -6352,10 +6470,13 @@ class CareerSimulator:
         # stat model is optimistic.
         if runs >= 6 and raw_win_rate <= 0.45 and not current_beats_bad_history:
             blended_prob = min(blended_prob, obs_prob + 0.08)
+        if manual_safe:
+            blended_prob = max(blended_prob, min(0.93, base_prob))
         blended = dict(model or {})
         blended["observed_model"] = True
         blended["observed_runs"] = runs
         blended["observed_current_beats_bad_history"] = bool(current_beats_bad_history)
+        blended["manual_threshold_safe"] = bool(manual_safe)
         blended["observed_wins"] = _as_int(row.get("wins"))
         blended["observed_win_rate"] = round(raw_win_rate, 4)
         blended["observed_smoothed_win_rate"] = round(obs_prob, 4)
@@ -6906,9 +7027,10 @@ class CareerSimulator:
             observed_win_rate = float(race_model.get("observed_win_rate") or 1.0)
         except (TypeError, ValueError):
             observed_win_rate = 1.0
+        manual_threshold_safe = bool(race_model.get("manual_threshold_safe"))
         observed_min_runs = int(self.preset.get("sim_clean_record_observed_min_runs") or 6)
         observed_safe_rate = float(self.preset.get("sim_clean_record_min_observed_win_rate") or 0.88)
-        if observed_runs >= observed_min_runs and observed_win_rate < observed_safe_rate:
+        if observed_runs >= observed_min_runs and observed_win_rate < observed_safe_rate and not manual_threshold_safe:
             clean_lift_allowed = False
             clean_lift_block_reasons.append(
                 f"observed_win_rate {observed_win_rate:.3f} < {observed_safe_rate:.3f}"
@@ -7099,7 +7221,11 @@ class CareerSimulator:
             # the real bot tries to hit. `sim_final_skill_buy_max`
             # raised from 4 → 8 so the drain can actually clear the
             # remaining SP when several affordable skills exist.
-            max_final = int(self.preset.get("sim_final_skill_buy_max") or 8)
+            explicit_max_final = self.preset.get("sim_final_skill_buy_max")
+            if explicit_max_final is not None:
+                max_final = int(explicit_max_final or 0)
+            else:
+                max_final = max(8, self._sim_total_skill_purchase_max() - int(self.skills_bought or 0))
             keep_sp = int(self.preset.get("sim_final_skill_keep_sp") or 60)
             spendable = max(0, sp - keep_sp)
             if spendable <= 0 or max_final <= 0:

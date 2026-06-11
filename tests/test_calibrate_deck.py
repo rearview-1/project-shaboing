@@ -16,9 +16,11 @@ from tools.calibrate_deck import (
     _dedupe_override_candidates,
     _epithet_losses,
     _epithet_race_names,
+    _is_best_effort_clean_progress,
     _is_comfortable,
     _merge_overrides_into_preset,
     _mean_rating,
+    _quality_key,
     _self_learning_overrides_from_results,
     _ss_rate,
     _strat_summary,
@@ -114,6 +116,67 @@ def test_comfortable_rejects_below_min_rating_floor():
         max_epithet_losses=999,
         min_rating=14500,
     ) is False
+
+
+def test_best_effort_clean_progress_can_trade_small_rating_for_zero_epithet_losses():
+    baseline = [
+        _FakeResult(17600, races_run=[{"name": "Kikuka Sho", "won": False}]),
+        _FakeResult(17100, races_run=[{"name": "Tenno Sho (Autumn)", "won": False}]),
+        _FakeResult(16000, races_run=[{"name": "Japan Cup", "won": True}]),
+    ]
+    candidate = [
+        _FakeResult(16600, races_run=[{"name": "Kikuka Sho", "won": True}]),
+        _FakeResult(16500, races_run=[{"name": "Tenno Sho (Autumn)", "won": True}]),
+        _FakeResult(16400, races_run=[{"name": "Japan Cup", "won": True}]),
+    ]
+
+    assert _is_best_effort_clean_progress(
+        candidate,
+        baseline,
+        ss_threshold=17500,
+        target_win_rate=0.95,
+        max_epithet_losses=0,
+        min_rating=14500,
+    ) is True
+
+
+def test_best_effort_clean_progress_rejects_large_rating_drop():
+    baseline = [
+        _FakeResult(17600, races_run=[{"name": "Kikuka Sho", "won": False}]),
+        _FakeResult(17100, races_run=[{"name": "Tenno Sho (Autumn)", "won": False}]),
+    ]
+    candidate = [
+        _FakeResult(15000, races_run=[{"name": "Kikuka Sho", "won": True}]),
+        _FakeResult(14900, races_run=[{"name": "Tenno Sho (Autumn)", "won": True}]),
+    ]
+
+    assert _is_best_effort_clean_progress(
+        candidate,
+        baseline,
+        ss_threshold=17500,
+        target_win_rate=0.95,
+        max_epithet_losses=0,
+        min_rating=14500,
+    ) is False
+
+
+def test_quality_key_prefers_mean_after_clean_gates():
+    lower_mean_higher_min = [_FakeResult(16400), _FakeResult(16400)]
+    higher_mean_lower_min = [_FakeResult(16350), _FakeResult(16900)]
+
+    assert _quality_key(
+        higher_mean_lower_min,
+        ss_threshold=17500,
+        target_win_rate=0.95,
+        max_epithet_losses=0,
+        min_rating=14500,
+    ) > _quality_key(
+        lower_mean_higher_min,
+        ss_threshold=17500,
+        target_win_rate=0.95,
+        max_epithet_losses=0,
+        min_rating=14500,
+    )
 
 
 # -------------------- _merge_overrides_into_preset --------------------

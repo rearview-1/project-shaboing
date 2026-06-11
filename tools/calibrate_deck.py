@@ -399,9 +399,9 @@ def _quality_key(results: list, *, ss_threshold: int, target_win_rate: float,
       2. no below-floor/A+ outcomes
       3. meets race win-rate target
       4. higher SS rate
-      5. higher win rate
-      6. higher minimum rating
-      7. higher mean rating
+      5. higher mean rating
+      6. higher win rate
+      7. higher minimum rating
     """
     ep_losses = _epithet_losses(results)
     min_score = _min_rating(results)
@@ -411,9 +411,50 @@ def _quality_key(results: list, *, ss_threshold: int, target_win_rate: float,
         1 if min_score >= min_rating else 0,
         1 if win >= target_win_rate else 0,
         round(_ss_rate(results, ss_threshold), 6),
+        round(_mean_rating(results), 3),
         round(win, 6),
         min_score,
-        round(_mean_rating(results), 3),
+    )
+
+
+def _is_best_effort_clean_progress(
+    candidate_results: list,
+    baseline_results: list,
+    *,
+    ss_threshold: int,
+    target_win_rate: float,
+    max_epithet_losses: int,
+    min_rating: int,
+    rating_tolerance: int = 750,
+) -> bool:
+    """Accept non-comfort candidates that make safety progress without tanking score.
+
+    The optimizer's main target is still comfortable SS. When that is not
+    reached inside the time budget, a policy that removes epithet losses and
+    A+ outcomes should still be cached if it is not materially worse on rating.
+    Otherwise the optimizer can find a safer policy and throw it away simply
+    because SS-rate did not improve on a tiny validation batch.
+    """
+    if _epithet_losses(candidate_results) > max_epithet_losses:
+        return False
+    if _min_rating(candidate_results) < min_rating:
+        return False
+    if _win_rate(candidate_results) < target_win_rate:
+        return False
+    if _mean_rating(candidate_results) < _mean_rating(baseline_results) - int(rating_tolerance):
+        return False
+    return _quality_key(
+        candidate_results,
+        ss_threshold=ss_threshold,
+        target_win_rate=target_win_rate,
+        max_epithet_losses=max_epithet_losses,
+        min_rating=min_rating,
+    ) > _quality_key(
+        baseline_results,
+        ss_threshold=ss_threshold,
+        target_win_rate=target_win_rate,
+        max_epithet_losses=max_epithet_losses,
+        min_rating=min_rating,
     )
 
 
@@ -977,17 +1018,11 @@ def calibrate(
          f"min={val_min} below-floor={val_below_floor}")
     _log(f"validation losses: {_format_loss_summary(val_results)}")
 
-    # Save only if:
-    #  - validation shows improvement on the SS rate / mean tiebreak
-    #  - AND validation has zero epithet-bonus losses (hard floor)
-    # Without the epithet floor, the cache could end up with a "high SS rate
-    # but breaks Stunning route" policy that looks great in the sim batch
-    # but hurts the average career.
+    # Save if validation either hits the comfort target or is clean
+    # best-effort progress. Without the epithet floor, the cache could end up
+    # with a "high SS rate but breaks Stunning route" policy that looks great
+    # in the sim batch but hurts the average career.
     saved = False
-    ss_improved = (
-        val_ss > baseline_ss
-        or (val_ss == baseline_ss and val_mean > baseline_mean)
-    )
     epithet_clean = val_ep_losses <= max_epithet_losses
     floor_clean = val_min >= min_rating
     win_clean = val_win_rate >= target_win_rate
@@ -1001,17 +1036,8 @@ def calibrate(
         min_rating=min_rating,
     )
     best_effort_clean = (
-        ss_improved
-        and epithet_clean
-        and floor_clean
-        and win_clean
-        and _quality_key(
+        _is_best_effort_clean_progress(
             val_results,
-            ss_threshold=ss_threshold,
-            target_win_rate=target_win_rate,
-            max_epithet_losses=max_epithet_losses,
-            min_rating=min_rating,
-        ) > _quality_key(
             baseline_results,
             ss_threshold=ss_threshold,
             target_win_rate=target_win_rate,

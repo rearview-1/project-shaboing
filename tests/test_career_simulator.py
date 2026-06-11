@@ -88,6 +88,19 @@ def test_simulator_skill_discount_is_per_skill_not_global():
     assert sim._candidate_effective_discount_pct(friend, discount_pct=35) == 30
 
 
+def test_simulator_final_skill_buy_can_drain_beyond_default_batch():
+    preset = dict(_make_preset(), sim_use_latest_session_context=False)
+    sim = CareerSimulator(preset=preset, seed=42)
+    if len(sim.sim_skill_candidates) <= 8:
+        pytest.skip("fixture skill pool too small for final-drain regression")
+    sim.state["skill_point"] = 5000
+
+    sim._maybe_buy_skills(final=True)
+
+    assert sim.skills_bought > 8
+    assert sim.state["skill_point"] < 5000
+
+
 def test_simulator_race_history_starts_with_debut_win():
     sim = CareerSimulator(preset=_make_preset(), seed=42)
     history = sim._sim_race_history()
@@ -139,6 +152,41 @@ def test_manual_race_threshold_applies_hidden_bonus_to_trainee_only():
     assert model["ratio_power"] == pytest.approx(1.8)
     assert model["effective_current_stamina"] == 900
     assert model["effective_threshold_stamina"] == 500
+
+
+def test_observed_bad_history_does_not_poison_safe_threshold_race():
+    sim = CareerSimulator(preset=_make_preset(), seed=42)
+    pid = 999992
+    sim.race_outcome_calibration = {
+        "enabled": True,
+        "by_pid": {
+            str(pid): {
+                "runs": 12,
+                "wins": 3,
+                "win_rate": 0.25,
+                "smoothed_win_rate": 0.28,
+            }
+        },
+    }
+    manual_model = {
+        "model": "manual_threshold_probability",
+        "win_probability": 0.96,
+        "ratio_speed": 1.8,
+        "ratio_stamina": 1.9,
+        "ratio_power": 1.7,
+        "ratio_wit": 2.0,
+        "true_stamina_ratio": 1.9,
+        "stamina_floor_ratio": 0.78,
+        "stamina_critical": False,
+        "aptitude_factor": 1.0,
+        "distance": "medium",
+    }
+
+    prob, model = sim._blend_observed_race_probability(pid, 0.96, manual_model)
+
+    assert prob >= 0.90
+    assert model["manual_threshold_safe"] is True
+    assert model["observed_current_beats_bad_history"] is True
 
 
 def test_simulator_loss_finish_rank_uses_observed_rank_counts():
@@ -349,6 +397,105 @@ def test_latest_session_context_overrides_stale_preset(tmp_path):
     assert ctx["friend_viewer_id"] == 12345
     assert ctx["parent_id_1"] == 1852
     assert ctx["parent_id_2"] == 552
+
+
+def test_simulator_uses_inline_session_parent_list_for_legacy_effects():
+    preset = dict(
+        _make_preset(),
+        _run_context={
+            "trainee_card_id": 106701,
+            "support_card_ids": [30028, 30074, 20031, 30054, 30010],
+            "support_cards": [
+                {"support_card_id": 30028, "name": "Kitasan Black", "type": "Speed", "rarity": "SSR", "limit_break_count": 4},
+                {"support_card_id": 30074, "name": "Marvelous Sunday", "type": "Power", "rarity": "SSR", "limit_break_count": 4},
+                {"support_card_id": 20031, "name": "Shinko Windy", "type": "Speed", "rarity": "SR", "limit_break_count": 4},
+                {"support_card_id": 30054, "name": "Nice Nature", "type": "Wit", "rarity": "SSR", "limit_break_count": 4},
+                {"support_card_id": 30010, "name": "Fine Motion", "type": "Wit", "rarity": "SSR", "limit_break_count": 4},
+            ],
+            "friend_card_id": 30036,
+            "parent_id_1": 992,
+            "parent_id_2": 1852,
+            "parents": [
+                {
+                    "instance_id": 992,
+                    "name": "Agnes Digital",
+                    "tree": {
+                        "self": {
+                            "factors": [
+                                {"name": "Speed", "stars": 3, "category": "stat"},
+                                {"name": "Mile", "stars": 3, "category": "aptitude"},
+                            ],
+                        },
+                    },
+                },
+                {
+                    "instance_id": 1852,
+                    "name": "Mihono Bourbon",
+                    "tree": {
+                        "self": {
+                            "factors": [
+                                {"name": "Wit", "stars": 2, "category": "stat"},
+                                {"name": "Pace", "stars": 3, "category": "aptitude"},
+                            ],
+                        },
+                    },
+                },
+            ],
+        },
+    )
+
+    sim = CareerSimulator(preset=preset, seed=0)
+    effects = sim.legacy_effects
+
+    assert effects["selected_parent_ids"] == [992, 1852]
+    assert effects["selected_parent_names"] == ["Agnes Digital", "Mihono Bourbon"]
+    assert effects["stat_bonuses"]["speed"] == 21
+    assert effects["stat_bonuses"]["wiz"] == 12
+    assert effects["aptitude_upgrades"]["mile"]["base"] == "C"
+    assert effects["aptitude_upgrades"]["mile"]["next"] == "B"
+    assert effects["aptitude_upgrades"]["pace"]["base"] == "B"
+    assert effects["aptitude_upgrades"]["pace"]["next"] == "A"
+
+
+def test_latest_session_context_enriches_deck_card_limit_breaks(tmp_path):
+    session_dir = tmp_path / "uma_runtime" / "instances" / "account_b"
+    session_dir.mkdir(parents=True)
+    (session_dir / "dev_session.json").write_text(json.dumps({
+        "dashboard": {
+            "supports": [
+                {"id": "30028", "name": "Kitasan Black", "type": "Speed", "rarity": "SSR", "limit_break_count": 4, "exp": 118185},
+                {"id": "30074", "name": "Marvelous Sunday", "type": "Power", "rarity": "SSR", "limit_break_count": 4, "exp": 118185},
+                {"id": "20031", "name": "Shinko Windy", "type": "Speed", "rarity": "SR", "limit_break_count": 4, "exp": 74990},
+                {"id": "30054", "name": "Nice Nature", "type": "Wit", "rarity": "SSR", "limit_break_count": 4, "exp": 118185},
+                {"id": "30010", "name": "Fine Motion", "type": "Wit", "rarity": "SSR", "limit_break_count": 4, "exp": 118185},
+            ],
+        },
+        "selection": {
+            "deck": {
+                "id": 77,
+                "name": "Shallow Deck",
+                "cards": [
+                    {"id": "30028", "name": "Kitasan Black", "type": "Speed", "rarity": "SSR"},
+                    {"id": "30074", "name": "Marvelous Sunday", "type": "Power", "rarity": "SSR"},
+                    {"id": "20031", "name": "Shinko Windy", "type": "Speed", "rarity": "SR"},
+                    {"id": "30054", "name": "Nice Nature", "type": "Wit", "rarity": "SSR"},
+                    {"id": "30010", "name": "Fine Motion", "type": "Wit", "rarity": "SSR"},
+                ],
+            },
+            "friend": {"viewer_id": 12345, "support_card_id": 30036},
+            "trainee": {"id": "106701", "name": "Satono Diamond"},
+        },
+    }), encoding="utf-8")
+
+    hydrated = hydrate_preset_with_latest_session_context(
+        {"sim_runtime_instance": "account_b"},
+        tmp_path,
+    )
+    ctx = hydrated["_run_context"]
+
+    assert [row["limit_break_count"] for row in ctx["support_cards"]] == [4, 4, 4, 4, 4]
+    assert ctx["support_card_lb_levels"]["30028"]["lb"] == 4
+    assert ctx["support_card_lb_levels"]["20031"]["exp"] == 74990
 
 
 def test_explicit_sim_deck_overrides_latest_session_context(tmp_path):

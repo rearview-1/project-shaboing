@@ -87,15 +87,15 @@ def _rank_for_stat_sum(stat_sum):
 TUNABLE_PARAMS = {
     # Speed Priority bonus per phase — ceilings capped so they can't fight projection
     "speed_priority_bonus_early":  {"floor": 0.06, "ceiling": 0.10, "step": 0.01, "default": 0.06},
-    "speed_priority_bonus_mid":    {"floor": 0.16, "ceiling": 0.22, "step": 0.01, "default": 0.16},
-    "speed_priority_bonus_late":   {"floor": 0.22, "ceiling": 0.32, "step": 0.01, "default": 0.22},
+    "speed_priority_bonus_mid":    {"floor": 0.16, "ceiling": 0.45, "step": 0.01, "default": 0.16},
+    "speed_priority_bonus_late":   {"floor": 0.22, "ceiling": 0.60, "step": 0.01, "default": 0.22},
     # Stamina + Power priority — same treatment
-    "stamina_priority_bonus_base":    {"floor": 0.00, "ceiling": 0.08, "step": 0.01, "default": 0.03},
-    "stamina_priority_deficit_boost": {"floor": 0.00, "ceiling": 0.08, "step": 0.01, "default": 0.03},
-    "stamina_floor_target":           {"floor": 380,  "ceiling": 750,  "step": 25,   "default": 500},
-    "power_priority_bonus_base":      {"floor": 0.00, "ceiling": 0.08, "step": 0.01, "default": 0.03},
-    "power_priority_deficit_boost":   {"floor": 0.00, "ceiling": 0.08, "step": 0.01, "default": 0.03},
-    "power_floor_target":             {"floor": 450,  "ceiling": 1000, "step": 25,   "default": 800},
+    "stamina_priority_bonus_base":    {"floor": 0.00, "ceiling": 0.25, "step": 0.01, "default": 0.03},
+    "stamina_priority_deficit_boost": {"floor": 0.00, "ceiling": 0.25, "step": 0.01, "default": 0.03},
+    "stamina_floor_target":           {"floor": 380,  "ceiling": 1100, "step": 25,   "default": 500},
+    "power_priority_bonus_base":      {"floor": 0.00, "ceiling": 0.30, "step": 0.01, "default": 0.03},
+    "power_priority_deficit_boost":   {"floor": 0.00, "ceiling": 0.30, "step": 0.01, "default": 0.03},
+    "power_floor_target":             {"floor": 450,  "ceiling": 1200, "step": 25,   "default": 800},
     "speed_priority_deficit_scale":   {"floor": 0.40, "ceiling": 0.95, "step": 0.05, "default": 0.70},
     # Postmortem feedback strength — kept high, this feeds the projection's gap inputs indirectly
     "postmortem_bonus_cap":        {"floor": 0.08, "ceiling": 0.40, "step": 0.02, "default": 0.20},
@@ -109,7 +109,7 @@ TUNABLE_PARAMS = {
     "calendar_race_prebuy_min_sp": {"floor": 80,   "ceiling": 450,  "step": 25,   "default": 280},
     "calendar_race_prebuy_budget": {"floor": 400,  "ceiling": 1800, "step": 75,   "default": 850},
     "calendar_race_prebuy_keep_sp": {"floor": 0,   "ceiling": 400,  "step": 25,   "default": 100},
-    "calendar_race_prebuy_max_skills": {"floor": 2, "ceiling": 10,    "step": 1,    "default": 4},
+    "calendar_race_prebuy_max_skills": {"floor": 2, "ceiling": 12,    "step": 1,    "default": 4},
     # PER-STAT soft caps: speed/power/wit at 1100 (high-priority, near-max
     # via training + race rewards); stamina/guts at 800 ("just enough").
     # Operator overrides any of these by listing the stat in
@@ -124,14 +124,14 @@ TUNABLE_PARAMS = {
     # Legacy wit_hard_cap kept for backward compat
     "wit_hard_cap":                {"floor": 1100, "ceiling": 1200, "step": 50,   "default": 1200},
     "wit_priority_bonus_early":    {"floor": 0.04, "ceiling": 0.10, "step": 0.01, "default": 0.04},
-    "wit_priority_bonus_mid":      {"floor": 0.14, "ceiling": 0.24, "step": 0.01, "default": 0.14},
-    "wit_priority_bonus_late":     {"floor": 0.30, "ceiling": 0.42, "step": 0.01, "default": 0.30},
+    "wit_priority_bonus_mid":      {"floor": 0.14, "ceiling": 0.55, "step": 0.01, "default": 0.14},
+    "wit_priority_bonus_late":     {"floor": 0.30, "ceiling": 0.70, "step": 0.01, "default": 0.30},
     "wit_priority_target_raw":     {"floor": 1100, "ceiling": 1200, "step": 25,   "default": 1200},
     "wit_priority_floor_raw":      {"floor": 950,  "ceiling": 1150, "step": 25,   "default": 1050},
     # Recovery/action adaptation. These directly attack the observed A+
     # failure mode on race-heavy routes: too many full rest turns and too few
     # low-HP Wit/Riko recovery substitutes after deck changes.
-    "rest_threshold":              {"floor": 36,   "ceiling": 58,   "step": 2,    "default": 48},
+    "rest_threshold":              {"floor": 24,   "ceiling": 75,   "step": 2,    "default": 48},
     "race_heavy_rest_threshold_penalty": {"floor": 4, "ceiling": 18, "step": 2,    "default": 4},
     "race_heavy_recreation_max_training_score": {"floor": 0.10, "ceiling": 0.45, "step": 0.03, "default": 0.18},
     "low_hp_wit_training_max_failure": {"floor": 18, "ceiling": 25, "step": 1,    "default": 25},

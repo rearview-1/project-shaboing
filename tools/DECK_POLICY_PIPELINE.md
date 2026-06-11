@@ -75,7 +75,8 @@ python tools/optimize_deck_policy.py --candidates 16 --sims-per-candidate 8 --va
 `start_career_runner_once`. It:
 - Computes the deck signature from preset's `_run_context`.
 - Looks up the cached policy.
-- Merges into `preset.learned_hyperparameters` — user-set keys WIN.
+- Merges into `preset.learned_hyperparameters`; deck-specific optimizer keys
+  win over stale auto-learned execution knobs for the same deck signature.
 
 The bot prints either:
 - `deck policy: applied cached entry <sig> (added N hyperparameter keys: [...])`

@@ -4026,7 +4026,7 @@ const state = {
                 const data = await apiJson('/api/career/friends', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exclude_viewer_ids: excludeIds })
+                    body: JSON.stringify({ exclude_viewer_ids: excludeIds, force_refresh: Boolean(refresh) })
                 });
                 if (!data.success) throw new Error(data.detail || 'Friend load failed');
                 if (Array.isArray(data.decks) && data.decks.length > ((dashData.decks || []).length)) {
@@ -4454,6 +4454,39 @@ const state = {
             const previousScrollTop = previousWrap ? previousWrap.scrollTop : 0;
             const previousPinnedToBottom = !previousWrap
                 || ((previousWrap.scrollHeight - previousWrap.clientHeight - previousWrap.scrollTop) <= 24);
+            const historyStyleLabel = value => {
+                const numeric = Number(value);
+                if (Number.isFinite(numeric) && numeric > 0) {
+                    return ({ 1: 'Front', 2: 'Pace', 3: 'Late', 4: 'End' })[numeric] || '';
+                }
+                const normalized = raceStyleLabel(value);
+                if (normalized) return normalized;
+                const text = String(value || '').trim();
+                return ['Front', 'Pace', 'Late', 'End'].includes(text) ? text : '';
+            };
+            const raceStrategyDetail = row => {
+                const raceResult = row.race_result || {};
+                const styleChange = row.style_change && typeof row.style_change === 'object'
+                    ? row.style_change
+                    : (raceResult.style_change && typeof raceResult.style_change === 'object' ? raceResult.style_change : null);
+                const used = row.running_style_label
+                    || raceResult.running_style_label
+                    || historyStyleLabel(row.running_style)
+                    || historyStyleLabel(raceResult.running_style)
+                    || historyStyleLabel(styleChange && (styleChange.applied_running_style || styleChange.applied_style));
+                const desired = historyStyleLabel(
+                    row.desired_running_style
+                    || raceResult.desired_running_style
+                    || (styleChange && styleChange.desired_style)
+                );
+                const failed = Boolean(styleChange && styleChange.attempted && styleChange.succeeded === false);
+                if (used && desired && used.toLowerCase() !== desired.toLowerCase()) {
+                    return `STRAT ${used} (wanted ${desired}${failed ? ', change failed' : ''})`;
+                }
+                if (used) return `STRAT ${used}${failed ? ' (change failed)' : ''}`;
+                if (desired) return `WANTED ${desired}${failed ? ' (change failed)' : ''}`;
+                return '';
+            };
             const formatStatsDetail = row => {
                 const stats = row.stats || {};
                 const raceResult = row.race_result || {};
@@ -4483,8 +4516,9 @@ const state = {
                     }
                     if (partsRetry.length) retryTag = `RETRIED ${partsRetry.join(' ')}`;
                 }
+                const strategyTag = normalizeHistoryAction(row).action === 'race' ? raceStrategyDetail(row) : '';
                 if (!Object.keys(stats).length) {
-                    const tail = [resultLabel, retryTag].filter(Boolean).join(' | ');
+                    const tail = [resultLabel, strategyTag, retryTag].filter(Boolean).join(' | ');
                     return tail || row.detail || '';
                 }
                 const parts = [
@@ -4493,6 +4527,7 @@ const state = {
                     `SPD ${stats.speed ?? 0} STA ${stats.stamina ?? 0} PWR ${stats.power ?? 0} GUT ${stats.guts ?? 0} WIT ${stats.wit ?? 0} SP ${stats.skill_point ?? 0}`
                 ];
                 if (resultLabel) parts.unshift(resultLabel);
+                if (strategyTag) parts.splice(resultLabel ? 1 : 0, 0, strategyTag);
                 if (retryTag) parts.splice(resultLabel ? 1 : 0, 0, retryTag);
                 return parts.join(' | ');
             };
@@ -4565,6 +4600,9 @@ const state = {
         }
         function normalizeHistoryAction(row) {
             const facility = String(row.facility ?? '');
+            if (row.action === 'race_progress') {
+                return { ...row, action: 'race' };
+            }
             if (row.action === 'rest' && ['301', '302', '303', '304', '305', '390'].includes(facility)) {
                 return { ...row, action: 'recreation' };
             }

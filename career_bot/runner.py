@@ -238,6 +238,40 @@ class CareerRunner:
             )
             return True
 
+    def update_active_preset_fields(self, preset_name, fields, *, reason="operator_save"):
+        """Hot-patch selected active preset fields without replacing runtime state.
+
+        Save buttons use this for mid-career edits. Full preset replacement can
+        wipe transient deck-policy/context values, but a field patch lets the
+        next race immediately use the edited style/distance/skill settings.
+        """
+        if not isinstance(fields, dict) or not fields:
+            return False
+        with self.lock:
+            if not self.status.get("running"):
+                return False
+            wanted = str(preset_name or "").strip().lower()
+            current = getattr(self, "_active_preset_name", "")
+            if wanted != current:
+                return False
+            active = getattr(self, "_active_preset", None)
+            if not isinstance(active, dict):
+                return False
+            for key, value in fields.items():
+                active[key] = value
+            if "_loop_mode" in fields or self.status.get("loop_mode"):
+                self.status["loop_mode"] = bool(
+                    self.status.get("loop_mode")
+                    or active.get("_loop_mode")
+                )
+            self.status["last_action"] = f"preset hot reload: {reason}"
+            self._log_locked(
+                "preset_hot_reload",
+                int(self.status.get("turn") or 0),
+                f"{reason}: {', '.join(sorted(str(key) for key in fields.keys()))}",
+            )
+            return True
+
     def stop(self):
         with self.lock:
             self.stop_requested = True
@@ -677,6 +711,10 @@ class CareerRunner:
         active_preset_snapshot = copy.deepcopy(active_preset_snapshot or {})
         runtime_root = Path(runtime_root)
         career_log_path = Path(career_log_path)
+        try:
+            from career_bot.auto_learning import run_auto_learning as _run_auto_learning
+        except Exception:
+            _run_auto_learning = None
 
         def _worker():
             try:
@@ -771,9 +809,9 @@ class CareerRunner:
                     print(f"failed to write race postmortem: {e}", flush=True)
 
                 try:
-                    from career_bot.auto_learning import run_auto_learning
-
-                    learning_result = run_auto_learning(
+                    if _run_auto_learning is None:
+                        raise RuntimeError("auto_learning import unavailable")
+                    learning_result = _run_auto_learning(
                         self.base_dir,
                         active_preset_snapshot,
                         career_log=career_log_path,

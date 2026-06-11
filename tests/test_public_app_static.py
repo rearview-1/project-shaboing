@@ -391,6 +391,16 @@ class PublicAppStaticTests(unittest.TestCase):
         self.assertIn("(previousWrap.scrollHeight - previousWrap.clientHeight - previousWrap.scrollTop) <= 24", app_js)
         self.assertIn("wrap.scrollTop = Math.min(", app_js)
 
+    def test_action_history_shows_actual_race_strategy(self):
+        app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("const raceStrategyDetail = row =>", app_js)
+        self.assertIn("row.running_style_label", app_js)
+        self.assertIn("raceResult.running_style_label", app_js)
+        self.assertIn("STRAT ${used} (wanted ${desired}", app_js)
+        self.assertIn("const strategyTag = normalizeHistoryAction(row).action === 'race' ? raceStrategyDetail(row) : '';", app_js)
+        self.assertIn("if (row.action === 'race_progress')", app_js)
+
     def test_team_bar_shows_legacy_start_bonus_preview(self):
         app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")
         styles_css = (PROJECT_ROOT / "public" / "styles.css").read_text(encoding="utf-8")

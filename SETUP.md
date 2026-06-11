@@ -11,7 +11,20 @@ This document covers what to do after unzipping the folder onto a new machine.
    - Verify by running `node --version` and `npm --version`.
 3. **Umamusume game client** (Steam version). The bot attaches to a running game session, so the game must launch successfully before you can auth.
 
-## Install dependencies
+## One-stop setup and run
+
+On Windows, double-click:
+
+```bat
+setup_and_run_sweepy.bat
+```
+
+That script creates a local `.venv`, installs Python dependencies, runs
+`npm install`, creates the empty runtime directory structure, verifies the
+project, and starts the bot backend. Runtime data is generated locally on that
+machine and is not included in the repository.
+
+## Manual install dependencies
 
 From a terminal inside this folder:
 
@@ -115,10 +128,16 @@ You do not need to put anything in `uma_runtime/` manually. The bot auto-creates
 
 ## Optional: smoke tests
 
+To tune the current deck/trainee/friend/parent setup before live careers:
+
+```bash
+optimizer.bat
+```
+
 Verify the install works without touching the game:
 
 ```bash
-run_smoke_tests.bat
+scripts\windows\run_smoke_tests.bat
 ```
 
 Or via pytest directly:
@@ -126,6 +145,12 @@ Or via pytest directly:
 ```bash
 python -m pytest tests/ -q
 ```
+
+Other optional Windows helpers live in `scripts\windows\`:
+
+- `run_calibrate.bat`
+- `run_dry_preflight.bat`
+- `run_dual_sweepy.bat`
 
 ## Troubleshooting
 

@@ -10,21 +10,24 @@ operator-owned key gets caught.
 from career_bot.sim_self_learning import (
     LEARNABLE_PARAMS,
     Proposal,
+    clamp_learned_value,
     _current_lhp_value,
     _quartile_split,
     _train_pick_rates,
     analyze_batch,
+    propose_final_stat_pressure_adjustments,
     propose_priority_bonus_adjustments,
 )
 
 
 class _FakeResult:
     """Minimal stand-in for SimResult — only the fields the analyzer reads."""
-    def __init__(self, rating, train_picks=None):
+    def __init__(self, rating, train_picks=None, final_stats=None):
         self.rating_score = rating
         self.train_picks_by_stat = train_picks or {
             "speed": 0, "stamina": 0, "power": 0, "guts": 0, "wit": 0,
         }
+        self.final_stats = final_stats or {}
 
 
 # -------------------- LEARNABLE_PARAMS guard --------------------
@@ -203,6 +206,56 @@ def test_current_lhp_value_handles_no_lhp_block():
     assert _current_lhp_value({"name": "raw"}, "stamina_priority_bonus_base", 0.03) == 0.03
     # None preset
     assert _current_lhp_value(None, "stamina_priority_bonus_base", 0.03) == 0.03
+
+
+# -------------------- bounds / final stat pressure --------------------
+
+def test_clamp_learned_value_bounds_and_integer_params():
+    assert clamp_learned_value("wit_priority_bonus_late", 99) == 0.7
+    assert clamp_learned_value("wit_priority_bonus_late", -1) == 0.0
+    assert clamp_learned_value("power_floor_target", 1199.6) == 1200
+    assert clamp_learned_value("calendar_race_prebuy_max_skills", 99) == 12
+
+
+def test_final_stat_pressure_proposes_speed_wit_when_under_target():
+    results = [
+        _FakeResult(14500, final_stats={
+            "speed": 900, "stamina": 700, "power": 1000, "guts": 500, "wit": 880,
+        }),
+        _FakeResult(15000, final_stats={
+            "speed": 940, "stamina": 720, "power": 980, "guts": 480, "wit": 900,
+        }),
+    ]
+    proposals = propose_final_stat_pressure_adjustments(
+        results,
+        {"learned_hyperparameters": {
+            "speed_floor_target": 950,
+            "wit_priority_bonus_late": 0.30,
+        }},
+        target_stats={"speed": 1120, "wit": 1120},
+    )
+    names = {p.param_name for p in proposals}
+    assert "speed_priority_bonus_late" in names
+    assert "wit_priority_bonus_mid" in names
+    assert "wit_priority_bonus_late" in names
+    for p in proposals:
+        assert p.param_name in LEARNABLE_PARAMS
+        assert p.proposed_value > p.current_value
+        assert p.rationale
+
+
+def test_final_stat_pressure_skips_when_batch_is_close_enough():
+    results = [
+        _FakeResult(17600, final_stats={"speed": 1110, "wit": 1100, "power": 940}),
+        _FakeResult(17800, final_stats={"speed": 1120, "wit": 1120, "power": 960}),
+    ]
+    proposals = propose_final_stat_pressure_adjustments(
+        results,
+        {},
+        target_stats={"speed": 1120, "wit": 1120, "power": 950},
+        min_shortfall=80,
+    )
+    assert proposals == []
 
 
 # -------------------- analyze_batch entry point --------------------

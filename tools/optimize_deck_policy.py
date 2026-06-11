@@ -133,13 +133,21 @@ def _base_preset(preset_path: Path | None = None) -> dict:
 # The optimizer now focuses its samples on the priority bonuses and
 # race-prebuy skill counts — the dimensions that DO move the result.
 PARAM_SPACE = [
-    ("speed_priority_bonus_mid",     0.16, 0.22),
-    ("speed_priority_bonus_late",    0.22, 0.32),
-    ("wit_priority_bonus_mid",       0.14, 0.30),
-    ("wit_priority_bonus_late",      0.30, 0.45),
-    ("power_priority_bonus_base",    0.00, 0.08),
-    ("power_priority_deficit_boost", 0.00, 0.08),
-    ("calendar_race_prebuy_max_skills", 3, 10),
+    ("speed_priority_bonus_mid",        0.16, 0.45),
+    ("speed_priority_bonus_late",       0.22, 0.60),
+    ("speed_floor_target",              900, 1200),
+    ("wit_priority_bonus_mid",          0.14, 0.55),
+    ("wit_priority_bonus_late",         0.30, 0.70),
+    ("stamina_priority_bonus_base",     0.00, 0.25),
+    ("stamina_priority_deficit_boost",  0.00, 0.25),
+    ("stamina_floor_target",            650, 1100),
+    ("power_priority_bonus_base",       0.00, 0.30),
+    ("power_priority_deficit_boost",    0.00, 0.30),
+    ("power_floor_target",              850, 1200),
+    ("calendar_race_prebuy_budget",     850, 1800),
+    ("calendar_race_prebuy_keep_sp",    0, 250),
+    ("calendar_race_prebuy_max_skills", 4, 12),
+    ("rest_threshold",                  28, 62),
 ]
 
 

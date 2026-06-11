@@ -176,3 +176,31 @@ def test_newer_cache_versions_preserved():
         seed = main.best_known_headless_auth_seed(steam_id="76561198000000003")
     assert seed["app_ver"] == "1.23.0", "Auto-discovered newer app_ver must persist"
     assert seed["res_ver"] == "10006500", "Auto-discovered newer res_ver must persist"
+
+
+def test_dedicated_version_cache_beats_stale_auth_profile():
+    """The shared client-version cache should seed login before auth profiles.
+
+    Reusable auth profiles are account-specific and can be stale. A version pair
+    accepted by auto-discovery should become the preferred metadata for all
+    later headless login/validate attempts.
+    """
+    stale_profile = {
+        "app_ver": "1.22.0",
+        "res_ver": "10006300",
+        "locale": "JPN",
+        "unity_ver": "2022.3.62f2",
+        "steam_id": "76561198000000004",
+        "steam_session_ticket": "real-ticket",
+        "viewer_id": 209937075507,
+    }
+    with patch.dict(os.environ, {"SWEEPY_DEFAULT_APP_VER": "1.22.0", "SWEEPY_DEFAULT_RES_VER": "10006300"}, clear=False), \
+         patch.object(main, "read_client_version_cache", return_value={"app_ver": "1.23.0", "res_ver": "10006600"}), \
+         patch.object(main, "load_reusable_auth_profiles", return_value={"76561198000000004": {"config": stale_profile}}), \
+         patch.object(main, "active_client", None), \
+         _no_real_dev_session():
+        seed = main.best_known_headless_auth_seed(steam_id="76561198000000004")
+
+    assert seed["app_ver"] == "1.23.0"
+    assert seed["res_ver"] == "10006600"
+    assert seed["locale"] == "JPN"

@@ -97,6 +97,56 @@ def test_simulator_race_history_starts_with_debut_win():
     assert history[0]["_sim_synthetic"] is True
 
 
+def test_simulator_emits_synthetic_hakuraku_race_payload():
+    sim = CareerSimulator(preset=_make_preset(), seed=42)
+    sim.state["turn"] = 44
+    sim._simulate_race(168, "Kikuka Sho", "Long", "classic")
+
+    assert sim.sim_hakuraku_races
+    payload = sim.sim_hakuraku_races[0]
+    assert payload["format"] == "sweepy_hakuraku_race_v1"
+    assert payload["synthetic"] is True
+    assert payload["program_id"] == 168
+    assert payload["race_horse_data_array"]
+    assert payload["race_horse_data_array"][0]["viewer_id"] == 1
+    assert payload["career_report_result"]["finish_rank"] >= 1
+    assert sim.races_run[0]["hakuraku_payload"] is payload
+
+
+def test_manual_race_threshold_applies_hidden_bonus_to_trainee_only():
+    sim = CareerSimulator(preset=_make_preset(), seed=42)
+    pid = 999991
+    sim.race_thresholds[pid] = {
+        "speed": 500,
+        "stamina": 500,
+        "power": 500,
+        "guts": 500,
+        "wit": 500,
+    }
+    sim.state.update({
+        "speed": 500,
+        "stamina": 500,
+        "power": 500,
+        "guts": 500,
+        "wiz": 500,
+    })
+
+    _prob, model = sim._manual_threshold_probability_estimate(pid, "Unit Test Stakes", "medium", "classic")
+
+    assert model["ratio_speed"] == pytest.approx(1.8)
+    assert model["ratio_stamina"] == pytest.approx(1.8)
+    assert model["ratio_power"] == pytest.approx(1.8)
+    assert model["effective_current_stamina"] == 900
+    assert model["effective_threshold_stamina"] == 500
+
+
+def test_simulator_loss_finish_rank_uses_observed_rank_counts():
+    sim = CareerSimulator(preset=_make_preset(), seed=42)
+    model = {"nearest_loss_rank_counts": {"5": 9}}
+
+    assert sim._sim_loss_finish_rank(0.99, model) == 5
+
+
 def test_speed_priority_bonus_lift_moves_sweep_median_up():
     """The simulator's value: does cranking a bonus change the median?"""
     base = _make_preset()

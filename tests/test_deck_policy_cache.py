@@ -4,8 +4,8 @@ The pipeline:
   1. `deck_signature` produces a stable hash from trainee + deck + scenario.
   2. `optimize_deck_policy.py` writes winning hyperparameters keyed by that
      signature to `uma_runtime/instances/<instance>/sim_calibration/deck_policies.json`.
-  3. `main._apply_cached_deck_policy` reads from that cache and fills any
-     `learned_hyperparameters` keys the user hasn't already set.
+  3. `main._apply_cached_deck_policy` reads from that cache and applies the
+     optimized execution knobs for that exact deck signature.
 
 These tests pin the cache module's API + behavior. The optimizer itself is
 exercised via integration (running it on the user's deck), not unit tests.
@@ -98,14 +98,12 @@ def test_save_and_reload_round_trip(tmp_path):
     assert entry["trainee_card_id"] == 1
 
 
-def test_apply_policy_fills_missing_keys_only():
-    """User overrides MUST WIN. Cache only fills gaps."""
+def test_apply_policy_overrides_stale_learned_keys():
+    """Deck optimizer output must win over stale learned execution knobs."""
     preset = {"learned_hyperparameters": {"speed_priority_bonus_mid": 0.99}}
     policy = {"speed_priority_bonus_mid": 0.20, "wit_priority_bonus_mid": 0.15}
     apply_policy_to_preset(preset, policy)
-    # User's 0.99 must be preserved
-    assert preset["learned_hyperparameters"]["speed_priority_bonus_mid"] == 0.99
-    # Cache's wit value should fill in
+    assert preset["learned_hyperparameters"]["speed_priority_bonus_mid"] == 0.20
     assert preset["learned_hyperparameters"]["wit_priority_bonus_mid"] == 0.15
 
 

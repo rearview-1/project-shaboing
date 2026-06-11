@@ -107,15 +107,15 @@ def save_policy(cache: dict, signature: str, *,
 
 
 def apply_policy_to_preset(preset: dict, policy: dict | None) -> dict:
-    """Merge a cached policy's hyperparameters into the preset's
-    `learned_hyperparameters` sub-dict. Existing user-set values WIN — the
-    cache only fills gaps, so user overrides aren't clobbered by stale
-    optimized policies.
+    """Merge a cached deck policy into the preset's
+    `learned_hyperparameters` sub-dict.
+    Optimized deck-specific values win over stale auto-learned execution
+    knobs for the same deck signature.
     """
     if not policy:
         return preset
     existing = dict(preset.get("learned_hyperparameters") or {})
     for k, v in policy.items():
-        existing.setdefault(k, v)
+        existing[k] = v
     preset["learned_hyperparameters"] = existing
     return preset

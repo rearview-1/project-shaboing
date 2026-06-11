@@ -6,7 +6,22 @@ successful start_session uses the most plausible new version. Cygames
 historically bumps res_ver in 100-step increments and bumps app_ver in
 patch/minor moves — the candidate order should reflect that.
 """
-from uma_api.client import generate_version_candidates, is_client_version_stale_response
+from contextlib import contextmanager
+from unittest.mock import patch
+
+from uma_api.client import (
+    discover_version_candidates_from_store_url,
+    extract_version_candidates_from_text,
+    generate_version_candidates,
+    is_client_version_stale_response,
+)
+
+
+@contextmanager
+def no_external_version_sources():
+    with patch("uma_api.client.read_client_version_cache", return_value={}), \
+         patch("uma_api.client.discover_version_candidates_from_store_url", return_value=[]):
+        yield
 
 
 # -------------------- candidate generator --------------------
@@ -14,7 +29,8 @@ from uma_api.client import generate_version_candidates, is_client_version_stale_
 def test_candidates_start_with_res_ver_bumps():
     """First several candidates should be same app_ver, incrementing
     res_ver — Cygames most often bumps res_ver alone."""
-    out = generate_version_candidates("1.22.0", "10006300")
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300")
     assert len(out) >= 5
     # First 5 should all have app_ver == "1.22.0"
     for app, _ in out[:5]:
@@ -28,45 +44,109 @@ def test_candidates_start_with_res_ver_bumps():
 
 def test_candidates_include_patch_bumps():
     """After res_ver-only candidates, app_ver patch bumps should appear."""
-    out = generate_version_candidates("1.22.0", "10006300")
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300")
     patch_bumps = [(a, r) for a, r in out if a == "1.22.1"]
     assert patch_bumps, "Expected at least one 1.22.1 candidate"
 
 
 def test_candidates_include_minor_bumps():
     """And minor bumps last."""
-    out = generate_version_candidates("1.22.0", "10006300")
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300")
     minor_bumps = [(a, r) for a, r in out if a == "1.23.0"]
     assert minor_bumps, "Expected at least one 1.23.0 candidate"
 
 
 def test_candidates_deduplicated():
     """Generator should not emit duplicate (app, res) pairs."""
-    out = generate_version_candidates("1.22.0", "10006300")
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300")
     assert len(out) == len(set(out)), f"Duplicates in {out}"
 
 
 def test_candidates_respect_max():
     """Caller can cap the probe budget."""
-    out = generate_version_candidates("1.22.0", "10006300", max_candidates=3)
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300", max_candidates=3)
     assert len(out) == 3
 
 
+def test_candidates_try_cached_live_version_first():
+    """Accepted discovery cache must beat stale auth-profile versions."""
+    with patch(
+        "uma_api.client.read_client_version_cache",
+        return_value={"app_ver": "1.23.0", "res_ver": "10006600"},
+    ):
+        out = generate_version_candidates("1.22.0", "10006300", max_candidates=5, steam_app_id="3224770")
+
+    assert out[0] == ("1.23.0", "10006600")
+
+
+def test_candidates_try_store_url_versions_before_guesses():
+    """If the update page exposes exact metadata, try it before blind bumps."""
+    with patch(
+        "uma_api.client.discover_version_candidates_from_store_url",
+        return_value=[("1.24.0", "10007100")],
+    ), patch("uma_api.client.read_client_version_cache", return_value={}):
+        out = generate_version_candidates(
+            "1.22.0",
+            "10006300",
+            max_candidates=5,
+            store_url="https://example.com/auto_build2/update.html",
+        )
+
+    assert out[0] == ("1.24.0", "10007100")
+
+
 def test_candidates_handle_invalid_input_gracefully():
-    """If app_ver or res_ver is malformed, generator returns whatever it
-    can — never raises. With Tier-0 default-seeding, known-good defaults
-    are tried even when current input is junk (that's intentional)."""
-    out_junk_res = generate_version_candidates("1.22.0", "not-a-number")
-    # Must not raise; must return a non-empty list (defaults + app bumps)
-    assert isinstance(out_junk_res, list) and len(out_junk_res) > 0
+    """Malformed app/res input should never make candidate generation raise."""
+    with no_external_version_sources():
+        out_junk_res = generate_version_candidates("1.22.0", "not-a-number")
+        assert isinstance(out_junk_res, list) and len(out_junk_res) > 0
 
-    out_junk_app = generate_version_candidates("not.a.version", "10006300")
-    # Should still emit res_ver bumps based on current res_ver
-    assert any("not.a.version" in str(a) or a != "" for a, _ in out_junk_app)
+        out_junk_app = generate_version_candidates("not.a.version", "10006300")
+        assert any("not.a.version" in str(a) or a != "" for a, _ in out_junk_app)
 
-    out_both_junk = generate_version_candidates("", "")
-    # Both junk → still returns a list (may contain Tier-0 defaults), no raise
-    assert isinstance(out_both_junk, list)
+        out_both_junk = generate_version_candidates("", "")
+        assert isinstance(out_both_junk, list)
+
+
+def test_extract_version_candidates_from_launcher_text():
+    text = """
+    window.__client = {
+      app_ver: "1.24.1",
+      resource_version: "10007100",
+      "APP-VER": "1.24.1",
+      "RES-VER": "10007100"
+    };
+    """
+
+    assert ("1.24.1", "10007100") in extract_version_candidates_from_text(text)
+
+
+def test_store_url_probe_follows_script_refs():
+    class Response:
+        def __init__(self, text):
+            self.status_code = 200
+            self.text = text
+
+    calls = []
+
+    def fake_get(url, **_kwargs):
+        calls.append(url)
+        if url.endswith("update.html"):
+            return Response('<script src="assets/client.js"></script>')
+        return Response('const app_ver="1.24.1"; const res_ver="10007100";')
+
+    with patch("uma_api.client.requests.get", side_effect=fake_get):
+        out = discover_version_candidates_from_store_url("https://example.com/auto_build2/update.html")
+
+    assert ("1.24.1", "10007100") in out
+    assert calls == [
+        "https://example.com/auto_build2/update.html",
+        "https://example.com/auto_build2/assets/client.js",
+    ]
 
 
 # -------------------- stale-response detection --------------------
@@ -100,7 +180,8 @@ def test_candidate_ordering_res_bumps_before_app_bumps():
     """The whole point of the priority order is that the most common
     Cygames change (res_ver bump) gets probed first. If this order
     breaks, probe latency on real failures gets much worse."""
-    out = generate_version_candidates("1.22.0", "10006300")
+    with no_external_version_sources():
+        out = generate_version_candidates("1.22.0", "10006300")
     # Index of first res-only bump (app_ver unchanged)
     first_res_only = next(
         (i for i, (a, _) in enumerate(out) if a == "1.22.0"),

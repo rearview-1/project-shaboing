@@ -1,8 +1,8 @@
-will fix megaphones tmr im going to sleep    
+will fix megaphones tmr im going to sleep
 # Sweepy — /vg/'s Uma Musume Bot (UAT REHASHED)
 
 > [!IMPORTANT]
-> **Install Node with `winget install -e --id OpenJS.NodeJS`, then run `npm i` first.**      
+> **Install Node with `winget install -e --id OpenJS.NodeJS`, then run `npm i` first.**
 > **Then go install requirements.txt**
 
 ---
@@ -14,7 +14,7 @@ will fix megaphones tmr im going to sleep
 ---
 
 
-uses lobotobized/halfported sweepy decision engine, no intention of fully porting/upgrading it as I will be migrating to MCTS soon (ts gonna take months given my hardware). 
+uses lobotobized/halfported sweepy decision engine, no intention of fully porting/upgrading it as I will be migrating to MCTS soon (ts gonna take months given my hardware).
 
 oh and uh looping removed lest someone tries to be funny (takes like 2 mins to figure out anyways but at least it wont be my fault)
 

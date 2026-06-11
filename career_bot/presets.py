@@ -30,6 +30,15 @@ CONFIG_ONLY_KEYS = {
     # Operator intent. Learning/model/instance override layers may observe
     # these values, but must not own them or stale overrides can silently
     # erase the user's active farming goal.
+    "skill_buy_on_sight",
+    "skill_profile_style",
+    "skill_profile_distance",
+    "skill_blacklist_custom",
+    "learn_skill_blacklist",
+    "learn_skill_list",
+    "learn_skill_only_user_provided",
+    "learn_skill_append_defaults",
+    "manual_purchase_at_end",
     "desired_parent_sparks",
     # Race agenda is explicit user routing. Account-local learning/tuning
     # layers are allowed to learn from the route, but must never replace the
@@ -563,13 +572,14 @@ def read_instance_learning_override(base_dir, preset_name):
     if not path.exists():
         return None
     try:
-        return normalize_preset(json.loads(path.read_text(encoding="utf-8-sig")))
+        data = normalize_preset(json.loads(path.read_text(encoding="utf-8-sig")))
+        return {k: v for k, v in data.items() if k not in CONFIG_ONLY_KEYS}
     except Exception:
         return None
 
 
 def write_instance_learning_override(base_dir, preset_name, preset):
-    data = normalize_preset(preset)
+    data = {k: v for k, v in normalize_preset(preset).items() if k not in CONFIG_ONLY_KEYS}
     path = instance_learning_override_path(base_dir, preset_name)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return path

@@ -8,6 +8,7 @@ incoming style/distance and what they normalize to, so the next
 mismatch is one console glance away from being diagnosable.
 """
 import io
+import json
 from contextlib import redirect_stdout
 from unittest.mock import MagicMock
 
@@ -90,3 +91,138 @@ def test_save_endpoint_logs_style_with_alias_normalization():
     output = buf.getvalue()
     assert "style_in='late'" in output
     assert "style_saved='late_surger'" in output
+
+
+def test_save_endpoint_scrubs_stale_instance_learning_style(monkeypatch, tmp_path):
+    """Saving the visible strategy must invalidate stale account-local overlays.
+
+    This guards the real bug where an old instance-learning JSON kept
+    `skill_profile_style=front_runner` after the UI had saved Late Surger.
+    """
+    import asyncio
+    from career_bot.presets import instance_learning_override_path
+
+    class Store:
+        def read_one(self, name):
+            return {"name": name}
+
+        def write(self, preset):
+            return dict(preset)
+
+    monkeypatch.setattr(main, "preset_store", Store())
+    monkeypatch.setenv("SWEEPY_AUTO_LEARNING_SCOPE", "instance_local")
+    monkeypatch.setenv("UMA_RUNTIME_DIR", str(tmp_path))
+
+    path = instance_learning_override_path(main.DIR, "xguri parent")
+    path.write_text(
+        json.dumps(
+            {
+                "name": "xguri parent",
+                "rest_threshold": 72,
+                "skill_profile_style": "front_runner",
+                "skill_profile_distance": "mile",
+                "learn_skill_blacklist": ["stale"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    req = _make_request(style="late", distance="medium")
+    asyncio.run(main.save_skill_plan(req))
+
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    assert raw["rest_threshold"] == 72
+    assert "skill_profile_style" not in raw
+    assert "skill_profile_distance" not in raw
+    assert "learn_skill_blacklist" not in raw
+
+
+def test_save_endpoint_hot_patches_active_runner(monkeypatch):
+    """Saving mid-career must update the active runner immediately.
+
+    File polling is too slow and full preset replacement can disturb runtime
+    context. The save endpoint should push only operator-owned skill-plan fields
+    into the in-memory active preset so the next race uses the new style.
+    """
+    import asyncio
+
+    class Store:
+        def read_one(self, name):
+            return {"name": name, "_run_context": {"deck": "keep-runtime"}}
+
+        def write(self, preset):
+            return dict(preset)
+
+    class Runner:
+        def __init__(self):
+            self.calls = []
+
+        def update_active_preset_fields(self, preset_name, fields, *, reason="operator_save"):
+            self.calls.append((preset_name, dict(fields), reason))
+            return True
+
+    runner = Runner()
+    monkeypatch.setattr(main, "preset_store", Store())
+    monkeypatch.setattr(main, "career_runner", runner)
+    monkeypatch.setenv("SWEEPY_AUTO_LEARNING_SCOPE", "shared")
+
+    req = _make_request(style="late", distance="medium", buy_timing="throughout")
+    result = asyncio.run(main.save_skill_plan(req))
+
+    assert result["hot_reloaded"] is True
+    assert len(runner.calls) == 1
+    preset_name, fields, reason = runner.calls[0]
+    assert preset_name == "xguri parent"
+    assert reason == "save_skill_plan"
+    assert fields["skill_profile_style"] == "late_surger"
+    assert fields["skill_profile_distance"] == "medium"
+    assert fields["manual_purchase_at_end"] is False
+    assert "learn_skill_list" in fields
+    assert "_run_context" not in fields
+
+
+def test_race_picker_save_hot_patches_active_runner_calendar(monkeypatch):
+    """Calendar edits must affect the running career before the next decision."""
+    import asyncio
+
+    race_id = next(iter(sorted(main.race_catalog.by_id.keys())))
+
+    class Store:
+        def read_one(self, name):
+            return {"name": name}
+
+        def write(self, preset):
+            return dict(preset)
+
+    class Runner:
+        def __init__(self):
+            self.calls = []
+
+        def update_active_preset_fields(self, preset_name, fields, *, reason="operator_save"):
+            self.calls.append((preset_name, dict(fields), reason))
+            return True
+
+    runner = Runner()
+    monkeypatch.setattr(main, "preset_store", Store())
+    monkeypatch.setattr(main, "career_runner", runner)
+    monkeypatch.setenv("SWEEPY_AUTO_LEARNING_SCOPE", "shared")
+
+    result = asyncio.run(
+        main.save_races(
+            main.SaveRacesRequest(
+                preset_name="xguri parent",
+                races=[race_id],
+                styles={str(race_id): "late_surger"},
+            )
+        )
+    )
+
+    assert result["success"] is True
+    assert result["hot_reloaded"] is True
+    assert len(runner.calls) == 1
+    preset_name, fields, reason = runner.calls[0]
+    assert preset_name == "xguri parent"
+    assert reason == "save_races"
+    assert race_id in fields["race_list"]
+    assert race_id in fields["extra_race_list"]
+    assert fields["custom_race_schedule"][0]["style"] == "late_surger"

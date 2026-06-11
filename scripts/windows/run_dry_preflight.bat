@@ -1,5 +1,5 @@
 @echo off
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 if "%~1"=="" (
   echo Usage: run_dry_preflight.bat tools\start_request.example.json
   pause
@@ -12,5 +12,10 @@ if errorlevel 1 (
   exit /b 1
 )
 set PYTHONDONTWRITEBYTECODE=1
+python tools\verify_project_integrity.py
+if errorlevel 1 (
+  pause
+  exit /b 1
+)
 python tools\dry_run_preflight.py --request "%~1"
 pause

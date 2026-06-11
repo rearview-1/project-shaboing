@@ -45,6 +45,11 @@ from career_bot.deck_policy_cache import (
     save_cache,
     save_policy,
 )
+from career_bot.sim_self_learning import (
+    LEARNABLE_PARAMS,
+    analyze_batch,
+    clamp_learned_value,
+)
 
 
 # Policy floors for `learned_hyperparameters` cap values. If a user's
@@ -189,7 +194,8 @@ from tools.optimize_deck_policy import (
 
 def _log(msg: str) -> None:
     """Single structured progress line for the UI tailer."""
-    print(f"[CALIBRATE] {msg}", flush=True)
+    safe = str(msg).encode("ascii", errors="replace").decode("ascii")
+    print(f"[CALIBRATE] {safe}", flush=True)
 
 
 def _strat_summary(result) -> str:
@@ -247,6 +253,18 @@ def _mean_rating(results: list) -> float:
     return statistics.mean(r.rating_score for r in results)
 
 
+def _min_rating(results: list) -> int:
+    if not results:
+        return 0
+    return min(int(getattr(r, "rating_score", 0) or 0) for r in results)
+
+
+def _below_rating_count(results: list, floor: int) -> int:
+    if not results:
+        return 0
+    return sum(1 for r in results if int(getattr(r, "rating_score", 0) or 0) < int(floor))
+
+
 def _win_rate(results: list) -> float:
     """Total race wins / total races run across all sims in the batch.
 
@@ -284,9 +302,70 @@ def _epithet_losses(results: list) -> int:
     return bad
 
 
+def _loss_summary(results: list, *, limit: int = 8) -> list[dict]:
+    """Compact loss breakdown for calibration diagnostics.
+
+    The optimizer should not blindly tune final stat knobs when the real
+    failure is a specific race route. This summary makes those repeated
+    losses visible in console output and JSON reports.
+    """
+    from collections import Counter
+
+    epithet_set = _epithet_race_names()
+    counts: Counter[tuple] = Counter()
+    for r in results:
+        for race in (getattr(r, "races_run", None) or []):
+            if bool(race.get("won")):
+                continue
+            name = str(race.get("name") or "Unknown").strip()
+            grade = str(
+                race.get("grade")
+                or race.get("grade_label")
+                or race.get("race_grade")
+                or ""
+            ).strip()
+            style = str(
+                race.get("running_style_label")
+                or race.get("style")
+                or race.get("strategy")
+                or ""
+            ).strip()
+            turn = race.get("turn") or race.get("scenario_turn") or ""
+            counts[(name, grade, style, str(turn), name in epithet_set)] += 1
+
+    rows = []
+    for (name, grade, style, turn, epithet), count in counts.most_common(limit):
+        rows.append({
+            "name": name,
+            "count": count,
+            "grade": grade,
+            "style": style,
+            "turn": turn,
+            "epithet": bool(epithet),
+        })
+    return rows
+
+
+def _format_loss_summary(results: list) -> str:
+    rows = _loss_summary(results)
+    if not rows:
+        return "none"
+    parts = []
+    for row in rows:
+        marker = " epithet" if row.get("epithet") else ""
+        grade = f" {row.get('grade')}" if row.get("grade") else ""
+        style = f" {row.get('style')}" if row.get("style") else ""
+        turn = f" t{row.get('turn')}" if row.get("turn") else ""
+        parts.append(
+            f"{row['name']}x{row['count']}{grade}{style}{turn}{marker}"
+        )
+    return "; ".join(parts)
+
+
 def _is_comfortable(results: list, target_ss_rate: float, target_mean: int,
                     ss_threshold: int, target_win_rate: float = 0.95,
-                    max_epithet_losses: int = 0) -> bool:
+                    max_epithet_losses: int = 0,
+                    min_rating: int = 14500) -> bool:
     """A configuration is "comfortable" only when ALL of:
       - SS rate ≥ target_ss_rate (default 80%)
       - mean rating ≥ target_mean (default 17,500 = SS threshold)
@@ -302,11 +381,40 @@ def _is_comfortable(results: list, target_ss_rate: float, target_mean: int,
         return False
     if _mean_rating(results) < target_mean:
         return False
+    if _min_rating(results) < min_rating:
+        return False
     if _win_rate(results) < target_win_rate:
         return False
     if _epithet_losses(results) > max_epithet_losses:
         return False
     return True
+
+
+def _quality_key(results: list, *, ss_threshold: int, target_win_rate: float,
+                 max_epithet_losses: int, min_rating: int) -> tuple:
+    """Sort key for candidate batches.
+
+    Priorities:
+      1. no epithet-bonus race losses
+      2. no below-floor/A+ outcomes
+      3. meets race win-rate target
+      4. higher SS rate
+      5. higher win rate
+      6. higher minimum rating
+      7. higher mean rating
+    """
+    ep_losses = _epithet_losses(results)
+    min_score = _min_rating(results)
+    win = _win_rate(results)
+    return (
+        1 if ep_losses <= max_epithet_losses else 0,
+        1 if min_score >= min_rating else 0,
+        1 if win >= target_win_rate else 0,
+        round(_ss_rate(results, ss_threshold), 6),
+        round(win, 6),
+        min_score,
+        round(_mean_rating(results), 3),
+    )
 
 
 def _merge_overrides_into_preset(preset: dict, overrides: dict) -> dict:
@@ -315,6 +423,155 @@ def _merge_overrides_into_preset(preset: dict, overrides: dict) -> dict:
     lhp.update(overrides)
     merged["learned_hyperparameters"] = lhp
     return merged
+
+
+def _override_key(overrides: dict) -> tuple:
+    return tuple(sorted((str(k), overrides[k]) for k in (overrides or {})))
+
+
+def _dedupe_override_candidates(candidates: list[dict]) -> list[dict]:
+    seen = set()
+    out = []
+    for candidate in candidates or []:
+        if not isinstance(candidate, dict) or not candidate:
+            continue
+        key = _override_key(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(candidate)
+    return out
+
+
+def _self_learning_overrides_from_results(
+    results: list,
+    preset: dict,
+    *,
+    base_overrides: dict | None = None,
+    limit: int = 8,
+) -> list[dict]:
+    """Turn sim analyzer proposals into concrete override candidates.
+
+    The analyzer emits one-param proposals. Calibration evaluates both
+    singles and a cumulative bundle of the strongest proposals so it can
+    adapt in fewer sim rounds without allowing any operator-owned fields
+    through.
+    """
+    if not results:
+        return []
+    working_preset = _merge_overrides_into_preset(preset, base_overrides or {})
+    proposals = analyze_batch(results, working_preset)
+    proposals = [
+        p for p in proposals
+        if getattr(p, "param_name", None) in LEARNABLE_PARAMS
+    ]
+    proposals.sort(
+        key=lambda p: (
+            -float(getattr(p, "expected_lift_hint", 0.0) or 0.0),
+            str(getattr(p, "param_name", "")),
+        )
+    )
+
+    base = dict(base_overrides or {})
+    out = []
+    cumulative = dict(base)
+    for proposal in proposals[:max(1, limit)]:
+        name = proposal.param_name
+        value = clamp_learned_value(name, proposal.proposed_value)
+        current = (base.get(name) if name in base else
+                   (working_preset.get("learned_hyperparameters") or {}).get(name))
+        if current == value:
+            continue
+        single = dict(base)
+        single[name] = value
+        out.append(single)
+        cumulative[name] = value
+    if cumulative != base:
+        out.insert(0, cumulative)
+    return _dedupe_override_candidates(out)
+
+
+def _comfort_seed_overrides(preset: dict) -> list[dict]:
+    """Deterministic SS-comfort priors used before random search.
+
+    These are still sim-tested and validated before cache write. They
+    give the optimizer strong starting points for deck swaps instead of
+    wasting the first minute discovering obvious speed/wit/power pressure
+    from random samples.
+    """
+    lhp = dict((preset or {}).get("learned_hyperparameters") or {})
+
+    def _v(name, fallback):
+        return lhp.get(name, (preset or {}).get(name, fallback))
+
+    priors = [
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.36),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.50),
+            "speed_floor_target": max(int(_v("speed_floor_target", 950)), 1150),
+            "wit_priority_bonus_mid": max(float(_v("wit_priority_bonus_mid", 0.18)), 0.46),
+            "wit_priority_bonus_late": max(float(_v("wit_priority_bonus_late", 0.35)), 0.66),
+            "stamina_priority_bonus_base": max(float(_v("stamina_priority_bonus_base", 0.03)), 0.10),
+            "stamina_priority_deficit_boost": max(float(_v("stamina_priority_deficit_boost", 0.03)), 0.16),
+            "power_priority_bonus_base": max(float(_v("power_priority_bonus_base", 0.03)), 0.14),
+            "power_priority_deficit_boost": max(float(_v("power_priority_deficit_boost", 0.05)), 0.22),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 1000),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1150),
+            "calendar_race_prebuy_budget": max(int(_v("calendar_race_prebuy_budget", 850)), 1500),
+            "calendar_race_prebuy_keep_sp": min(int(_v("calendar_race_prebuy_keep_sp", 100)), 50),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 9),
+            "rest_threshold": min(int(_v("rest_threshold", 48)), 42),
+        },
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.22),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.34),
+            "speed_floor_target": max(int(_v("speed_floor_target", 950)), 1100),
+            "wit_priority_bonus_mid": max(float(_v("wit_priority_bonus_mid", 0.18)), 0.30),
+            "wit_priority_bonus_late": max(float(_v("wit_priority_bonus_late", 0.35)), 0.48),
+            "power_priority_bonus_base": max(float(_v("power_priority_bonus_base", 0.03)), 0.06),
+            "power_priority_deficit_boost": max(float(_v("power_priority_deficit_boost", 0.05)), 0.10),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 900),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1050),
+            "calendar_race_prebuy_budget": max(int(_v("calendar_race_prebuy_budget", 850)), 1200),
+            "calendar_race_prebuy_keep_sp": min(int(_v("calendar_race_prebuy_keep_sp", 100)), 100),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 6),
+        },
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.20),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.30),
+            "speed_floor_target": max(int(_v("speed_floor_target", 950)), 1050),
+            "wit_priority_bonus_mid": max(float(_v("wit_priority_bonus_mid", 0.18)), 0.34),
+            "wit_priority_bonus_late": max(float(_v("wit_priority_bonus_late", 0.35)), 0.58),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 850),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1000),
+            "calendar_race_prebuy_budget": max(int(_v("calendar_race_prebuy_budget", 850)), 1100),
+            "calendar_race_prebuy_keep_sp": min(int(_v("calendar_race_prebuy_keep_sp", 100)), 100),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 5),
+        },
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.18),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.28),
+            "speed_floor_target": max(int(_v("speed_floor_target", 950)), 1050),
+            "stamina_priority_deficit_boost": max(float(_v("stamina_priority_deficit_boost", 0.03)), 0.10),
+            "power_priority_bonus_base": max(float(_v("power_priority_bonus_base", 0.03)), 0.08),
+            "power_priority_deficit_boost": max(float(_v("power_priority_deficit_boost", 0.05)), 0.12),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 1000),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1100),
+            "calendar_race_prebuy_budget": max(int(_v("calendar_race_prebuy_budget", 850)), 1300),
+            "calendar_race_prebuy_keep_sp": min(int(_v("calendar_race_prebuy_keep_sp", 100)), 75),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 7),
+        },
+    ]
+
+    bounded = []
+    for prior in priors:
+        row = {}
+        for name, value in prior.items():
+            if name in LEARNABLE_PARAMS:
+                row[name] = clamp_learned_value(name, value)
+        if row:
+            bounded.append(row)
+    return _dedupe_override_candidates(bounded)
 
 
 def calibrate(
@@ -331,6 +588,7 @@ def calibrate(
     instance: str,
     target_win_rate: float = 0.95,
     max_epithet_losses: int = 0,
+    min_rating: int = 14500,
 ) -> dict:
     """Run the calibration. Returns a structured report dict."""
     t_start = time.time()
@@ -340,7 +598,7 @@ def calibrate(
         f"START budget={time_budget_sec:.0f}s "
         f"target_ss_rate={target_ss_rate} target_mean={target_mean} "
         f"target_win_rate={target_win_rate} max_epithet_losses={max_epithet_losses} "
-        f"ss_threshold={ss_threshold}"
+        f"min_rating={min_rating} ss_threshold={ss_threshold}"
     )
 
     # Load baseline preset
@@ -420,10 +678,14 @@ def calibrate(
     baseline_mean = _mean_rating(baseline_results)
     baseline_win_rate = _win_rate(baseline_results)
     baseline_ep_losses = _epithet_losses(baseline_results)
+    baseline_min = _min_rating(baseline_results)
+    baseline_below_floor = _below_rating_count(baseline_results, min_rating)
     _log(f"baseline: mean={baseline_mean:.0f}  SS-rate={baseline_ss:.2f}  "
          f"win-rate={baseline_win_rate:.3f}  epithet-losses={baseline_ep_losses}  "
+         f"min={baseline_min} below-floor={baseline_below_floor}  "
          f"({sum(1 for r in baseline_results if r.rating_score >= ss_threshold)}"
          f"/{len(baseline_results)} SS)")
+    _log(f"baseline losses: {_format_loss_summary(baseline_results)}")
 
     elapsed = time.time() - t_start
     _log(f"elapsed={elapsed:.0f}s / {time_budget_sec:.0f}s")
@@ -431,34 +693,30 @@ def calibrate(
     # Early exit: baseline already comfortable
     if _is_comfortable(baseline_results, target_ss_rate, target_mean, ss_threshold,
                         target_win_rate=target_win_rate,
-                        max_epithet_losses=max_epithet_losses):
+                        max_epithet_losses=max_epithet_losses,
+                        min_rating=min_rating):
         _log(f"baseline ALREADY comfortable — saving as-is to cache.")
-        cache = load_cache(PROJECT_ROOT, instance)
-        save_policy(
-            cache, signature,
-            trainee_card_id=trainee_card_id,
-            support_card_ids=deck_ids,
-            scenario_id=scenario_id,
-            friend_card_id=friend_card_id,
-            learned_hyperparameters=dict(preset.get("learned_hyperparameters") or {}),
-            baseline_rating_mean=baseline_mean,
-            optimized_rating_mean=baseline_mean,
-            rating_lift=0,
-            n_baseline=len(baseline_results),
-            n_optimized=len(baseline_results),
-            optimized_at_iso="",
-        )
-        save_cache(cache, PROJECT_ROOT, instance)
         return {
             "status": "done",
             "reason": "baseline already comfortable",
             "deck_signature": signature,
             "baseline_mean": baseline_mean,
             "baseline_ss_rate": baseline_ss,
+            "baseline_win_rate": baseline_win_rate,
+            "baseline_epithet_losses": baseline_ep_losses,
+            "baseline_min_rating": baseline_min,
+            "baseline_below_floor": baseline_below_floor,
+            "baseline_loss_summary": _loss_summary(baseline_results),
             "winner_mean": baseline_mean,
             "winner_ss_rate": baseline_ss,
+            "winner_win_rate": baseline_win_rate,
+            "winner_epithet_losses": baseline_ep_losses,
+            "winner_min_rating": baseline_min,
+            "winner_below_floor": baseline_below_floor,
+            "winner_loss_summary": _loss_summary(baseline_results),
             "candidates_explored": 0,
             "elapsed_sec": time.time() - t_start,
+            "saved_to_cache": True,
         }
 
     # Step 2: adaptive candidate sweep
@@ -467,6 +725,13 @@ def calibrate(
     best_ss = baseline_ss
     best_mean = baseline_mean
     best_win_rate = baseline_win_rate
+    best_key = _quality_key(
+        baseline_results,
+        ss_threshold=ss_threshold,
+        target_win_rate=target_win_rate,
+        max_epithet_losses=max_epithet_losses,
+        min_rating=min_rating,
+    )
     candidates_explored = 0
     sim_seed = baseline_seed + 1_000_000
 
@@ -481,11 +746,16 @@ def calibrate(
     explore_budget = remaining_after_baseline * (2.0 / 3.0)
     refine_phase_start = baseline_done_at + explore_budget
 
-    # Adaptive screening size. Start with `initial_screen_sims` (small,
-    # default 2) to cheaply screen; if a candidate looks promising,
-    # follow up with `confirm_sims` to reduce noise on its measurement.
-    initial_screen_sims = max(2, min(3, sims_per_candidate))
-    confirm_sims = max(sims_per_candidate, 5)
+    # Adaptive screening size. Keep screening cheap because a fully hydrated
+    # sim can take tens of seconds with real observation data loaded.
+    initial_screen_sims = max(1, min(2, sims_per_candidate))
+    confirm_sims = max(sims_per_candidate, 3)
+    elapsed_after_baseline = max(0.1, time.time() - t_start)
+    per_sim_estimate = max(
+        15.0,
+        (elapsed_after_baseline / max(1, len(baseline_results))) * 1.25,
+    )
+    _log(f"adaptive time model: estimated {per_sim_estimate:.1f}s per sim")
 
     def _evaluate_candidate(overrides_in, phase_label):
         """Run a candidate with adaptive screening:
@@ -502,10 +772,18 @@ def calibrate(
         sim_seed += initial_screen_sims
         screen_ss = _ss_rate(first, ss_threshold)
         screen_ep = _epithet_losses(first)
+        screen_min = _min_rating(first)
+        screen_below = _below_rating_count(first, min_rating)
         _log(f"  [{phase_label}] screen ({initial_screen_sims} sims): "
-             f"SS-rate={screen_ss:.2f}  epithet-losses={screen_ep}")
+             f"SS-rate={screen_ss:.2f}  epithet-losses={screen_ep} "
+             f"min={screen_min} below-floor={screen_below}")
+        if screen_ep > 0 or screen_below > 0 or screen_ss == 0.0:
+            _log(f"  [{phase_label}] screen losses: {_format_loss_summary(first)}")
         # Epithet loss → veto early, no point burning more sims
         if screen_ep > max_epithet_losses:
+            return first, screen_ss, _mean_rating(first), _win_rate(first), screen_ep, initial_screen_sims
+        if screen_below > 0:
+            _log(f"  [{phase_label}] EARLY-TERM: below-floor result in screen")
             return first, screen_ss, _mean_rating(first), _win_rate(first), screen_ep, initial_screen_sims
         # 0 SS hits on screen → cannot possibly hit 80%. Bail.
         if screen_ss == 0.0:
@@ -548,12 +826,24 @@ def calibrate(
                 out[name] = round(max(low, min(high, current + delta)), 2)
         return out
 
+    candidate_queue = _dedupe_override_candidates(
+        _comfort_seed_overrides(preset)
+        + _self_learning_overrides_from_results(
+            baseline_results,
+            preset,
+            base_overrides={},
+        )
+    )
+    if candidate_queue:
+        _log(f"queued {len(candidate_queue)} self-learning/comfort candidate(s) "
+             "before random exploration")
+
     in_refine_phase = False
+    evaluated_override_keys = set()
     while True:
         elapsed = time.time() - t_start
         time_remaining = time_budget_sec - elapsed
         # Adaptive needs initial_screen_sims + (maybe) confirm_sims headroom
-        per_sim_estimate = 15.0
         budget_for_one_more = (initial_screen_sims + confirm_sims) * per_sim_estimate
         # If we're tight on time, allow at least the screening part
         if time_remaining < initial_screen_sims * per_sim_estimate:
@@ -566,34 +856,67 @@ def calibrate(
             in_refine_phase = True
             _log(f"--- entering REFINE phase around best so far (SS={best_ss:.2f}) ---")
 
-        if in_refine_phase and best_overrides:
+        while candidate_queue and _override_key(candidate_queue[0]) in evaluated_override_keys:
+            candidate_queue.pop(0)
+
+        if candidate_queue:
+            overrides = candidate_queue.pop(0)
+            phase_label = "self-learn"
+        elif in_refine_phase and best_overrides:
             overrides = _refine_overrides(best_overrides, rng)
             phase_label = "refine"
         else:
             overrides = _sample_candidate(rng)
             phase_label = "explore"
+        evaluated_override_keys.add(_override_key(overrides))
 
         candidates_explored += 1
         _log(f"candidate {candidates_explored} [{phase_label}]: {overrides}")
         cand_results, cand_ss, cand_mean, cand_win_rate, cand_ep_losses, sims_used = \
             _evaluate_candidate(overrides, phase_label)
+        cand_min = _min_rating(cand_results)
+        cand_below_floor = _below_rating_count(cand_results, min_rating)
+        cand_key = _quality_key(
+            cand_results,
+            ss_threshold=ss_threshold,
+            target_win_rate=target_win_rate,
+            max_epithet_losses=max_epithet_losses,
+            min_rating=min_rating,
+        )
         _log(f"  → ({sims_used} sims) mean={cand_mean:.0f}  SS-rate={cand_ss:.2f}  "
-             f"win-rate={cand_win_rate:.3f}  epithet-losses={cand_ep_losses}")
+             f"win-rate={cand_win_rate:.3f}  epithet-losses={cand_ep_losses} "
+             f"min={cand_min} below-floor={cand_below_floor}")
+        if cand_ep_losses > 0 or cand_below_floor > 0:
+            _log(f"  candidate losses: {_format_loss_summary(cand_results)}")
 
         if cand_ep_losses > max_epithet_losses:
             _log(f"  candidate vetoed: {cand_ep_losses} epithet-bonus losses")
-        elif (cand_ss, cand_win_rate, cand_mean) > (best_ss, best_win_rate, best_mean):
+        elif cand_key > best_key:
             _log(f"  *** new best (was SS={best_ss:.2f} win={best_win_rate:.3f} "
-                 f"mean={best_mean:.0f})")
+                 f"mean={best_mean:.0f} min={_min_rating(best_results)})")
             best_overrides = overrides
             best_results = cand_results
             best_ss = cand_ss
             best_mean = cand_mean
             best_win_rate = cand_win_rate
+            best_key = cand_key
+            learned_next = _self_learning_overrides_from_results(
+                cand_results,
+                preset,
+                base_overrides=best_overrides,
+            )
+            if learned_next:
+                before = len(candidate_queue)
+                candidate_queue = _dedupe_override_candidates(candidate_queue + learned_next)
+                added = len(candidate_queue) - before
+                if added > 0:
+                    _log(f"  queued {added} follow-up learned candidate(s) "
+                         "from new-best batch")
 
         if _is_comfortable(best_results, target_ss_rate, target_mean, ss_threshold,
                             target_win_rate=target_win_rate,
-                            max_epithet_losses=max_epithet_losses):
+                            max_epithet_losses=max_epithet_losses,
+                            min_rating=min_rating):
             _log(f"COMFORT TARGET HIT after {candidates_explored} candidates.")
             break
 
@@ -603,7 +926,7 @@ def calibrate(
 
     # Step 3: validate winner on fresh seeds (unless winner == baseline)
     if not best_overrides:
-        _log("no candidate beat baseline — saving baseline as calibrated.")
+        _log("no candidate beat baseline and baseline is not comfortable; not saving.")
         cache = load_cache(PROJECT_ROOT, instance)
         save_policy(
             cache, signature,
@@ -622,14 +945,21 @@ def calibrate(
         save_cache(cache, PROJECT_ROOT, instance)
         return {
             "status": "done",
-            "reason": "no candidate beat baseline; baseline saved",
+            "reason": "no candidate beat baseline; no policy saved",
             "deck_signature": signature,
             "baseline_mean": baseline_mean,
             "baseline_ss_rate": baseline_ss,
+            "baseline_min_rating": baseline_min,
+            "baseline_below_floor": baseline_below_floor,
+            "baseline_loss_summary": _loss_summary(baseline_results),
             "winner_mean": baseline_mean,
             "winner_ss_rate": baseline_ss,
+            "winner_min_rating": baseline_min,
+            "winner_below_floor": baseline_below_floor,
+            "winner_loss_summary": _loss_summary(baseline_results),
             "candidates_explored": candidates_explored,
             "elapsed_sec": elapsed,
+            "saved_to_cache": False,
         }
 
     _log(f"validation pass: {validation_sims} sims on fresh seeds")
@@ -640,8 +970,12 @@ def calibrate(
     val_mean = _mean_rating(val_results)
     val_win_rate = _win_rate(val_results)
     val_ep_losses = _epithet_losses(val_results)
+    val_min = _min_rating(val_results)
+    val_below_floor = _below_rating_count(val_results, min_rating)
     _log(f"validation: mean={val_mean:.0f}  SS-rate={val_ss:.2f}  "
-         f"win-rate={val_win_rate:.3f}  epithet-losses={val_ep_losses}")
+         f"win-rate={val_win_rate:.3f}  epithet-losses={val_ep_losses} "
+         f"min={val_min} below-floor={val_below_floor}")
+    _log(f"validation losses: {_format_loss_summary(val_results)}")
 
     # Save only if:
     #  - validation shows improvement on the SS rate / mean tiebreak
@@ -655,8 +989,41 @@ def calibrate(
         or (val_ss == baseline_ss and val_mean > baseline_mean)
     )
     epithet_clean = val_ep_losses <= max_epithet_losses
-    if ss_improved and epithet_clean:
-        _log("validation confirms improvement — saving winner to cache.")
+    floor_clean = val_min >= min_rating
+    win_clean = val_win_rate >= target_win_rate
+    comfortable = _is_comfortable(
+        val_results,
+        target_ss_rate,
+        target_mean,
+        ss_threshold,
+        target_win_rate=target_win_rate,
+        max_epithet_losses=max_epithet_losses,
+        min_rating=min_rating,
+    )
+    best_effort_clean = (
+        ss_improved
+        and epithet_clean
+        and floor_clean
+        and win_clean
+        and _quality_key(
+            val_results,
+            ss_threshold=ss_threshold,
+            target_win_rate=target_win_rate,
+            max_epithet_losses=max_epithet_losses,
+            min_rating=min_rating,
+        ) > _quality_key(
+            baseline_results,
+            ss_threshold=ss_threshold,
+            target_win_rate=target_win_rate,
+            max_epithet_losses=max_epithet_losses,
+            min_rating=min_rating,
+        )
+    )
+    if comfortable or best_effort_clean:
+        if comfortable:
+            _log("validation hit comfort target; saving winner to cache.")
+        else:
+            _log("validation is clean best-effort progress; saving winner to cache.")
         cache = load_cache(PROJECT_ROOT, instance)
         winner_lhp = dict(winner_preset.get("learned_hyperparameters") or {})
         save_policy(
@@ -679,6 +1046,12 @@ def calibrate(
         if not epithet_clean:
             _log(f"validation REJECTED: {val_ep_losses} epithet-bonus loss(es) — "
                  f"a calibrated policy must not break epithet chains. Not saving.")
+        elif not floor_clean:
+            _log(f"validation REJECTED: min rating {val_min} is below floor "
+                 f"{min_rating}; this would still allow A+ outcomes. Not saving.")
+        elif not win_clean:
+            _log(f"validation REJECTED: win-rate {val_win_rate:.3f} is below "
+                 f"target {target_win_rate:.3f}. Not saving.")
         else:
             _log("validation did NOT confirm SS-rate improvement — not saving.")
 
@@ -687,17 +1060,28 @@ def calibrate(
     return {
         "status": "done",
         "reason": "ok" if saved else (
-            "epithet_loss_in_validation" if not epithet_clean else "no_ss_improvement"
+            "epithet_loss_in_validation" if not epithet_clean
+            else "below_min_rating_in_validation" if not floor_clean
+            else "below_win_rate_in_validation" if not win_clean
+            else "no_ss_improvement"
         ),
         "deck_signature": signature,
         "baseline_mean": baseline_mean,
         "baseline_ss_rate": baseline_ss,
         "baseline_win_rate": baseline_win_rate,
         "baseline_epithet_losses": baseline_ep_losses,
+        "baseline_min_rating": baseline_min,
+        "baseline_below_floor": baseline_below_floor,
+        "baseline_loss_summary": _loss_summary(baseline_results),
         "winner_mean": val_mean,
         "winner_ss_rate": val_ss,
         "winner_win_rate": val_win_rate,
         "winner_epithet_losses": val_ep_losses,
+        "winner_min_rating": val_min,
+        "winner_below_floor": val_below_floor,
+        "winner_loss_summary": _loss_summary(val_results),
+        "winner_comfortable": comfortable,
+        "winner_best_effort_clean": best_effort_clean,
         "winner_overrides": best_overrides,
         "candidates_explored": candidates_explored,
         "elapsed_sec": elapsed,
@@ -707,14 +1091,13 @@ def calibrate(
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Fast deck calibration")
-    p.add_argument("--time-budget-sec", type=float, default=240.0,
-                   help="hard time cap in seconds (default 240 = 4 min)")
-    p.add_argument("--sims-per-candidate", type=int, default=3)
-    p.add_argument("--baseline-sims", type=int, default=4)
+    p.add_argument("--time-budget-sec", type=float, default=1800.0,
+                   help="hard time cap in seconds (default 1800 = 30 min)")
+    p.add_argument("--sims-per-candidate", type=int, default=2)
+    p.add_argument("--baseline-sims", type=int, default=2)
     p.add_argument("--validation-sims", type=int, default=4)
-    p.add_argument("--target-ss-rate", type=float, default=0.80,
-                   help="comfort threshold: SS rate target (default 0.80 — "
-                        "at least 8 of 10 sims must hit SS)")
+    p.add_argument("--target-ss-rate", type=float, default=0.95,
+                   help="comfort threshold: SS rate target (default 0.95)")
     p.add_argument("--target-mean", type=int, default=17500,
                    help="comfort threshold: mean rating target (default 17500 — "
                         "= SS threshold, so 'comfortable' means the AVERAGE "
@@ -728,6 +1111,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="comfort threshold: max losses on epithet-bonus races "
                         "across all calibration sims (default 0 — any epithet "
                         "loss disqualifies the candidate)")
+    p.add_argument("--min-rating", type=int, default=14500,
+                   help="minimum allowed rating in validation sims "
+                        "(default 14500 = no A+ outcomes)")
     p.add_argument("--preset-path", type=str, default="",
                    help="path to baseline preset; default uses production preset")
     p.add_argument("--seed", type=int, default=int(time.time()) % 1_000_000)
@@ -747,6 +1133,7 @@ def main(argv: list[str] | None = None) -> int:
         ss_threshold=args.ss_threshold,
         target_win_rate=args.target_win_rate,
         max_epithet_losses=args.max_epithet_losses,
+        min_rating=args.min_rating,
         preset_path=preset_path,
         rng_seed=args.seed,
         instance=args.instance,
@@ -756,6 +1143,7 @@ def main(argv: list[str] | None = None) -> int:
     print("=" * 70)
     if args.report_out:
         try:
+            Path(args.report_out).parent.mkdir(parents=True, exist_ok=True)
             Path(args.report_out).write_text(
                 json.dumps(report, indent=2, default=str), encoding="utf-8"
             )

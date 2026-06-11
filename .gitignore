@@ -1,14 +1,22 @@
 *.pyc
 __pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 /node_modules
+/.venv
+/venv
+/env
 
-# uma_runtime is included so collaborators have parent memory, bot logs,
-# sim observations, instance learning preset, calibrations, etc.
-# The paths below are excluded because they contain account
-# authentication credentials, session tokens, viewer/steam/device IDs,
-# or raw API payloads that include the same. NEVER unignore these.
+# Fresh clones should not contain a developer's live runtime state.
+# The setup batch and the bot recreate these directories automatically.
+/uma_runtime/**
+!/uma_runtime/
+!/uma_runtime/.gitignore
+!/uma_runtime/README.txt
 
-# Live game auth - auth_key, steam_id, viewer_id, udid, device_id
+# Live game auth - auth_key, steam_id, viewer_id, udid, device_id.
+# Kept as explicit defense-in-depth in case runtime files are force-added.
 /uma_runtime/instances/*/dev_session.json
 /uma_runtime/instances/*/reusable_auth_profiles.json
 
@@ -25,3 +33,9 @@ __pycache__/
 # Latest scratch files that may capture in-flight session data
 /uma_runtime/latest_raw.json
 /uma_runtime/latest_summary.json
+
+# Local/generated artifacts
+/project_zips/
+/external_tools/
+tmp_*.json
+*.log

@@ -2603,7 +2603,7 @@ class SkillBuyer:
             # long loop sessions. Retrying the first batch prevents a one-skill
             # pre-race safety buy from being dropped before the per-skill
             # fallback can help.
-            result = client.gain_skills(payload, turn, retry_205=2, retry_208=3)
+            result = client.gain_skills(payload, turn, retry_205=1, retry_208=1)
             self._remember_bought(valid_candidates)
             result = self.enrich_state_with_known_bought(result)
             self.last_result = {"result": "ok", "turn": turn, "count": len(valid_candidates), "payload": payload}
@@ -2624,7 +2624,7 @@ class SkillBuyer:
             # rejects the whole batch. Fall back to per-skill calls so the bad apple
             # doesn't sink the whole basket — we mark the actually-failing skills and
             # keep the ones that succeed.
-            if is_recoverable and "205" in str(exc):
+            if is_recoverable and "205" in str(exc) and len(valid_candidates) > 1:
                 per_state, per_bought, accepted_ids, rejected_ids, skipped_ids = self._buy_per_skill(
                     client, state, valid_candidates, turn
                 )
@@ -2707,13 +2707,9 @@ class SkillBuyer:
         """Fall back to one gain_skills call per skill after a batch 205. Returns
         (state, bought_count, accepted_skill_ids, rejected_skill_ids, skipped).
 
-        Important: 205 (data-sync) and 208 (double-click) are *retryable
-        transient errors*, NOT real rejections. Allow the client to retry them
-        a couple times per skill — otherwise a brief sync glitch makes the bot
-        skip an otherwise-valid skill purchase. The original implementation
-        passed `retry_205=0, retry_208=0` here which permanently dropped any
-        skill that hit a transient. Result: end-of-career careers shipped with
-        1000+ unspent SP because 3 skills got dropped to transients.
+        The API client already retries transient 205/208 responses. Do not add
+        an outer retry loop here; doing so creates 205 storms and can keep the
+        runner busy long enough to desync from the game state.
         """
         current = state
         bought = 0
@@ -2747,39 +2743,28 @@ class SkillBuyer:
                 })
                 continue
             single_payload = [{"skill_id": skill_id, "level": 1}]
-            # Up to 2 manual retries on transient codes (the client itself
-            # handles 205/208 with its own 0.5s backoff between tries).
             buy_ok = False
             last_exc = None
-            for attempt in range(3):
-                try:
-                    if hasattr(client, "wait_complex_delay"):
-                        client.wait_complex_delay()
-                    result = client.gain_skills(single_payload, turn, retry_205=2, retry_208=3)
-                    self._remember_bought([item])
-                    if isinstance(result, dict) and result.get("data"):
-                        current = self.enrich_state_with_known_bought(result)
-                        result_chara = (result.get("data") or {}).get("chara_info") or {}
-                        estimated_points = max(0, points_now - cost)
-                        returned_points = int(result_chara.get("skill_point") or 0)
-                        local_points = min(returned_points, estimated_points) if returned_points else estimated_points
-                        if result_chara:
-                            result_chara["skill_point"] = local_points
-                    else:
-                        local_points = max(0, points_now - cost)
-                    bought += 1
-                    accepted.append(skill_id)
-                    buy_ok = True
-                    break
-                except Exception as single_exc:
-                    last_exc = single_exc
-                    es = str(single_exc)
-                    # Only loop again if it was a transient sync/double-click.
-                    # Hard rejections (e.g. unaffordable, already owned) won't
-                    # become buyable just by retrying.
-                    is_transient = ("205" in es) or ("208" in es)
-                    if not is_transient or attempt == 2:
-                        break
+            try:
+                if hasattr(client, "wait_complex_delay"):
+                    client.wait_complex_delay()
+                result = client.gain_skills(single_payload, turn, retry_205=1, retry_208=1)
+                self._remember_bought([item])
+                if isinstance(result, dict) and result.get("data"):
+                    current = self.enrich_state_with_known_bought(result)
+                    result_chara = (result.get("data") or {}).get("chara_info") or {}
+                    estimated_points = max(0, points_now - cost)
+                    returned_points = int(result_chara.get("skill_point") or 0)
+                    local_points = min(returned_points, estimated_points) if returned_points else estimated_points
+                    if result_chara:
+                        result_chara["skill_point"] = local_points
+                else:
+                    local_points = max(0, points_now - cost)
+                bought += 1
+                accepted.append(skill_id)
+                buy_ok = True
+            except Exception as single_exc:
+                last_exc = single_exc
             if buy_ok:
                 continue
             print(f"Per-skill retry rejected {skill_id} at turn {turn}: {last_exc}")
@@ -2822,7 +2807,19 @@ class SkillBuyer:
     def _estimate_cost(self, candidate):
         name = candidate.get("name") or ""
         skill_id = candidate.get("skill_id") or 0
-        level = candidate.get("hint_level") or 0
+        try:
+            skill_id_int = int(skill_id or 0)
+        except (TypeError, ValueError):
+            skill_id_int = 0
+
+        record = self.skill_activation_data.get(skill_id_int) if skill_id_int else None
+        if isinstance(record, dict):
+            try:
+                cost = int(record.get("cost") or 0)
+            except (TypeError, ValueError):
+                cost = 0
+            if cost > 0:
+                return cost
         
         is_circle = any(m in name for m in [
             MARK_WHITE_CIRCLE, MARK_LARGE_CIRCLE,
@@ -2832,10 +2829,15 @@ class SkillBuyer:
         
         if is_circle:
             base = 130
-        elif skill_id >= 900000:
+        elif skill_id_int >= 900000:
             base = 200
-        elif skill_id % 10 >= 2:
+        elif skill_id_int % 10 >= 2:
             base = 200
         else:
             base = 160
-        return max(1, int(base * (100 - min(level, 5) * 10) / 100))
+        # `skill_tips_array.level` is not a reliable SP discount in the live
+        # API. Using it here made the bot submit unaffordable payloads such as
+        # Corner Adept at 91 SP while the server still required the full 180.
+        # Unknown skills should therefore fail closed with the full fallback
+        # estimate instead of underbidding and triggering repeated 205s.
+        return max(1, int(base))

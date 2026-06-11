@@ -11,7 +11,20 @@ This document covers what to do after unzipping the folder onto a new machine.
    - Verify by running `node --version` and `npm --version`.
 3. **Umamusume game client** (Steam version). The bot attaches to a running game session, so the game must launch successfully before you can auth.
 
-## Install dependencies
+## One-stop setup and run
+
+On Windows, double-click:
+
+```bat
+setup_and_run_sweepy.bat
+```
+
+That script creates a local `.venv`, installs Python dependencies, runs
+`npm install`, creates the empty runtime directory structure, verifies the
+project, and starts the bot backend. Runtime data is generated locally on that
+machine and is not included in the repository.
+
+## Manual install dependencies
 
 From a terminal inside this folder:
 

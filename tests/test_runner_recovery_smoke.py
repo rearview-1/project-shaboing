@@ -388,6 +388,37 @@ class RunnerLoopModeStateTests(unittest.TestCase):
         self.assertTrue(runner._loop_mode_active())
         self.assertEqual(runner._active_preset.get("rest_threshold"), 52)
 
+    def test_hot_patch_active_preset_fields_preserves_runtime_context(self):
+        runner = CareerRunner(BASE_DIR)
+        runner.status["running"] = True
+        runner.status["turn"] = 41
+        runner._active_preset_name = "xguri parent"
+        runner._active_preset = {
+            "name": "xguri parent",
+            "_run_context": {"support_cards": [1, 2, 3], "friend_card_id": 30036},
+            "learned_hyperparameters": {"train_bias": 1.25},
+            "skill_profile_style": "front_runner",
+            "skill_profile_distance": "mile",
+        }
+
+        updated = runner.update_active_preset_fields(
+            "xguri parent",
+            {
+                "skill_profile_style": "late_surger",
+                "skill_profile_distance": "medium",
+                "learn_skill_list": [{"name": "Groundwork"}],
+            },
+            reason="save_skill_plan",
+        )
+
+        self.assertTrue(updated)
+        self.assertEqual(runner._active_preset["skill_profile_style"], "late_surger")
+        self.assertEqual(runner._active_preset["skill_profile_distance"], "medium")
+        self.assertEqual(runner._active_preset["_run_context"]["friend_card_id"], 30036)
+        self.assertEqual(runner._active_preset["learned_hyperparameters"]["train_bias"], 1.25)
+        self.assertIn("save_skill_plan", runner.status["last_action"])
+        self.assertEqual(runner.status["log"][-1]["action"], "preset_hot_reload")
+
     def test_loop_mode_active_uses_runner_status_even_if_preset_flag_was_lost(self):
         runner = CareerRunner(BASE_DIR)
         runner.status["loop_mode"] = True
@@ -1852,6 +1883,7 @@ class RunnerRecoverySmokeTests(unittest.TestCase):
 
         row = runner.status["action_history"][-1]
         self.assertEqual(row["running_style"], 3)
+        self.assertEqual(row["running_style_label"], "Late")
         self.assertEqual(row["desired_running_style"], "late_surger")
         self.assertEqual(row["style_change"]["style_source"], "scheduled_entry")
         self.assertTrue(row["style_change"]["succeeded"])
@@ -1864,6 +1896,7 @@ class RunnerRecoverySmokeTests(unittest.TestCase):
         ]
         self.assertEqual(len(race_rows), 1)
         self.assertEqual(race_rows[0]["running_style"], 3)
+        self.assertEqual(race_rows[0]["running_style_label"], "Late")
         self.assertEqual(race_rows[0]["desired_running_style"], "late_surger")
         self.assertEqual(race_rows[0]["style_change"]["style_source"], "scheduled_entry")
 

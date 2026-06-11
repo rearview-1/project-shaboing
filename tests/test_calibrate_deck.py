@@ -12,11 +12,14 @@ silently breaks the comfort check or the persistence path is caught.
 import copy
 
 from tools.calibrate_deck import (
+    _comfort_seed_overrides,
+    _dedupe_override_candidates,
     _epithet_losses,
     _epithet_race_names,
     _is_comfortable,
     _merge_overrides_into_preset,
     _mean_rating,
+    _self_learning_overrides_from_results,
     _ss_rate,
     _strat_summary,
     _win_rate,
@@ -25,12 +28,16 @@ from tools.calibrate_deck import (
 
 class _FakeResult:
     """Mimics the relevant CareerSimulator result fields."""
-    def __init__(self, rating: int, races_run=None):
+    def __init__(self, rating: int, races_run=None, train_picks=None, final_stats=None):
         self.rating_score = rating
         self.rank = "SS" if rating >= 17500 else ("S+" if rating >= 15900 else "S")
         self.stat_sum = 4000
         # Each race: dict with at least `name` and `won`
         self.races_run = races_run or []
+        self.train_picks_by_stat = train_picks or {
+            "speed": 0, "stamina": 0, "power": 0, "guts": 0, "wit": 0,
+        }
+        self.final_stats = final_stats or {}
 
 
 # -------------------- _ss_rate / _mean_rating --------------------
@@ -141,6 +148,56 @@ def test_merge_handles_missing_lhp_block():
     base = {"name": "test"}
     merged = _merge_overrides_into_preset(base, {"speed_soft_cap": 1150})
     assert merged["learned_hyperparameters"]["speed_soft_cap"] == 1150
+
+
+# -------------------- self-learning candidate helpers --------------------
+
+def test_dedupe_override_candidates_keeps_first_unique():
+    candidates = [
+        {"speed_priority_bonus_late": 0.3},
+        {"speed_priority_bonus_late": 0.3},
+        {"wit_priority_bonus_late": 0.5},
+        {},
+    ]
+    assert _dedupe_override_candidates(candidates) == [
+        {"speed_priority_bonus_late": 0.3},
+        {"wit_priority_bonus_late": 0.5},
+    ]
+
+
+def test_self_learning_overrides_from_results_only_returns_learnable_keys():
+    low = [_FakeResult(
+        14000,
+        train_picks={"speed": 10, "stamina": 1, "power": 1, "guts": 1, "wit": 2},
+        final_stats={"speed": 900, "stamina": 700, "power": 800, "guts": 500, "wit": 850},
+    ) for _ in range(3)]
+    high = [_FakeResult(
+        17600,
+        train_picks={"speed": 5, "stamina": 2, "power": 7, "guts": 1, "wit": 6},
+        final_stats={"speed": 1000, "stamina": 720, "power": 950, "guts": 520, "wit": 980},
+    ) for _ in range(3)]
+    out = _self_learning_overrides_from_results(
+        low + high,
+        {"learned_hyperparameters": {"skill_profile_style": "pace"}},
+        base_overrides={"speed_priority_bonus_late": 0.3},
+    )
+    assert out
+    forbidden = {
+        "skill_profile_style", "custom_race_schedule", "support_card_ids",
+        "parent_id_1", "parent_id_2",
+    }
+    for row in out:
+        assert forbidden.isdisjoint(row)
+        if "speed_priority_bonus_late" in row:
+            assert row["speed_priority_bonus_late"] >= 0.3
+
+
+def test_comfort_seed_overrides_do_not_lower_sp_hoarding_knobs():
+    preset = {"learned_hyperparameters": {"calendar_race_prebuy_keep_sp": 250}}
+    rows = _comfort_seed_overrides(preset)
+    assert rows
+    for row in rows:
+        assert "calendar_race_prebuy_keep_sp" not in row
 
 
 # -------------------- _win_rate --------------------

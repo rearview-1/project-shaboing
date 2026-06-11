@@ -45,6 +45,11 @@ from career_bot.deck_policy_cache import (
     save_cache,
     save_policy,
 )
+from career_bot.sim_self_learning import (
+    LEARNABLE_PARAMS,
+    analyze_batch,
+    clamp_learned_value,
+)
 
 
 # Policy floors for `learned_hyperparameters` cap values. If a user's
@@ -317,6 +322,129 @@ def _merge_overrides_into_preset(preset: dict, overrides: dict) -> dict:
     return merged
 
 
+def _override_key(overrides: dict) -> tuple:
+    return tuple(sorted((str(k), overrides[k]) for k in (overrides or {})))
+
+
+def _dedupe_override_candidates(candidates: list[dict]) -> list[dict]:
+    seen = set()
+    out = []
+    for candidate in candidates or []:
+        if not isinstance(candidate, dict) or not candidate:
+            continue
+        key = _override_key(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(candidate)
+    return out
+
+
+def _self_learning_overrides_from_results(
+    results: list,
+    preset: dict,
+    *,
+    base_overrides: dict | None = None,
+    limit: int = 8,
+) -> list[dict]:
+    """Turn sim analyzer proposals into concrete override candidates.
+
+    The analyzer emits one-param proposals. Calibration evaluates both
+    singles and a cumulative bundle of the strongest proposals so it can
+    adapt in fewer sim rounds without allowing any operator-owned fields
+    through.
+    """
+    if not results:
+        return []
+    working_preset = _merge_overrides_into_preset(preset, base_overrides or {})
+    proposals = analyze_batch(results, working_preset)
+    proposals = [
+        p for p in proposals
+        if getattr(p, "param_name", None) in LEARNABLE_PARAMS
+    ]
+    proposals.sort(
+        key=lambda p: (
+            -float(getattr(p, "expected_lift_hint", 0.0) or 0.0),
+            str(getattr(p, "param_name", "")),
+        )
+    )
+
+    base = dict(base_overrides or {})
+    out = []
+    cumulative = dict(base)
+    for proposal in proposals[:max(1, limit)]:
+        name = proposal.param_name
+        value = clamp_learned_value(name, proposal.proposed_value)
+        current = (base.get(name) if name in base else
+                   (working_preset.get("learned_hyperparameters") or {}).get(name))
+        if current == value:
+            continue
+        single = dict(base)
+        single[name] = value
+        out.append(single)
+        cumulative[name] = value
+    if cumulative != base:
+        out.insert(0, cumulative)
+    return _dedupe_override_candidates(out)
+
+
+def _comfort_seed_overrides(preset: dict) -> list[dict]:
+    """Deterministic SS-comfort priors used before random search.
+
+    These are still sim-tested and validated before cache write. They
+    give the optimizer strong starting points for deck swaps instead of
+    wasting the first minute discovering obvious speed/wit/power pressure
+    from random samples.
+    """
+    lhp = dict((preset or {}).get("learned_hyperparameters") or {})
+
+    def _v(name, fallback):
+        return lhp.get(name, (preset or {}).get(name, fallback))
+
+    priors = [
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.22),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.34),
+            "wit_priority_bonus_mid": max(float(_v("wit_priority_bonus_mid", 0.18)), 0.30),
+            "wit_priority_bonus_late": max(float(_v("wit_priority_bonus_late", 0.35)), 0.48),
+            "power_priority_bonus_base": max(float(_v("power_priority_bonus_base", 0.03)), 0.06),
+            "power_priority_deficit_boost": max(float(_v("power_priority_deficit_boost", 0.05)), 0.10),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 900),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1050),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 6),
+        },
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.20),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.30),
+            "wit_priority_bonus_mid": max(float(_v("wit_priority_bonus_mid", 0.18)), 0.34),
+            "wit_priority_bonus_late": max(float(_v("wit_priority_bonus_late", 0.35)), 0.58),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 850),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1000),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 5),
+        },
+        {
+            "speed_priority_bonus_mid": max(float(_v("speed_priority_bonus_mid", 0.18)), 0.18),
+            "speed_priority_bonus_late": max(float(_v("speed_priority_bonus_late", 0.26)), 0.28),
+            "stamina_priority_deficit_boost": max(float(_v("stamina_priority_deficit_boost", 0.03)), 0.10),
+            "power_priority_bonus_base": max(float(_v("power_priority_bonus_base", 0.03)), 0.08),
+            "power_priority_deficit_boost": max(float(_v("power_priority_deficit_boost", 0.05)), 0.12),
+            "stamina_floor_target": max(int(_v("stamina_floor_target", 750)), 1000),
+            "power_floor_target": max(int(_v("power_floor_target", 950)), 1100),
+            "calendar_race_prebuy_max_skills": max(int(_v("calendar_race_prebuy_max_skills", 4)), 7),
+        },
+    ]
+
+    bounded = []
+    for prior in priors:
+        row = {}
+        for name, value in prior.items():
+            if name in LEARNABLE_PARAMS:
+                row[name] = clamp_learned_value(name, value)
+        if row:
+            bounded.append(row)
+    return _dedupe_override_candidates(bounded)
+
+
 def calibrate(
     *,
     time_budget_sec: float,
@@ -548,7 +676,20 @@ def calibrate(
                 out[name] = round(max(low, min(high, current + delta)), 2)
         return out
 
+    candidate_queue = _dedupe_override_candidates(
+        _comfort_seed_overrides(preset)
+        + _self_learning_overrides_from_results(
+            baseline_results,
+            preset,
+            base_overrides={},
+        )
+    )
+    if candidate_queue:
+        _log(f"queued {len(candidate_queue)} self-learning/comfort candidate(s) "
+             "before random exploration")
+
     in_refine_phase = False
+    evaluated_override_keys = set()
     while True:
         elapsed = time.time() - t_start
         time_remaining = time_budget_sec - elapsed
@@ -566,12 +707,19 @@ def calibrate(
             in_refine_phase = True
             _log(f"--- entering REFINE phase around best so far (SS={best_ss:.2f}) ---")
 
-        if in_refine_phase and best_overrides:
+        while candidate_queue and _override_key(candidate_queue[0]) in evaluated_override_keys:
+            candidate_queue.pop(0)
+
+        if candidate_queue:
+            overrides = candidate_queue.pop(0)
+            phase_label = "self-learn"
+        elif in_refine_phase and best_overrides:
             overrides = _refine_overrides(best_overrides, rng)
             phase_label = "refine"
         else:
             overrides = _sample_candidate(rng)
             phase_label = "explore"
+        evaluated_override_keys.add(_override_key(overrides))
 
         candidates_explored += 1
         _log(f"candidate {candidates_explored} [{phase_label}]: {overrides}")
@@ -590,6 +738,18 @@ def calibrate(
             best_ss = cand_ss
             best_mean = cand_mean
             best_win_rate = cand_win_rate
+            learned_next = _self_learning_overrides_from_results(
+                cand_results,
+                preset,
+                base_overrides=best_overrides,
+            )
+            if learned_next:
+                before = len(candidate_queue)
+                candidate_queue = _dedupe_override_candidates(candidate_queue + learned_next)
+                added = len(candidate_queue) - before
+                if added > 0:
+                    _log(f"  queued {added} follow-up learned candidate(s) "
+                         "from new-best batch")
 
         if _is_comfortable(best_results, target_ss_rate, target_mean, ss_threshold,
                             target_win_rate=target_win_rate,

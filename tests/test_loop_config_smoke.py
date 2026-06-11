@@ -1392,6 +1392,84 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(result["unfollowed_viewer_id"], 999)
         self.assertIn("Unfollowed trainer ID 999", result["detail"])
 
+    def test_friend_force_refresh_bypasses_cached_borrows(self):
+        class Client:
+            cached_load_data = {"common_define": {"max_follow_num": 20}}
+
+            def __init__(self):
+                self.pre_single_calls = 0
+
+            def pre_single_mode(self, exclude_viewer_ids=None):
+                self.pre_single_calls += 1
+                return {
+                    "data": {
+                        "friend_support_card_data": {
+                            "summary_user_info_array": [
+                                {
+                                    "viewer_id": 999,
+                                    "name": "Fresh Borrow",
+                                    "support_card_id": 30078,
+                                    "friend_state": 1,
+                                    "user_support_card": {
+                                        "support_card_id": 30078,
+                                        "limit_break_count": 4,
+                                    },
+                                }
+                            ],
+                            "support_card_data_array": [
+                                {
+                                    "viewer_id": 999,
+                                    "support_card_id": 30078,
+                                    "limit_break_count": 4,
+                                }
+                            ],
+                        }
+                    }
+                }
+
+            def friend_index(self):
+                return {"data": {"friend_list": [], "user_info_summary_list": []}}
+
+        client = Client()
+        main.active_client = client
+        main.active_dashboard_data = {"friends": [], "borrow_umas": [], "decks": []}
+
+        with patch.object(main, "compute_borrow_quota", return_value={"remaining": 5, "max": 5}), \
+             patch.object(main, "find_deck_rows", return_value=([], {})), \
+             patch.object(main, "deck_view_rows", return_value=[]):
+            cached = asyncio.run(main.get_friend_list(main.FriendListRequest()))
+            refreshed = asyncio.run(main.get_friend_list(main.FriendListRequest(force_refresh=True)))
+
+        self.assertTrue(cached["success"])
+        self.assertEqual(cached["source"], "cache")
+        self.assertEqual(client.pre_single_calls, 1)
+        self.assertTrue(refreshed["success"])
+        self.assertEqual(refreshed["friends"][0]["name"], "Fresh Borrow")
+
+    def test_team_trials_live_probe_not_blocked_by_running_loop(self):
+        main.active_client = object()
+        with patch.object(main.career_runner, "snapshot", return_value={"running": True}), \
+             patch.object(main, "loop_snapshot", return_value={"active": True}):
+            self.assertEqual(main._live_probe_blocked(), "")
+
+    def test_save_deck_refreshes_dashboard_when_missing(self):
+        main.active_client = object()
+        main.active_dashboard_data = None
+        dashboard = {
+            "supports": [{"id": 30078, "support_card_id": 30078, "name": "Borrowable Speed", "type": "Speed", "rarity": "SSR"}],
+            "decks": [],
+        }
+        with patch.object(main, "reload_dashboard_state_from_server", return_value=dashboard) as reload_dashboard, \
+             patch.object(main, "load_deck_overrides", return_value={"decks": {}}), \
+             patch.object(main, "save_deck_overrides", return_value=None), \
+             patch.object(main, "persist_dev_session_cache", return_value=None):
+            result = asyncio.run(main.save_deck(main.SaveDeckRequest(deck_id=1, support_card_ids=[30078], name="Edited")))
+
+        self.assertTrue(result["success"])
+        reload_dashboard.assert_called_once()
+        self.assertEqual(result["deck"]["name"], "Edited")
+        self.assertEqual(result["deck"]["support_card_ids"], [30078])
+
     def test_add_friend_search_failure_writes_diagnostic_snapshot(self):
         class Client:
             viewer_id = 111
@@ -1446,6 +1524,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
                 return {
                     "name": name,
                     "rest_threshold": 48,
+                    "skill_profile_style": "late_surger",
+                    "skill_profile_distance": "medium",
                     "learn_skill_blacklist": ["BaseOnly"],
                     "desired_parent_sparks": {"blue": ["Power"], "pink": [], "green": [], "white": []},
                 }
@@ -1464,6 +1544,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
                 {
                     "name": "xguri parent",
                     "rest_threshold": 72,
+                    "skill_profile_style": "front_runner",
+                    "skill_profile_distance": "mile",
                     "learn_skill_blacklist": ["OverlayShouldNotWin"],
                     "desired_parent_sparks": {"blue": ["Wit"], "pink": [], "green": [], "white": []},
                 },
@@ -1472,6 +1554,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
 
         self.assertIsNone(detail)
         self.assertEqual(preset["rest_threshold"], 72)
+        self.assertEqual(preset["skill_profile_style"], "late_surger")
+        self.assertEqual(preset["skill_profile_distance"], "medium")
         self.assertEqual(preset["learn_skill_blacklist"], ["BaseOnly"])
         self.assertEqual(preset["desired_parent_sparks"]["blue"], ["Power"])
 

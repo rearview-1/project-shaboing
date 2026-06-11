@@ -292,6 +292,7 @@ APTITUDE_VALUE_RANK = {value: key for key, value in APTITUDE_RANK_VALUE.items()}
 LINEAGE_NODE_WEIGHTS = {"self": 0.30, "p1": 0.22, "p2": 0.22}
 
 STYLE_NUM_TO_KEY = {1: "front", 2: "pace", 3: "late", 4: "end"}
+STYLE_KEY_TO_NUM = {value: key for key, value in STYLE_NUM_TO_KEY.items()}
 APTITUDE_MULTIPLIERS = {
     "S": 1.06,
     "A": 1.00,
@@ -1900,6 +1901,7 @@ class SimResult:
     sp_gain_sources: dict = field(default_factory=dict)
     fidelity_warnings: list = field(default_factory=list)
     training_decisions: list = field(default_factory=list)
+    sim_hakuraku_races: list = field(default_factory=list)
 
 
 # MANT epithet routes (uma.guide/trackblazer). Each entry maps a set name
@@ -2213,6 +2215,7 @@ class CareerSimulator:
         self.bonus_fires = defaultdict(int)
         self.training_decisions = []
         self.races_run = []
+        self.sim_hakuraku_races = []
         self.skills_bought = 0
         self.skill_sp_spent = 0
         self.skill_rating_score = 0
@@ -3458,7 +3461,7 @@ class CareerSimulator:
                 "turn": race.get("turn"),
                 "program_id": race.get("pid"),
                 "race_name": race.get("name"),
-                "result_rank": 1 if race.get("won") else 2,
+                "result_rank": int(race.get("finish_rank") or (1 if race.get("won") else 2)),
             })
         return history
 
@@ -5953,16 +5956,11 @@ class CareerSimulator:
 
     def _sample_race_score(self, sample, distance, style):
         race = sample.get("race") or {}
-        # Real-game MANT race math applies +400 invisible bonus to ALL
+        # Real-game MANT race math applies +400 invisible bonus to the trainee.
         # uma in the race — bot AND opponents. The samples store the
-        # observed bot's DISPLAYED stats at race time (no +400). To
-        # compare bot vs samples on the same scale that the game
-        # actually used to decide the observed outcome, both sides need
-        # the +400 applied. Without this, my +400 fix on the bot's side
-        # alone artificially shifts the bot's score above the sample
-        # distribution and inflates win probability. Applying it
-        # symmetrically keeps the COMPARISON fair while still modelling
-        # the right "effective" stat level the game uses.
+        # observed bot's DISPLAYED stats at race time (no +400). Add +400
+        # for player-side comparisons only; opponent field rows stay raw.
+        # Correction: only the trainee/player side gets the hidden +400.
         raw = sample.get("raw_stats") or {}
         effective = {k: int(v or 0) + CAREER_INVISIBLE_STAT_BONUS for k, v in raw.items()}
         return self._race_effort_score(
@@ -5973,6 +5971,51 @@ class CareerSimulator:
             recovery_skill_count=0,
             motivation=sample.get("motivation") or 3,
         )
+
+    def _sample_effective_race_stats(self, sample):
+        raw = (sample or {}).get("raw_stats") or {}
+        return {
+            "speed": _as_int(raw.get("speed")) + CAREER_INVISIBLE_STAT_BONUS,
+            "stamina": _as_int(raw.get("stamina")) + CAREER_INVISIBLE_STAT_BONUS,
+            "power": _as_int(raw.get("power")) + CAREER_INVISIBLE_STAT_BONUS,
+            "guts": _as_int(raw.get("guts")) + CAREER_INVISIBLE_STAT_BONUS,
+            "wit": _as_int(raw.get("wit")) + CAREER_INVISIBLE_STAT_BONUS,
+        }
+
+    def _race_result_sample_distance(self, sample, *, current_stats, current_score, distance, style, terrain):
+        """Distance between current race state and an observed race result.
+
+        Scalar race score alone can hide a bad stamina/power shape. This keeps
+        nearest-neighbor calibration local to both total race strength and the
+        actual stat vector that produced the observed win/loss.
+        """
+        sample_stats = self._sample_effective_race_stats(sample)
+        weights = RACE_WEIGHT_PROFILES.get(_distance_key(distance)) or RACE_WEIGHT_PROFILES[""]
+        weight_total = sum(float(v or 0.0) for v in weights.values()) or 1.0
+        stat_distance = 0.0
+        for stat, weight in weights.items():
+            current = float((current_stats or {}).get(stat) or 0.0)
+            observed = float(sample_stats.get(stat) or 0.0)
+            denom = max(220.0, current, observed)
+            stat_distance += float(weight or 0.0) * abs(current - observed) / denom
+        stat_distance /= weight_total
+
+        sample_score = self._sample_race_score(sample, distance, style)
+        score_distance = abs(float(sample_score or 0.0) - float(current_score or 0.0)) / max(
+            180.0,
+            float(sample_score or 0.0),
+            float(current_score or 0.0),
+        )
+
+        style_penalty = 0.0
+        sample_style = sample.get("running_style")
+        if sample_style and _style_key(sample_style) != _style_key(style):
+            style_penalty = 0.10
+        race = sample.get("race") or {}
+        terrain_penalty = 0.0
+        if terrain and race.get("terrain") and _surface_key(race.get("terrain")) != _surface_key(terrain):
+            terrain_penalty = 0.05
+        return (stat_distance * 0.70) + (score_distance * 0.30) + style_penalty + terrain_penalty
 
     def _purchased_recovery_skill_count(self):
         count = 0
@@ -6021,20 +6064,45 @@ class CareerSimulator:
             aptitudes=self._current_aptitudes(),
             terrain=terrain,
         )
+        current_stats = self._effective_race_stats()
         scored = [
-            (abs(self._sample_race_score(sample, distance, race_style) - current_score), sample)
+            (
+                self._race_result_sample_distance(
+                    sample,
+                    current_stats=current_stats,
+                    current_score=current_score,
+                    distance=distance,
+                    style=race_style,
+                    terrain=terrain,
+                ),
+                abs(self._sample_race_score(sample, distance, race_style) - current_score),
+                sample,
+            )
             for sample in samples
         ]
         scored.sort(key=lambda item: item[0])
-        k = min(max(35, len(scored) // 5), 120, len(scored))
-        nearest = [sample for _, sample in scored[:k]]
+        k = min(max(45, len(scored) // 4), 160, len(scored))
+        nearest_scored = scored[:k]
+        nearest = [sample for _, _, sample in nearest_scored]
         if not nearest:
             return None
 
         total_wins = sum(1 for sample in samples if sample.get("won"))
         base_rate = total_wins / max(1, len(samples))
         near_wins = sum(1 for sample in nearest if sample.get("won"))
-        win_probability = (near_wins + base_rate * 8.0) / (len(nearest) + 8.0)
+        nearest_probability = (near_wins + base_rate * 8.0) / (len(nearest) + 8.0)
+
+        bandwidth = max(0.035, _percentile([row[0] for row in scored[:max(k, min(len(scored), 220))]], 60))
+        weighted_total = 0.0
+        weighted_wins = 0.0
+        for distance_value, _score_delta, sample in scored[:max(k, min(len(scored), 220))]:
+            scaled = float(distance_value or 0.0) / bandwidth
+            weight = 1.0 / (1.0 + scaled * scaled)
+            weighted_total += weight
+            if sample.get("won"):
+                weighted_wins += weight
+        kernel_probability = (weighted_wins + base_rate * 5.0) / max(1e-6, weighted_total + 5.0)
+        win_probability = (kernel_probability * 0.65) + (nearest_probability * 0.35)
 
         all_scores = [self._sample_race_score(sample, distance, race_style) for sample in samples]
         win_scores = [self._sample_race_score(sample, distance, race_style) for sample in samples if sample.get("won")]
@@ -6046,7 +6114,8 @@ class CareerSimulator:
             loss_p75 = _percentile(loss_scores, 75) if loss_scores else win_p50
             spread = max(120.0, max(win_p75, loss_p75) - win_p25)
             score_prob = 0.12 + ((current_score - win_p25) / spread) * 0.72
-            win_probability = max(win_probability, max(0.08, min(0.94, score_prob)))
+            score_prob = max(0.08, min(0.94, score_prob))
+            win_probability = (win_probability * 0.78) + (score_prob * 0.22)
             if loss_scores and current_score >= loss_p75 and current_score >= win_p50:
                 win_probability = max(win_probability, 0.82)
             if current_score >= win_p75:
@@ -6062,6 +6131,14 @@ class CareerSimulator:
 
         win_probability = max(0.05, min(0.97, win_probability))
         won = (self.rng.random() <= win_probability) if sample else None
+        loss_rank_counts = defaultdict(int)
+        rank_counts = defaultdict(int)
+        for near in nearest:
+            rank = _as_int(near.get("result_rank"))
+            if rank > 0:
+                rank_counts[rank] += 1
+                if rank > 1:
+                    loss_rank_counts[rank] += 1
         return {
             "won": won,
             "model": source,
@@ -6070,6 +6147,11 @@ class CareerSimulator:
             "nearest_samples": len(nearest),
             "samples": len(samples),
             "base_win_rate": round(base_rate, 4),
+            "nearest_win_rate": round(near_wins / max(1, len(nearest)), 4),
+            "kernel_win_rate": round(kernel_probability, 4),
+            "nearest_bandwidth": round(bandwidth, 5),
+            "nearest_rank_counts": {str(k): int(v) for k, v in sorted(rank_counts.items())},
+            "nearest_loss_rank_counts": {str(k): int(v) for k, v in sorted(loss_rank_counts.items())},
             "score_p50_win": round(_percentile(win_scores, 50), 2),
             "score_p75_loss": round(_percentile(loss_scores, 75), 2),
         }
@@ -6195,15 +6277,19 @@ class CareerSimulator:
                     blended["manual_model"] = manual_model
                     blended["win_probability"] = round(manual_prob, 4)
                     return self._blend_observed_race_probability(pid, manual_prob, blended)
-                if manual_prob > empirical_prob:
+                empirical_model = str((model or {}).get("model") or "")
+                empirical_weight = 0.72 if "exact" in empirical_model else 0.58
+                if abs(float(manual_prob or 0.0) - empirical_prob) >= 0.08:
+                    blended_prob = (empirical_prob * empirical_weight) + (float(manual_prob or 0.0) * (1.0 - empirical_weight))
                     blended = dict(model)
-                    blended["model"] = "manual_empirical_max"
+                    blended["model"] = "manual_empirical_weighted"
                     blended["empirical_model"] = model.get("model")
+                    blended["empirical_weight"] = round(empirical_weight, 4)
                     blended["empirical_win_probability"] = round(empirical_prob, 4)
                     blended["manual_win_probability"] = round(manual_prob, 4)
                     blended["manual_model"] = manual_model
-                    blended["win_probability"] = round(manual_prob, 4)
-                    return self._blend_observed_race_probability(pid, manual_prob, blended)
+                    blended["win_probability"] = round(blended_prob, 4)
+                    return self._blend_observed_race_probability(pid, blended_prob, blended)
             return self._blend_observed_race_probability(pid, empirical_prob, model)
         if manual:
             manual_prob, manual_model = manual
@@ -6335,12 +6421,16 @@ class CareerSimulator:
         distance_key = str(distance or "").lower()
         # +400 invisible MANT bonus — race math compares against opponent
         # field which is calibrated to effective stats too
-        current = self._effective_race_stats()
+        current = self._current_race_stats()
+        current_effective = {
+            stat: value + CAREER_INVISIBLE_STAT_BONUS
+            for stat, value in current.items()
+        }
         skill_bonus = min(0.22, max(0, int((skill_count if skill_count is not None else self.skills_bought) or 0)) * 0.012)
         recovery_skills = self._purchased_recovery_skill_count()
 
         def ratio(stat):
-            return current[stat] / max(1, int(threshold.get(stat) or 1))
+            return current_effective[stat] / max(1, int(threshold.get(stat) or 1))
 
         r_speed   = ratio("speed")
         r_stamina = ratio("stamina")
@@ -6394,10 +6484,10 @@ class CareerSimulator:
         }
         threshold_stamina_raw = int(threshold.get("stamina") or 0)
         effective_threshold_stamina = max(
-            threshold_stamina_raw + CAREER_INVISIBLE_STAT_BONUS,
+            threshold_stamina_raw,
             kikuka_grade_stamina.get(distance_key, 0),
         )
-        effective_current_stamina = current["stamina"] + CAREER_INVISIBLE_STAT_BONUS
+        effective_current_stamina = current_effective["stamina"]
         true_stamina_ratio = effective_current_stamina / max(1, effective_threshold_stamina)
         stamina_floor_ratio = 0.90 if distance_key == "long" else 0.78 if distance_key == "medium" else 0.55
         if true_stamina_ratio < stamina_floor_ratio:
@@ -6417,6 +6507,13 @@ class CareerSimulator:
         stamina_critical = true_stamina_ratio < stamina_floor_ratio - critical_shortfall
         if stamina_critical:
             min_prob = 0.005
+        aptitudes = self._current_aptitudes()
+        terrain = (self.race_catalog_by_program_id.get(int(pid or 0)) or {}).get("terrain") or ""
+        terrain_mult = _aptitude_multiplier(aptitudes.get(_surface_key(terrain)), 1.0) if terrain else 1.0
+        distance_mult = _aptitude_multiplier(aptitudes.get(distance_key), 1.0) if distance_key else 1.0
+        style_mult = _aptitude_multiplier(aptitudes.get(self._race_style()), 1.0)
+        aptitude_factor = max(0.30, min(1.08, 0.35 + 0.65 * (terrain_mult * distance_mult * style_mult)))
+        prob *= aptitude_factor
         prob = max(min_prob, min(0.96, prob))
         return prob, {
             "model": "manual_threshold_probability",
@@ -6432,6 +6529,10 @@ class CareerSimulator:
             "effective_current_stamina": effective_current_stamina,
             "effective_threshold_stamina": effective_threshold_stamina,
             "stamina_critical": stamina_critical,
+            "aptitude_factor": round(aptitude_factor, 4),
+            "terrain_aptitude_multiplier": round(terrain_mult, 4),
+            "distance_aptitude_multiplier": round(distance_mult, 4),
+            "style_aptitude_multiplier": round(style_mult, 4),
             "distance": distance_key,
         }
 
@@ -6442,6 +6543,337 @@ class CareerSimulator:
             entry = self.race_demands.get(f"{distance_key}_pace")
         thresholds = (entry or {}).get("thresholds") or {}
         return thresholds.get(str(era or "").lower()) or thresholds.get("classic") or {}
+
+    def _sim_race_meta(self, pid, race_name, distance, grade=None):
+        catalog = self.race_catalog_by_program_id.get(int(pid or 0)) or {}
+        race_instance_id = _as_int(catalog.get("race_instance_id"))
+        race_id = _as_int(catalog.get("id"))
+        if not race_id and race_instance_id:
+            race_id = race_instance_id // 100
+        return {
+            "program_id": _as_int(pid),
+            "race_id": race_id,
+            "race_instance_id": race_instance_id,
+            "name": race_name or catalog.get("name") or f"Race {pid}",
+            "grade": grade or catalog.get("type") or catalog.get("grade") or "G1",
+            "type": grade or catalog.get("type") or catalog.get("grade") or "G1",
+            "terrain": catalog.get("terrain") or "Turf",
+            "distance": (distance or catalog.get("distance") or "Medium").title(),
+            "venue": catalog.get("venue") or "",
+            "turn": _as_int(catalog.get("turn") or self.state.get("turn")),
+            "synthetic": True,
+        }
+
+    def _aptitude_payload_value(self, key):
+        rank = str((self._current_aptitudes() or {}).get(key) or "A").upper()
+        return int(APTITUDE_RANK_VALUE.get(rank, APTITUDE_RANK_VALUE["A"]) + 1)
+
+    def _sim_loss_finish_rank(self, probability, model=None):
+        counts = (model or {}).get("nearest_loss_rank_counts") or {}
+        weighted = []
+        for rank, count in counts.items():
+            rank = _as_int(rank)
+            count = _as_int(count)
+            if rank > 1 and count > 0:
+                weighted.append((rank, count))
+        if weighted:
+            total = sum(count for _rank, count in weighted)
+            roll = self.rng.randint(1, max(1, total))
+            seen = 0
+            for rank, count in weighted:
+                seen += count
+                if roll <= seen:
+                    return rank
+        try:
+            prob = max(0.0, min(1.0, float(probability or 0.0)))
+        except (TypeError, ValueError):
+            prob = 0.5
+        # Close losses are usually 2nd/3rd; bad probability losses can fall
+        # lower. This is synthetic, but gives downstream race analysis a real
+        # placement instead of flattening every loss to #2.
+        base = 2 + int((1.0 - prob) * 5.0)
+        jitter = self.rng.randint(0, 2)
+        return max(2, min(18, base + jitter))
+
+    def _sim_race_threshold_stats(self, pid, race_name, distance, era):
+        threshold = None
+        try:
+            targets = self._load_race_thresholds_json_targets()
+        except Exception:
+            targets = {}
+        if targets:
+            entry = targets.get(_as_int(pid)) or targets.get(str(_as_int(pid)))
+            if isinstance(entry, dict) and isinstance(entry.get("target_raw"), dict):
+                threshold = entry.get("target_raw")
+        if not threshold:
+            threshold = self.race_thresholds.get(pid) or self.race_thresholds.get(race_name)
+        if not threshold:
+            threshold = self._fallback_race_threshold(distance, era)
+        if not threshold:
+            current = self._current_race_stats()
+            threshold = {key: max(1, int(value * 0.92)) for key, value in current.items()}
+        return {
+            "speed": _as_int(threshold.get("speed"), 600),
+            "stamina": _as_int(threshold.get("stamina"), 500),
+            "power": _as_int(threshold.get("power"), 600),
+            "guts": _as_int(threshold.get("guts"), 450),
+            "wit": _as_int(threshold.get("wit"), 500),
+        }
+
+    def _sim_skill_array_for_payload(self, skill_ids):
+        result = []
+        for skill_id in skill_ids or []:
+            skill_id = _as_int(skill_id)
+            if skill_id:
+                result.append({"skill_id": skill_id, "level": 1})
+        return result
+
+    def _synthetic_race_horse_row(
+        self,
+        *,
+        index,
+        stats,
+        running_style,
+        finish_rank,
+        player=False,
+        skill_ids=None,
+        popularity=1,
+    ):
+        card_id = _as_int(self.trainee_card_id) if player else 0
+        chara_id = card_id // 100 if card_id else 9000 + int(index)
+        style_num = STYLE_KEY_TO_NUM.get(_style_key(running_style), 2)
+        return {
+            "viewer_id": 1 if player else 0,
+            "trainer_name": "SIM_PLAYER" if player else f"SIM_OPP_{index}",
+            "owner_trainer_name": "SWEEPY_SIM" if player else "SIM",
+            "single_mode_chara_id": chara_id,
+            "trained_chara_id": card_id,
+            "card_id": card_id,
+            "chara_id": chara_id,
+            "rarity": 3,
+            "talent_level": 5 if player else 3,
+            "frame_order": index + 1,
+            "skill_array": self._sim_skill_array_for_payload(skill_ids),
+            "speed": _as_int(stats.get("speed")),
+            "stamina": _as_int(stats.get("stamina")),
+            "pow": _as_int(stats.get("power") or stats.get("pow")),
+            "guts": _as_int(stats.get("guts")),
+            "wiz": _as_int(stats.get("wit") or stats.get("wiz")),
+            "running_style": style_num,
+            "race_dress_id": card_id,
+            "chara_color_type": 0,
+            "npc_type": 0 if player else 1,
+            "final_grade": 0,
+            "popularity": max(1, int(popularity or 1)),
+            "popularity_mark_rank_array": [0, max(1, int(popularity or 1)), 0],
+            "proper_distance_short": self._aptitude_payload_value("sprint"),
+            "proper_distance_mile": self._aptitude_payload_value("mile"),
+            "proper_distance_middle": self._aptitude_payload_value("medium"),
+            "proper_distance_long": self._aptitude_payload_value("long"),
+            "proper_running_style_nige": self._aptitude_payload_value("front"),
+            "proper_running_style_senko": self._aptitude_payload_value("pace"),
+            "proper_running_style_sashi": self._aptitude_payload_value("late"),
+            "proper_running_style_oikomi": self._aptitude_payload_value("end"),
+            "proper_ground_turf": self._aptitude_payload_value("turf"),
+            "proper_ground_dirt": self._aptitude_payload_value("dirt"),
+            "motivation": _as_int(self.state.get("motivation"), 3) if player else 3,
+            "mob_id": 0 if player else 100000 + int(index),
+            "win_saddle_id_array": [],
+            "race_result_array": [{"program_id": 0, "result_rank": int(finish_rank or 1)}],
+            "simulated": True,
+        }
+
+    def _payload_opponent_row_from_sample(self, opponent, *, index, finish_rank):
+        stats = opponent.get("stats") or {}
+        aptitudes = opponent.get("aptitudes") or {}
+        skill_ids = opponent.get("skill_ids") or [
+            row.get("skill_id") for row in (opponent.get("skill_array") or []) if isinstance(row, dict)
+        ]
+
+        def aptitude(key, default=7):
+            return _as_int(aptitudes.get(key), default)
+
+        running_style = _as_int(opponent.get("running_style"), 2)
+        card_id = _as_int(opponent.get("card_id"))
+        chara_id = _as_int(opponent.get("chara_id") or opponent.get("single_mode_chara_id"), 9000 + int(index))
+        return {
+            "viewer_id": 0,
+            "trainer_name": f"SIM_FIELD_{index}",
+            "owner_trainer_name": "SIM_FIELD",
+            "single_mode_chara_id": _as_int(opponent.get("single_mode_chara_id"), chara_id),
+            "trained_chara_id": _as_int(opponent.get("trained_chara_id")),
+            "card_id": card_id,
+            "chara_id": chara_id,
+            "rarity": _as_int(opponent.get("rarity"), 3),
+            "talent_level": _as_int(opponent.get("talent_level"), 3),
+            "frame_order": _as_int(opponent.get("frame_order"), index + 1),
+            "skill_array": self._sim_skill_array_for_payload(skill_ids),
+            "speed": _as_int(stats.get("speed")),
+            "stamina": _as_int(stats.get("stamina")),
+            "pow": _as_int(stats.get("power") or stats.get("pow")),
+            "guts": _as_int(stats.get("guts")),
+            "wiz": _as_int(stats.get("wit") or stats.get("wiz")),
+            "running_style": running_style,
+            "race_dress_id": card_id,
+            "chara_color_type": _as_int(opponent.get("chara_color_type")),
+            "npc_type": _as_int(opponent.get("npc_type"), 1),
+            "final_grade": _as_int(opponent.get("final_grade")),
+            "popularity": _as_int(opponent.get("popularity"), index + 1),
+            "popularity_mark_rank_array": opponent.get("popularity_mark_rank_array") or [0, _as_int(opponent.get("popularity"), index + 1), 0],
+            "proper_distance_short": aptitude("sprint"),
+            "proper_distance_mile": aptitude("mile"),
+            "proper_distance_middle": aptitude("medium"),
+            "proper_distance_long": aptitude("long"),
+            "proper_running_style_nige": aptitude("front"),
+            "proper_running_style_senko": aptitude("pace"),
+            "proper_running_style_sashi": aptitude("late"),
+            "proper_running_style_oikomi": aptitude("end"),
+            "proper_ground_turf": aptitude("turf"),
+            "proper_ground_dirt": aptitude("dirt"),
+            "motivation": _as_int(opponent.get("motivation"), 3),
+            "mob_id": _as_int(opponent.get("mob_id"), 100000 + int(index)),
+            "win_saddle_id_array": opponent.get("win_saddle_id_array") or [],
+            "race_result_array": [{"program_id": 0, "result_rank": int(finish_rank or 1)}],
+            "simulated": True,
+            "synthetic_source": "observed_field_sample",
+        }
+
+    def _observed_opponent_rows_for_payload(self, *, program_id, player_rank):
+        fields = list(self.race_fields_by_pid.get(int(program_id or 0), []))
+        if not fields:
+            return []
+        sample = self.rng.choice(fields)
+        opponents = list((sample or {}).get("opponents") or [])
+        if not opponents:
+            return []
+        used_ranks = {int(player_rank or 1)}
+        next_rank = 1
+        rows = []
+        for index, opponent in enumerate(opponents[:17], start=1):
+            while next_rank in used_ranks:
+                next_rank += 1
+            used_ranks.add(next_rank)
+            rows.append(self._payload_opponent_row_from_sample(
+                opponent,
+                index=index,
+                finish_rank=next_rank,
+            ))
+            next_rank += 1
+        return rows
+
+    def _synthetic_opponent_rows(self, *, threshold, player_rank, race_style, program_id=None):
+        observed = self._observed_opponent_rows_for_payload(
+            program_id=program_id,
+            player_rank=player_rank,
+        )
+        if observed:
+            return observed
+        opponents = []
+        used_ranks = {int(player_rank or 1)}
+        next_rank = 1
+        for idx in range(1, 9):
+            while next_rank in used_ranks:
+                next_rank += 1
+            used_ranks.add(next_rank)
+            multiplier = 0.90 + (idx % 4) * 0.035 + self.rng.uniform(-0.045, 0.055)
+            stats = {
+                "speed": max(1, int(threshold["speed"] * multiplier)),
+                "stamina": max(1, int(threshold["stamina"] * multiplier)),
+                "power": max(1, int(threshold["power"] * multiplier)),
+                "guts": max(1, int(threshold["guts"] * multiplier)),
+                "wit": max(1, int(threshold["wit"] * multiplier)),
+            }
+            style_num = 1 + ((idx - 1) % 4)
+            opponents.append(self._synthetic_race_horse_row(
+                index=idx,
+                stats=stats,
+                running_style=STYLE_NUM_TO_KEY.get(style_num, race_style),
+                finish_rank=next_rank,
+                player=False,
+                skill_ids=[],
+                popularity=idx + 1,
+            ))
+            next_rank += 1
+        return opponents
+
+    def _synthetic_hakuraku_race_payload(self, race_entry, *, threshold, finish_rank):
+        meta = race_entry.get("race") or {}
+        player_stats = race_entry.get("pre_race_stats") or self._current_race_stats()
+        skill_ids = race_entry.get("pre_race_skill_ids") or []
+        style = race_entry.get("running_style") or self._race_style()
+        player = self._synthetic_race_horse_row(
+            index=0,
+            stats=player_stats,
+            running_style=style,
+            finish_rank=finish_rank,
+            player=True,
+            skill_ids=skill_ids,
+            popularity=1,
+        )
+        horses = [player] + self._synthetic_opponent_rows(
+            threshold=threshold,
+            player_rank=finish_rank,
+            race_style=style,
+            program_id=race_entry.get("pid"),
+        )
+        current_turn = _as_int(race_entry.get("turn") or self.state.get("turn"))
+        race_history = list(self._sim_race_history())
+        race_history.append({
+            "turn": current_turn,
+            "program_id": _as_int(race_entry.get("pid")),
+            "race_name": race_entry.get("name"),
+            "result_rank": int(finish_rank or 1),
+            "running_style": STYLE_KEY_TO_NUM.get(_style_key(style), 2),
+            "source": "simulated_race",
+        })
+        start_info = {
+            "random_seed": self.rng.randrange(1, 2_147_483_647),
+            "season": 1 + ((max(1, current_turn) - 1) // 12) % 4,
+            "weather": 1,
+            "ground_condition": 1,
+            "continue_num": _as_int(race_entry.get("continue_attempts")),
+        }
+        reward_info = {
+            "result_rank": int(finish_rank or 1),
+            "gained_fans": self._race_fan_reward(meta.get("grade"), bool(race_entry.get("won"))),
+            "skill_point": _as_int(race_entry.get("sp_reward")),
+        }
+        return {
+            "format": "sweepy_hakuraku_race_v1",
+            "horseACT_version": "sweepy-sim",
+            "race_type": "Single",
+            "synthetic": True,
+            "simulation": {
+                "model": race_entry.get("model"),
+                "win_probability": race_entry.get("win_probability"),
+                "race_score": race_entry.get("race_score"),
+                "manual_race_model": race_entry.get("manual_race_model") or {},
+            },
+            "program_id": _as_int(race_entry.get("pid")),
+            "current_turn": current_turn,
+            "race": meta,
+            "race_name": race_entry.get("name"),
+            "race_instance_id": meta.get("race_instance_id"),
+            "random_seed": start_info["random_seed"],
+            "season": start_info["season"],
+            "weather": start_info["weather"],
+            "ground_condition": start_info["ground_condition"],
+            "race_scenario": None,
+            "race_horse_data_array": horses,
+            "race_start_info": start_info,
+            "race_reward_info": reward_info,
+            "race_history": race_history,
+            "career_report_result": {
+                "turn": current_turn,
+                "program_id": _as_int(race_entry.get("pid")),
+                "finish_rank": int(finish_rank or 1),
+                "won": bool(race_entry.get("won")),
+                "status": "won" if race_entry.get("won") else "lost",
+                "label": f"{'WON' if race_entry.get('won') else 'LOST'} #{int(finish_rank or 1)}",
+                "is_g1": str(meta.get("grade") or "").upper() == "G1",
+                "race": meta,
+            },
+        }
 
     def _simulate_race(self, pid, race_name, distance, era, rival=False):
         """Simulate a race outcome using observed game data when available."""
@@ -6553,8 +6985,10 @@ class CareerSimulator:
                 self.race_continues_used += 1
                 continues_used += 1
                 race_model = retry_model
+                prob = retry_prob
                 won = self.rng.random() <= float(retry_prob or 0.0)
 
+        finish_rank = 1 if won else self._sim_loss_finish_rank(prob, race_model)
         rival = self._is_rival_race(pid, explicit=rival)
         reward_multiplier = self._race_reward_multiplier(grade, rival=rival)
         # Support card race_bonus % stacks additively across the deck + friend
@@ -6604,11 +7038,15 @@ class CareerSimulator:
         from career_bot.race_schedule import running_style_label as _running_style_label
         _race_style_value = self._race_style()
         race_style_label = _running_style_label(_race_style_value)
-        self.races_run.append({
+        meta = self._sim_race_meta(pid, race_name, distance, grade=grade)
+        threshold = self._sim_race_threshold_stats(pid, race_name, distance, era)
+        race_entry = {
             "turn": self.state["turn"],
             "pid": pid,
             "name": race_name,
             "grade": grade,
+            "race": meta,
+            "finish_rank": finish_rank,
             "rival": rival,
             "won": won,
             "running_style": _race_style_value,
@@ -6629,7 +7067,14 @@ class CareerSimulator:
             "pre_race_skill_ids": [row.get("skill_id") for row in self.purchased_skills],
             "continued": continues_used > 0,
             "continue_attempts": continues_used,
-        })
+        }
+        race_entry["hakuraku_payload"] = self._synthetic_hakuraku_race_payload(
+            race_entry,
+            threshold=threshold,
+            finish_rank=finish_rank,
+        )
+        self.races_run.append(race_entry)
+        self.sim_hakuraku_races.append(race_entry["hakuraku_payload"])
         return won, sp_reward
 
     def _scheduled_race_at(self, turn):
@@ -6893,6 +7338,7 @@ class CareerSimulator:
             sp_gain_sources=dict(self.sp_gain_sources),
             fidelity_warnings=list(self.fidelity_warnings),
             training_decisions=list(self.training_decisions),
+            sim_hakuraku_races=list(self.sim_hakuraku_races),
         )
 
 

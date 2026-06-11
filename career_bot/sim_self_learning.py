@@ -52,6 +52,38 @@ LEARNABLE_PARAMS = {
     "rest_threshold",
 }
 
+# Conservative bounds for values the sim is allowed to test/write.
+# These are execution-layer knobs, not user intent. Bounds prevent a
+# noisy sim batch from generating impossible or destructive policies.
+LEARNABLE_PARAM_BOUNDS = {
+    "speed_priority_bonus_mid": (0.00, 0.45),
+    "speed_priority_bonus_late": (0.00, 0.60),
+    "stamina_priority_bonus_base": (0.00, 0.25),
+    "stamina_priority_deficit_boost": (0.00, 0.25),
+    "power_priority_bonus_base": (0.00, 0.30),
+    "power_priority_bonus_late": (0.00, 0.40),
+    "power_priority_deficit_boost": (0.00, 0.30),
+    "wit_priority_bonus_mid": (0.00, 0.55),
+    "wit_priority_bonus_late": (0.00, 0.70),
+    "speed_floor_target": (700, 1200),
+    "stamina_floor_target": (450, 1100),
+    "power_floor_target": (650, 1200),
+    "calendar_race_prebuy_max_skills": (0, 12),
+    "calendar_race_prebuy_keep_sp": (0, 350),
+    "skill_point_drain_floor": (0, 250),
+    "rest_threshold": (20, 75),
+}
+
+INTEGER_PARAMS = {
+    "speed_floor_target",
+    "stamina_floor_target",
+    "power_floor_target",
+    "calendar_race_prebuy_max_skills",
+    "calendar_race_prebuy_keep_sp",
+    "skill_point_drain_floor",
+    "rest_threshold",
+}
+
 
 @dataclass
 class Proposal:
@@ -122,6 +154,26 @@ def _current_lhp_value(preset: dict | None, key: str, default: float) -> float:
         except (TypeError, ValueError):
             return float(default)
     return float(default)
+
+
+def clamp_learned_value(param_name: str, value):
+    """Clamp a proposed learned_hyperparameter to its safe range.
+
+    Unknown params are returned unchanged so this helper is harmless for
+    tests and future expansion, but callers should still only apply
+    params in LEARNABLE_PARAMS.
+    """
+    if param_name not in LEARNABLE_PARAM_BOUNDS:
+        return value
+    low, high = LEARNABLE_PARAM_BOUNDS[param_name]
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        numeric = float(low)
+    numeric = max(float(low), min(float(high), numeric))
+    if param_name in INTEGER_PARAMS:
+        return int(round(numeric))
+    return round(numeric, 4)
 
 
 # Defaults for the priority bonuses we compute proposals over. These
@@ -199,7 +251,7 @@ def propose_priority_bonus_adjustments(
             preset, knob,
             _PRIORITY_BONUS_DEFAULTS.get(knob, 0.05),
         )
-        proposed = current + step
+        proposed = clamp_learned_value(knob, current + step)
         rationale = (
             f"top-quartile sims (mean {top_mean:.0f}) picked {stat} "
             f"on {top_r * 100:.1f}% of training turns vs "
@@ -216,6 +268,107 @@ def propose_priority_bonus_adjustments(
     return proposals
 
 
+def _mean_final_stats(results: list) -> dict[str, float]:
+    totals = {"speed": 0.0, "stamina": 0.0, "power": 0.0, "guts": 0.0, "wit": 0.0}
+    count = 0
+    for r in results or []:
+        stats = getattr(r, "final_stats", None) or {}
+        if not isinstance(stats, dict):
+            continue
+        any_stat = False
+        for stat in totals:
+            if stat not in stats:
+                continue
+            try:
+                totals[stat] += float(stats.get(stat) or 0)
+                any_stat = True
+            except (TypeError, ValueError):
+                pass
+        if any_stat:
+            count += 1
+    if count <= 0:
+        return {}
+    return {k: v / count for k, v in totals.items()}
+
+
+def propose_final_stat_pressure_adjustments(
+    results: list,
+    preset: dict | None = None,
+    *,
+    target_stats: dict[str, int] | None = None,
+    min_shortfall: int = 80,
+) -> list[Proposal]:
+    """Propose SS-oriented pressure when the batch misses final stats.
+
+    The priority-rate analyzer only learns from relative patterns inside
+    a batch. If every sim is undertraining Speed/Wit/Power, there may be
+    no top-vs-bottom contrast to learn from. This analyzer adds absolute
+    pressure toward SS-capable end stats while staying in safe bounded
+    learned_hyperparameters.
+    """
+    if not results or len(results) < 2:
+        return []
+    targets = dict(target_stats or {
+        "speed": 1120,
+        "stamina": 650,
+        "power": 950,
+        "guts": 450,
+        "wit": 1120,
+    })
+    means = _mean_final_stats(results)
+    if not means:
+        return []
+    proposals: list[Proposal] = []
+
+    def _append(param_name: str, default: float, proposed, stat: str, shortfall: float):
+        if param_name not in LEARNABLE_PARAMS:
+            return
+        current = _current_lhp_value(preset, param_name, default)
+        bounded = clamp_learned_value(param_name, proposed)
+        try:
+            if float(bounded) <= float(current):
+                return
+        except (TypeError, ValueError):
+            return
+        proposals.append(Proposal(
+            param_name=param_name,
+            current_value=current,
+            proposed_value=bounded,
+            rationale=(
+                f"batch mean {stat}={means.get(stat, 0.0):.0f} is "
+                f"{shortfall:.0f} below SS target {targets[stat]}; "
+                f"raise {param_name} to increase {stat} pressure."
+            ),
+            expected_lift_hint=shortfall,
+        ))
+
+    for stat, target in targets.items():
+        mean = means.get(stat, 0.0)
+        shortfall = float(target) - mean
+        if shortfall < min_shortfall:
+            continue
+        if stat == "speed":
+            cur_bonus = _current_lhp_value(preset, "speed_priority_bonus_late", 0.22)
+            _append("speed_priority_bonus_late", 0.22, cur_bonus + 0.03, stat, shortfall)
+        elif stat == "stamina":
+            cur_floor = _current_lhp_value(preset, "stamina_floor_target", 650)
+            _append("stamina_floor_target", 650, max(cur_floor + 50, min(target, 1100)), stat, shortfall)
+            cur_bonus = _current_lhp_value(preset, "stamina_priority_deficit_boost", 0.03)
+            _append("stamina_priority_deficit_boost", 0.03, cur_bonus + 0.03, stat, shortfall)
+        elif stat == "power":
+            cur_floor = _current_lhp_value(preset, "power_floor_target", 900)
+            _append("power_floor_target", 900, max(cur_floor + 50, min(target, 1200)), stat, shortfall)
+            cur_bonus = _current_lhp_value(preset, "power_priority_deficit_boost", 0.04)
+            _append("power_priority_deficit_boost", 0.04, cur_bonus + 0.03, stat, shortfall)
+        elif stat == "wit":
+            cur_mid = _current_lhp_value(preset, "wit_priority_bonus_mid", 0.14)
+            _append("wit_priority_bonus_mid", 0.14, cur_mid + 0.03, stat, shortfall)
+            cur_late = _current_lhp_value(preset, "wit_priority_bonus_late", 0.30)
+            _append("wit_priority_bonus_late", 0.30, cur_late + 0.04, stat, shortfall)
+
+    return proposals
+
+
 def analyze_batch(results: list, preset: dict | None = None) -> list[Proposal]:
     """High-level entry point. Run all enabled analyzers and concatenate
     their proposals.
@@ -226,4 +379,5 @@ def analyze_batch(results: list, preset: dict | None = None) -> list[Proposal]:
     """
     out: list[Proposal] = []
     out.extend(propose_priority_bonus_adjustments(results, preset))
+    out.extend(propose_final_stat_pressure_adjustments(results, preset))
     return out

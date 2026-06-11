@@ -7,6 +7,7 @@ import uuid
 import requests
 import hashlib
 import random
+import re
 import struct
 import msgpack
 from Crypto.Cipher import AES
@@ -15,8 +16,10 @@ import subprocess
 import platform
 import socket
 import shutil
+import threading
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urljoin
 
 class StateRecoveryError(Exception):
     pass
@@ -65,6 +68,7 @@ def runtime_output_root():
 
 
 TRACE_DIR = runtime_output_root() / "trace_logs"
+CLIENT_VERSION_CACHE_PATH = runtime_output_root() / "client_version_cache.json"
 
 
 def env_flag(name, default=True):
@@ -72,6 +76,222 @@ def env_flag(name, default=True):
     if value is None:
         return default
     return str(value).strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _version_tuple(value):
+    try:
+        parts = [int(p) for p in str(value or "").strip().split(".")]
+    except (TypeError, ValueError):
+        return ()
+    while len(parts) < 3:
+        parts.append(0)
+    return tuple(parts[:3])
+
+
+def _res_version_int(value):
+    try:
+        return int(str(value or "").strip())
+    except (TypeError, ValueError):
+        return -1
+
+
+def _version_candidate_sort_key(pair):
+    app, res = pair
+    return (_version_tuple(app), _res_version_int(res))
+
+
+def read_client_version_cache(steam_app_id=None):
+    """Read the last accepted live APP-VER / RES-VER pair.
+
+    This cache is deliberately separate from reusable auth profiles. Auth
+    profiles can become stale account-by-account; the live client version is
+    global for the Steam app and should survive auth refresh failures.
+    """
+    path = CLIENT_VERSION_CACHE_PATH
+    try:
+        if not path.exists():
+            return {}
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    wanted_app_id = str(steam_app_id or "").strip()
+    by_app = payload.get("by_steam_app_id")
+    if wanted_app_id and isinstance(by_app, dict):
+        entry = by_app.get(wanted_app_id)
+        if isinstance(entry, dict) and entry.get("app_ver") and entry.get("res_ver"):
+            out = dict(entry)
+            out.setdefault("steam_app_id", wanted_app_id)
+            return out
+    if payload.get("app_ver") and payload.get("res_ver"):
+        return dict(payload)
+    return {}
+
+
+def write_client_version_cache(app_ver, res_ver, *, unity_ver="", steam_app_id="", source="", store_url=""):
+    app_ver = str(app_ver or "").strip()
+    res_ver = str(res_ver or "").strip()
+    if not app_ver or not res_ver:
+        return False
+    steam_app_id = str(steam_app_id or "").strip() or "default"
+    path = CLIENT_VERSION_CACHE_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    except Exception:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    by_app = payload.get("by_steam_app_id")
+    if not isinstance(by_app, dict):
+        by_app = {}
+    entry = {
+        "app_ver": app_ver,
+        "res_ver": res_ver,
+        "unity_ver": str(unity_ver or "").strip(),
+        "steam_app_id": steam_app_id,
+        "source": str(source or "").strip(),
+        "store_url": str(store_url or "").strip(),
+        "saved_at": time.time(),
+    }
+    by_app[steam_app_id] = entry
+    payload.update({
+        "version": 1,
+        "app_ver": app_ver,
+        "res_ver": res_ver,
+        "unity_ver": entry["unity_ver"],
+        "steam_app_id": steam_app_id,
+        "source": entry["source"],
+        "store_url": entry["store_url"],
+        "saved_at": entry["saved_at"],
+        "by_steam_app_id": by_app,
+    })
+    tmp = path.with_name(f"{path.stem}.{os.getpid()}.{int(time.time() * 1000)}.tmp")
+    try:
+        tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, path)
+        return True
+    except Exception:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except Exception:
+            pass
+        return False
+
+
+def extract_version_candidates_from_text(text):
+    """Extract plausible APP-VER / RES-VER pairs from HTML/JS/JSON text."""
+    text = str(text or "")
+    if not text:
+        return []
+
+    app_versions = []
+    res_versions = []
+
+    def add_app(value):
+        value = str(value or "").strip()
+        if value and value not in app_versions:
+            app_versions.append(value)
+
+    def add_res(value):
+        value = str(value or "").strip()
+        if value and value not in res_versions:
+            res_versions.append(value)
+
+    app_key_pattern = re.compile(
+        r"(?i)(?:app[_-]?ver(?:sion)?|appVersion|APP-VER|client[_-]?version|versionName)"
+        r"[^0-9]{0,40}([0-9]+\.[0-9]+(?:\.[0-9]+)?)"
+    )
+    res_key_pattern = re.compile(
+        r"(?i)(?:res[_-]?ver(?:sion)?|resource[_-]?version|resourceVersion|RES-VER)"
+        r"[^0-9]{0,40}([0-9]{7,10})"
+    )
+    for match in app_key_pattern.finditer(text):
+        add_app(match.group(1))
+    for match in res_key_pattern.finditer(text):
+        add_res(match.group(1))
+
+    # Some generated launcher pages only expose compact key/value literals.
+    for match in re.finditer(r"(?i)['\"]APP-VER['\"]\s*[:=]\s*['\"]([0-9]+\.[0-9]+(?:\.[0-9]+)?)['\"]", text):
+        add_app(match.group(1))
+    for match in re.finditer(r"(?i)['\"]RES-VER['\"]\s*[:=]\s*['\"]([0-9]{7,10})['\"]", text):
+        add_res(match.group(1))
+
+    # Fallback: if there is exactly one semver-like value and one resource-like
+    # value in the document, pair them. Avoid broad cartesian matches when the
+    # document contains many unrelated versions.
+    if not app_versions:
+        found = sorted(set(re.findall(r"\b([0-9]+\.[0-9]+\.[0-9]+)\b", text)), key=_version_tuple, reverse=True)
+        if len(found) <= 4:
+            for value in found:
+                add_app(value)
+    if not res_versions:
+        found = sorted(set(re.findall(r"\b(10[0-9]{6,8})\b", text)), key=_res_version_int, reverse=True)
+        if len(found) <= 6:
+            for value in found:
+                add_res(value)
+
+    out = []
+    seen = set()
+    for app in app_versions:
+        for res in res_versions:
+            key = (app, res)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(key)
+    return out
+
+
+def discover_version_candidates_from_store_url(store_url, max_fetches=None):
+    """Best-effort scrape of the server-provided update page.
+
+    The 204 response's store_url is public launcher/update content. When it
+    contains APP-VER/RES-VER metadata, exact candidates should beat blind
+    guesses. Failures are silent so auth can continue to the generated probes.
+    """
+    store_url = str(store_url or "").strip()
+    if not store_url.startswith(("http://", "https://")):
+        return []
+    try:
+        max_fetches = int(max_fetches or os.environ.get("SWEEPY_VERSION_STORE_URL_MAX_FETCHES", "6"))
+    except (TypeError, ValueError):
+        max_fetches = 6
+    max_fetches = max(1, min(max_fetches, 12))
+    timeout = 8.0
+    headers = {
+        "User-Agent": "Mozilla/5.0 SweepyVersionProbe/1.0",
+        "Accept": "text/html,application/javascript,application/json,text/plain,*/*",
+    }
+    queue = [store_url]
+    fetched = set()
+    out = []
+    seen = set()
+    while queue and len(fetched) < max_fetches:
+        url = queue.pop(0)
+        if url in fetched:
+            continue
+        fetched.add(url)
+        try:
+            resp = requests.get(url, headers=headers, timeout=timeout)
+            if resp.status_code >= 400:
+                continue
+            text = resp.text or ""
+        except Exception:
+            continue
+        for pair in extract_version_candidates_from_text(text):
+            if pair not in seen:
+                seen.add(pair)
+                out.append(pair)
+        if len(fetched) >= max_fetches:
+            continue
+        for match in re.finditer(r"""(?i)(?:src|href)\s*=\s*["']([^"']+\.(?:js|json|html?)(?:\?[^"']*)?)["']""", text):
+            child = urljoin(url, match.group(1))
+            if child not in fetched and child not in queue:
+                queue.append(child)
+    return out
 
 
 def sweepy_instance_name():
@@ -230,7 +450,7 @@ def is_client_version_stale_response(ep, rc, res):
     return bool(str(headers.get("store_url") or "").strip())
 
 
-def generate_version_candidates(current_app_ver, current_res_ver, max_candidates=None):
+def generate_version_candidates(current_app_ver, current_res_ver, max_candidates=None, *, store_url="", steam_app_id=""):
     """Generate plausible (app_ver, res_ver) pairs to try after a 204+store_url.
 
     Cygames bumps `res_ver` more often than `app_ver`. Empirical pattern
@@ -248,7 +468,7 @@ def generate_version_candidates(current_app_ver, current_res_ver, max_candidates
     Caller is expected to try them in order and stop on first success.
 
     `max_candidates` caps the probe budget. Defaults to the value of the
-    `SWEEPY_VERSION_AUTODISCOVERY_MAX_CANDIDATES` env var, or 30 if not
+    `SWEEPY_VERSION_AUTODISCOVERY_MAX_CANDIDATES` env var, or 80 if not
     set. The probe budget governs how far past the current version the
     bot will reach before falling back to the actionable error.
     """
@@ -256,10 +476,10 @@ def generate_version_candidates(current_app_ver, current_res_ver, max_candidates
     if max_candidates is None:
         try:
             max_candidates = int(_os.environ.get(
-                "SWEEPY_VERSION_AUTODISCOVERY_MAX_CANDIDATES", "30",
+                "SWEEPY_VERSION_AUTODISCOVERY_MAX_CANDIDATES", "80",
             ))
         except (TypeError, ValueError):
-            max_candidates = 30
+            max_candidates = 80
     max_candidates = max(1, int(max_candidates))
 
     candidates = []
@@ -269,8 +489,22 @@ def generate_version_candidates(current_app_ver, current_res_ver, max_candidates
         key = (str(app), str(res))
         if key in seen:
             return
+        if not key[0].strip() or not key[1].strip():
+            return
         seen.add(key)
         candidates.append((str(app), str(res)))
+
+    # Tier -2: last accepted live version. This is independent of reusable
+    # auth profiles, so stale account caches cannot override it.
+    cached = read_client_version_cache(steam_app_id)
+    if cached:
+        push(cached.get("app_ver"), cached.get("res_ver"))
+
+    # Tier -1: exact metadata scraped from the server-provided update page.
+    # This makes 204+store_url self-healing when the launcher page exposes the
+    # live app/resource values.
+    for app, res in discover_version_candidates_from_store_url(store_url):
+        push(app, res)
 
     # Tier 0: bot's hardcoded defaults / env-var overrides. These are the
     # "known-good" values someone shipping the bot believes work right
@@ -286,7 +520,7 @@ def generate_version_candidates(current_app_ver, current_res_ver, max_candidates
         # default is right on one axis but stale on the other.
         try:
             def_res_int = int(str(default_res_ver).strip())
-            for delta in (0, 100, 200, 500):
+            for delta in (0, 100, 200, 500, 1000):
                 push(default_app_ver, def_res_int + delta)
         except (TypeError, ValueError):
             pass
@@ -314,29 +548,30 @@ def generate_version_candidates(current_app_ver, current_res_ver, max_candidates
         # so we hit canonical 100-multiples (10006200, 10006300, ...) even
         # when current is off (e.g. cached 10006120 → probe 10006300 too).
         rounded = (cur_res // 100) * 100
-        for delta in (100, 200, 300, 400, 500, 600, 700, 800, 1000, 1200, 1500):
+        for delta in (100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000):
             push(current_app_ver, rounded + delta)
         # Then literal current + deltas (covers off-100 increments)
-        for delta in (100, 200, 300, 400, 500, 700, 1000, 2000, 3000, 5000, 10000):
+        for delta in (100, 200, 300, 400, 500, 700, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000):
             push(current_app_ver, cur_res + delta)
 
     # Tier 2: app_ver patch bump (1.22.0 → 1.22.1/+2/+3) at current or bumped res_ver
     if major is not None:
-        for pp in (patch + 1, patch + 2, patch + 3):
+        for pp in (patch + 1, patch + 2, patch + 3, patch + 4, patch + 5):
             cand_app = f"{major}.{minor}.{pp}"
             push(cand_app, current_res_ver)
             if cur_res is not None:
-                for delta in (100, 500, 1000):
+                for delta in (100, 300, 500, 1000, 2000, 5000):
                     push(cand_app, cur_res + delta)
 
     # Tier 3: app_ver minor bump (1.22.0 → 1.23/24/25/27.0) with bumped res_ver
     if major is not None:
-        for mm in (minor + 1, minor + 2, minor + 3, minor + 5):
-            cand_app = f"{major}.{mm}.0"
-            push(cand_app, current_res_ver)
-            if cur_res is not None:
-                for delta in (100, 500, 1000, 5000):
-                    push(cand_app, cur_res + delta)
+        for mm in (minor + 1, minor + 2, minor + 3, minor + 4, minor + 5, minor + 6, minor + 8):
+            for pp in (0, 1):
+                cand_app = f"{major}.{mm}.{pp}"
+                push(cand_app, current_res_ver)
+                if cur_res is not None:
+                    for delta in (100, 300, 500, 1000, 2000, 5000, 10000):
+                        push(cand_app, cur_res + delta)
 
     return candidates[:max_candidates]
 
@@ -348,8 +583,10 @@ def client_version_stale_api_message(ep, rc, res, app_ver="", res_ver=""):
     return (
         f"API error 204 on {ep}: game client version metadata is stale. "
         f"Sent APP-VER={app_ver or '<empty>'} RES-VER={res_ver or '<empty>'}. "
-        "The server returned store_url, so retrying/auth refresh will not fix this. "
-        "Update SWEEPY_DEFAULT_APP_VER and SWEEPY_DEFAULT_RES_VER or capture auth once from the updated game client. "
+        "The server returned store_url, so retrying the same cached metadata will not fix this. "
+        "Sweepy attempted automatic version discovery first; if this message remains, update the installed game client "
+        "or capture auth once from the updated client so the live APP-VER/RES-VER can be cached. "
+        "SWEEPY_DEFAULT_APP_VER and SWEEPY_DEFAULT_RES_VER remain available as manual overrides. "
         f"store_url={store_url}. "
         f"Original response: {detail}"
     )
@@ -600,6 +837,8 @@ class UmaClient:
         self.coin_info = {}
         self.item_map = {}
         self.session = requests.Session()
+        self._api_call_lock = threading.RLock()
+        self._api_call_owner_thread = None
         self.update_headers()
 
         self.on_api_log = None
@@ -780,6 +1019,27 @@ class UmaClient:
         })
 
     def call(self, ep, args=None, retry_208=6, retry_205=3, quiet_result_codes=None, retry_http_403=None, retry_394=1, retry_viewer_remap=1):
+        lock = getattr(self, "_api_call_lock", None)
+        owner = getattr(self, "_api_call_owner_thread", None)
+        ident = threading.get_ident()
+        if lock is not None and owner != ident:
+            with lock:
+                previous_owner = getattr(self, "_api_call_owner_thread", None)
+                self._api_call_owner_thread = ident
+                try:
+                    return self.call(
+                        ep,
+                        args,
+                        retry_208=retry_208,
+                        retry_205=retry_205,
+                        quiet_result_codes=quiet_result_codes,
+                        retry_http_403=retry_http_403,
+                        retry_394=retry_394,
+                        retry_viewer_remap=retry_viewer_remap,
+                    )
+                finally:
+                    self._api_call_owner_thread = previous_owner
+
         quiet_result_codes = {int(code) for code in (quiet_result_codes or set())}
         sensitive_endpoints = {
             'single_mode_free/exec_command',
@@ -917,7 +1177,13 @@ class UmaClient:
                 self._attempted_version_autodiscovery = True
                 original_app_ver = self.app_ver
                 original_res_ver = self.res_ver
-                candidates = generate_version_candidates(self.app_ver, self.res_ver)
+                store_url = str(((res or {}).get("data_headers") or {}).get("store_url") or "").strip()
+                candidates = generate_version_candidates(
+                    self.app_ver,
+                    self.res_ver,
+                    store_url=store_url,
+                    steam_app_id=self.steam_app_id,
+                )
                 print(
                     f"VERSION AUTO-DISCOVERY: 204+store_url on {ep} with "
                     f"APP-VER={original_app_ver} RES-VER={original_res_ver}. "
@@ -965,12 +1231,42 @@ class UmaClient:
                     retry_dh = retry_res.get("data_headers") or {}
                     retry_rc = int(retry_dh.get("result_code") or 0)
                     if not is_client_version_stale_response(ep, retry_rc, retry_res):
+                        accepted_app = str(getattr(self, "app_ver", cand_app) or cand_app)
+                        accepted_res = str(
+                            retry_dh.get("resource_version")
+                            or getattr(self, "res_ver", cand_res)
+                            or cand_res
+                        )
+                        self.app_ver = accepted_app
+                        self.res_ver = accepted_res
+                        self.update_headers()
                         print(
-                            f"VERSION AUTO-DISCOVERY: success — APP-VER={cand_app} "
-                            f"RES-VER={cand_res} accepted. "
-                            f"Persistence handled by client-call wrapper.",
+                            f"VERSION AUTO-DISCOVERY: success — APP-VER={accepted_app} "
+                            f"RES-VER={accepted_res} accepted. "
+                            f"Persisting for future login attempts.",
                             flush=True,
                         )
+                        try:
+                            write_client_version_cache(
+                                accepted_app,
+                                accepted_res,
+                                unity_ver=self.unity_ver,
+                                steam_app_id=self.steam_app_id,
+                                source=f"auto_discovery:{ep}",
+                                store_url=store_url,
+                            )
+                        except Exception:
+                            pass
+                        try:
+                            cfg = getattr(self, "_sweepy_auth_config", None)
+                            if isinstance(cfg, dict):
+                                cfg["app_ver"] = accepted_app
+                                cfg["res_ver"] = accepted_res
+                                cfg["unity_ver"] = self.unity_ver
+                                cfg["steam_app_id"] = self.steam_app_id
+                                self._sweepy_auth_config = dict(cfg)
+                        except Exception:
+                            pass
                         return retry_res
                 # Exhausted — restore original versions and surface error.
                 self.app_ver = original_app_ver
@@ -1045,6 +1341,16 @@ class UmaClient:
             if server_res_ver and server_res_ver != self.res_ver:
                 print(f"RES-VER MISMATCH on 214: {self.res_ver} -> {server_res_ver} (server-provided), retrying")
                 self.res_ver = server_res_ver
+                try:
+                    write_client_version_cache(
+                        self.app_ver,
+                        self.res_ver,
+                        unity_ver=self.unity_ver,
+                        steam_app_id=self.steam_app_id,
+                        source=f"server_214:{ep}",
+                    )
+                except Exception:
+                    pass
                 return self.call(
                     ep,
                     args,
@@ -1291,6 +1597,10 @@ class UmaClient:
             "graphics_device_name": self.graphics_device,
             "ip_address": self.ip_address,
             "platform_os_version": self.platform_os,
+            "locale": self.locale,
+            "unity_ver": self.unity_ver,
+            "app_ver": self.app_ver,
+            "res_ver": self.res_ver,
         }
 
     def pre_single_mode(self, exclude_viewer_ids=None):

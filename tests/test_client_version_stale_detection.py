@@ -78,7 +78,7 @@ def test_detail_message_mentions_env_vars_and_action():
     assert "SWEEPY_DEFAULT_APP_VER" in detail
     assert "SWEEPY_DEFAULT_RES_VER" in detail
     # And explain why retrying won't help
-    assert "Retrying will not help" in detail
+    assert "retrying the same cached metadata will not fix this" in detail
 
 
 def _build_204_test_client():
@@ -90,6 +90,7 @@ def _build_204_test_client():
     client.auth_key_hex = "aa" * 48
     client.steam_id = "76561198371537804"
     client.steam_ticket = "ticket"
+    client.steam_app_id = "3224770"
     client.device_id = "device-id"
     client.device_name = "System Product Name"
     client.graphics_device = "GPU"
@@ -214,3 +215,93 @@ def test_uma_client_attempts_autodiscovery_on_204_store_url():
     # After all probes fail, original versions must be restored
     assert client.app_ver == "1.21.1"
     assert client.res_ver == "10006200"
+
+
+def test_uma_client_persists_successful_autodiscovery():
+    """A successful probe should cache the accepted pair immediately."""
+    client, viewer_headers = _build_204_test_client()
+    stale_response = {
+        "response_code": 204,
+        "data_headers": {
+            "viewer_id": 4665295244463,
+            "sid": "<redacted>",
+            "servertime": 1780568619,
+            "result_code": 204,
+            "store_url": "https://example.com/auto_build2/update.html",
+        },
+    }
+    ok_response = {
+        "response_code": 1,
+        "data_headers": {
+            "viewer_id": 209937075503,
+            "sid": "<redacted>",
+            "servertime": 1780568620,
+            "result_code": 1,
+        },
+        "data": {},
+    }
+
+    with patch.object(uma_client, "pack", return_value=b"body"), \
+         patch.object(uma_client, "get_raw_udid", return_value=b"udid"), \
+         patch.object(uma_client, "unpack", side_effect=[stale_response, ok_response]), \
+         patch.object(uma_client, "generate_version_candidates", return_value=[("1.23.0", "10006600")]), \
+         patch.object(uma_client, "write_client_version_cache", return_value=True) as write_cache, \
+         patch.object(uma_client.time, "sleep"):
+        result = uma_client.UmaClient.call(
+            client,
+            "tool/start_session",
+            {"attestation_type": 0, "device_token": None},
+        )
+
+    assert result is ok_response
+    assert client.app_ver == "1.23.0"
+    assert client.res_ver == "10006600"
+    assert viewer_headers == ["209937075503", "209937075503"]
+    write_cache.assert_called_once()
+    kwargs = write_cache.call_args.kwargs
+    assert kwargs["steam_app_id"] == client.steam_app_id
+    assert kwargs["store_url"] == "https://example.com/auto_build2/update.html"
+
+
+def test_uma_client_autodiscovery_caches_server_adjusted_resource_version():
+    """Persist the final server-adjusted RES-VER, not just the probed pair."""
+    client, _viewer_headers = _build_204_test_client()
+    stale_response = {
+        "response_code": 204,
+        "data_headers": {
+            "viewer_id": 4665295244463,
+            "sid": "<redacted>",
+            "servertime": 1780568619,
+            "result_code": 204,
+            "store_url": "https://example.com/auto_build2/update.html",
+        },
+    }
+    ok_response = {
+        "response_code": 1,
+        "data_headers": {
+            "viewer_id": 209937075503,
+            "sid": "<redacted>",
+            "servertime": 1780568620,
+            "result_code": 1,
+            "resource_version": "10006400",
+        },
+        "data": {},
+    }
+
+    with patch.object(uma_client, "pack", return_value=b"body"), \
+         patch.object(uma_client, "get_raw_udid", return_value=b"udid"), \
+         patch.object(uma_client, "unpack", side_effect=[stale_response, ok_response]), \
+         patch.object(uma_client, "generate_version_candidates", return_value=[("1.22.1", "10006300")]), \
+         patch.object(uma_client, "write_client_version_cache", return_value=True) as write_cache, \
+         patch.object(uma_client.time, "sleep"):
+        result = uma_client.UmaClient.call(
+            client,
+            "tool/start_session",
+            {"attestation_type": 0, "device_token": None},
+        )
+
+    assert result is ok_response
+    assert client.app_ver == "1.22.1"
+    assert client.res_ver == "10006400"
+    write_cache.assert_called_once()
+    assert write_cache.call_args.args[:2] == ("1.22.1", "10006400")

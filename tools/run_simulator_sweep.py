@@ -4,6 +4,7 @@ Usage:
     python -m tools.run_simulator_sweep            # 50 runs vs current preset
     python -m tools.run_simulator_sweep --n 200    # 200 runs
     python -m tools.run_simulator_sweep --preset "path/to/preset.json"
+    python -m tools.run_simulator_sweep --n 5 --export-races
 
 Prints a one-screen summary: median rating, rank distribution, G1 win
 median, training-pick distribution, bonus fire counts. Use this to
@@ -12,8 +13,10 @@ before running a real career.
 """
 
 import argparse
+from datetime import datetime
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from statistics import median
@@ -42,11 +45,73 @@ def _default_preset_path(project_root, instance):
     return next((path for path in candidates if path.exists()), fallback)
 
 
+def _clean_filename(value, default="race"):
+    text = str(value or default).strip()
+    text = re.sub(r"[^\w.\- ]+", "_", text, flags=re.UNICODE)
+    text = re.sub(r"\s+", "_", text).strip("._ ")
+    return text[:96] or default
+
+
+def _export_simulated_races(project_root, instance, sweep, output_dir=""):
+    if output_dir:
+        root = Path(output_dir)
+    else:
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        root = (
+            project_root
+            / "uma_runtime"
+            / "instances"
+            / instance
+            / "hakuraku_races"
+            / "simulated"
+            / f"sweep_{stamp}"
+        )
+    root.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "format": "sweepy_sim_hakuraku_race_manifest_v1",
+        "synthetic": True,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "n_runs": int(sweep.get("n_runs") or 0),
+        "total_exported": 0,
+        "runs": [],
+    }
+    for run_index, result in enumerate(sweep.get("results") or [], start=1):
+        run_dir = root / f"run_{run_index:03d}" / "all"
+        run_dir.mkdir(parents=True, exist_ok=True)
+        exported = []
+        for race_index, payload in enumerate(getattr(result, "sim_hakuraku_races", []) or [], start=1):
+            turn = int(payload.get("current_turn") or 0)
+            race_name = payload.get("race_name") or f"race_{race_index}"
+            filename = f"{race_index:03d}_turn_{turn:02d}_{_clean_filename(race_name)}.json"
+            path = run_dir / filename
+            path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            exported.append({
+                "path": str(path.relative_to(root)),
+                "turn": turn,
+                "program_id": payload.get("program_id"),
+                "race_name": race_name,
+                "finish_rank": (payload.get("career_report_result") or {}).get("finish_rank"),
+            })
+        manifest["total_exported"] += len(exported)
+        manifest["runs"].append({
+            "run_index": run_index,
+            "rank": result.rank,
+            "rating_score": result.rating_score,
+            "stat_sum": result.stat_sum,
+            "races_exported": len(exported),
+            "races": exported,
+        })
+    (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    return root, manifest
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n", type=int, default=50)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--instance", default="", help="runtime instance to hydrate from, e.g. account_a/account_b")
+    parser.add_argument("--export-races", action="store_true", help="write synthetic Hakuraku-style race JSON for each sim race")
+    parser.add_argument("--export-races-dir", default="", help="override output directory for --export-races")
     parser.add_argument(
         "--preset",
         default="",
@@ -141,6 +206,12 @@ def main():
         print("\n=== Fidelity warnings ===")
         for warning in warnings:
             print(f"  - {warning}")
+
+    if args.export_races:
+        output_dir, manifest = _export_simulated_races(project_root, instance, sweep, args.export_races_dir)
+        print("\n=== Synthetic Hakuraku race export ===")
+        print(f"  Wrote {manifest['total_exported']} race JSON files to {output_dir}")
+        print("  Note: these are simulator-synthetic race records, not game replay traces.")
 
 
 if __name__ == "__main__":

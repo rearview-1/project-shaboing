@@ -114,6 +114,60 @@ class TruncatedSkillArrayClient:
 
 
 class SkillBuyingSmokeTests(unittest.TestCase):
+    def test_estimate_cost_uses_real_game_skill_cost_data(self):
+        buyer = SkillBuyer(BASE_DIR)
+
+        self.assertEqual(
+            buyer._estimate_cost({
+                "skill_id": 200332,
+                "name": "Corner Adept ○",
+                "hint_level": 3,
+            }),
+            180,
+        )
+        self.assertEqual(
+            buyer._estimate_cost({
+                "skill_id": 200592,
+                "name": "Position Pilfer",
+                "hint_level": 3,
+            }),
+            180,
+        )
+
+    def test_pre_race_buy_does_not_submit_unaffordable_real_cost_skill(self):
+        buyer = SkillBuyer(BASE_DIR)
+        client = FakeSkillClient()
+        state = make_state(
+            turn=24,
+            skill_point=170,
+            skill_array=[],
+            skill_tips_array=[{"group_id": 20059, "rarity": 2, "level": 3}],
+        )
+        preset = {
+            "pre_race_winprob_gate_enabled": False,
+            "learn_skill_list": [["Position Pilfer"]],
+            "learn_skill_append_defaults": False,
+            "calendar_race_prebuy_min_sp": 80,
+            "calendar_race_prebuy_keep_sp": 0,
+            "calendar_race_prebuy_budget": 1800,
+        }
+
+        next_state, bought = buyer.buy_limited_for_race(
+            client,
+            state,
+            preset,
+            race_check={"race_name": "Hopeful Stakes", "style": "late_surger", "distance": "Medium"},
+            max_skills=1,
+            budget=1800,
+            reserve=0,
+            min_sp=80,
+        )
+
+        self.assertIs(next_state, state)
+        self.assertEqual(bought, 0)
+        self.assertEqual(client.calls, [])
+        self.assertEqual(buyer.last_result["skip"], "no_affordable_pre_race_skill")
+
     def test_successful_buy_is_cached_when_response_skill_array_is_truncated(self):
         buyer = SkillBuyer(BASE_DIR)
         client = TruncatedSkillArrayClient()
@@ -1027,7 +1081,7 @@ class SkillBuyingSmokeTests(unittest.TestCase):
 
         state, bought = buyer.buy(client, state, preset, force=True)
         self.assertEqual(bought, 1)
-        self.assertEqual(client.calls[0]["kwargs"], {"retry_205": 0, "retry_208": 0})
+        self.assertEqual(client.calls[0]["kwargs"], {"retry_205": 1, "retry_208": 1})
         self.assertIn(201252, [row["skill_id"] for row in state["data"]["chara_info"]["skill_array"]])
         calls_after_first_attempt = len(client.calls)
 

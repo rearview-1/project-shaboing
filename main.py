@@ -17,9 +17,16 @@ import traceback
 import shutil
 from types import SimpleNamespace
 import frida
-from career_bot.deck_advice import build_deck_advice
+OPTIONAL_IMPORT_ERRORS = {}
+try:
+    from career_bot.deck_advice import build_deck_advice
+except ModuleNotFoundError as exc:
+    if exc.name != "career_bot.deck_advice":
+        raise
+    build_deck_advice = None
+    OPTIONAL_IMPORT_ERRORS["career_bot.deck_advice"] = str(exc)
 from career_bot.observed_profiles import append_team_observations, load_observation_samples, summarize_observation_samples
-from career_bot.presets import PresetStore, read_instance_learning_override, slugify
+from career_bot.presets import PresetStore, instance_learning_override_path, read_instance_learning_override, slugify
 from career_bot.manual_recorder import (
     ManualCareerRecorder,
     build_report_from_hachimi_summaries,
@@ -41,7 +48,7 @@ from career_bot.rating import rank_for_rating_score
 from career_bot.runner import CareerRunner, runtime_output_root
 from career_bot.skill_profiles import build_skill_priority_rows, normalize_distance as normalize_skill_distance, normalize_style as normalize_skill_style, sanitize_blacklist, split_skill_text
 from career_bot.team_trials_dataset import RANK_LABELS, deck_race_bonus_summary, load_team_trials_dataset
-from uma_api.client import UmaClient
+from uma_api.client import UmaClient, read_client_version_cache
 
 GLB_STEAM_APP_ID = "3224770"
 JP_STEAM_APP_ID = "3564400"
@@ -842,6 +849,14 @@ def best_known_headless_auth_seed(steam_id=""):
     APP-VER / RES-VER / locale / unity values.
     """
     candidates = []
+    cached_version = read_client_version_cache(APP_ID)
+    if isinstance(cached_version, dict) and cached_version.get("app_ver") and cached_version.get("res_ver"):
+        candidates.append({
+            "app_ver": cached_version.get("app_ver"),
+            "res_ver": cached_version.get("res_ver"),
+            "unity_ver": cached_version.get("unity_ver") or "",
+            "locale": cached_version.get("locale") or "",
+        })
     active_cfg = client_dev_session_config(active_client) if active_client else None
     if isinstance(active_cfg, dict):
         candidates.append(active_cfg)
@@ -889,19 +904,20 @@ def best_known_headless_auth_seed(steam_id=""):
     def _looks_like_placeholder(cfg):
         if not isinstance(cfg, dict):
             return False
-        if str(cfg.get("steam_id") or "").strip() in PLACEHOLDER_STEAM_IDS:
+        if "steam_id" in cfg and str(cfg.get("steam_id") or "").strip() in PLACEHOLDER_STEAM_IDS:
             return True
-        if str(cfg.get("steam_session_ticket") or "").strip() in PLACEHOLDER_TICKETS:
+        if "steam_session_ticket" in cfg and str(cfg.get("steam_session_ticket") or "").strip() in PLACEHOLDER_TICKETS:
             return True
-        try:
-            vid = int(cfg.get("viewer_id") or 0)
-        except (TypeError, ValueError):
-            vid = 0
-        if vid in PLACEHOLDER_VIEWER_IDS:
+        if "viewer_id" in cfg:
+            try:
+                vid = int(cfg.get("viewer_id") or 0)
+            except (TypeError, ValueError):
+                vid = 0
+            if vid in PLACEHOLDER_VIEWER_IDS:
+                return True
+        if "app_ver" in cfg and str(cfg.get("app_ver") or "").strip() in PLACEHOLDER_APP_VERS:
             return True
-        if str(cfg.get("app_ver") or "").strip() in PLACEHOLDER_APP_VERS:
-            return True
-        if str(cfg.get("res_ver") or "").strip() in PLACEHOLDER_RES_VERS:
+        if "res_ver" in cfg and str(cfg.get("res_ver") or "").strip() in PLACEHOLDER_RES_VERS:
             return True
         return False
 
@@ -1834,7 +1850,7 @@ def refresh_friend_library(exclude_viewer_ids=None, *, cache_reason="friends"):
     if not active_client:
         raise RuntimeError("Not logged in")
 
-    result = active_client.pre_single_mode(exclude_viewer_ids or [])
+    result = client_method_with_session_recovery("pre_single_mode", exclude_viewer_ids or [])
     data = result.get('data', {})
     update_start_state(data)
     friends, next_exclude_viewer_ids, source = normalize_friend_cards(data)
@@ -1844,7 +1860,7 @@ def refresh_friend_library(exclude_viewer_ids=None, *, cache_reason="friends"):
     follow_quota = compute_follow_quota(active_client, 0)
     friend_index_source = "unavailable"
     try:
-        friend_index_result = active_client.friend_index()
+        friend_index_result = client_method_with_session_recovery("friend_index")
         friend_index_data = (friend_index_result or {}).get("data") or {}
         following_list = normalize_following_friend_list(friend_index_data, friends)
         follow_quota = compute_follow_quota(active_client, len(following_list))
@@ -3773,6 +3789,7 @@ class CareerActionRequest(BaseModel):
 
 class FriendListRequest(BaseModel):
     exclude_viewer_ids: list[int] = []
+    force_refresh: bool = False
 
 
 class FriendIdRequest(BaseModel):
@@ -4519,6 +4536,126 @@ def instance_local_learning_enabled():
     return bool(os.environ.get("SWEEPY_SHARED_RUNTIME_PATHS") and os.environ.get("SWEEPY_INSTANCE_NAME"))
 
 
+OPERATOR_OWNED_FALLBACK_KEYS = {
+    "skill_buy_on_sight",
+    "skill_profile_style",
+    "skill_profile_distance",
+    "skill_blacklist_custom",
+    "learn_skill_blacklist",
+    "learn_skill_list",
+    "learn_skill_only_user_provided",
+    "learn_skill_append_defaults",
+    "manual_purchase_at_end",
+    "desired_parent_sparks",
+    "race_plan_text",
+    "custom_race_schedule",
+    "extra_race_list",
+    "race_list",
+    "calendar_race_prebuy_enabled",
+    "calendar_race_prebuy_grades",
+    "calendar_race_prebuy_all_scheduled",
+    "scheduled_race_clean_record_mode",
+    "alarm_clock_mode",
+    "clock_use_limit",
+    "alarm_clock_use_limit",
+    "clock_allow_carats",
+}
+
+SKILL_PLAN_OPERATOR_KEYS = {
+    "skill_buy_on_sight",
+    "skill_profile_style",
+    "skill_profile_distance",
+    "skill_blacklist_custom",
+    "learn_skill_blacklist",
+    "learn_skill_list",
+    "learn_skill_only_user_provided",
+    "learn_skill_append_defaults",
+    "manual_purchase_at_end",
+    "desired_parent_sparks",
+    "alarm_clock_mode",
+    "clock_use_limit",
+    "alarm_clock_use_limit",
+    "clock_allow_carats",
+}
+
+RACE_PLAN_OPERATOR_KEYS = {
+    "race_plan_text",
+    "custom_race_schedule",
+    "extra_race_list",
+    "race_list",
+}
+
+
+def _scrub_instance_learning_override_keys(preset_name, keys, *, reason="operator_save"):
+    """Remove stale operator-owned config from account-local learning overlays.
+
+    The base preset is the source of truth for UI-selected strategy/race plans.
+    Account-local learning may still own learned numeric policy fields, but it
+    must not keep an old `skill_profile_style` and later force Front Runner
+    after the UI saved Late Surger.
+    """
+    if not instance_local_learning_enabled():
+        return []
+    preset_name = str(preset_name or "").strip()
+    if not preset_name:
+        return []
+    try:
+        path = instance_learning_override_path(DIR, preset_name)
+    except Exception:
+        return []
+    if not path.exists():
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return []
+    if not isinstance(raw, dict):
+        return []
+    removed = []
+    for key in sorted(set(keys or [])):
+        if key in raw:
+            raw.pop(key, None)
+            removed.append(key)
+    if not removed:
+        return []
+    tmp = path.with_suffix(f"{path.suffix}.{os.getpid()}.tmp")
+    tmp.write_text(json.dumps(raw, ensure_ascii=False, indent=2, default=json_cache_default), encoding="utf-8")
+    os.replace(tmp, path)
+    print(
+        f"[INSTANCE_LEARNING_SCRUB] preset={preset_name!r} reason={reason} removed={removed}",
+        flush=True,
+    )
+    return removed
+
+
+def _hot_patch_active_runner_preset(preset, keys, *, reason="operator_save"):
+    """Patch the currently-running preset after an operator save.
+
+    The file watcher also hot-reloads presets, but it polls and performs a full
+    replacement. Save buttons need immediate, narrow updates so the next race
+    uses the new strategy/distance/skill plan without disturbing runtime-only
+    deck context or cached policy values.
+    """
+    if not isinstance(preset, dict):
+        return False
+    name = str(preset.get("name") or "").strip()
+    if not name:
+        return False
+    fields = {key: preset[key] for key in keys or [] if key in preset}
+    if not fields:
+        return False
+    try:
+        updated = career_runner.update_active_preset_fields(name, fields, reason=reason)
+    except AttributeError:
+        updated = False
+    if updated:
+        print(
+            f"active runner preset hot-patched from {reason}: {name} ({', '.join(sorted(fields))})",
+            flush=True,
+        )
+    return bool(updated)
+
+
 def resolve_effective_preset(name, base_preset=None):
     preset = dict(base_preset or {})
     if not preset:
@@ -4535,6 +4672,9 @@ def resolve_effective_preset(name, base_preset=None):
     except Exception:
         merged = dict(preset)
         merged.update(override)
+        for key in OPERATOR_OWNED_FALLBACK_KEYS:
+            if key in preset:
+                merged[key] = preset[key]
         merged["name"] = preset.get("name") or name
         return merged
     merged = dict(preset)
@@ -4615,8 +4755,10 @@ async def save_races(req: SaveRacesRequest):
         preset["custom_race_schedule"] = entries
     else:
         preset.pop("custom_race_schedule", None)
-    preset_store.write(preset)
-    return {"success": True, "entries": entries, "race_ids": race_ids}
+    saved = preset_store.write(preset)
+    _scrub_instance_learning_override_keys(preset.get("name") or req.preset_name, RACE_PLAN_OPERATOR_KEYS, reason="save_races")
+    hot_reloaded = _hot_patch_active_runner_preset(saved, RACE_PLAN_OPERATOR_KEYS, reason="save_races")
+    return {"success": True, "entries": entries, "race_ids": race_ids, "hot_reloaded": hot_reloaded}
 
 @app.post("/api/presets/save_race_plan")
 async def save_race_plan(req: SaveRacePlanTextRequest):
@@ -4633,8 +4775,10 @@ async def save_race_plan(req: SaveRacePlanTextRequest):
     # Don't touch manual_purchase_at_end here — it's controlled by the Skill Plan
     # save endpoint (BUY TIMING dropdown). Forcing True here used to silently undo
     # the user's choice every time they saved a race plan.
-    preset_store.write(preset)
-    return {"success": True, "entries": entries, "race_ids": preset["extra_race_list"]}
+    saved = preset_store.write(preset)
+    _scrub_instance_learning_override_keys(preset.get("name") or req.preset_name, RACE_PLAN_OPERATOR_KEYS, reason="save_race_plan")
+    hot_reloaded = _hot_patch_active_runner_preset(saved, RACE_PLAN_OPERATOR_KEYS, reason="save_race_plan")
+    return {"success": True, "entries": entries, "race_ids": preset["extra_race_list"], "hot_reloaded": hot_reloaded}
 
 @app.post("/api/presets/save_skill_plan")
 async def save_skill_plan(req: SaveSkillPlanRequest):
@@ -4685,7 +4829,13 @@ async def save_skill_plan(req: SaveSkillPlanRequest):
         preset["alarm_clock_use_limit"] = limit
         preset["clock_allow_carats"] = (mode == "carats")
     saved = preset_store.write(preset)
-    return {"success": True, "preset": saved, "rows": saved.get("learn_skill_list", [])}
+    _scrub_instance_learning_override_keys(
+        saved.get("name") or preset.get("name") or req.preset_name,
+        SKILL_PLAN_OPERATOR_KEYS,
+        reason="save_skill_plan",
+    )
+    hot_reloaded = _hot_patch_active_runner_preset(saved, SKILL_PLAN_OPERATOR_KEYS, reason="save_skill_plan")
+    return {"success": True, "preset": saved, "rows": saved.get("learn_skill_list", []), "hot_reloaded": hot_reloaded}
 
 @app.post("/api/presets/save_race_continue")
 async def save_race_continue(req: SaveRaceContinueRequest):
@@ -4705,11 +4855,22 @@ async def save_race_continue(req: SaveRaceContinueRequest):
     preset["alarm_clock_use_limit"] = limit
     preset["clock_allow_carats"] = (mode == "carats")
     saved = preset_store.write(preset)
+    _scrub_instance_learning_override_keys(
+        saved.get("name") or preset.get("name") or req.preset_name,
+        {"alarm_clock_mode", "clock_use_limit", "alarm_clock_use_limit", "clock_allow_carats"},
+        reason="save_race_continue",
+    )
+    hot_reloaded = _hot_patch_active_runner_preset(
+        saved,
+        {"alarm_clock_mode", "clock_use_limit", "alarm_clock_use_limit", "clock_allow_carats"},
+        reason="save_race_continue",
+    )
     return {
         "success": True,
         "preset": saved,
         "mode": mode,
         "limit": limit,
+        "hot_reloaded": hot_reloaded,
     }
 
 @app.get("/api/presets")
@@ -4888,11 +5049,23 @@ async def load_planner_profile(req: LoadPlannerProfileRequest):
             return {"success": False, "detail": f"planner profile {profile_name} missing"}
     updated, normalized = apply_planner_profile_to_preset(preset, raw_profile)
     saved = preset_store.write(updated)
-    return {"success": True, "preset": saved, "profile": normalized}
+    _scrub_instance_learning_override_keys(saved.get("name") or req.preset_name, OPERATOR_OWNED_FALLBACK_KEYS, reason="load_planner_profile")
+    hot_reloaded = _hot_patch_active_runner_preset(saved, OPERATOR_OWNED_FALLBACK_KEYS, reason="load_planner_profile")
+    return {"success": True, "preset": saved, "profile": normalized, "hot_reloaded": hot_reloaded}
 
 
 @app.get("/api/decks/advice")
 async def get_deck_advice(preset_name: str = "", deck_id: int = 0):
+    if build_deck_advice is None:
+        return {
+            "success": False,
+            "detail": (
+                "Deck Advice module is missing from this project copy. "
+                "Rebuild/copy the full project and ensure career_bot/deck_advice.py is present."
+            ),
+            "missing_module": "career_bot.deck_advice",
+            "import_error": OPTIONAL_IMPORT_ERRORS.get("career_bot.deck_advice", ""),
+        }
     decks = list((active_dashboard_data or {}).get("decks") or [])
     if not decks:
         return {"success": False, "detail": "Sync dashboard decks first"}
@@ -4981,6 +5154,12 @@ async def get_deck_advice(preset_name: str = "", deck_id: int = 0):
 @app.post("/api/decks/save")
 async def save_deck(req: SaveDeckRequest):
     global active_dashboard_data, active_selection, deck_advice_cache
+    if not active_dashboard_data:
+        if active_client:
+            try:
+                active_dashboard_data = reload_dashboard_state_from_server(preserve_friends=True)
+            except Exception:
+                active_dashboard_data = None
     if not active_dashboard_data:
         return {"success": False, "detail": "Sync or log in before editing decks"}
     deck_id = safe_int(req.deck_id)
@@ -5148,7 +5327,10 @@ async def save_deck(req: SaveDeckRequest):
 
 @app.post("/api/presets")
 async def save_preset(req: SavePresetRequest):
-    return {"success": True, "preset": preset_store.write(req.preset)}
+    saved = preset_store.write(req.preset)
+    _scrub_instance_learning_override_keys(saved.get("name") or (req.preset or {}).get("name"), OPERATOR_OWNED_FALLBACK_KEYS, reason="save_preset")
+    hot_reloaded = _hot_patch_active_runner_preset(saved, OPERATOR_OWNED_FALLBACK_KEYS, reason="save_preset")
+    return {"success": True, "preset": saved, "hot_reloaded": hot_reloaded}
 
 @app.post("/api/presets/delete")
 async def delete_preset(req: DeletePresetByNameRequest):
@@ -5990,9 +6172,11 @@ def client_version_stale_detail(exc):
     return (
         "Game client version is too old for the current server build. "
         "The server returned 204 with a store_url pointing to an updated client. "
-        "Update SWEEPY_DEFAULT_APP_VER and SWEEPY_DEFAULT_RES_VER env vars to "
-        "match the live game version (or re-capture auth from a current build). "
-        "Retrying will not help until the version metadata is refreshed. "
+        "Sweepy attempted automatic APP-VER/RES-VER discovery first. If this message remains, "
+        "update the installed game client or re-capture auth once from the current build so the "
+        "live version metadata can be cached. SWEEPY_DEFAULT_APP_VER and SWEEPY_DEFAULT_RES_VER "
+        "are still available as manual overrides. Retrying will not help while the same stale metadata is used; "
+        "retrying the same cached metadata will not fix this. "
         f"Original error: {detail}"
     )
 
@@ -6059,6 +6243,47 @@ def load_index_with_session_recovery(client):
                 except Exception as refresh_exc:
                     raise RuntimeError(session_stale_detail(f"{relog_exc}; automatic auth refresh failed: {refresh_exc}")) from relog_exc
             raise
+
+
+def game_api_call_with_session_recovery(endpoint, payload=None, *, client=None, **call_kwargs):
+    """Call a read/profile endpoint and recover stale auth once if needed.
+
+    Several UI features hit endpoints outside `load/index` (friend borrow,
+    Team Trials profiles, deck probes). Those used to surface 394/501/709 as
+    "no access" even though `load/index` could have refreshed the session.
+    """
+    global active_client
+    client = client or active_client
+    if not client:
+        raise RuntimeError("Not logged in")
+    payload = payload or {}
+    try:
+        return client.call(endpoint, payload, **call_kwargs)
+    except Exception as exc:
+        if is_client_version_stale_error(exc):
+            raise RuntimeError(client_version_stale_detail(exc)) from exc
+        if not is_recoverable_session_error(exc):
+            raise
+        load_index_with_session_recovery(client)
+        client = active_client or client
+        return client.call(endpoint, payload, **call_kwargs)
+
+
+def client_method_with_session_recovery(method_name, *args, client=None, **kwargs):
+    global active_client
+    client = client or active_client
+    if not client:
+        raise RuntimeError("Not logged in")
+    try:
+        return getattr(client, method_name)(*args, **kwargs)
+    except Exception as exc:
+        if is_client_version_stale_error(exc):
+            raise RuntimeError(client_version_stale_detail(exc)) from exc
+        if not is_recoverable_session_error(exc):
+            raise
+        load_index_with_session_recovery(client)
+        client = active_client or client
+        return getattr(client, method_name)(*args, **kwargs)
 
 def current_tp_amount(account=None):
     if account is None:
@@ -6773,8 +6998,6 @@ async def refresh_dashboard():
     global active_client, active_dashboard_data
     if not active_client:
         return {"success": False, "detail": "Not logged in"}
-    if career_runner.snapshot().get("running") or loop_snapshot().get("active"):
-        return {"success": False, "detail": "Stop the career runner before syncing game data"}
     try:
         return reload_dashboard_state_from_server(preserve_friends=True)
     except Exception as e:
@@ -7811,8 +8034,6 @@ def _finish_live_profile_team(summary, records, endpoint):
 def _live_probe_blocked():
     if not active_client:
         return "Not logged in"
-    if career_runner.snapshot().get("running") or loop_snapshot().get("active"):
-        return "Stop the career runner before probing Team Trials leaderboard data"
     return ""
 
 
@@ -7824,7 +8045,7 @@ async def team_trials_live_probe(limit: int = 100):
     operations = []
     for endpoint, payload in _team_trials_leaderboard_candidates(limit):
         try:
-            result = active_client.call(
+            result = game_api_call_with_session_recovery(
                 endpoint,
                 payload,
                 retry_208=0,
@@ -7863,7 +8084,7 @@ async def team_trials_live(limit: int = 100):
     operations = []
     for endpoint, payload in _team_trials_leaderboard_candidates(limit):
         try:
-            result = active_client.call(
+            result = game_api_call_with_session_recovery(
                 endpoint,
                 payload,
                 retry_208=0,
@@ -7948,7 +8169,7 @@ async def team_trials_live_profile(
         term_id=term_id,
     ):
         try:
-            result = active_client.call(
+            result = game_api_call_with_session_recovery(
                 endpoint,
                 payload,
                 retry_208=0,
@@ -8329,7 +8550,13 @@ async def get_friend_list(req: FriendListRequest):
     if not active_client:
         return {"success": False, "detail": "Not logged in"}
 
-    if not req.exclude_viewer_ids and active_dashboard_data is not None and "friends" in active_dashboard_data and "borrow_umas" in active_dashboard_data:
+    if (
+        not req.force_refresh
+        and not req.exclude_viewer_ids
+        and active_dashboard_data is not None
+        and "friends" in active_dashboard_data
+        and "borrow_umas" in active_dashboard_data
+    ):
         return {
             "success": True,
             "friends": active_dashboard_data["friends"],
@@ -8367,7 +8594,7 @@ async def add_friend_by_id(req: FriendIdRequest):
     profile = None
     already_followed = None
     try:
-        search_result = active_client.friend_search(viewer_id)
+        search_result = client_method_with_session_recovery("friend_search", viewer_id)
         search_data = search_result.get("data") or {}
         profile = normalize_friend_search_profile(search_data, viewer_id)
         if not profile:
@@ -8375,7 +8602,7 @@ async def add_friend_by_id(req: FriendIdRequest):
 
         already_followed = int(profile.get("friend_state") or 0) > 0
         if not already_followed:
-            follow_result = active_client.friend_follow(profile["viewer_id"])
+            follow_result = client_method_with_session_recovery("friend_follow", profile["viewer_id"])
 
         refreshed = refresh_friend_library([], cache_reason="friend_add")
         refreshed["profile"] = profile
@@ -8422,7 +8649,7 @@ async def unfollow_friend_by_id(req: FriendIdRequest):
         return {"success": False, "detail": "Trainer ID must be a positive number"}
 
     try:
-        unfollow_result = active_client.friend_unfollow(viewer_id)
+        unfollow_result = client_method_with_session_recovery("friend_unfollow", viewer_id)
         refreshed = refresh_friend_library([], cache_reason="friend_unfollow")
         refreshed["detail"] = f"Unfollowed trainer ID {viewer_id} and refreshed the following list."
         if isinstance(unfollow_result, dict):
@@ -8601,8 +8828,6 @@ async def probe_decks():
     global active_client, active_deck_debug
     if not active_client:
         return {"success": False, "detail": "Not logged in"}
-    if career_runner.snapshot().get("running") or loop_snapshot().get("active"):
-        return {"success": False, "detail": "Stop the career runner before probing deck data"}
 
     all_rows = []
     scans = {}
@@ -8617,7 +8842,7 @@ async def probe_decks():
         scans["load_index_error"] = str(exc)
 
     try:
-        pre_result = active_client.pre_single_mode([])
+        pre_result = game_api_call_with_session_recovery("pre_single_mode/index", {})
         pre_data = pre_result.get("data", {})
         rows, debug = find_deck_rows(pre_data, "probe_pre_single_mode")
         scans["pre_single_mode"] = debug

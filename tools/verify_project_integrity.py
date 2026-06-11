@@ -9,6 +9,7 @@ import argparse
 import importlib.util
 import py_compile
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -122,15 +123,18 @@ def verify(*, compile_python: bool = False) -> tuple[bool, list[str]]:
             errors.append(f"missing importable module: {module}")
 
     if compile_python:
-        for path in _project_py_files():
-            try:
-                py_compile.compile(str(path), doraise=True)
-            except py_compile.PyCompileError as exc:
+        with tempfile.TemporaryDirectory(prefix="sweepy_compile_") as tmp:
+            tmp_root = Path(tmp)
+            for path in _project_py_files():
                 rel = path.relative_to(PROJECT_ROOT)
-                errors.append(f"python compile failed: {rel}: {exc.msg}")
-            except OSError as exc:
-                rel = path.relative_to(PROJECT_ROOT)
-                errors.append(f"python compile failed: {rel}: {exc}")
+                cfile = (tmp_root / rel).with_suffix(".pyc")
+                cfile.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    py_compile.compile(str(path), cfile=str(cfile), doraise=True)
+                except py_compile.PyCompileError as exc:
+                    errors.append(f"python compile failed: {rel}: {exc.msg}")
+                except OSError as exc:
+                    errors.append(f"python compile failed: {rel}: {exc}")
 
     return not errors, errors
 

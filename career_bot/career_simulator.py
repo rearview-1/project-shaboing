@@ -369,14 +369,16 @@ def _load_event_effect_templates(project_root):
     which is better than applying one end-of-career stat lump.
     """
     root = Path(project_root) if project_root else Path(__file__).resolve().parents[1]
-    candidates = [
+    candidates = []
+    env_path = os.environ.get("SWEEPY_EVENT_DATA_PATH", "").strip()
+    if env_path:
+        candidates.append(Path(env_path))
+    candidates.extend([
         root / "data" / "event_data.json",
         root / "data" / "event_effects.json",
         root.parent / "data" / "event_data.json",
         root.parent / "resource" / "umamusume" / "data" / "event_data.json",
-        root.parent.parent / "trial-project-main" / "trial-project-main" / "resource" / "umamusume" / "data" / "event_data.json",
-        root.parent.parent / "trial-project-main" / "trial-project-main" / "event_data.json",
-    ]
+    ])
     source = next((path for path in candidates if path.exists()), None)
     if not source:
         return [], None
@@ -6421,11 +6423,7 @@ class CareerSimulator:
         distance_key = str(distance or "").lower()
         # +400 invisible MANT bonus — race math compares against opponent
         # field which is calibrated to effective stats too
-        current = self._current_race_stats()
-        current_effective = {
-            stat: value + CAREER_INVISIBLE_STAT_BONUS
-            for stat, value in current.items()
-        }
+        current_effective = self._effective_race_stats()
         skill_bonus = min(0.22, max(0, int((skill_count if skill_count is not None else self.skills_bought) or 0)) * 0.012)
         recovery_skills = self._purchased_recovery_skill_count()
 

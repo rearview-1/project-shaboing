@@ -2,9 +2,9 @@
   "name": "umamusume-sweepy",
   "version": "1.0.0",
   "scripts": {
-    "start": "python main.py",
-    "check": "python tools/verify_project_integrity.py",
-    "check:compile": "python tools/verify_project_integrity.py --compile"
+    "start": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe main.py) else (python main.py)\"",
+    "check": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe tools\\verify_project_integrity.py) else (python tools\\verify_project_integrity.py)\"",
+    "check:compile": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe tools\\verify_project_integrity.py --compile) else (python tools\\verify_project_integrity.py --compile)\""
   },
   "dependencies": {
     "steam-user": "^5.0.0"

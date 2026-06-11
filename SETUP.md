@@ -103,7 +103,7 @@ run_sweepy.bat
 Or directly:
 
 ```bash
-python main.py
+.venv\Scripts\python.exe main.py
 ```
 
 The bot starts a local API server (FastAPI/uvicorn) and waits for the game client to launch and auth.
@@ -143,7 +143,7 @@ scripts\windows\run_smoke_tests.bat
 Or via pytest directly:
 
 ```bash
-python -m pytest tests/ -q
+.venv\Scripts\python.exe -m pytest tests/ -q
 ```
 
 Other optional Windows helpers live in `scripts\windows\`:
@@ -156,9 +156,9 @@ Other optional Windows helpers live in `scripts\windows\`:
 
 | Symptom | Likely cause | Fix |
 | ------- | ------------ | --- |
-| `'python' is not recognized` when running `run_sweepy.bat` | Python not on PATH | Reinstall Python with "Add to PATH" checked, or run from "Python 3.10 (64-bit)" command prompt |
+| `'python' is not recognized` when running `run_sweepy.bat` | Python not on PATH and `.venv` is missing | Run `setup_and_run_sweepy.bat`, or reinstall Python with "Add to PATH" checked |
 | `API error 204 on tool/start_session` with `store_url` in response | Client `app_ver` / `res_ver` is stale | See "Game-client version pinning" above |
-| `ImportError: No module named fastapi` (or any other Python module) | `pip install` step skipped | Run `pip install -r requirements.txt` |
+| `ImportError: No module named fastapi` (or any other Python module) | Dependency install step skipped or wrong Python was used | Run `setup_and_run_sweepy.bat`; launchers prefer `.venv\Scripts\python.exe` automatically |
 | `ImportError: No module named 'steam-user'` style Node errors | `npm install` step skipped | Run `npm install` |
 | Bot starts but does nothing | Game client not running / not authed | Launch Umamusume from Steam first, log in, then start the bot |
 

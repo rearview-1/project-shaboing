@@ -88,7 +88,7 @@ DEFAULT_POLICY_MIN_ACTIONS = 20
 DEFAULT_POLICY_MIN_RACE_TOTAL_FOR_CLEAN_RECORD = 8
 DECK_AWARE_TOP_SCORE_FLOORS = {
     3: 17500,  # premium_ssr_heavy: prefer true SS+ samples when available
-    2: 16000,  # mixed_ssr_sr:      learn from high-S/S+ while climbing
+    2: 17500,  # mixed_ssr_sr:      do not treat non-SS parent outcomes as top samples
     1: 16000,  # sr_heavy:          no A+ "top" samples
     0: 16000,  # r_heavy_baseline:  no A+ "top" samples
 }
@@ -118,7 +118,8 @@ def compute_empirical_score_floors(parent_library_samples, minimum=DEFAULT_TOP_S
         if not scores:
             continue
         median = statistics.median(scores)
-        floor = max(float(minimum), median * 0.90)
+        bucket_minimum = max(float(minimum), float(DECK_AWARE_TOP_SCORE_FLOORS.get(int(bucket), minimum)))
+        floor = max(bucket_minimum, median * 0.90)
         floors[int(bucket)] = round(floor, 2)
         diagnostics[str(bucket)] = {
             "sample_count": len(scores),

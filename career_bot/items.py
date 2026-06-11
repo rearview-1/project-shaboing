@@ -1968,7 +1968,7 @@ class MantItemManager:
         cfg.setdefault("summer_energy_reserve_buy_tier", 1)
         cfg.setdefault("summer_energy_buy_tier", 2)
         cfg.setdefault("race_heavy_route_min_races", 32)
-        cfg.setdefault("race_heavy_energy_reserve_target", 140)
+        cfg.setdefault("race_heavy_energy_reserve_target", 80)
         cfg.setdefault("race_heavy_energy_buy_tier", 1)
         cfg.setdefault("race_heavy_energy_recovery_threshold", 76)
         cfg.setdefault("race_heavy_pre_race_energy_threshold", 25)

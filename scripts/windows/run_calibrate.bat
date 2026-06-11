@@ -33,13 +33,19 @@ REM   SWEEPY_CALIBRATE_MIN_RATING        default 14500
 
 cd /d "%~dp0..\.."
 
-where python >nul 2>nul
-if errorlevel 1 (
-  echo Python is not on your PATH. Install Python 3.10+ from https://www.python.org/downloads/ and re-run.
-  pause
-  exit /b 1
+set "PY=python"
+if exist ".venv\Scripts\python.exe" (
+  set "PY=.venv\Scripts\python.exe"
+) else (
+  where python >nul 2>nul
+  if errorlevel 1 (
+    echo Python is not on your PATH and .venv was not found.
+    echo Run setup_and_run_sweepy.bat first, or install Python 3.10+ from https://www.python.org/downloads/.
+    pause
+    exit /b 1
+  )
 )
-python tools\verify_project_integrity.py
+"%PY%" tools\verify_project_integrity.py
 if errorlevel 1 (
   pause
   exit /b 1
@@ -61,7 +67,7 @@ if not "%SWEEPY_CALIBRATE_MIN_RATING%"=="" set MIN_RATING=%SWEEPY_CALIBRATE_MIN_
 
 echo.
 echo ================================================================
-echo  CALIBRATE — Deck-specific strategy tuning
+echo  CALIBRATE - Deck-specific strategy tuning
 echo ================================================================
 echo  Time budget:           %TIME_BUDGET% seconds
 echo  Target SS rate:        %TARGET_SS_RATE%  (fraction of sims hitting SS)
@@ -76,7 +82,7 @@ echo  automatically on your next RUN CAREER.
 echo ================================================================
 echo.
 
-python tools\calibrate_deck.py ^
+"%PY%" tools\calibrate_deck.py ^
   --time-budget-sec %TIME_BUDGET% ^
   --target-ss-rate %TARGET_SS_RATE% ^
   --target-mean %TARGET_MEAN% ^

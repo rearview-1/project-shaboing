@@ -270,7 +270,8 @@ _FACILITY_PROGRESS_NEAR_LEVELUP_BONUS = 0.04 # Was 0.02 — also reward "2 away 
 # Bonus per facility level already reached on this tile — push the bot
 # to concentrate training on the SAME facility instead of spreading thin
 # (manual play: 33 wit trainings = lv5 wit facility; bot: 5 wit = lv2)
-_FACILITY_HIGH_LEVEL_REINFORCEMENT = 0.04   # Per level above 1, capped at lv4 → +0.12
+_FACILITY_HIGH_LEVEL_REINFORCEMENT = 0.04   # Per level above 1, capped at lv4 -> +0.12
+_FACILITY_LEVEL_TRAINING_BONUS_CAP = 0.28
 # Bootstrap pressure for facilities still at lv 1-2. Fires for deck-
 # supported stats (and Wit, by operator policy) so the underused
 # facilities reach lv3 before summer camp. Without this, Wit facility
@@ -4194,7 +4195,8 @@ class MantStrategy(ScenarioStrategy):
         if level <= 2 and turn <= _FACILITY_BOOTSTRAP_END_TURN:
             if self._stat_facility_should_bootstrap(command, preset):
                 bonus += _FACILITY_BOOTSTRAP_BONUS * timing_mult
-        return bonus
+        cap = float((preset or {}).get("facility_level_training_bonus_cap") or _FACILITY_LEVEL_TRAINING_BONUS_CAP)
+        return min(cap, bonus)
 
     def _stat_facility_should_bootstrap(self, command, preset):
         """Whether this command's facility deserves the bootstrap bonus.

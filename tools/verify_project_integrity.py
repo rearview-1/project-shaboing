@@ -18,6 +18,9 @@ REQUIRED_FILES = (
     "main.py",
     "requirements.txt",
     "package.json",
+    "run_sweepy.bat",
+    "setup_and_run_sweepy.bat",
+    "optimizer.bat",
     "career_bot/__init__.py",
     "career_bot/deck_advice.py",
     "career_bot/runner.py",
@@ -31,6 +34,10 @@ REQUIRED_FILES = (
     "public/index.html",
     "public/app.js",
     "public/styles.css",
+    "scripts/windows/run_calibrate.bat",
+    "scripts/windows/run_dry_preflight.bat",
+    "scripts/windows/run_dual_sweepy.bat",
+    "scripts/windows/run_smoke_tests.bat",
 )
 
 REQUIRED_MODULES = (
@@ -52,6 +59,15 @@ SKIP_COMPILE_DIRS = {
     "uma_runtime",
 }
 
+LAUNCHER_EXPECTATIONS = {
+    "run_sweepy.bat": ("tools\\verify_project_integrity.py", "main.py"),
+    "optimizer.bat": ("scripts\\windows\\run_calibrate.bat",),
+    "scripts/windows/run_calibrate.bat": ("cd /d \"%~dp0..\\..\"", "tools\\calibrate_deck.py"),
+    "scripts/windows/run_dry_preflight.bat": ("cd /d \"%~dp0..\\..\"", "tools\\dry_run_preflight.py"),
+    "scripts/windows/run_dual_sweepy.bat": ("cd /d \"%~dp0..\\..\"", "tools\\launch_dual_sweepy.py"),
+    "scripts/windows/run_smoke_tests.bat": ("cd /d \"%~dp0..\\..\"", "-m unittest discover"),
+}
+
 
 def _project_py_files() -> list[Path]:
     rows: list[Path] = []
@@ -70,6 +86,23 @@ def verify(*, compile_python: bool = False) -> tuple[bool, list[str]]:
         path = PROJECT_ROOT / rel
         if not path.exists():
             errors.append(f"missing required file: {rel}")
+
+    for rel, expected_tokens in LAUNCHER_EXPECTATIONS.items():
+        path = PROJECT_ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for token in expected_tokens:
+            if token not in text:
+                errors.append(f"launcher {rel} does not reference expected target: {token}")
+        if (
+            "umamusume-sweepy-main\\umamusume-sweepy-main" in text
+            or "umamusume-sweepy-main/umamusume-sweepy-main" in text
+        ):
+            errors.append(f"launcher {rel} still references the old nested project layout")
+        if rel.endswith(".bat") and rel != "setup_and_run_sweepy.bat":
+            if ".venv\\Scripts\\python.exe" not in text and "run_calibrate.bat" not in text:
+                errors.append(f"launcher {rel} does not prefer .venv\\Scripts\\python.exe")
 
     # Make the project root explicit so this works from .bat launchers and
     # from copied folders whose cwd has not been added to sys.path yet.

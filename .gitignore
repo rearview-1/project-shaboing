@@ -37,5 +37,6 @@ __pycache__/
 # Local/generated artifacts
 /project_zips/
 /external_tools/
+/data/presets/backups/**
 tmp_*.json
 *.log

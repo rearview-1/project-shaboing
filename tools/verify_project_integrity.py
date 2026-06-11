@@ -47,6 +47,7 @@ SKIP_COMPILE_DIRS = {
     ".git",
     ".pytest_cache",
     "__pycache__",
+    "external_tools",
     "node_modules",
     "uma_runtime",
 }

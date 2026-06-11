@@ -6,6 +6,7 @@ so I can A/B test code changes without running real game careers.
 
 import json
 from pathlib import Path
+from statistics import median
 
 import pytest
 
@@ -158,11 +159,14 @@ def test_speed_priority_bonus_lift_moves_sweep_median_up():
     base_sweep = run_sweep(n_runs=8, preset=base, seed_base=100)
     cranked_sweep = run_sweep(n_runs=8, preset=cranked, seed_base=100)
 
-    # Speed median in the cranked sweep should be higher.
+    # Speed median in the cranked sweep should be higher. The single best
+    # run is noisy because seed variance can cap one baseline run early.
     base_speeds = [r.final_stats["speed"] for r in base_sweep["results"]]
     cranked_speeds = [r.final_stats["speed"] for r in cranked_sweep["results"]]
-    # Allow noisy signal but expect cranked to lead
-    assert max(cranked_speeds) >= max(base_speeds) - 50
+    base_speed_picks = [r.train_picks_by_stat["speed"] for r in base_sweep["results"]]
+    cranked_speed_picks = [r.train_picks_by_stat["speed"] for r in cranked_sweep["results"]]
+    assert median(cranked_speeds) >= median(base_speeds)
+    assert sum(cranked_speed_picks) >= sum(base_speed_picks)
 
 
 def test_sweep_returns_aggregated_metrics():

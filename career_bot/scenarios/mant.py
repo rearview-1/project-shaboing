@@ -4278,7 +4278,10 @@ class MantStrategy(ScenarioStrategy):
         if not (preset or {}).get("stat_priority_architecture_enabled", True):
             return 0.0
 
+        command_idx = TRAINING_COMMANDS.get(int(command.get("command_id") or 0))
+        primary_speed_tile = command_idx == 0
         speed_gain = 0.0
+        non_speed_stat_gain = 0.0
         for item in command.get("params_inc_dec_info_array") or []:
             value = float(item.get("value") or 0)
             if value <= 0:
@@ -4286,9 +4289,13 @@ class MantStrategy(ScenarioStrategy):
             target = STAT_TARGETS.get(item.get("target_type"))
             if target == 0:
                 speed_gain += value
+            elif target in {1, 2, 3, 4}:
+                non_speed_stat_gain += value
 
         if speed_gain <= 0:
             return 0.0
+        if command_idx is None and non_speed_stat_gain <= 0:
+            primary_speed_tile = True
 
         turn = int(turn or 0)
         # Allow the hyperparameter tuner to override per-phase magnitudes.
@@ -4324,6 +4331,16 @@ class MantStrategy(ScenarioStrategy):
         if current_speed < _SPEED_PRIORITY_RACE_DEFICIT_THRESHOLD and turn >= _CHECKPOINT_TURN_END_JUNIOR:
             deficit_ratio = 1.0 - (current_speed / _SPEED_PRIORITY_RACE_DEFICIT_THRESHOLD)
             bonus += _SPEED_PRIORITY_DEFICIT_BOOST * deficit_ratio
+
+        if not primary_speed_tile:
+            # Secondary Speed side-gains are useful, but they should not
+            # receive the same priority lane as an actual Speed training.
+            # Without this guard, raising speed_priority can accidentally
+            # make Wit/Guts side-gain tiles beat true Speed tiles.
+            secondary_multiplier = float((preset or {}).get("speed_priority_secondary_multiplier") or 0.35)
+            if speed_gain >= 20:
+                secondary_multiplier = max(secondary_multiplier, 0.50)
+            bonus *= max(0.0, min(1.0, secondary_multiplier))
 
         # Stat-floor scale-down: when stamina/power are below race-grade floor,
         # speed-priority is partially dampened so other priority bonuses can

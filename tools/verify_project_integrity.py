@@ -53,10 +53,12 @@ REQUIRED_MODULES = (
 SKIP_COMPILE_DIRS = {
     ".git",
     ".pytest_cache",
+    ".venv",
     "__pycache__",
     "external_tools",
     "node_modules",
     "uma_runtime",
+    "venv",
 }
 
 LAUNCHER_EXPECTATIONS = {
@@ -126,6 +128,9 @@ def verify(*, compile_python: bool = False) -> tuple[bool, list[str]]:
             except py_compile.PyCompileError as exc:
                 rel = path.relative_to(PROJECT_ROOT)
                 errors.append(f"python compile failed: {rel}: {exc.msg}")
+            except OSError as exc:
+                rel = path.relative_to(PROJECT_ROOT)
+                errors.append(f"python compile failed: {rel}: {exc}")
 
     return not errors, errors
 

@@ -4337,11 +4337,22 @@ class MantStrategy(ScenarioStrategy):
         speed_scale_when_deficit = _tuned_value(
             preset, "speed_priority_deficit_scale", _SPEED_PRIORITY_DEFICIT_SCALE
         )
+        learned_hp = (preset or {}).get("learned_hyperparameters")
+        if not isinstance(learned_hp, dict):
+            learned_hp = {}
+        floor_pressure_keys = {
+            "stamina_floor_target",
+            "power_floor_target",
+            "speed_priority_deficit_scale",
+            "race_heavy_speed_deficit_scale_ceiling",
+            "race_heavy_priority_lead_damp_gap",
+            "race_heavy_priority_lead_damp_multiplier",
+        }
         floor_pressure_enabled = (
             self._is_race_heavy_route(preset)
             or "stamina_floor_target" in (preset or {})
             or "power_floor_target" in (preset or {})
-            or isinstance((preset or {}).get("learned_hyperparameters"), dict)
+            or any(key in learned_hp for key in floor_pressure_keys)
         )
         if floor_pressure_enabled and turn >= _CHECKPOINT_TURN_END_JUNIOR:
             stamina_short = current_stamina < stamina_floor

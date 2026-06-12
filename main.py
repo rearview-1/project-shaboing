@@ -301,6 +301,24 @@ dev_reloader_state = {
     "pending_restart_gate": "",
     "pending_restart_release": "",
 }
+git_auto_update_state = {
+    "thread": None,
+    "enabled": False,
+    "running": False,
+    "last_check": "",
+    "last_update": "",
+    "status": "idle",
+    "detail": "",
+    "remote": "",
+    "branch": "",
+    "local_rev": "",
+    "remote_rev": "",
+    "dirty": False,
+    "behind": False,
+    "ahead_or_diverged": False,
+    "restart_queued": False,
+}
+git_auto_update_lock = threading.RLock()
 turn_delay_min_sec = 3.0
 turn_delay_max_sec = 5.0
 turn_delay_restore_min_sec = 3.0
@@ -567,6 +585,302 @@ def backend_dev_reload_enabled():
 
 def backend_dev_reload_during_run_enabled():
     return env_flag("SWEEPY_DEV_RELOAD_DURING_RUN", False)
+
+
+def git_auto_update_enabled():
+    return env_flag("SWEEPY_AUTO_GIT_UPDATE", True)
+
+
+def git_auto_update_interval_sec():
+    raw = os.environ.get("SWEEPY_AUTO_GIT_UPDATE_INTERVAL_SEC", "300")
+    try:
+        value = int(float(raw))
+    except (TypeError, ValueError):
+        value = 300
+    return max(30, min(3600, value))
+
+
+def git_auto_update_initial_delay_sec():
+    raw = os.environ.get("SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC", "8")
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        value = 8.0
+    return max(0.0, min(300.0, value))
+
+
+def git_auto_update_snapshot():
+    with git_auto_update_lock:
+        return {
+            key: value
+            for key, value in git_auto_update_state.items()
+            if key != "thread"
+        }
+
+
+def set_git_auto_update_state(**values):
+    with git_auto_update_lock:
+        git_auto_update_state.update(values)
+        return git_auto_update_snapshot()
+
+
+def run_git_command(args, timeout=30):
+    try:
+        return subprocess.run(
+            ["git", *args],
+            cwd=str(base_dir),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+    except FileNotFoundError:
+        return SimpleNamespace(returncode=127, stdout="", stderr="git executable not found")
+    except subprocess.TimeoutExpired as exc:
+        return SimpleNamespace(returncode=124, stdout=exc.stdout or "", stderr=f"git command timed out: {' '.join(args)}")
+
+
+def choose_git_auto_update_remote():
+    configured = str(os.environ.get("SWEEPY_AUTO_GIT_UPDATE_REMOTE") or "").strip()
+    result = run_git_command(["remote"], timeout=10)
+    if result.returncode != 0:
+        return configured, result.stderr.strip() or result.stdout.strip()
+    remotes = [line.strip() for line in (result.stdout or "").splitlines() if line.strip()]
+    if configured:
+        return configured, "" if configured in remotes else f"configured remote '{configured}' is not present"
+    if "shaboing" in remotes:
+        return "shaboing", ""
+    if "origin" in remotes:
+        return "origin", ""
+    return (remotes[0], "") if remotes else ("", "no git remotes configured")
+
+
+def choose_git_auto_update_branch():
+    configured = str(os.environ.get("SWEEPY_AUTO_GIT_UPDATE_BRANCH") or "").strip()
+    if configured:
+        return configured, ""
+    result = run_git_command(["branch", "--show-current"], timeout=10)
+    if result.returncode != 0:
+        return "", result.stderr.strip() or result.stdout.strip()
+    branch = str(result.stdout or "").strip()
+    return branch, "" if branch else "repository is detached; no current branch"
+
+
+def git_worktree_dirty():
+    result = run_git_command(["status", "--porcelain"], timeout=15)
+    if result.returncode != 0:
+        return True, result.stderr.strip() or result.stdout.strip() or "git status failed"
+    return bool(str(result.stdout or "").strip()), ""
+
+
+def git_rev_parse(ref):
+    result = run_git_command(["rev-parse", ref], timeout=10)
+    if result.returncode != 0:
+        return "", result.stderr.strip() or result.stdout.strip()
+    return str(result.stdout or "").strip(), ""
+
+
+def git_is_ancestor(older_ref, newer_ref):
+    result = run_git_command(["merge-base", "--is-ancestor", older_ref, newer_ref], timeout=15)
+    return result.returncode == 0
+
+
+def git_auto_update_process_lock_dir():
+    return Path(DIR) / "uma_runtime" / "git_auto_update.lock"
+
+
+def acquire_git_auto_update_process_lock(stale_after_sec=600):
+    lock_dir = git_auto_update_process_lock_dir()
+    try:
+        lock_dir.parent.mkdir(parents=True, exist_ok=True)
+        os.mkdir(lock_dir)
+        try:
+            (lock_dir / "owner.json").write_text(
+                json.dumps({"pid": os.getpid(), "created_at": time.time()}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+        return True, ""
+    except FileExistsError:
+        try:
+            age = time.time() - lock_dir.stat().st_mtime
+        except OSError:
+            age = 0
+        if age > stale_after_sec:
+            try:
+                shutil.rmtree(lock_dir)
+                os.mkdir(lock_dir)
+                return True, "cleared stale git auto-update lock"
+            except Exception as exc:
+                return False, f"git auto-update lock is stale but could not be cleared: {exc}"
+        return False, "another Sweepy instance is already checking for git updates"
+    except Exception as exc:
+        return False, f"could not create git auto-update lock: {exc}"
+
+
+def release_git_auto_update_process_lock():
+    try:
+        shutil.rmtree(git_auto_update_process_lock_dir())
+    except FileNotFoundError:
+        pass
+    except Exception as exc:
+        print(f"git auto-update lock release failed: {exc}", flush=True)
+
+
+def perform_git_auto_update(manual=False):
+    with git_auto_update_lock:
+        if git_auto_update_state.get("running"):
+            return {
+                "success": False,
+                "status": git_auto_update_state.get("status") or "running",
+                "detail": "Git auto-update check is already running",
+                "state": git_auto_update_snapshot(),
+            }
+        git_auto_update_state["running"] = True
+        git_auto_update_state["enabled"] = git_auto_update_enabled()
+        git_auto_update_state["last_check"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        git_auto_update_state["status"] = "checking"
+        git_auto_update_state["detail"] = ""
+    process_lock_acquired = False
+    try:
+        if not git_auto_update_enabled():
+            state = set_git_auto_update_state(enabled=False, status="disabled", detail="disabled by SWEEPY_AUTO_GIT_UPDATE")
+            return {"success": True, "status": "disabled", "detail": state["detail"], "state": state}
+        if not (base_dir / ".git").exists():
+            state = set_git_auto_update_state(status="not_git_repo", detail="no .git directory found")
+            return {"success": False, "status": "not_git_repo", "detail": state["detail"], "state": state}
+        process_lock_acquired, process_lock_detail = acquire_git_auto_update_process_lock()
+        if not process_lock_acquired:
+            state = set_git_auto_update_state(status="locked", detail=process_lock_detail)
+            return {"success": True, "status": "locked", "detail": process_lock_detail, "state": state}
+        if process_lock_detail:
+            print(f"git auto-update: {process_lock_detail}", flush=True)
+
+        remote, remote_error = choose_git_auto_update_remote()
+        branch, branch_error = choose_git_auto_update_branch()
+        set_git_auto_update_state(remote=remote, branch=branch)
+        if remote_error:
+            state = set_git_auto_update_state(status="remote_error", detail=remote_error)
+            return {"success": False, "status": "remote_error", "detail": remote_error, "state": state}
+        if branch_error:
+            state = set_git_auto_update_state(status="branch_error", detail=branch_error)
+            return {"success": False, "status": "branch_error", "detail": branch_error, "state": state}
+
+        fetch = run_git_command(["fetch", "--quiet", remote, branch], timeout=60)
+        if fetch.returncode != 0:
+            detail = (fetch.stderr or fetch.stdout or "git fetch failed").strip()
+            state = set_git_auto_update_state(status="fetch_error", detail=detail)
+            return {"success": False, "status": "fetch_error", "detail": detail, "state": state}
+
+        local_ref = "HEAD"
+        remote_ref = f"{remote}/{branch}"
+        local_rev, local_error = git_rev_parse(local_ref)
+        remote_rev, remote_rev_error = git_rev_parse(remote_ref)
+        set_git_auto_update_state(local_rev=local_rev, remote_rev=remote_rev)
+        if local_error or remote_rev_error:
+            detail = local_error or remote_rev_error
+            state = set_git_auto_update_state(status="rev_error", detail=detail)
+            return {"success": False, "status": "rev_error", "detail": detail, "state": state}
+
+        dirty, dirty_error = git_worktree_dirty()
+        set_git_auto_update_state(dirty=dirty)
+        if dirty_error:
+            state = set_git_auto_update_state(status="dirty_check_error", detail=dirty_error)
+            return {"success": False, "status": "dirty_check_error", "detail": dirty_error, "state": state}
+
+        if local_rev == remote_rev:
+            state = set_git_auto_update_state(
+                status="up_to_date",
+                detail=f"{branch} is up to date with {remote_ref}",
+                behind=False,
+                ahead_or_diverged=False,
+                restart_queued=False,
+            )
+            return {"success": True, "status": "up_to_date", "detail": state["detail"], "state": state}
+
+        fast_forward_possible = git_is_ancestor("HEAD", remote_ref)
+        ahead_or_diverged = not fast_forward_possible
+        set_git_auto_update_state(behind=fast_forward_possible, ahead_or_diverged=ahead_or_diverged)
+        if ahead_or_diverged:
+            detail = f"local {branch} is ahead of or diverged from {remote_ref}; auto-update only supports fast-forward pulls"
+            state = set_git_auto_update_state(status="diverged", detail=detail)
+            return {"success": False, "status": "diverged", "detail": detail, "state": state}
+        if dirty:
+            detail = "local working tree has uncommitted changes; auto-update will wait"
+            state = set_git_auto_update_state(status="dirty_waiting", detail=detail)
+            return {"success": False, "status": "dirty_waiting", "detail": detail, "state": state}
+        if runner_is_active():
+            detail = f"update available from {remote_ref}; waiting for runner to become idle"
+            state = set_git_auto_update_state(status="waiting_for_idle", detail=detail)
+            return {"success": True, "status": "waiting_for_idle", "detail": detail, "state": state}
+
+        pull = run_git_command(["pull", "--ff-only", remote, branch], timeout=120)
+        if pull.returncode != 0:
+            detail = (pull.stderr or pull.stdout or "git pull --ff-only failed").strip()
+            state = set_git_auto_update_state(status="pull_error", detail=detail)
+            return {"success": False, "status": "pull_error", "detail": detail, "state": state}
+
+        new_local_rev, _ = git_rev_parse("HEAD")
+        detail = f"updated {branch} from {local_rev[:12]} to {new_local_rev[:12]}"
+        restart_queued = False
+        if runner_is_active():
+            defer_backend_restart_until_manual_stop()
+            detail += "; backend restart deferred until runner stops"
+        elif not dev_reloader_state.get("restart_requested"):
+            restart_queued = schedule_backend_restart("git_auto_update", delay_sec=0.75)
+            detail += "; backend restart queued" if restart_queued else "; backend restart already pending"
+        else:
+            restart_queued = True
+            detail += "; backend restart already pending"
+        state = set_git_auto_update_state(
+            status="updated",
+            detail=detail,
+            local_rev=new_local_rev,
+            last_update=time.strftime("%Y-%m-%d %H:%M:%S"),
+            behind=False,
+            ahead_or_diverged=False,
+            restart_queued=restart_queued,
+        )
+        print(f"git auto-update: {detail}", flush=True)
+        return {"success": True, "status": "updated", "detail": detail, "state": state, "output": pull.stdout}
+    except Exception as exc:
+        detail = f"{type(exc).__name__}: {exc}"
+        state = set_git_auto_update_state(status="error", detail=detail)
+        print(f"git auto-update error: {detail}", flush=True)
+        return {"success": False, "status": "error", "detail": detail, "state": state}
+    finally:
+        if process_lock_acquired:
+            release_git_auto_update_process_lock()
+        with git_auto_update_lock:
+            git_auto_update_state["running"] = False
+
+
+def git_auto_update_loop():
+    delay = git_auto_update_initial_delay_sec()
+    if delay:
+        time.sleep(delay)
+    while True:
+        try:
+            perform_git_auto_update()
+        except Exception as exc:
+            print(f"git auto-update loop error: {exc}", flush=True)
+        time.sleep(git_auto_update_interval_sec())
+
+
+def start_git_auto_updater():
+    if not git_auto_update_enabled():
+        set_git_auto_update_state(enabled=False, status="disabled", detail="disabled by SWEEPY_AUTO_GIT_UPDATE")
+        print("git auto-update disabled via SWEEPY_AUTO_GIT_UPDATE", flush=True)
+        return
+    if git_auto_update_state.get("thread"):
+        return
+    set_git_auto_update_state(enabled=True, status="idle", detail="")
+    thread = threading.Thread(target=git_auto_update_loop, name="sweepy-git-auto-updater", daemon=True)
+    git_auto_update_state["thread"] = thread
+    thread.start()
+    print(f"git auto-update enabled; polling every {git_auto_update_interval_sec()}s", flush=True)
 
 
 def empty_selection():
@@ -8922,6 +9236,7 @@ async def dev_version():
             "pending_gate": dev_reloader_state.get("pending_restart_gate") or "",
             "pending_release": dev_reloader_state.get("pending_restart_release") or "",
         },
+        "git_auto_update": git_auto_update_snapshot(),
     }
 
 
@@ -8944,6 +9259,12 @@ async def dev_reload():
     if not scheduled:
         return {"success": False, "detail": "Backend refresh is already in progress"}
     return {"success": True, "detail": "Backend refresh queued. Page will reconnect automatically."}
+
+
+@app.post("/api/dev/update")
+async def dev_update():
+    result = perform_git_auto_update(manual=True)
+    return result
 
 
 @app.get("/styles.css")
@@ -9181,6 +9502,7 @@ if __name__ == "__main__":
         else:
             print("No backend session restored; serving UI and passive capture endpoints without pre-auth.", flush=True)
     start_backend_dev_reloader()
+    start_git_auto_updater()
     print(f"Sweepy instance '{instance_name}' runtime: {dev_runtime_dir()}", flush=True)
     print(f"Access the Web UI at: http://{host}:{port}", flush=True)
     uvicorn.run(app, host=host, port=port, log_level="error")

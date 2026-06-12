@@ -24,6 +24,25 @@ That script creates a local `.venv`, installs Python dependencies, runs
 project, and starts the bot backend. Runtime data is generated locally on that
 machine and is not included in the repository.
 
+## Auto-updates from GitHub
+
+When the backend is running, Sweepy checks GitHub for fast-forward updates and
+applies them when no career runner is active. It will not update while a career
+is running, and it will not merge over local edits or divergent local commits.
+After a successful pull, the backend queues a safe restart and the web page
+reconnects automatically.
+
+Useful overrides:
+
+```bat
+set SWEEPY_AUTO_GIT_UPDATE=0
+set SWEEPY_AUTO_GIT_UPDATE_INTERVAL_SEC=300
+set SWEEPY_AUTO_GIT_UPDATE_REMOTE=origin
+set SWEEPY_AUTO_GIT_UPDATE_BRANCH=main
+```
+
+The default remote is `shaboing` when present, otherwise `origin`.
+
 ## Manual install dependencies
 
 From a terminal inside this folder:

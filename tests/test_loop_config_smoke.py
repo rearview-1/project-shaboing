@@ -23,6 +23,7 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.saved_loop = main.loop_snapshot()
         self.saved_preset_store = main.preset_store
         self.saved_dev_reloader_state = dict(main.dev_reloader_state)
+        self.saved_git_auto_update_state = dict(main.git_auto_update_state)
         self.saved_manual_career_recorder = main.manual_career_recorder
 
     def tearDown(self):
@@ -36,6 +37,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
         main.manual_career_recorder = self.saved_manual_career_recorder
         main.dev_reloader_state.clear()
         main.dev_reloader_state.update(self.saved_dev_reloader_state)
+        main.git_auto_update_state.clear()
+        main.git_auto_update_state.update(self.saved_git_auto_update_state)
         with main.loop_lock:
             main.active_loop.clear()
             main.active_loop.update(self.saved_loop)
@@ -1008,6 +1011,59 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertIn("Page will reconnect automatically", result["detail"])
         schedule.assert_called_once_with("manual_backend_refresh")
+
+    def test_git_auto_update_waits_for_idle_before_pull(self):
+        main.git_auto_update_state["running"] = False
+        with patch.object(main, "git_auto_update_enabled", return_value=True), \
+             patch.object(main, "choose_git_auto_update_remote", return_value=("origin", "")), \
+             patch.object(main, "choose_git_auto_update_branch", return_value=("main", "")), \
+             patch.object(main, "run_git_command", return_value=SimpleNamespace(returncode=0, stdout="", stderr="")) as git_cmd, \
+             patch.object(main, "git_rev_parse", side_effect=[("aaa111", ""), ("bbb222", "")]), \
+             patch.object(main, "git_worktree_dirty", return_value=(False, "")), \
+             patch.object(main, "git_is_ancestor", return_value=True), \
+             patch.object(main, "runner_is_active", return_value=True):
+            result = main.perform_git_auto_update(manual=True)
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["status"], "waiting_for_idle")
+        self.assertTrue(main.git_auto_update_state["behind"])
+        self.assertFalse(any(call.args[0][0] == "pull" for call in git_cmd.call_args_list))
+
+    def test_git_auto_update_refuses_dirty_worktree(self):
+        main.git_auto_update_state["running"] = False
+        with patch.object(main, "git_auto_update_enabled", return_value=True), \
+             patch.object(main, "choose_git_auto_update_remote", return_value=("origin", "")), \
+             patch.object(main, "choose_git_auto_update_branch", return_value=("main", "")), \
+             patch.object(main, "run_git_command", return_value=SimpleNamespace(returncode=0, stdout="", stderr="")) as git_cmd, \
+             patch.object(main, "git_rev_parse", side_effect=[("aaa111", ""), ("bbb222", "")]), \
+             patch.object(main, "git_worktree_dirty", return_value=(True, "")), \
+             patch.object(main, "git_is_ancestor", return_value=True):
+            result = main.perform_git_auto_update(manual=True)
+
+        self.assertFalse(result["success"])
+        self.assertEqual(result["status"], "dirty_waiting")
+        self.assertTrue(main.git_auto_update_state["dirty"])
+        self.assertFalse(any(call.args[0][0] == "pull" for call in git_cmd.call_args_list))
+
+    def test_git_auto_update_fast_forward_pulls_and_restarts_when_idle(self):
+        main.git_auto_update_state["running"] = False
+        main.dev_reloader_state["restart_requested"] = False
+        with patch.object(main, "git_auto_update_enabled", return_value=True), \
+             patch.object(main, "choose_git_auto_update_remote", return_value=("origin", "")), \
+             patch.object(main, "choose_git_auto_update_branch", return_value=("main", "")), \
+             patch.object(main, "run_git_command", return_value=SimpleNamespace(returncode=0, stdout="pulled", stderr="")) as git_cmd, \
+             patch.object(main, "git_rev_parse", side_effect=[("aaa111", ""), ("bbb222", ""), ("bbb222", "")]), \
+             patch.object(main, "git_worktree_dirty", return_value=(False, "")), \
+             patch.object(main, "git_is_ancestor", return_value=True), \
+             patch.object(main, "runner_is_active", return_value=False), \
+             patch.object(main, "schedule_backend_restart", return_value=True) as schedule:
+            result = main.perform_git_auto_update(manual=True)
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["status"], "updated")
+        self.assertIn("backend restart queued", result["detail"])
+        self.assertTrue(any(call.args[0][0] == "pull" for call in git_cmd.call_args_list))
+        schedule.assert_called_once_with("git_auto_update", delay_sec=0.75)
 
     def test_manual_stop_releases_deferred_backend_restart(self):
         main.defer_backend_restart_until_manual_stop()

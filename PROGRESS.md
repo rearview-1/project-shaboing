@@ -76,6 +76,16 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~17:15 — 20-career fidelity re-audit: T8 CLOSED
+- Audit vs current-code corpus: G1-loss median delta -1 (was -2 pre-recalibration).
+  Decision rule said tighten only if < -1; we're AT the boundary and the integer median
+  can't resolve finer. No further race-model changes. Stat sum +149 / SP +47 stable.
+- Residual known gaps (low priority): support_events SP -105, skill-spend +398 estimate
+  mismatch. Queue only if they start distorting optimizer choices.
+- LOOP IS SELF-DRIVING. Next operator-visible milestones: restart applies the 32-sim
+  validation gate + in-process consumers; cadence re-validates the clean-rate-first
+  policy every 8 careers; watch live clean rate climb from ~0.06-0.12 baseline.
+
 ### 2026-06-12 ~16:45 — first honest-odds cadence verdict: SAVED
 - Run optimizer_20260612_125144: winner clean_rate 0.123 vs baseline 0.060 on held-out
   seeds (+0.062), mean rating 16460 vs 16611 (-151), SS 1/16 vs 3/16. Saved — correct

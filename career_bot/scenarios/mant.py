@@ -433,6 +433,17 @@ _VISIBLE_TILE_PENALTY_SCALE = 0.024
 _VISIBLE_TILE_RAINBOW_BONUS = 0.12
 _VISIBLE_TILE_MISSED_RAINBOW_PENALTY = 0.10
 _VISIBLE_TILE_RACE_PRESSURE_PROTECTION = 0.60
+# Tunable policy levers, searchable by the hyperparameter tuner and the
+# sim deck-policy optimizer (tools/optimize_deck_policy.py). Tile scores
+# run ~1.4-5.5 so these must be sized as a meaningful fraction of 1.0;
+# the legacy 0.1-0.3 visible-tile deltas above are too small to outbid
+# wit/speed priority bonuses on borderline turns. Defaults of 0 keep
+# live behavior unchanged until a sim-validated value is applied via
+# learned_hyperparameters.
+_RAINBOW_TAKE_BONUS_DEFAULT = 0.0
+_RAINBOW_TAKE_MAX_FAILURE = 20
+_JUNIOR_BOND_BUILD_WEIGHT_DEFAULT = 0.0
+_JUNIOR_BOND_BUILD_END_TURN_DEFAULT = 30
 
 
 STAT_TARGETS = {
@@ -1205,7 +1216,18 @@ class MantStrategy(ScenarioStrategy):
                     for partner_id in partners
                     if partner_id in DECK_PARTNERS and int(self._last_quality_bonds.get(partner_id, 0) or 0) >= 80
                 )
-                rows.append((float(score or 0.0), command, quality, rainbow_count))
+                # Bond-build potential: how much progress toward the 80-bond
+                # rainbow threshold this tile buys across its deck partners
+                # (each co-training grants +5 bond). Normalized so 1.0 = one
+                # full partner-step. Feeds the junior_bond_build_weight lever.
+                bond_potential = 0.0
+                for partner_id in partners:
+                    if partner_id not in DECK_PARTNERS:
+                        continue
+                    bond = int(self._last_quality_bonds.get(partner_id, 0) or 0)
+                    if bond < 80:
+                        bond_potential += min(5, 80 - bond) / 5.0
+                rows.append((float(score or 0.0), command, quality, rainbow_count, bond_potential))
         finally:
             self._last_quality_bonds = {}
         best_quality = max((row[2] for row in rows), default=0.0)
@@ -1217,8 +1239,15 @@ class MantStrategy(ScenarioStrategy):
         bonus_cap = float((preset or {}).get("visible_tile_quality_bonus_cap") or _VISIBLE_TILE_BONUS_CAP)
         penalty_cap = float((preset or {}).get("visible_tile_quality_penalty_cap") or _VISIBLE_TILE_PENALTY_CAP)
         penalty_scale = float((preset or {}).get("visible_tile_quality_penalty_scale") or _VISIBLE_TILE_PENALTY_SCALE)
+        # Tunable policy levers (sim-validated, optimizer-searchable).
+        # Training tile scores run ~1.4-5.5, so values need to be a
+        # meaningful fraction of 1.0 to flip borderline picks. Defaults
+        # come from sim A/B sweeps; 0 disables the lever entirely.
+        rainbow_take = float(_tuned_value(preset, "rainbow_take_bonus", _RAINBOW_TAKE_BONUS_DEFAULT))
+        bond_build_weight = float(_tuned_value(preset, "junior_bond_build_weight", _JUNIOR_BOND_BUILD_WEIGHT_DEFAULT))
+        bond_build_end = int(_tuned_value(preset, "junior_bond_build_end_turn", _JUNIOR_BOND_BUILD_END_TURN_DEFAULT))
         adjusted = []
-        for score, command, quality, rainbow_count in rows:
+        for score, command, quality, rainbow_count, bond_potential in rows:
             delta = 0.0
             quality_gap = max(0.0, best_quality - quality)
             race_pressure = self._command_race_pressure_bonus(command)
@@ -1232,11 +1261,19 @@ class MantStrategy(ScenarioStrategy):
 
             if rainbow_count > 0:
                 delta += min(bonus_cap, _VISIBLE_TILE_RAINBOW_BONUS + 0.04 * max(0, rainbow_count - 1))
+                if rainbow_take > 0 and int(command.get("failure_rate") or 0) <= _RAINBOW_TAKE_MAX_FAILURE:
+                    delta += rainbow_take
+                    command["_rainbow_take_bonus"] = round(rainbow_take, 4)
             if max_rainbow > rainbow_count and quality_gap > 3.0:
                 delta -= min(
                     penalty_cap,
                     (max_rainbow - rainbow_count) * _VISIBLE_TILE_MISSED_RAINBOW_PENALTY,
                 ) * pressure_scale
+
+            if bond_build_weight > 0 and bond_potential > 0 and int(turn or 0) <= bond_build_end:
+                bond_bonus = bond_build_weight * bond_potential
+                delta += bond_bonus
+                command["_junior_bond_build_bonus"] = round(bond_bonus, 4)
 
             if delta:
                 command["_visible_tile_quality"] = round(quality, 3)

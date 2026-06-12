@@ -148,6 +148,13 @@ PARAM_SPACE = [
     ("calendar_race_prebuy_keep_sp",    0, 250),
     ("calendar_race_prebuy_max_skills", 4, 12),
     ("rest_threshold",                  28, 62),
+    # Structural policy levers added 2026-06-12 (sim showed rainbow
+    # starvation: only ~13% of training turns had a rainbow available
+    # because bonds reach 80 too late). These let the optimizer search
+    # bond-building pressure and rainbow-take priority directly.
+    ("rainbow_take_bonus",              0.0, 2.0),
+    ("junior_bond_build_weight",        0.0, 1.2),
+    ("junior_bond_build_end_turn",      22, 36),
 ]
 
 
@@ -159,6 +166,10 @@ def _objective_score(results, objective: str, threshold: int = 17500) -> float:
       Aligns with user's framing of tuning for unreached ranks rather
       than averaging.
     - "p80": 80th-percentile rating (max top-tail)
+    - "clean_rate": fraction of sims with ZERO race losses, with the mean
+      rating as a micro tiebreak. Matches the parent-farming requirement:
+      clean record first, rating second. The tiebreak term is scaled so it
+      can never outweigh a 1/n difference in clean rate.
     """
     ratings = [r.rating_score for r in results]
     if not ratings:
@@ -167,6 +178,12 @@ def _objective_score(results, objective: str, threshold: int = 17500) -> float:
         return sum(1 for r in ratings if r >= threshold) / len(ratings)
     if objective == "p80":
         return statistics.quantiles(ratings, n=5)[3] if len(ratings) >= 5 else max(ratings)
+    if objective == "clean_rate":
+        clean = sum(
+            1 for r in results
+            if not any(not race.get("won") for race in (r.races_run or []))
+        ) / len(results)
+        return clean + statistics.mean(ratings) / 1e9
     return statistics.mean(ratings)
 
 
@@ -232,7 +249,7 @@ def main():
                          "user's production preset at "
                          "uma_runtime/instances/<instance>/instance_learning/"
                          "presets/*.json (first match).")
-    ap.add_argument("--objective", choices=("mean", "ss_rate", "p80"),
+    ap.add_argument("--objective", choices=("mean", "ss_rate", "p80", "clean_rate"),
                     default="ss_rate",
                     help="Objective function for ranking candidates: "
                          "mean (max expected rating), "
@@ -240,6 +257,13 @@ def main():
                          "p80 (max 80th-percentile rating). Default ss_rate.")
     ap.add_argument("--ss-threshold", type=int, default=17500,
                     help="Rating threshold for ss_rate objective. Default 17500 (SS).")
+    ap.add_argument("--no-skills", action="store_true",
+                    help="Diagnostic: disable ALL sim skill purchases so race "
+                         "outcomes reflect raw stats/HP/pacing. Use with "
+                         "--objective clean_rate to find policies that win "
+                         "without skill margins. NOTE: the resulting policy is "
+                         "cached like any other; ratings will be ~4-5k lower "
+                         "because skill score is zero.")
     args = ap.parse_args()
 
     print("=" * 70, flush=True)
@@ -251,6 +275,9 @@ def main():
 
     preset_path = Path(args.preset_path) if args.preset_path else None
     base_preset = _base_preset(preset_path)
+    if args.no_skills:
+        base_preset["sim_disable_skill_purchases"] = True
+        print("  NO-SKILLS diagnostic mode: sim skill purchases disabled", flush=True)
     print(f"  baseline preset: {base_preset.get('name')}", flush=True)
     lhp_count = len((base_preset.get("learned_hyperparameters") or {}))
     print(f"  baseline carries {lhp_count} learned_hyperparameters from preset",
@@ -373,7 +400,11 @@ def main():
 
     # Step 4: Cache if winner is meaningfully better on the chosen objective
     saved = False
-    if obj_lift > 0:
+    if args.no_skills:
+        print("\n[4/4] NO-SKILLS diagnostic run — winner NOT saved to the "
+              "policy cache (policies tuned without skill margins are not "
+              "directly transferable to live careers).", flush=True)
+    elif obj_lift > 0:
         print(f"\n[4/4] Winner outperformed baseline on {args.objective} "
               f"(lift={obj_lift:+.3f}). Saving policy to cache.", flush=True)
         cache = load_cache(PROJECT_ROOT, args.instance)

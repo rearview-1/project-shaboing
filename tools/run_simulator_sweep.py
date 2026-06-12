@@ -117,6 +117,11 @@ def main():
         default="",
         help="preset JSON path; defaults to newest preset for --instance",
     )
+    parser.add_argument(
+        "--no-skills",
+        action="store_true",
+        help="diagnostic: disable all sim skill purchases so race outcomes reflect raw stats/HP/pacing",
+    )
     args = parser.parse_args()
 
     project_root = Path(__file__).resolve().parents[1]
@@ -136,6 +141,9 @@ def main():
     preset = json.loads(preset_path.read_text(encoding="utf-8-sig"))
     if instance:
         preset["sim_runtime_instance"] = instance
+    if args.no_skills:
+        preset["sim_disable_skill_purchases"] = True
+        print("NO-SKILLS diagnostic mode: sim skill purchases disabled")
     preset = hydrate_preset_with_latest_session_context(preset, project_root)
     deck = (preset.get("_run_context") or {}).get("support_cards") or None
     probe = CareerSimulator(preset=preset, deck=deck, seed=args.seed)

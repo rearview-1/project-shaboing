@@ -3171,7 +3171,12 @@ class CareerSimulator:
         card_initial = {"speed": 0, "stamina": 0, "power": 0, "guts": 0, "wiz": 0}
         for card in self.sim_support_cards:
             effects = card.get("effects") or {}
-            bonds[int(card["partner_id"])] = int(effects.get("initial_friendship") or 30)
+            # Empirical (2026-06-12, 19 live account_b careers): starting
+            # bonds cluster at 15-20 for cards without an initial_friendship
+            # effect ({15: 35, 20: 38, 30: 15, 35: 19} across deck slots).
+            # The old fallback of 30 made the sim's bond curve start ~12
+            # points too high while its per-training gain ran too low.
+            bonds[int(card["partner_id"])] = int(effects.get("initial_friendship") or 20)
             for stat_key, src_key in (
                 ("speed", "initial_speed"), ("stamina", "initial_stamina"),
                 ("power", "initial_power"), ("guts", "initial_guts"),
@@ -5570,9 +5575,17 @@ class CareerSimulator:
                 self.state["skill_point"] = max(0, int(self.state.get("skill_point") or 0) + v)
                 if v > 0:
                     self.sp_gain_sources["training"] += v
-        # Bond gain: partners on this tile get +5 bond each
+        # Bond gain per co-trained partner. Empirical (2026-06-12, 603
+        # observed single-turn deltas across 19 live account_b careers):
+        # +7 is the dominant gain (404/603), +9 when the partner is the
+        # tile's hint/tips partner (80/603); mean 7.33. The old flat +5
+        # starved the sim of rainbows (bonds hit 80 a full year later
+        # than live careers), which made the sim undervalue bond-building
+        # and rainbow-priority policies.
+        tips_partners = set(cmd.get("tips_event_partner_array") or [])
         for p in cmd.get("training_partner_array") or []:
-            self.state["bonds"][p] = min(100, self.state["bonds"].get(p, 0) + 5)
+            gain = 9 if p in tips_partners else 7
+            self.state["bonds"][p] = min(100, self.state["bonds"].get(p, 0) + gain)
         self.train_picks[stat_name] += 1
 
     def _apply_rest(self):
@@ -7670,6 +7683,11 @@ class CareerSimulator:
         return None
 
     def _maybe_buy_skills(self, *, final=False, race_name=None, race_context=None):
+        # Diagnostic mode: race the whole career with zero purchased skills
+        # so race outcomes reflect raw stats/HP/pacing without skill margins
+        # masking deficits. Used by the optimizer's --no-skills flag.
+        if bool(self.preset.get("sim_disable_skill_purchases")):
+            return
         sp = self.state["skill_point"]
         legacy = self.legacy_effects or {}
         hint_count = int(legacy.get("inherited_skill_hint_count") or 0)

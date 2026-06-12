@@ -76,6 +76,22 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~16:15 — career stream + pending triggers (pre-compaction checkpoint)
+- Full-stack career series: 2, 5, 4, 8, 1, 9, 6, 6, 8 losses. Mean ~5.4, variance high.
+  Clear coupling: loss-heavy runs have weak statlines (3726-4001) while the 1-loss run
+  hit 4492 — early stat production (bonds/rainbows) drives BOTH outcomes. The optimizer
+  levers target exactly that.
+- PENDING when this resumes:
+  1. Optimizer verdict monitor bc9np8y6p armed — run optimizer_20260612_125144.log
+     started 12:51 (incumbent-seeded, 32-sim gate, honest race odds). Journal verdict;
+     if saved, the next careers hydrate it automatically.
+  2. ~17 current-code careers done; at ~20 run the fidelity re-audit
+     (tools/audit_simulator_fidelity.py --n 16 --instance account_b) and compare G1-loss
+     delta against THIS corpus only; recalibrate further only if delta still < -1.
+  3. Re-arm a career-outcome monitor (script pattern in this journal's earlier blocks).
+- All loop components live: subprocess learning per career, cadence optimizer (deadlock
+  fixed 1f2fe18), reality-capped race model (199edb8), adaptive score floor (417c683).
+
 ### 2026-06-12 ~15:30 — cadence deadlock found and fixed
 - Optimizer cadence was DEADLOCKED at careers_since=11: the finished 10:52 run's pid was
   reused by an unrelated process, pid_exists stayed true forever. 1f2fe18: liveness now

@@ -1328,6 +1328,9 @@ def refresh_reusable_auth_headlessly(req):
     password_seed = getattr(req, "password", "")
     seed = best_known_headless_auth_seed(sid)
     existing_cfg = reusable_auth_config_for_steam_id(sid, require_fresh=False)
+    req_seed_cfg = getattr(req, "reusable_seed_config", None)
+    if not existing_cfg and isinstance(req_seed_cfg, dict) and has_fresh_auth_config(req_seed_cfg):
+        existing_cfg = dict(req_seed_cfg)
     attempt_errors = []
 
     def _run(cfg, reason):
@@ -1366,6 +1369,13 @@ def refresh_reusable_auth_headlessly(req):
             if is_client_version_stale_error(exc):
                 raise RuntimeError(client_version_stale_detail(exc)) from exc
             attempt_errors.append(exc)
+            if os.environ.get("SWEEPY_AUTH_ALLOW_SIGNUP_AFTER_EXISTING_FAILURE", "").strip().lower() not in {"1", "true", "yes"}:
+                raise Exception(
+                    "Headless auth refresh failed. The cached reusable auth for this Steam account was rejected by the game server. "
+                    "Sweepy will not call tool/signup for an existing game profile because that path is expected to return 394 and cannot repair stale auth. "
+                    "Refresh auth once from the current game client, then retry. "
+                    f"Existing auth retry error: {redact_sensitive_error_text(exc)}"
+                )
 
     cfg = dict(seed)
     cfg.update({
@@ -1374,6 +1384,11 @@ def refresh_reusable_auth_headlessly(req):
         "steam_app_id": steam_app_id,
         "steam_password_seed": password_seed,
     })
+    if not has_form_creds:
+        raise Exception(
+            "Headless auth refresh cannot bootstrap this account from only a cached Steam ticket because no reusable game auth identity is cached. "
+            "Open the current game client once and use Refresh Auth so Sweepy can cache viewer_id/auth_key/udid for this Steam account."
+        )
     if not str(cfg.get("app_ver") or "").strip() or not str(cfg.get("res_ver") or "").strip():
         raise Exception(
             "No locally cached APP-VER / RES-VER is available for headless auth refresh. "
@@ -1415,6 +1430,7 @@ def _headless_refresh_request_from_cfg(cfg):
         password=str(cfg.get("steam_password_seed") or "").strip(),
         code="",
         steam_app_id=str(cfg.get("steam_app_id") or APP_ID).strip(),
+        reusable_seed_config=cfg,
     )
 
 
@@ -5279,7 +5295,7 @@ async def start_calibrate(req: dict = None):
         }
 
     # Build report path under the runtime dir so multiple runs don't clobber
-    runtime_root = runtime_output_root()
+    runtime_root = runtime_output_root(DIR)
     report_dir = runtime_root / "calibrate_reports"
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / f"calibrate_{int(time.time())}.json"
@@ -5288,7 +5304,7 @@ async def start_calibrate(req: dict = None):
     # launches a NEW console window that stays open after exit so the
     # user can read the final report.
     py_exe = sys.executable or "python"
-    script_path = PROJECT_ROOT / "tools" / "calibrate_deck.py"
+    script_path = base_dir / "tools" / "calibrate_deck.py"
     cmd_args = [
         py_exe,
         str(script_path),
@@ -5312,14 +5328,14 @@ async def start_calibrate(req: dict = None):
             subprocess.Popen(
                 cmd_args,
                 creationflags=0x00000010,
-                cwd=str(PROJECT_ROOT),
+                cwd=str(base_dir),
             )
         else:
             subprocess.Popen(
                 cmd_args,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                cwd=str(PROJECT_ROOT),
+                cwd=str(base_dir),
             )
     except (OSError, FileNotFoundError) as exc:
         return {

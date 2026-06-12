@@ -71,6 +71,34 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(config["requested"], 7)
         self.assertEqual(config["career_limit"], 7)
 
+    def test_calibrate_endpoint_uses_project_runtime_root(self):
+        saved_calibrate_state = dict(main._calibrate_state)
+        try:
+            main._calibrate_state.update({
+                "running": False,
+                "started_at": 0,
+                "report_path": "",
+                "last_report": None,
+            })
+            with tempfile.TemporaryDirectory() as tmp:
+                runtime_root = Path(tmp) / "uma_runtime"
+                with patch.object(main, "runtime_output_root", return_value=runtime_root) as runtime_root_mock, \
+                     patch.object(main.subprocess, "Popen") as popen_mock:
+                    result = asyncio.run(main.start_calibrate({
+                        "time_budget_sec": 1,
+                        "baseline_sims": 1,
+                        "sims_per_candidate": 1,
+                        "validation_sims": 1,
+                    }))
+
+            self.assertTrue(result["success"])
+            runtime_root_mock.assert_called_once_with(main.DIR)
+            popen_mock.assert_called_once()
+            self.assertIn("calibrate_reports", result["report_path"])
+        finally:
+            main._calibrate_state.clear()
+            main._calibrate_state.update(saved_calibrate_state)
+
     def test_fan_limit_tracks_only_fan_goal(self):
         req = main.RunCareerRequest(loop_enabled=True, loop_mode="fans", loop_fan_limit=100_000_000, loop_career_limit=10)
 
@@ -587,6 +615,71 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertIn("Retrying will not help", str(caught.exception))
         self.assertEqual(len(created_cfgs), 1)
         self.assertEqual(created_cfgs[0]["viewer_id"], existing_cfg["viewer_id"])
+
+    def test_headless_auth_refresh_existing_501_does_not_signup_fallback(self):
+        created_cfgs = []
+        existing_cfg = {
+            "steam_id": "steam-555",
+            "viewer_id": 162337796827,
+            "udid": "12345678-1234-1234-1234-1234567890ab",
+            "auth_key": "ab" * 48,
+            "auth_key_len": 48,
+            "device_id": "device-a",
+            "device_name": "pc",
+            "graphics_device_name": "gpu",
+            "ip_address": "127.0.0.1",
+            "platform_os_version": "windows",
+            "locale": "JPN",
+            "unity_ver": "2022.3.62f2",
+            "app_ver": "1.22.1",
+            "res_ver": "10006400",
+        }
+
+        class FakeSession:
+            def close(self):
+                return None
+
+        class FakeClient:
+            def __init__(self, cfg, trace_enabled=True):
+                created_cfgs.append(dict(cfg))
+                self.session = FakeSession()
+
+            def login(self, max_retries=3):
+                raise Exception(
+                    'API error 501 on tool/start_session: '
+                    '{"endpoint": "tool/start_session", "response_code": 501, '
+                    '"result_code": 501, "data_headers": {"viewer_id": 162337796827, '
+                    '"sid": "<redacted>", "servertime": 1, "result_code": 501}}'
+                )
+
+        with patch("uma_api.client.get_ticket", return_value=("steam-555", "fresh-ticket")), \
+             patch.object(main, "reusable_auth_config_for_steam_id", side_effect=lambda sid, require_fresh=True: existing_cfg if not require_fresh else None), \
+             patch("uma_api.client.UmaClient", FakeClient), \
+             patch.object(main, "attach_turn_delay", side_effect=lambda client: client):
+            with self.assertRaises(Exception) as caught:
+                main.refresh_reusable_auth_headlessly(main.LoginRequest(username="user", password="pass"))
+
+        message = str(caught.exception)
+        self.assertIn("will not call tool/signup", message)
+        self.assertIn("Existing auth retry error", message)
+        self.assertEqual(len(created_cfgs), 1)
+        self.assertEqual(created_cfgs[0]["viewer_id"], existing_cfg["viewer_id"])
+
+    def test_headless_auth_refresh_cached_ticket_without_identity_stops_before_signup(self):
+        with patch.object(main, "reusable_auth_config_for_steam_id", return_value=None), \
+             patch("uma_api.client.UmaClient") as fake_client:
+            with self.assertRaises(Exception) as caught:
+                main.refresh_reusable_auth_headlessly(SimpleNamespace(
+                    steam_id="steam-555",
+                    steam_session_ticket="ticket",
+                    username="",
+                    password="",
+                    code="",
+                    steam_app_id=main.APP_ID,
+                ))
+
+        self.assertIn("cannot bootstrap this account from only a cached Steam ticket", str(caught.exception))
+        fake_client.assert_not_called()
 
     def test_signup_uses_server_preferred_country_instead_of_hardcoded_canada(self):
         client = object.__new__(uma_client.UmaClient)

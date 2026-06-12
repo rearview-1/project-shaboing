@@ -122,7 +122,16 @@ const state = {
             supportInventoryBusy: false,
             supportInventoryStatusMessage: '',
             deckEditorSearch: '',
-            deckEditorBusy: false
+            deckEditorBusy: false,
+            dailyEvents: null,
+            dailyEventsLoading: false,
+            dailyEventsRunning: false,
+            selectedShowtimeDifficulty: safeLocalGet('selectedShowtimeDifficulty', ''),
+            selectedDailyTrainedCharaId: safeLocalGet('selectedDailyTrainedCharaId', ''),
+            selectedDailyRunningStyle: safeLocalGet('selectedDailyRunningStyle', '2'),
+            selectedDailyRaceId: safeLocalGet('selectedDailyRaceId', ''),
+            selectedLegendRaceId: safeLocalGet('selectedLegendRaceId', ''),
+            selectedDailyLegendRaceId: safeLocalGet('selectedDailyLegendRaceId', '')
         };
         function ensureAlarmClockMarkup() {
             if (document.getElementById('alarm-clock-mode-select')) return;
@@ -240,6 +249,22 @@ const state = {
             loopFanLimitInput: document.getElementById('loop-fan-limit-input'),
             endCareerBtn: document.getElementById('end-career-btn'),
             stopRunnerBtn: document.getElementById('stop-runner-btn'),
+            dailyEventPanel: document.getElementById('daily-event-panel'),
+            dailyEventSummary: document.getElementById('daily-event-summary'),
+            dailyEventRefreshBtn: document.getElementById('daily-event-refresh-btn'),
+            showtimeDifficultySelect: document.getElementById('showtime-difficulty-select'),
+            dailyTrainedCharaSelect: document.getElementById('daily-trained-chara-select'),
+            dailyRunningStyleSelect: document.getElementById('daily-running-style-select'),
+            dailyRaceIdSelect: document.getElementById('daily-race-id-select'),
+            legendRaceIdInput: document.getElementById('legend-race-id-input'),
+            dailyLegendRaceIdSelect: document.getElementById('daily-legend-race-id-select'),
+            dailyRunTeamTrials: document.getElementById('daily-run-team-trials'),
+            dailyRunDailyRace: document.getElementById('daily-run-daily-race'),
+            dailyRunLegendRace: document.getElementById('daily-run-legend-race'),
+            dailyRunDailyLegendRace: document.getElementById('daily-run-daily-legend-race'),
+            dailyDrainShops: document.getElementById('daily-drain-shops'),
+            dailyEventRunBtn: document.getElementById('daily-event-run-btn'),
+            dailyEventStatus: document.getElementById('daily-event-status'),
             setupLegacySection: document.getElementById('setup-legacy-section'),
             setupLegacyDetails: document.getElementById('setup-legacy-details'),
             setupLegacySummary: document.getElementById('setup-legacy-summary'),
@@ -1793,6 +1818,202 @@ const state = {
         function normalizeTpRecoveryMode(value = els.tpRecoverySelect && els.tpRecoverySelect.value) {
             const parsed = Number.parseInt(value, 10);
             return [0, 1, 2, 3].includes(parsed) ? parsed : 0;
+        }
+        function parseShowtimeSelection(value) {
+            if (!value) return { difficulty_id: 0, difficulty: 0 };
+            const parts = String(value).split(':');
+            return {
+                difficulty_id: Number(parts[0] || 0),
+                difficulty: Number(parts[1] || 0)
+            };
+        }
+        function showtimeSelectionValue(row) {
+            if (!row) return '';
+            return `${Number(row.difficulty_id || 0)}:${Number(row.difficulty || 0)}`;
+        }
+        function raceRecordSelectValue(row, key) {
+            const value = Number((row || {})[key] || 0);
+            return value > 0 ? String(value) : '';
+        }
+        function renderRaceRecordOptions(select, rows, key, selectedValue, autoLabel) {
+            if (!select) return '';
+            const list = Array.isArray(rows) ? rows : [];
+            const normalizedSelected = String(selectedValue || '');
+            const sorted = list.slice().sort((a, b) => Number(a?.is_played || 0) - Number(b?.is_played || 0));
+            const values = new Set(sorted.map(row => raceRecordSelectValue(row, key)).filter(Boolean));
+            select.innerHTML = `<option value="">${escapeHtml(autoLabel || 'Auto first unplayed')}</option>` + sorted.map(row => {
+                const value = raceRecordSelectValue(row, key);
+                if (!value) return '';
+                const played = Number(row.is_played || 0) ? 'played' : 'unplayed';
+                const cleared = Number(row.is_cleared || 0) ? 'cleared' : 'uncleared';
+                return `<option value="${escapeAttr(value)}">${escapeHtml(`#${value} - ${played}, ${cleared}`)}</option>`;
+            }).join('');
+            select.value = values.has(normalizedSelected) ? normalizedSelected : '';
+            return select.value;
+        }
+        function setDailyEventStatus(message, isError) {
+            if (!els.dailyEventStatus) return;
+            els.dailyEventStatus.textContent = message || '';
+            els.dailyEventStatus.style.color = isError ? '#ff6d8e' : '';
+        }
+        function dailyEventStatusSummary(status) {
+            if (!status) return 'Refresh game data to inspect available daily/event tasks.';
+            const showtime = status.showtime || {};
+            const daily = status.daily_race || {};
+            const legend = status.legend_race || {};
+            const team = status.team_trials || {};
+            const shops = (status.shops && status.shops.limited_shop) || {};
+            return [
+                showtime.available ? `Showtime ${showtime.difficulty_options?.length || 0} options` : 'Showtime unavailable',
+                `Daily unplayed ${daily.unplayed_count || 0}`,
+                `Legend unplayed ${legend.unplayed_count || 0}`,
+                `RP ${team.rp_current || 0}/${team.rp_max || 0}`,
+                shops.available ? `Limited shop open (${shops.open_count || 0})` : 'Limited shop closed'
+            ].join(' · ');
+        }
+        function renderDailyEventPanel(status) {
+            if (!els.dailyEventPanel) return;
+            state.dailyEvents = status || state.dailyEvents || null;
+            els.dailyEventPanel.hidden = false;
+            if (els.dailyEventSummary) els.dailyEventSummary.textContent = dailyEventStatusSummary(state.dailyEvents);
+
+            const options = (((state.dailyEvents || {}).showtime || {}).difficulty_options || []);
+            if (els.showtimeDifficultySelect) {
+                const current = state.selectedShowtimeDifficulty || els.showtimeDifficultySelect.value || '';
+                els.showtimeDifficultySelect.innerHTML = `<option value="">No Showtime difficulty</option>` + options.map(row => {
+                    const value = showtimeSelectionValue(row);
+                    return `<option value="${escapeAttr(value)}">${escapeHtml(row.label || value)}</option>`;
+                }).join('');
+                const values = new Set(options.map(showtimeSelectionValue));
+                els.showtimeDifficultySelect.value = values.has(current) ? current : '';
+                state.selectedShowtimeDifficulty = els.showtimeDifficultySelect.value;
+                safeLocalSet('selectedShowtimeDifficulty', state.selectedShowtimeDifficulty);
+            }
+            if (els.dailyRunningStyleSelect) {
+                els.dailyRunningStyleSelect.value = String(state.selectedDailyRunningStyle || '2');
+            }
+            if (els.dailyTrainedCharaSelect) {
+                const current = state.selectedDailyTrainedCharaId || els.dailyTrainedCharaSelect.value || '';
+                const rows = []
+                    .concat((dashData && dashData.parents) || [])
+                    .filter(row => row && row.instance_id);
+                els.dailyTrainedCharaSelect.innerHTML = `<option value="">Choose trained character</option>` + rows.slice(0, 300).map(row => {
+                    const value = String(row.instance_id || '');
+                    const label = `${row.name || 'Uma'} · ${row.score || 0} · ID ${value}`;
+                    return `<option value="${escapeAttr(value)}">${escapeHtml(label)}</option>`;
+                }).join('');
+                const values = new Set(rows.map(row => String(row.instance_id || '')));
+                els.dailyTrainedCharaSelect.value = values.has(current) ? current : '';
+                state.selectedDailyTrainedCharaId = els.dailyTrainedCharaSelect.value;
+                safeLocalSet('selectedDailyTrainedCharaId', state.selectedDailyTrainedCharaId);
+            }
+            const daily = (state.dailyEvents || {}).daily_race || {};
+            const legend = (state.dailyEvents || {}).legend_race || {};
+            const dailyLegend = (state.dailyEvents || {}).daily_legend_race || {};
+            state.selectedDailyRaceId = renderRaceRecordOptions(
+                els.dailyRaceIdSelect,
+                daily.records || [],
+                'daily_race_id',
+                state.selectedDailyRaceId,
+                daily.next_daily_race_id ? `Auto #${daily.next_daily_race_id}` : 'Auto first unplayed'
+            );
+            safeLocalSet('selectedDailyRaceId', state.selectedDailyRaceId);
+            state.selectedLegendRaceId = renderRaceRecordOptions(
+                els.legendRaceIdInput,
+                legend.records || [],
+                'legend_race_id',
+                state.selectedLegendRaceId,
+                legend.next_legend_race_id ? `Auto #${legend.next_legend_race_id}` : 'Auto first unplayed'
+            );
+            safeLocalSet('selectedLegendRaceId', state.selectedLegendRaceId);
+            state.selectedDailyLegendRaceId = renderRaceRecordOptions(
+                els.dailyLegendRaceIdSelect,
+                dailyLegend.records || [],
+                'legend_race_id',
+                state.selectedDailyLegendRaceId,
+                dailyLegend.next_legend_race_id ? `Auto #${dailyLegend.next_legend_race_id}` : 'Auto first unplayed'
+            );
+            safeLocalSet('selectedDailyLegendRaceId', state.selectedDailyLegendRaceId);
+        }
+        async function refreshDailyEvents(force = false) {
+            if (state.dailyEventsLoading) return;
+            state.dailyEventsLoading = true;
+            if (els.dailyEventRefreshBtn) els.dailyEventRefreshBtn.disabled = true;
+            try {
+                const data = await apiJson(`/api/dailies/status?refresh=${force ? '1' : '0'}&t=${Date.now()}`);
+                if (!data.success) throw new Error(data.detail || 'Daily/event status failed');
+                renderDailyEventPanel(data);
+                setDailyEventStatus('', false);
+            } catch (err) {
+                setDailyEventStatus(err.message || 'Daily/event status failed', true);
+            } finally {
+                state.dailyEventsLoading = false;
+                if (els.dailyEventRefreshBtn) els.dailyEventRefreshBtn.disabled = false;
+            }
+        }
+        async function runSelectedDailyEvents() {
+            if (state.dailyEventsRunning) return;
+            state.dailyEventsRunning = true;
+            if (els.dailyEventRunBtn) els.dailyEventRunBtn.disabled = true;
+            const showtime = parseShowtimeSelection(state.selectedShowtimeDifficulty || (els.showtimeDifficultySelect && els.showtimeDifficultySelect.value) || '');
+            const payload = {
+                run_team_trials_once: Boolean(els.dailyRunTeamTrials && els.dailyRunTeamTrials.checked),
+                run_daily_race: Boolean(els.dailyRunDailyRace && els.dailyRunDailyRace.checked),
+                run_legend_race: Boolean(els.dailyRunLegendRace && els.dailyRunLegendRace.checked),
+                run_daily_legend_race: Boolean(els.dailyRunDailyLegendRace && els.dailyRunDailyLegendRace.checked),
+                drain_daily_shops: Boolean(els.dailyDrainShops && els.dailyDrainShops.checked),
+                daily_race_id: Number((els.dailyRaceIdSelect && els.dailyRaceIdSelect.value) || state.selectedDailyRaceId || 0),
+                legend_race_id: Number((els.legendRaceIdInput && els.legendRaceIdInput.value) || state.selectedLegendRaceId || 0),
+                daily_legend_race_id: Number((els.dailyLegendRaceIdSelect && els.dailyLegendRaceIdSelect.value) || state.selectedDailyLegendRaceId || 0),
+                trained_chara_id: Number(state.selectedDailyTrainedCharaId || (els.dailyTrainedCharaSelect && els.dailyTrainedCharaSelect.value) || 0),
+                running_style: Number(state.selectedDailyRunningStyle || (els.dailyRunningStyleSelect && els.dailyRunningStyleSelect.value) || 0),
+                difficulty_id: showtime.difficulty_id,
+                difficulty: showtime.difficulty
+            };
+            try {
+                const data = await apiJson('/api/dailies/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                renderDailyEventPanel(data.status || state.dailyEvents);
+                if (!data.success) throw new Error(data.detail || 'Daily/event run failed');
+                setDailyEventStatus(data.detail || 'Daily/event run complete', false);
+                await refreshDailyEvents(true);
+            } catch (err) {
+                setDailyEventStatus(err.message || 'Daily/event run failed', true);
+            } finally {
+                state.dailyEventsRunning = false;
+                if (els.dailyEventRunBtn) els.dailyEventRunBtn.disabled = false;
+            }
+        }
+        function bindDailyEventControls() {
+            els.dailyEventRefreshBtn?.addEventListener('click', () => refreshDailyEvents(true));
+            els.dailyEventRunBtn?.addEventListener('click', runSelectedDailyEvents);
+            els.showtimeDifficultySelect?.addEventListener('change', () => {
+                state.selectedShowtimeDifficulty = els.showtimeDifficultySelect.value || '';
+                safeLocalSet('selectedShowtimeDifficulty', state.selectedShowtimeDifficulty);
+            });
+            els.dailyTrainedCharaSelect?.addEventListener('change', () => {
+                state.selectedDailyTrainedCharaId = els.dailyTrainedCharaSelect.value || '';
+                safeLocalSet('selectedDailyTrainedCharaId', state.selectedDailyTrainedCharaId);
+            });
+            els.dailyRunningStyleSelect?.addEventListener('change', () => {
+                state.selectedDailyRunningStyle = els.dailyRunningStyleSelect.value || '2';
+                safeLocalSet('selectedDailyRunningStyle', state.selectedDailyRunningStyle);
+            });
+            els.dailyRaceIdSelect?.addEventListener('change', () => {
+                state.selectedDailyRaceId = els.dailyRaceIdSelect.value || '';
+                safeLocalSet('selectedDailyRaceId', state.selectedDailyRaceId);
+            });
+            els.legendRaceIdInput?.addEventListener('change', () => {
+                state.selectedLegendRaceId = els.legendRaceIdInput.value || '';
+                safeLocalSet('selectedLegendRaceId', state.selectedLegendRaceId);
+            });
+            els.dailyLegendRaceIdSelect?.addEventListener('change', () => {
+                state.selectedDailyLegendRaceId = els.dailyLegendRaceIdSelect.value || '';
+                safeLocalSet('selectedDailyLegendRaceId', state.selectedDailyLegendRaceId);
+            });
         }
         function syncTpRecoveryControl() {
             if (!els.tpRecoverySelect) return;
@@ -4163,6 +4384,7 @@ const state = {
             const tpRecoveryPayload = {
                 allow_recover_tp: state.tpRecoveryMode
             };
+            const showtime = parseShowtimeSelection(state.selectedShowtimeDifficulty || (els.showtimeDifficultySelect && els.showtimeDifficultySelect.value) || '');
             const restartFriend = selection.friend || (activeCareer ? {
                 viewer_id: activeCareer.friend_viewer_id,
                 support_card_id: activeCareer.friend_card_id
@@ -4192,10 +4414,10 @@ const state = {
                 deck_id: Number((selection.deck && selection.deck.id) || (activeCareer && activeCareer.deck_id) || 1),
                 scenario_id: 4,
                 use_tp: 30,
-                difficulty_id: 0,
-                difficulty: 0,
-                is_boost: 0,
-                boost_story_event_id: 0,
+                difficulty_id: showtime.difficulty_id,
+                difficulty: showtime.difficulty,
+                is_boost: showtime.difficulty_id ? 1 : 0,
+                boost_story_event_id: showtime.difficulty_id ? Number((((state.dailyEvents || {}).showtime || {}).story_event_id) || 0) : 0,
                 preset_name: selectedPresetName(),
                 max_steps: 2500,
                 ...tpRecoveryPayload,
@@ -5288,6 +5510,9 @@ const state = {
             dashData.friendExcludeIds = data.friendExcludeIds || [];
             dashData.borrowUmas = data.borrow_umas || dashData.borrowUmas || [];
             dashData.borrowQuota = data.borrow_quota || dashData.borrowQuota || null;
+            if (data.dailyEvents) {
+                renderDailyEventPanel(data.dailyEvents);
+            }
             showDashboardView(data);
             bindLibrarySearchHandlers();
             renderCounts(data);
@@ -5347,6 +5572,7 @@ const state = {
         bindDelayControls();
         bindDeckAdviceToggle();
         bindSupportInventoryControls();
+        bindDailyEventControls();
         bindFriendProfileModal();
         setLoadingScreen(true);
         restoreSession();

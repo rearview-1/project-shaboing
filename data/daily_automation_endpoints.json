@@ -1,0 +1,26 @@
+{
+  "schema": "sweepy_daily_automation_v1",
+  "notes": [
+    "Daily/event action endpoint templates live here once captured from the game client.",
+    "Keep destructive action templates empty until a real trace confirms endpoint and payload shape.",
+    "Status and Showtime difficulty selection do not require action templates; they come from load/index.",
+    "Template placeholders such as {trained_chara_id}, {running_style}, {daily_race_id}, {legend_race_id}, {daily_legend_race_id}, {legend_group_id}, {current_num}, and {get_list_time} are filled by /api/dailies/run."
+  ],
+  "template_example": {
+    "endpoint": "replace/with/captured_endpoint",
+    "payload": {
+      "trained_chara_id": "{trained_chara_id}",
+      "running_style": "{running_style}",
+      "legend_race_id": "{legend_race_id}"
+    }
+  },
+  "actions": {
+    "team_trials_once": {},
+    "daily_race": {},
+    "legend_race": {},
+    "daily_legend_race": {},
+    "daily_shops": {
+      "shops": []
+    }
+  }
+}

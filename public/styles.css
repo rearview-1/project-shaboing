@@ -7082,3 +7082,78 @@
     .team-trials-detail-hero { grid-template-columns: 1fr; }
     .team-trials-stat-grid { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
 }
+/* ---------- Fuji Showtime / Dailies setup panel ---------- */
+.daily-event-panel {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid rgba(var(--accent-rgb), 0.28);
+    border-radius: 10px;
+    background: rgba(16, 12, 23, 0.72);
+}
+
+.daily-event-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.daily-event-title {
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.daily-event-copy {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.daily-event-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.daily-event-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.daily-event-input {
+    width: 100%;
+    min-height: 34px;
+}
+
+.daily-event-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.daily-event-actions label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+@media (max-width: 900px) {
+    .daily-event-grid {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+}

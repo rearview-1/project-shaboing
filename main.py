@@ -34,6 +34,14 @@ from career_bot.manual_recorder import (
     decode_horseact_body,
 )
 from career_bot.career_compare import build_manual_vs_bot_report, write_comparison_report
+from career_bot.daily_tasks import (
+    DailyAutomationConfig,
+    action_config_error,
+    normalize_action_steps,
+    normalize_style_id,
+    render_template_value,
+    summarize_daily_event_status,
+)
 from career_bot.parent_memory import annotate_parents, write_parent_library_snapshot
 from career_bot.profile_dataset import (
     extract_profile_records_from_response,
@@ -3901,6 +3909,18 @@ def build_dashboard_data(load_data, career_data=None, preserve_friends=True):
         print(f"parent memory update failed: {exc}", flush=True)
 
     cached = active_dashboard_data if preserve_friends and active_dashboard_data else {}
+    daily_event_status = summarize_daily_event_status(load_data)
+    try:
+        daily_cfg = DailyAutomationConfig.load(base_dir / "data" / "daily_automation_endpoints.json")
+        daily_event_status.setdefault("shops", {}).setdefault("configured_shop_count", daily_cfg.configured_shop_count())
+        daily_event_status["configured_actions"] = sorted(
+            name
+            for name, cfg in ((daily_cfg.data.get("actions") or {}).items())
+            if isinstance(cfg, dict) and cfg and name != "daily_shops"
+        )
+    except Exception:
+        pass
+
     dashboard = {
         "success": True,
         "account": account,
@@ -3910,6 +3930,7 @@ def build_dashboard_data(load_data, career_data=None, preserve_friends=True):
         "deckDebug": active_deck_debug,
         "parents": parents,
         "borrow_quota": compute_borrow_quota(active_client) if active_client else None,
+        "dailyEvents": daily_event_status,
     }
     for key in ("friends", "friendsList", "friendFollowQuota", "friendExcludeIds", "friendsLoaded", "borrow_umas"):
         if key in cached:
@@ -4066,6 +4087,21 @@ class RunCareerRequest(BaseModel):
     loop_mode: str = "forever"
     loop_career_limit: int = 0
     loop_fan_limit: int = 0
+
+class DailyAutomationRequest(BaseModel):
+    run_team_trials_once: bool = False
+    run_daily_race: bool = False
+    run_legend_race: bool = False
+    run_daily_legend_race: bool = False
+    drain_daily_shops: bool = False
+    legend_race_id: int = 0
+    daily_race_id: int = 0
+    daily_legend_race_id: int = 0
+    trained_chara_id: int = 0
+    running_style: int | str = 0
+    difficulty_id: int = 0
+    difficulty: int = 0
+    is_boost: int = 0
 
 class SaveDeckRequest(BaseModel):
     deck_id: int
@@ -7348,6 +7384,193 @@ async def refresh_dashboard():
         return reload_dashboard_state_from_server(preserve_friends=True)
     except Exception as e:
         return {"success": False, "detail": str(e)}
+
+def current_daily_event_status(*, refresh=False):
+    if not active_client:
+        raise RuntimeError("Not logged in")
+    if refresh or not getattr(active_client, "cached_load_data", None):
+        reload_dashboard_state_from_server(preserve_friends=True)
+    load_data = getattr(active_client, "cached_load_data", None) or {}
+    status = summarize_daily_event_status(load_data)
+    cfg = DailyAutomationConfig.load(base_dir / "data" / "daily_automation_endpoints.json")
+    status.setdefault("shops", {})["configured_shop_count"] = cfg.configured_shop_count()
+    status["configured_actions"] = sorted(
+        name
+        for name, action in ((cfg.data.get("actions") or {}).items())
+        if isinstance(action, dict) and action and name != "daily_shops"
+    )
+    return status
+
+@app.get("/api/dailies/status")
+async def dailies_status(refresh: int = 0):
+    if not active_client:
+        return {"success": False, "detail": "Not logged in"}
+    try:
+        return current_daily_event_status(refresh=bool(refresh))
+    except Exception as exc:
+        return {"success": False, "detail": str(exc)}
+
+
+def _first_daily_record_id(status_section, key):
+    for row in (status_section or {}).get("records") or []:
+        if not safe_int(row.get("is_played")):
+            value = safe_int(row.get(key))
+            if value:
+                return value
+    return 0
+
+
+def _daily_action_context(req, status):
+    daily = (status or {}).get("daily_race") or {}
+    legend = (status or {}).get("legend_race") or {}
+    daily_legend = (status or {}).get("daily_legend_race") or {}
+    coin_info = getattr(active_client, "coin_info", {}) or {}
+    current_num = safe_int(coin_info.get("fcoin")) + safe_int(coin_info.get("coin"))
+    return {
+        "trained_chara_id": safe_int(req.trained_chara_id),
+        "running_style": normalize_style_id(req.running_style),
+        "daily_race_id": safe_int(req.daily_race_id) or safe_int(daily.get("next_daily_race_id")) or _first_daily_record_id(daily, "daily_race_id"),
+        "legend_race_id": safe_int(req.legend_race_id) or safe_int(legend.get("next_legend_race_id")) or _first_daily_record_id(legend, "legend_race_id"),
+        "daily_legend_race_id": safe_int(req.daily_legend_race_id) or safe_int(daily_legend.get("next_legend_race_id")) or _first_daily_record_id(daily_legend, "legend_race_id"),
+        "legend_group_id": safe_int(legend.get("group_id")),
+        "difficulty_id": safe_int(req.difficulty_id),
+        "difficulty": safe_int(req.difficulty),
+        "is_boost": safe_int(req.is_boost),
+        "current_num": current_num,
+        "get_list_time": "",
+        "status": status,
+    }
+
+
+def _daily_skip_reason(action_name, status):
+    if action_name == "team_trials_once":
+        team = (status or {}).get("team_trials") or {}
+        if not team.get("can_race_once"):
+            return "Team Trials is not currently runnable: no RP or incomplete lineup."
+    if action_name == "daily_race":
+        daily = (status or {}).get("daily_race") or {}
+        if safe_int(daily.get("unplayed_count")) <= 0:
+            return "Daily races are already played."
+    if action_name == "legend_race":
+        legend = (status or {}).get("legend_race") or {}
+        if safe_int(legend.get("unplayed_count")) <= 0:
+            return "Legend races are already played or unavailable."
+    if action_name == "daily_legend_race":
+        daily_legend = (status or {}).get("daily_legend_race") or {}
+        if safe_int(daily_legend.get("unplayed_count")) <= 0:
+            return "Daily legend races are already played or unavailable."
+    if action_name == "daily_shops":
+        shop = ((status or {}).get("shops") or {}).get("limited_shop") or {}
+        if not shop.get("available"):
+            return "Limited/daily shop is not currently open."
+    return ""
+
+
+def _execute_daily_action_template(action_name, action_cfg, context):
+    steps = normalize_action_steps(action_cfg)
+    results = []
+    if not steps:
+        return [{"action": action_name, "ok": False, "blocked": True, "detail": action_config_error(action_name)}]
+    for idx, step in enumerate(steps, 1):
+        endpoint = str(step.get("endpoint") or "").strip().strip("/")
+        if not endpoint:
+            results.append({"action": action_name, "step": idx, "ok": False, "blocked": True, "detail": action_config_error(action_name)})
+            continue
+        payload = render_template_value(step.get("payload") or {}, context)
+        try:
+            quiet_raw = step.get("quiet_result_codes")
+            if quiet_raw is None:
+                quiet_codes = set()
+            elif isinstance(quiet_raw, (list, tuple, set)):
+                quiet_codes = set(quiet_raw)
+            else:
+                quiet_codes = {quiet_raw}
+            response = game_api_call_with_session_recovery(endpoint, payload, quiet_result_codes=quiet_codes)
+            headers = (response or {}).get("data_headers") or {}
+            results.append(
+                {
+                    "action": action_name,
+                    "step": idx,
+                    "endpoint": endpoint,
+                    "ok": True,
+                    "result_code": safe_int(headers.get("result_code")),
+                    "response_keys": list(((response or {}).get("data") or {}).keys()),
+                }
+            )
+        except Exception as exc:
+            results.append({"action": action_name, "step": idx, "endpoint": endpoint, "ok": False, "detail": str(exc)})
+            break
+    return results
+
+
+@app.post("/api/dailies/run")
+async def run_dailies(req: DailyAutomationRequest):
+    if not active_client:
+        return {"success": False, "detail": "Not logged in"}
+    if career_runner.snapshot().get("running") or loop_snapshot().get("active"):
+        return {"success": False, "detail": "Stop the career runner before running dailies/events"}
+
+    status = current_daily_event_status(refresh=True)
+    cfg = DailyAutomationConfig.load(base_dir / "data" / "daily_automation_endpoints.json")
+    requested = []
+    if req.run_team_trials_once:
+        requested.append("team_trials_once")
+    if req.run_daily_race:
+        requested.append("daily_race")
+    if req.run_legend_race:
+        requested.append("legend_race")
+    if req.run_daily_legend_race:
+        requested.append("daily_legend_race")
+    if req.drain_daily_shops:
+        requested.append("daily_shops")
+
+    operations = []
+    context = _daily_action_context(req, status)
+    for action_name in requested:
+        skip_reason = _daily_skip_reason(action_name, status)
+        if skip_reason:
+            operations.append({"action": action_name, "ok": True, "skipped": True, "detail": skip_reason})
+            continue
+        action_cfg = cfg.action(action_name)
+        if action_name == "daily_shops":
+            if not action_cfg.get("shops"):
+                operations.append({"action": action_name, "ok": False, "blocked": True, "detail": action_config_error(action_name)})
+                continue
+            shop_results = []
+            for idx, shop_cfg in enumerate(action_cfg.get("shops") or [], 1):
+                for result in _execute_daily_action_template(f"{action_name}:{idx}", shop_cfg, context):
+                    shop_results.append(result)
+                    operations.append(result)
+                if any(not row.get("ok") for row in shop_results):
+                    break
+            continue
+        elif not action_cfg.get("endpoint"):
+            operations.append({"action": action_name, "ok": False, "blocked": True, "detail": action_config_error(action_name)})
+            continue
+        operations.extend(_execute_daily_action_template(action_name, action_cfg, context))
+
+    if not requested:
+        return {"success": False, "detail": "Select at least one daily/event action", "status": status, "operations": operations}
+    if any(row.get("blocked") for row in operations):
+        return {
+            "success": False,
+            "detail": "One or more requested actions need captured endpoint templates before they can run safely.",
+            "status": status,
+            "operations": operations,
+            "request": {
+                "trained_chara_id": safe_int(req.trained_chara_id),
+                "running_style": normalize_style_id(req.running_style),
+                "legend_race_id": safe_int(context.get("legend_race_id")),
+                "daily_race_id": safe_int(context.get("daily_race_id")),
+                "daily_legend_race_id": safe_int(context.get("daily_legend_race_id")),
+                "difficulty_id": safe_int(req.difficulty_id),
+                "difficulty": safe_int(req.difficulty),
+                "is_boost": safe_int(req.is_boost),
+            },
+        }
+    if any(not row.get("ok") for row in operations):
+        return {"success": False, "detail": "One or more daily/event actions failed.", "status": current_daily_event_status(refresh=True), "operations": operations}
+    return {"success": True, "detail": "Daily/event actions completed", "status": current_daily_event_status(refresh=True), "operations": operations}
 
 @app.post("/api/supports/limit_break_all")
 async def limit_break_all_supports():

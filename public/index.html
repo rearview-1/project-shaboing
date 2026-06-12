@@ -363,6 +363,65 @@
                                     <div id="setup-legacy-details-body" class="setup-legacy-details-body"></div>
                                 </details>
                             </div>
+                            <div id="daily-event-panel" class="daily-event-panel" hidden>
+                                <div class="daily-event-head">
+                                    <div>
+                                        <div class="daily-event-title">Fuji Showtime / Dailies</div>
+                                        <div id="daily-event-summary" class="daily-event-copy">Refresh game data to inspect available daily/event tasks.</div>
+                                    </div>
+                                    <button id="daily-event-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
+                                </div>
+                                <div class="daily-event-grid">
+                                    <label class="daily-event-field" for="showtime-difficulty-select">
+                                        <span>Showtime difficulty</span>
+                                        <select id="showtime-difficulty-select" class="skill-profile-select">
+                                            <option value="">No Showtime difficulty</option>
+                                        </select>
+                                    </label>
+                                    <label class="daily-event-field" for="daily-trained-chara-select">
+                                        <span>Race character</span>
+                                        <select id="daily-trained-chara-select" class="skill-profile-select">
+                                            <option value="">Choose trained character</option>
+                                        </select>
+                                    </label>
+                                    <label class="daily-event-field" for="daily-running-style-select">
+                                        <span>Race style</span>
+                                        <select id="daily-running-style-select" class="skill-profile-select">
+                                            <option value="1">Front</option>
+                                            <option value="2">Pace</option>
+                                            <option value="3">Late</option>
+                                            <option value="4">End</option>
+                                        </select>
+                                    </label>
+                                    <label class="daily-event-field" for="daily-race-id-select">
+                                        <span>Daily race</span>
+                                        <select id="daily-race-id-select" class="skill-profile-select">
+                                            <option value="">Auto first unplayed</option>
+                                        </select>
+                                    </label>
+                                    <label class="daily-event-field" for="legend-race-id-input">
+                                        <span>Legend race</span>
+                                        <select id="legend-race-id-input" class="skill-profile-select">
+                                            <option value="">Auto first unplayed</option>
+                                        </select>
+                                    </label>
+                                    <label class="daily-event-field" for="daily-legend-race-id-select">
+                                        <span>Daily legend</span>
+                                        <select id="daily-legend-race-id-select" class="skill-profile-select">
+                                            <option value="">Auto first unplayed</option>
+                                        </select>
+                                    </label>
+                                </div>
+                                <div class="daily-event-actions">
+                                    <label><input id="daily-run-team-trials" type="checkbox"> Team Trials once</label>
+                                    <label><input id="daily-run-daily-race" type="checkbox"> Daily race</label>
+                                    <label><input id="daily-run-legend-race" type="checkbox"> Legend race</label>
+                                    <label><input id="daily-run-daily-legend-race" type="checkbox"> Daily legend</label>
+                                    <label><input id="daily-drain-shops" type="checkbox"> Drain daily shops</label>
+                                    <button id="daily-event-run-btn" class="btn btn-sm" type="button">RUN SELECTED</button>
+                                </div>
+                                <div id="daily-event-status" class="skill-plan-status"></div>
+                            </div>
                             <div id="career-stats-panel" class="career-stats-panel" hidden>
                                 <div class="career-stats-header">
                                     <div class="career-stats-identity">

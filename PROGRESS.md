@@ -1,5 +1,12 @@
 # Autonomous mission journal
 
+> **OPERATOR: one action needed.** The live server imported its code at 09:23; everything
+> committed after that (adaptive score floor 417c683 — the fix that lets learning run at
+> all on this account; Riko passive-income credit ab307a3) is dormant in-process until you
+> stop the runner + REFRESH BACKEND once. I deliberately did NOT force it remotely: a
+> restart mid-loop would leave the farm idle until you return. The auto-optimizer cadence
+> spawns fresh subprocesses, so policy optimization already uses current code meanwhile.
+
 **Mission:** produce insanely good parents — careers that win their races and finish with
 endgame statlines worth inheriting. Core deliverable: a genuine four-domain self-improvement
 loop (racing / training / items / shop) with per-domain (1) decision logging, (2) outcome
@@ -68,6 +75,24 @@ learned updates validated and reversible.
       preparation per race (race_thresholds, prebuy) — verify attribution covers it.
 
 ## Journal
+
+### 2026-06-12 ~12:30 — autonomous block 4: THE LOOP CLOSED
+- Production optimizer run 105248 (self-spawned by the cadence) VALIDATED AND SAVED its
+  winner: clean_rate 0.500 vs baseline 0.438 on 16 held-out seeds each, mean rating +474,
+  SS hits 4/16 vs 0/16. Policy persisted to deck_policies.json (signature d5df4a34...,
+  matches live deck). Winner profile ~cand9: rainbow_take 1.96, junior_bond 0.64,
+  speed_floor 1150, stamina_deficit_boost 0.21, rest 32, prebuy keep_sp 21.
+  First complete end-to-end cycle: live careers -> cadence -> search -> held-out
+  validation -> persisted policy -> (next career hydrates it; load_cache is per-career).
+- The run crashed AFTER the save printing a unicode arrow to cp1252 stdout. Fixed
+  (5e0182d): ASCII prints + PYTHONUTF8=1 in the spawn env.
+- dab1fa6: sim fidelity warning now names the threshold source actually in use
+  (postmortem-learned race_thresholds.json was active but reported as 'fallback').
+- Verified item/shop domain artifacts: 45 learned items with phase stats on the live
+  instance — all four domains now demonstrably log->attribute->update->validate.
+- WATCHING (monitor bjrq2uy2k): next 5 live careers post-policy-save. Decision rule:
+  if live clean rate stays ~0 while sim claims ~0.5 under the same policy, the sim race
+  model is too optimistic — pull T8 recalibration forward immediately.
 
 ### 2026-06-12 ~12:00 — autonomous block 3
 - 5d9d730: clean_rate display fix (was :.0f → every candidate printed "score=0").

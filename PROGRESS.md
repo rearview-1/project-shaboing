@@ -76,6 +76,17 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~16:45 — first honest-odds cadence verdict: SAVED
+- Run optimizer_20260612_125144: winner clean_rate 0.123 vs baseline 0.060 on held-out
+  seeds (+0.062), mean rating 16460 vs 16611 (-151), SS 1/16 vs 3/16. Saved — correct
+  under the lexicographic objective (clean record outranks rating). Candidate-phase
+  winner hit mean 17,127.
+- Confirmation of the recalibration: the previously-saved policy's clean rate under
+  honest odds is ~0.06-0.12, not the 0.50 the old fantasy model claimed.
+- Caveat: validation ran n=16 (stale server still spawns with old args; 32-sim gate
+  c74b384 takes effect after operator restart). Half-sigma saves remain possible until
+  then; incumbent-seeded re-validation every 8 careers self-corrects.
+
 ### 2026-06-12 ~16:15 — career stream + pending triggers (pre-compaction checkpoint)
 - Full-stack career series: 2, 5, 4, 8, 1, 9, 6, 6, 8 losses. Mean ~5.4, variance high.
   Clear coupling: loss-heavy runs have weak statlines (3726-4001) while the 1-loss run

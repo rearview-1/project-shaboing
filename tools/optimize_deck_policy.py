@@ -23,8 +23,11 @@ import copy
 import json
 import os
 import random
+import shutil
+import subprocess
 import sys
 import statistics
+import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -32,6 +35,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+
+# Sims read from this root. Stays PROJECT_ROOT unless main() swaps in a
+# data snapshot (see _snapshot_data_root) so concurrent refreshes of
+# data/*.json cannot change files under a long optimizer run — exactly
+# that killed a 40-candidate run mid-flight on 2026-06-12.
+SIM_PROJECT_ROOT = PROJECT_ROOT
 
 from career_bot.career_simulator import CareerSimulator  # noqa: E402
 from career_bot.deck_policy_cache import (  # noqa: E402
@@ -198,11 +207,78 @@ def _sample_candidate(rng: random.Random) -> dict:
     return cand
 
 
+def _snapshot_data_root():
+    """Copy data/*.json into a temp root and junction uma_runtime into it.
+
+    Returns the snapshot root, or None when snapshotting is unavailable
+    (junction creation failed) — callers fall back to PROJECT_ROOT.
+    Cleanup MUST go through _cleanup_snapshot, which removes the
+    uma_runtime junction with rmdir (unlinks the junction itself, never
+    its target) before deleting the rest.
+    """
+    src_data = PROJECT_ROOT / "data"
+    if not src_data.exists():
+        return None
+    # Sweep snapshots orphaned by killed runs (their finally never ran).
+    # Same safe order as _cleanup_snapshot: junction first, then the tree.
+    try:
+        for stale in Path(tempfile.gettempdir()).glob("sweepy_opt_snapshot_*"):
+            if stale.is_dir():
+                _cleanup_snapshot(stale)
+    except Exception:
+        pass
+    snap = Path(tempfile.mkdtemp(prefix="sweepy_opt_snapshot_"))
+    try:
+        data_dst = snap / "data"
+        data_dst.mkdir()
+        for f in sorted(src_data.glob("*.json")):
+            shutil.copy2(f, data_dst / f.name)
+        runtime_src = PROJECT_ROOT / "uma_runtime"
+        runtime_link = snap / "uma_runtime"
+        if runtime_src.exists():
+            if os.name == "nt":
+                rc = subprocess.call(
+                    ["cmd", "/c", "mklink", "/J", str(runtime_link), str(runtime_src)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                if rc != 0:
+                    raise OSError("mklink /J failed")
+            else:
+                runtime_link.symlink_to(runtime_src)
+        return snap
+    except Exception as exc:
+        print(f"  data snapshot unavailable ({exc}); running against live data/", flush=True)
+        _cleanup_snapshot(snap)
+        return None
+
+
+def _cleanup_snapshot(snap):
+    if not snap:
+        return
+    snap = Path(snap)
+    runtime_link = snap / "uma_runtime"
+    try:
+        if runtime_link.exists() or runtime_link.is_symlink():
+            # rmdir removes the junction/symlink itself, never the target.
+            os.rmdir(runtime_link)
+    except OSError:
+        # If the junction cannot be unlinked, do NOT rmtree the snapshot —
+        # recursing through a live junction would delete the real runtime.
+        print(f"  WARNING: could not unlink {runtime_link}; leaving snapshot in place", flush=True)
+        return
+    shutil.rmtree(snap, ignore_errors=True)
+
+
 def _run_sims(preset: dict, *, n: int, seed_base: int, label: str) -> list:
     results = []
     t0 = time.time()
     for i in range(n):
-        sim = CareerSimulator(preset=copy.deepcopy(preset), seed=seed_base + i)
+        sim = CareerSimulator(
+            preset=copy.deepcopy(preset),
+            seed=seed_base + i,
+            project_root=SIM_PROJECT_ROOT,
+        )
         r = sim.run()
         results.append(r)
     elapsed = time.time() - t0
@@ -229,6 +305,20 @@ def _summary(results):
 
 
 def main():
+    """Snapshot-wrapping entry point. The real work happens in _main."""
+    global SIM_PROJECT_ROOT
+    snapshot = _snapshot_data_root()
+    if snapshot:
+        SIM_PROJECT_ROOT = snapshot
+        print(f"data snapshot for this run: {snapshot}", flush=True)
+    try:
+        _main()
+    finally:
+        SIM_PROJECT_ROOT = PROJECT_ROOT
+        _cleanup_snapshot(snapshot)
+
+
+def _main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidates", type=int, default=8,
                     help="Random hyperparameter candidates to evaluate")
@@ -286,7 +376,7 @@ def main():
     # Hydrate from latest session context to pull in trainee + deck.
     print("\nHydrating with latest session context (trainee + deck)...",
           flush=True)
-    probe = CareerSimulator(preset=copy.deepcopy(base_preset), seed=999)
+    probe = CareerSimulator(preset=copy.deepcopy(base_preset), seed=999, project_root=SIM_PROJECT_ROOT)
     deck = probe.deck or []
     deck_ids = [int(c.get("support_card_id") or c.get("id") or 0)
                 for c in deck if isinstance(c, dict)]

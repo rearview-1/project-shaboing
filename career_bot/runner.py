@@ -808,6 +808,22 @@ class CareerRunner:
                 except Exception as e:
                     print(f"failed to write race postmortem: {e}", flush=True)
 
+                # Every auto-learning attempt leaves a durable outcome row.
+                # Console prints vanish with the process; a whole overnight
+                # batch of skips/failures was undiagnosable because skip
+                # paths write no learning_report file.
+                def _record_learning_outcome(outcome):
+                    try:
+                        outcome = dict(outcome or {})
+                        outcome["ts"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+                        outcome["career_log"] = str(career_log_path)
+                        outcomes_path = runtime_root / "learning" / "auto_learning_outcomes.jsonl"
+                        outcomes_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(outcomes_path, "a", encoding="utf-8") as fh:
+                            fh.write(json.dumps(outcome, ensure_ascii=False, default=str) + "\n")
+                    except Exception:
+                        pass
+
                 try:
                     if _run_auto_learning is None:
                         raise RuntimeError("auto_learning import unavailable")
@@ -817,6 +833,16 @@ class CareerRunner:
                         career_log=career_log_path,
                         status=report_snapshot.get("status"),
                     )
+                    _record_learning_outcome({
+                        "outcome": "applied" if learning_result.get("success") else "skipped",
+                        "skipped": learning_result.get("skipped"),
+                        "status": learning_result.get("status"),
+                        "apply_scope": learning_result.get("apply_scope"),
+                        "usable_sample_count": learning_result.get("usable_sample_count"),
+                        "sample_count": learning_result.get("sample_count"),
+                        "preset_path": learning_result.get("preset_path"),
+                        "report_path": learning_result.get("report_path"),
+                    })
                     if learning_result.get("success"):
                         print(
                             "auto learning applied: "
@@ -841,6 +867,11 @@ class CareerRunner:
                         else:
                             print(f"auto learning skipped: {skipped}", flush=True)
                 except Exception as e:
+                    _record_learning_outcome({
+                        "outcome": "error",
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                    })
                     print(f"auto learning failed: {e}", flush=True)
 
                 try:
@@ -865,6 +896,17 @@ class CareerRunner:
                     self._rebuild_imitation_archive(runtime_root, active_preset_snapshot)
                 except Exception as e:
                     print(f"imitation archive rebuild failed: {e}", flush=True)
+
+                # Sim-driven policy optimizer: every N finished careers,
+                # spawn a bounded tools/optimize_deck_policy.py pass in a
+                # detached subprocess. Winning hyperparameters land in the
+                # deck-policy cache, which career start already applies —
+                # closing the play -> measure -> optimize -> apply loop
+                # without operator action.
+                try:
+                    self._maybe_schedule_policy_optimizer(runtime_root, active_preset_snapshot, report_snapshot)
+                except Exception as e:
+                    print(f"policy optimizer scheduling failed: {e}", flush=True)
             finally:
                 pass
 
@@ -873,6 +915,78 @@ class CareerRunner:
             name="sweepy-post-run-outputs",
             daemon=True,
         ).start()
+
+    def _maybe_schedule_policy_optimizer(self, runtime_root, preset_snapshot, report_snapshot):
+        """Spawn a bounded sim-optimizer pass every N finished careers.
+
+        State lives in <runtime>/learning/policy_optimizer_state.json so the
+        cadence survives restarts. Only one optimizer subprocess runs at a
+        time (previous pid is checked before spawning a new one). Disabled
+        by setting preset["auto_policy_optimizer_enabled"] = false.
+        """
+        preset_snapshot = preset_snapshot or {}
+        if str(preset_snapshot.get("auto_policy_optimizer_enabled", True)).strip().lower() in {"0", "false", "no", "off"}:
+            return
+        if str((report_snapshot or {}).get("status") or "") != "finished":
+            return
+        runtime_root = Path(runtime_root)
+        state_path = runtime_root / "learning" / "policy_optimizer_state.json"
+        try:
+            state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        except Exception:
+            state = {}
+        state = state if isinstance(state, dict) else {}
+        state["careers_since_optimize"] = int(state.get("careers_since_optimize") or 0) + 1
+
+        every = max(2, int(preset_snapshot.get("auto_policy_optimizer_every") or 8))
+        previous_pid = int(state.get("running_pid") or 0)
+        previous_alive = False
+        if previous_pid > 0:
+            try:
+                import psutil  # optional; fall back to os-level check
+                previous_alive = psutil.pid_exists(previous_pid)
+            except ImportError:
+                try:
+                    os.kill(previous_pid, 0)
+                    previous_alive = True
+                except OSError:
+                    previous_alive = False
+
+        if state["careers_since_optimize"] >= every and not previous_alive:
+            import subprocess
+            import sys as _sys
+            instance = runtime_root.name
+            log_dir = runtime_root / "learning" / "policy_optimizer_logs"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            log_path = log_dir / f"optimizer_{time.strftime('%Y%m%d_%H%M%S')}.log"
+            cmd = [
+                _sys.executable,
+                str(Path(self.base_dir) / "tools" / "optimize_deck_policy.py"),
+                "--candidates", str(int(preset_snapshot.get("auto_policy_optimizer_candidates") or 10)),
+                "--sims-per-candidate", str(int(preset_snapshot.get("auto_policy_optimizer_sims") or 8)),
+                "--baseline-sims", "12",
+                "--validation-sims", "16",
+                "--objective", str(preset_snapshot.get("auto_policy_optimizer_objective") or "clean_rate"),
+                "--instance", instance,
+            ]
+            creationflags = 0
+            if os.name == "nt":
+                creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            with open(log_path, "w", encoding="utf-8") as log_fh:
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(self.base_dir),
+                    stdout=log_fh,
+                    stderr=subprocess.STDOUT,
+                    creationflags=creationflags,
+                )
+            state["careers_since_optimize"] = 0
+            state["running_pid"] = proc.pid
+            state["last_started_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            state["last_log"] = str(log_path)
+            print(f"policy optimizer started: pid={proc.pid} log={log_path}", flush=True)
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
     def _log_locked(self, action, turn, detail):
         items = self.status.setdefault("log", [])

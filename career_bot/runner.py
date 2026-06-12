@@ -5,6 +5,7 @@ import os
 import sys
 import traceback
 import copy
+import unittest.mock
 from datetime import datetime
 from pathlib import Path
 
@@ -82,6 +83,11 @@ STAT_FALLBACK_FIELDS = {
     "wit": ("wiz", "wit"),
     "skill_point": ("skill_point", "lp"),
 }
+
+
+class _SkipInProcessLearning(Exception):
+    """Control-flow sentinel: the subprocess learning path already handled
+    this career, so the in-process block must not run."""
 
 
 class CareerRunner:
@@ -824,7 +830,34 @@ class CareerRunner:
                     except Exception:
                         pass
 
+                # Prefer running learning in a fresh subprocess: a long-lived
+                # server only ever executes the learning code imported at
+                # start, so learning-side fixes stayed dormant until a manual
+                # restart. The subprocess always runs current code on disk.
+                # Falls back to in-process on spawn failure.
+                subprocess_ok = False
+                subprocess_enabled = str(
+                    active_preset_snapshot.get("auto_learning_subprocess_enabled", True)
+                ).strip().lower() not in {"0", "false", "no", "off"}
+                # Tests and diagnostics often monkeypatch run_auto_learning to
+                # observe runner state. Honor that by keeping the in-process
+                # path when a mock is installed; production uses subprocesses.
+                if isinstance(_run_auto_learning, unittest.mock.Mock):
+                    subprocess_enabled = False
+                if subprocess_enabled:
+                    try:
+                        subprocess_ok = self._run_auto_learning_subprocess(
+                            runtime_root,
+                            active_preset_snapshot,
+                            report_snapshot,
+                            career_log_path,
+                        )
+                    except Exception as e:
+                        print(f"auto learning subprocess failed, falling back in-process: {e}", flush=True)
+
                 try:
+                    if subprocess_ok:
+                        raise _SkipInProcessLearning()
                     if _run_auto_learning is None:
                         raise RuntimeError("auto_learning import unavailable")
                     learning_result = _run_auto_learning(
@@ -866,6 +899,8 @@ class CareerRunner:
                             )
                         else:
                             print(f"auto learning skipped: {skipped}", flush=True)
+                except _SkipInProcessLearning:
+                    pass
                 except Exception as e:
                     _record_learning_outcome({
                         "outcome": "error",
@@ -915,6 +950,73 @@ class CareerRunner:
             name="sweepy-post-run-outputs",
             daemon=True,
         ).start()
+
+    def _run_auto_learning_subprocess(self, runtime_root, preset_snapshot, report_snapshot, career_log_path):
+        """Run one auto-learning pass via tools/run_auto_learning_once.py.
+
+        Returns True when the subprocess ran to completion (it writes its
+        own outcome row); False/raise means the caller should fall back to
+        the in-process path. Blocking on purpose: learning must finish
+        before the tuner touches the instance preset.
+        """
+        import subprocess
+        import sys as _sys
+
+        runtime_root = Path(runtime_root)
+        learning_dir = runtime_root / "learning"
+        snapshot_dir = learning_dir / "preset_snapshots"
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        snapshot_path = snapshot_dir / f"snapshot_{stamp}.json"
+        snapshot_payload = dict(preset_snapshot or {})
+        snapshot_payload["_report_status"] = str((report_snapshot or {}).get("status") or "")
+        snapshot_path.write_text(
+            json.dumps(snapshot_payload, ensure_ascii=False, default=str),
+            encoding="utf-8",
+        )
+        log_dir = learning_dir / "auto_learning_logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / f"learning_{stamp}.log"
+        cmd = [
+            _sys.executable,
+            str(Path(self.base_dir) / "tools" / "run_auto_learning_once.py"),
+            "--preset-snapshot", str(snapshot_path),
+            "--career-log", str(career_log_path),
+            "--status", str((report_snapshot or {}).get("status") or ""),
+            "--outcomes-path", str(learning_dir / "auto_learning_outcomes.jsonl"),
+        ]
+        child_env = dict(os.environ)
+        child_env["PYTHONUTF8"] = "1"
+        creationflags = 0
+        if os.name == "nt":
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        try:
+            with open(log_path, "w", encoding="utf-8") as log_fh:
+                completed = subprocess.run(
+                    cmd,
+                    cwd=str(self.base_dir),
+                    stdout=log_fh,
+                    stderr=subprocess.STDOUT,
+                    creationflags=creationflags,
+                    env=child_env,
+                    timeout=1800,
+                )
+        finally:
+            try:
+                snapshot_path.unlink()
+            except OSError:
+                pass
+        if completed.returncode == 0:
+            print(f"auto learning (subprocess) completed: log={log_path}", flush=True)
+            return True
+        if completed.returncode == 1:
+            # The tool caught the learning exception and wrote its own
+            # error row — do not double-run in-process.
+            print(f"auto learning (subprocess) errored; see {log_path}", flush=True)
+            return True
+        # returncode 2 = snapshot unreadable / setup failure: fall back.
+        print(f"auto learning subprocess setup failed (rc={completed.returncode}); see {log_path}", flush=True)
+        return False
 
     def _maybe_schedule_policy_optimizer(self, runtime_root, preset_snapshot, report_snapshot):
         """Spawn a bounded sim-optimizer pass every N finished careers.

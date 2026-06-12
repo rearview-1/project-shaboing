@@ -54,5 +54,38 @@ class CleanRateObjectiveTests(unittest.TestCase):
         )
 
 
+class CandidatePoolTests(unittest.TestCase):
+    def test_incumbent_seeds_pool_verbatim_and_local(self):
+        import random
+        from tools.optimize_deck_policy import PARAM_SPACE, _build_candidate_pool
+        incumbent = {name: low for name, low, _high in PARAM_SPACE}
+        pool = _build_candidate_pool(random.Random(1), 10, incumbent)
+        self.assertEqual(len(pool), 10)
+        self.assertEqual(pool[0], incumbent)
+        bounds = {name: (low, high) for name, low, high in PARAM_SPACE}
+        for cand in pool:
+            for name, value in cand.items():
+                low, high = bounds[name]
+                self.assertGreaterEqual(value, low, name)
+                self.assertLessEqual(value, high, name)
+
+    def test_no_incumbent_means_all_random(self):
+        import random
+        from tools.optimize_deck_policy import _build_candidate_pool
+        pool = _build_candidate_pool(random.Random(2), 6, None)
+        self.assertEqual(len(pool), 6)
+
+    def test_perturbation_stays_in_bounds_and_near_base(self):
+        import random
+        from tools.optimize_deck_policy import PARAM_SPACE, _perturb_candidate
+        base = {name: (low + high) / 2 for name, low, high in PARAM_SPACE}
+        rng = random.Random(3)
+        for _ in range(50):
+            cand = _perturb_candidate(base, rng)
+            for name, low, high in PARAM_SPACE:
+                self.assertGreaterEqual(cand[name], low)
+                self.assertLessEqual(cand[name], high)
+
+
 if __name__ == "__main__":
     unittest.main()

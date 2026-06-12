@@ -213,6 +213,48 @@ def _sample_candidate(rng: random.Random) -> dict:
     return cand
 
 
+def _perturb_candidate(base_hp: dict, rng: random.Random, scale: float = 0.15) -> dict:
+    """Local-search candidate: Gaussian perturbation around an incumbent
+    policy, clamped to PARAM_SPACE bounds. Successive cadence runs would
+    otherwise re-search the whole space from scratch every 8 careers and
+    never compound their own progress."""
+    cand = {}
+    for name, low, high in PARAM_SPACE:
+        span = float(high) - float(low)
+        base = base_hp.get(name)
+        if base is None:
+            base = (float(low) + float(high)) / 2.0
+        try:
+            value = float(base) + rng.gauss(0.0, scale * span)
+        except (TypeError, ValueError):
+            value = (float(low) + float(high)) / 2.0
+        value = min(float(high), max(float(low), value))
+        if isinstance(low, int) and isinstance(high, int):
+            cand[name] = int(round(value))
+        else:
+            cand[name] = round(value, 2)
+    return cand
+
+
+def _build_candidate_pool(rng: random.Random, n: int, incumbent_hp: dict | None) -> list:
+    """Candidate schedule: incumbent verbatim first (same-environment score
+    for the current policy), then ~half local perturbations, rest random
+    explorers. Without an incumbent, all random."""
+    pool = []
+    incumbent_keys = {name for name, _low, _high in PARAM_SPACE}
+    incumbent = {
+        k: v for k, v in (incumbent_hp or {}).items() if k in incumbent_keys
+    }
+    if incumbent:
+        pool.append(dict(incumbent))
+        local = max(0, (n - 1) // 2)
+        for _ in range(local):
+            pool.append(_perturb_candidate(incumbent, rng))
+    while len(pool) < n:
+        pool.append(_sample_candidate(rng))
+    return pool[:n]
+
+
 def _snapshot_data_root():
     """Copy data/*.json into a temp root and junction uma_runtime into it.
 
@@ -418,13 +460,24 @@ def _main():
     )
     baseline = _summary(baseline_results)
 
-    # Step 2: Candidate exploration
+    # Step 2: Candidate exploration. Seed the pool with the cached incumbent
+    # policy (if any) plus local perturbations so cadence runs compound
+    # instead of re-searching from scratch.
     print(f"\n[2/4] Candidate exploration: {args.candidates} candidates "
           f"× {args.sims_per_candidate} sims each", flush=True)
     rng = random.Random(args.seed)
+    try:
+        incumbent_policy = lookup_policy(load_cache(PROJECT_ROOT, args.instance), signature)
+    except Exception:
+        incumbent_policy = None
+    incumbent_hp = (incumbent_policy or {}).get("learned_hyperparameters") or None
+    if incumbent_hp:
+        print(f"  incumbent policy found for signature {signature}; "
+              f"seeding 1 verbatim + local perturbations", flush=True)
+    candidate_pool = _build_candidate_pool(rng, args.candidates, incumbent_hp)
     candidates = []
     for i in range(args.candidates):
-        hp_sample = _sample_candidate(rng)
+        hp_sample = candidate_pool[i]
         cand_preset = copy.deepcopy(base_preset)
         # Merge candidate overrides into the preset's existing
         # learned_hyperparameters (so we keep the baseline values for

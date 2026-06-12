@@ -38,5 +38,6 @@ __pycache__/
 /project_zips/
 /external_tools/
 /data/presets/backups/**
+/data/backups/game_data_updates/**
 tmp_*.json
 *.log

@@ -128,6 +128,20 @@ You do not need to put anything in `uma_runtime/` manually. The bot auto-creates
 
 ## Optional: smoke tests
 
+To refresh static game data after a game update or when a new trainee/support
+card is missing from the UI:
+
+```bash
+update_game_data.bat
+```
+
+This pulls the current public card/skill data, rebuilds `data/support_list.json`,
+`data/support_card_bonuses.json`, `data/chara_list.json`,
+`data/chara_growth_rates.json`, `data/master_map.json`, and simulator support
+files, then verifies that the lightweight lists and full simulator records are
+in sync. Existing JSON files are backed up under
+`data/backups/game_data_updates/`.
+
 To tune the current deck/trainee/friend/parent setup before live careers:
 
 ```bash

@@ -258,7 +258,9 @@
       200502,
       201331,
       201142,
-      201131
+      201131,
+      204262,
+      203441
     ],
     "skills_innate": [
       200452,
@@ -2752,6 +2754,51 @@
     ],
     "source_url": "https://gametora.com/umamusume/characters/102502-manhattan-cafe",
     "title": "Willow-Green Evening"
+  },
+  "102503": {
+    "base_aptitudes": {
+      "dirt": "G",
+      "end": "C",
+      "front": "G",
+      "late": "A",
+      "long": "A",
+      "medium": "B",
+      "mile": "F",
+      "pace": "C",
+      "sprint": "G",
+      "turf": "A"
+    },
+    "growth_rates": {
+      "guts": 5,
+      "power": 10,
+      "speed": 0,
+      "stamina": 5,
+      "wit": 10
+    },
+    "initial_stats": {
+      "guts": 83,
+      "power": 92,
+      "speed": 85,
+      "stamina": 94,
+      "wit": 96
+    },
+    "name": "Manhattan Cafe",
+    "skills_awakening": [
+      202622,
+      200751,
+      204442,
+      204431
+    ],
+    "skills_innate": [
+      200752,
+      201382,
+      204432
+    ],
+    "skills_unique": [
+      120251
+    ],
+    "source_url": "https://gametora.com/umamusume/characters/102503-manhattan-cafe",
+    "title": ""
   },
   "102601": {
     "base_aptitudes": {
@@ -10597,6 +10644,51 @@
     ],
     "source_url": "https://gametora.com/umamusume/characters/111601-gentildonna",
     "title": "Regina dei Fiori"
+  },
+  "111602": {
+    "base_aptitudes": {
+      "dirt": "G",
+      "end": "D",
+      "front": "E",
+      "late": "A",
+      "long": "A",
+      "medium": "A",
+      "mile": "A",
+      "pace": "A",
+      "sprint": "G",
+      "turf": "A"
+    },
+    "growth_rates": {
+      "guts": 10,
+      "power": 10,
+      "speed": 0,
+      "stamina": 0,
+      "wit": 10
+    },
+    "initial_stats": {
+      "guts": 78,
+      "power": 103,
+      "speed": 95,
+      "stamina": 82,
+      "wit": 92
+    },
+    "name": "Gentildonna",
+    "skills_awakening": [
+      203742,
+      203791,
+      203682,
+      202621
+    ],
+    "skills_innate": [
+      203792,
+      203572,
+      202622
+    ],
+    "skills_unique": [
+      111161
+    ],
+    "source_url": "https://gametora.com/umamusume/characters/111602-gentildonna",
+    "title": "La dama perfetta"
   },
   "111701": {
     "base_aptitudes": {

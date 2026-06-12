@@ -386,8 +386,24 @@
     "base_time_ms": 50000,
     "category": "speed",
     "color": "unique",
-    "condition": "(phase>=2&order<=3&bashin_diff_infront<=1&is_overtake==1 AND is_last_straight==1)",
+    "condition": "(phase>=2&order_rate<=50&bashin_diff_infront<=1&is_overtake==1 AND is_last_straight==1&running_style==2&course_distance==2400) OR (phase>=2&order_rate<=50&bashin_diff_infront<=1&is_overtake==1 AND is_last_straight==1)",
     "condition_groups": [
+      {
+        "base_time": 50000,
+        "condition": "is_last_straight==1&running_style==2&course_distance==2400",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          },
+          {
+            "max_procs": 3,
+            "type": 27,
+            "value": 500
+          }
+        ],
+        "precondition": "phase>=2&order_rate<=50&bashin_diff_infront<=1&is_overtake==1"
+      },
       {
         "base_time": 50000,
         "condition": "is_last_straight==1",
@@ -397,7 +413,7 @@
             "value": 4500
           }
         ],
-        "precondition": "phase>=2&order<=3&bashin_diff_infront<=1&is_overtake==1"
+        "precondition": "phase>=2&order_rate<=50&bashin_diff_infront<=1&is_overtake==1"
       }
     ],
     "cost": 0,
@@ -410,12 +426,21 @@
       {
         "type": 27,
         "value": 4500
+      },
+      {
+        "max_procs": 3,
+        "type": 27,
+        "value": 500
+      },
+      {
+        "type": 27,
+        "value": 4500
       }
     ],
     "skill_id": 100031,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "ldr"
     ]
   },
   "100041": {
@@ -2139,6 +2164,65 @@
       "l_1"
     ]
   },
+  "100301311": {
+    "activation": 1,
+    "base_time_ms": 12000,
+    "category": "acceleration",
+    "color": "evolution",
+    "condition": "(running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50&track_id==10006&course_distance==2400) OR (running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50)",
+    "condition_groups": [
+      {
+        "base_time": 12000,
+        "condition": "running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50&track_id==10006&course_distance==2400",
+        "effects": [
+          {
+            "type": 31,
+            "value": 4000
+          },
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      },
+      {
+        "base_time": 12000,
+        "condition": "running_style==2&distance_type==3&phase_firstquarter_random==2&order_rate<=50",
+        "effects": [
+          {
+            "type": 31,
+            "value": 4000
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.4,
+    "effect_type": "acceleration",
+    "jp_name": "皇帝を超えて",
+    "name": "皇帝を超えて",
+    "raw_effects": [
+      {
+        "type": 31,
+        "value": 4000
+      },
+      {
+        "type": 22,
+        "value": 3500
+      },
+      {
+        "type": 31,
+        "value": 4000
+      }
+    ],
+    "skill_id": 100301311,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "ldr",
+      "med"
+    ]
+  },
   "100302111": {
     "activation": 1,
     "base_time_ms": 30000,
@@ -3274,7 +3358,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "いただき☆ストレリチア！",
-    "name": "Victory belongs to me—Strelitzia! ☆",
+    "name": "Victory Belongs to Me—Strelitzia! ☆",
     "raw_effects": [
       {
         "type": 27,
@@ -12981,6 +13065,83 @@
       "lng",
       "cha",
       "l_2"
+    ]
+  },
+  "102503111": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==4&is_finalcorner==1&corner!=0&running_style==3)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&is_finalcorner==1&corner!=0&running_style==3",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ],
+        "time_scale": 8
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "超常体験",
+    "name": "超常体験",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 102503111,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng",
+      "f_c",
+      "cor",
+      "btw"
+    ]
+  },
+  "102503211": {
+    "activation": 1,
+    "base_time_ms": 9000,
+    "category": "acceleration",
+    "color": "evolution",
+    "condition": "(running_style==3&distance_type==4&is_lastspurt==1)",
+    "condition_groups": [
+      {
+        "base_time": 9000,
+        "condition": "running_style==3&distance_type==4&is_lastspurt==1",
+        "effects": [
+          {
+            "type": 31,
+            "value": 5000
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.5,
+    "effect_type": "acceleration",
+    "jp_name": "コノヨナラザル",
+    "name": "コノヨナラザル",
+    "raw_effects": [
+      {
+        "type": 31,
+        "value": 5000
+      }
+    ],
+    "skill_id": 102503211,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "btw",
+      "lng"
     ]
   },
   "102601111": {
@@ -24284,6 +24445,72 @@
     "source": "GameTora public data manifest",
     "tags": [
       "tur"
+    ]
+  },
+  "107002121": {
+    "activation": 0,
+    "base_time_ms": -1,
+    "category": "passive",
+    "color": "evolution",
+    "condition": "(track_id==10006&course_distance==2400) OR (is_activate_other_skill_detail==1&remain_distance>=799&remain_distance<=801&order_rate>=30&order_rate<=60&popularity<=3)",
+    "condition_groups": [
+      {
+        "base_time": -1,
+        "condition": "track_id==10006&course_distance==2400",
+        "effects": [
+          {
+            "type": 3,
+            "value": 600000
+          },
+          {
+            "type": 1,
+            "value": 600000
+          }
+        ]
+      },
+      {
+        "base_time": 9000,
+        "condition": "is_activate_other_skill_detail==1&remain_distance>=799&remain_distance<=801&order_rate>=30&order_rate<=60&popularity<=3",
+        "effects": [
+          {
+            "type": 31,
+            "value": 2000
+          },
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 60.0,
+    "effect_type": "power_stat_up",
+    "jp_name": "すべてを焼き焦がす星",
+    "name": "すべてを焼き焦がす星",
+    "raw_effects": [
+      {
+        "type": 3,
+        "value": 600000
+      },
+      {
+        "type": 1,
+        "value": 600000
+      },
+      {
+        "type": 31,
+        "value": 2000
+      },
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 107002121,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "nac"
     ]
   },
   "107002211": {
@@ -35996,6 +36223,58 @@
       "slo"
     ]
   },
+  "111161": {
+    "activation": 0,
+    "base_time_ms": 50000,
+    "category": "speed",
+    "color": "unique",
+    "condition": "(distance_rate>=50&distance_rate<=51&order_rate<=80&order_rate>=40&distance_type==3 AND remain_distance<=401&remain_distance>=399&order_rate<=50&order_rate>=20) OR (distance_rate>=50&distance_rate<=51&order_rate<=80&order_rate>=40&distance_type==3 AND remain_distance<=401&remain_distance>=399)",
+    "condition_groups": [
+      {
+        "base_time": 50000,
+        "condition": "remain_distance<=401&remain_distance>=399&order_rate<=50&order_rate>=20",
+        "effects": [
+          {
+            "type": 27,
+            "value": 5000
+          }
+        ],
+        "precondition": "distance_rate>=50&distance_rate<=51&order_rate<=80&order_rate>=40&distance_type==3"
+      },
+      {
+        "base_time": 50000,
+        "condition": "remain_distance<=401&remain_distance>=399",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          }
+        ],
+        "precondition": "distance_rate>=50&distance_rate<=51&order_rate<=80&order_rate>=40&distance_type==3"
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.5,
+    "effect_type": "target_speed",
+    "jp_name": "不凋なるCattleya",
+    "name": "不凋なるCattleya",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 5000
+      },
+      {
+        "type": 27,
+        "value": 4500
+      }
+    ],
+    "skill_id": 111161,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "nac"
+    ]
+  },
   "111191": {
     "activation": 0,
     "base_time_ms": 40000,
@@ -36737,6 +37016,118 @@
     "tags": [
       "l_1",
       "ldr"
+    ]
+  },
+  "111602111": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==2@distance_type==3 AND corner_random==3&order_rate>=40&course_distance==2400&track_id==10006) OR (distance_type==2@distance_type==3 AND corner_random==3&order_rate>=40)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "corner_random==3&order_rate>=40&course_distance==2400&track_id==10006",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          },
+          {
+            "type": 31,
+            "value": 3000
+          }
+        ],
+        "precondition": "distance_type==2@distance_type==3"
+      },
+      {
+        "base_time": 30000,
+        "condition": "corner_random==3&order_rate>=40",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ],
+        "precondition": "distance_type==2@distance_type==3"
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "――さあ、踊りましょう",
+    "name": "――さあ、踊りましょう",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      },
+      {
+        "type": 31,
+        "value": 3000
+      },
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 111602111,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "cor",
+      "nac"
+    ]
+  },
+  "111602211": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(running_style==3&phase_laterhalf_random==1&order_rate>=40&course_distance==2400&track_id==10006) OR (running_style==3&phase_laterhalf_random==1&order_rate>=40)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "running_style==3&phase_laterhalf_random==1&order_rate>=40&course_distance==2400&track_id==10006",
+        "effects": [
+          {
+            "type": 27,
+            "value": 6500
+          }
+        ]
+      },
+      {
+        "base_time": 24000,
+        "condition": "running_style==3&phase_laterhalf_random==1&order_rate>=40",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.65,
+    "effect_type": "target_speed",
+    "jp_name": "最強淑女の誇り",
+    "name": "最強淑女の誇り",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 6500
+      },
+      {
+        "type": 27,
+        "value": 3500
+      }
+    ],
+    "skill_id": 111602211,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "btw",
+      "l_1"
     ]
   },
   "111701111": {
@@ -39659,6 +40050,58 @@
       "l_2",
       "l_3",
       "nac"
+    ]
+  },
+  "120251": {
+    "activation": 0,
+    "base_time_ms": 0,
+    "category": "speed",
+    "color": "unique",
+    "condition": "(phase==1&running_style==3) OR (is_activate_other_skill_detail==1&distance_type==4&distance_rate>=50&order_rate>=30&order_rate<=70)",
+    "condition_groups": [
+      {
+        "base_time": 0,
+        "condition": "phase==1&running_style==3",
+        "effects": [
+          {
+            "type": 9,
+            "value": 550
+          }
+        ]
+      },
+      {
+        "base_time": 60000,
+        "condition": "is_activate_other_skill_detail==1&distance_type==4&distance_rate>=50&order_rate>=30&order_rate<=70",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "迷える時も、幽かなる時も",
+    "name": "迷える時も、幽かなる時も",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 550
+      },
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 120251,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "btw",
+      "lng"
     ]
   },
   "120301": {
@@ -67095,6 +67538,43 @@
       "l_1"
     ]
   },
+  "203561": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(distance_type==4&is_lastspurt==1&phase_firsthalf_random==3)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&is_lastspurt==1&phase_firsthalf_random==3",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 170,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "一所懸命",
+    "name": "一所懸命",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500
+      }
+    ],
+    "skill_id": 203561,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng",
+      "l_3"
+    ]
+  },
   "203562": {
     "activation": 1,
     "base_time_ms": 30000,
@@ -71302,6 +71782,43 @@
       "nac"
     ]
   },
+  "204171": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(distance_type==2&is_lastspurt==1&phase_firsthalf_random==3)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==2&is_lastspurt==1&phase_firsthalf_random==3",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 170,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "元気溌剌",
+    "name": "元気溌剌",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500
+      }
+    ],
+    "skill_id": 204171,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "mil",
+      "l_3"
+    ]
+  },
   "204172": {
     "activation": 1,
     "base_time_ms": 30000,
@@ -72057,6 +72574,78 @@
       "l_1"
     ]
   },
+  "204292": {
+    "activation": 1,
+    "base_time_ms": 0,
+    "category": "recovery",
+    "color": "white",
+    "condition": "(course_distance>=3000&distance_rate>=40&distance_rate<=41)",
+    "condition_groups": [
+      {
+        "base_time": 0,
+        "condition": "course_distance>=3000&distance_rate>=40&distance_rate<=41",
+        "effects": [
+          {
+            "type": 9,
+            "value": 350
+          }
+        ]
+      }
+    ],
+    "cost": 80,
+    "duration_meters": null,
+    "effect_magnitude": 0.035,
+    "effect_type": "stamina_recovery",
+    "jp_name": "超長距離回復◎",
+    "name": "超長距離回復◎",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 350
+      }
+    ],
+    "skill_id": 204292,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "nac"
+    ]
+  },
+  "204293": {
+    "activation": 1,
+    "base_time_ms": 0,
+    "category": "recovery",
+    "color": "white",
+    "condition": "(course_distance>=3000&distance_rate>=40&distance_rate<=41)",
+    "condition_groups": [
+      {
+        "base_time": 0,
+        "condition": "course_distance>=3000&distance_rate>=40&distance_rate<=41",
+        "effects": [
+          {
+            "type": 9,
+            "value": 150
+          }
+        ]
+      }
+    ],
+    "cost": 160,
+    "duration_meters": null,
+    "effect_magnitude": 0.015,
+    "effect_type": "stamina_recovery",
+    "jp_name": "超長距離回復○",
+    "name": "超長距離回復○",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 150
+      }
+    ],
+    "skill_id": 204293,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "nac"
+    ]
+  },
   "204301": {
     "activation": 1,
     "base_time_ms": 40000,
@@ -72525,6 +73114,78 @@
       "nac"
     ]
   },
+  "204381": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(distance_type==4&distance_rate_after_random==50)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&distance_rate_after_random==50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "光輝燦然",
+    "name": "光輝燦然",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 204381,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng"
+    ]
+  },
+  "204382": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(distance_type==4&distance_rate_after_random==50)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&distance_rate_after_random==50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "current_speed",
+    "jp_name": "輝きを放って",
+    "name": "輝きを放って",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 204382,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng"
+    ]
+  },
   "204401": {
     "activation": 0,
     "base_time_ms": -1,
@@ -72634,6 +73295,131 @@
       "nac"
     ]
   },
+  "204431": {
+    "activation": 1,
+    "base_time_ms": 9000,
+    "category": "acceleration",
+    "color": "gold",
+    "condition": "(running_style==3&is_lastspurt==1&corner==0)",
+    "condition_groups": [
+      {
+        "base_time": 9000,
+        "condition": "running_style==3&is_lastspurt==1&corner==0",
+        "effects": [
+          {
+            "type": 31,
+            "value": 4000
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.4,
+    "effect_type": "acceleration",
+    "jp_name": "絶塵",
+    "name": "絶塵",
+    "raw_effects": [
+      {
+        "type": 31,
+        "value": 4000
+      }
+    ],
+    "skill_id": 204431,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "btw",
+      "str"
+    ]
+  },
+  "204432": {
+    "activation": 1,
+    "base_time_ms": 9000,
+    "category": "acceleration",
+    "color": "white",
+    "condition": "(running_style==3&is_lastspurt==1&corner==0)",
+    "condition_groups": [
+      {
+        "base_time": 9000,
+        "condition": "running_style==3&is_lastspurt==1&corner==0",
+        "effects": [
+          {
+            "type": 31,
+            "value": 2000
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.2,
+    "effect_type": "acceleration",
+    "jp_name": "影より速く",
+    "name": "影より速く",
+    "raw_effects": [
+      {
+        "type": 31,
+        "value": 2000
+      }
+    ],
+    "skill_id": 204432,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "btw",
+      "str"
+    ]
+  },
+  "204442": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(running_style==3&phase_random==1&distance_diff_top>=15) OR (running_style==3&phase_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "running_style==3&phase_random==1&distance_diff_top>=15",
+        "effects": [
+          {
+            "type": 27,
+            "value": 2500
+          }
+        ]
+      },
+      {
+        "base_time": 30000,
+        "condition": "running_style==3&phase_random==1",
+        "effects": [
+          {
+            "type": 27,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 190,
+    "duration_meters": null,
+    "effect_magnitude": 0.25,
+    "effect_type": "target_speed",
+    "jp_name": "追尾",
+    "name": "追尾",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 2500
+      },
+      {
+        "type": 27,
+        "value": 1500
+      }
+    ],
+    "skill_id": 204442,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "btw",
+      "l_1"
+    ]
+  },
   "204452": {
     "activation": 1,
     "base_time_ms": 30000,
@@ -72735,6 +73521,43 @@
     "tags": [
       "l_1",
       "nac"
+    ]
+  },
+  "204462": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(distance_type==2&phase_laterhalf_random==0&order_rate>=40)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==2&phase_laterhalf_random==0&order_rate>=40",
+        "effects": [
+          {
+            "type": 27,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 160,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "target_speed",
+    "jp_name": "いざ我が道へ！",
+    "name": "いざ我が道へ！",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 1500
+      }
+    ],
+    "skill_id": 204462,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "mil",
+      "l_0"
     ]
   },
   "210011": {

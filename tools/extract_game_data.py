@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
+import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -127,8 +128,40 @@ def _write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _load_existing_json(path: Path) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _backup_existing(path: Path, backup_root: Path, timestamp: str) -> Path | None:
+    if not path.exists():
+        return None
+    backup_root.mkdir(parents=True, exist_ok=True)
+    dest = backup_root / f"{path.name}.{timestamp}.bak"
+    shutil.copy2(path, dest)
+    return dest
+
+
+def _diff_top_level_keys(old: Any, new: Any) -> tuple[list[str], list[str]]:
+    if not isinstance(old, dict) or not isinstance(new, dict):
+        return [], []
+    old_keys = {str(key) for key in old}
+    new_keys = {str(key) for key in new}
+    return sorted(new_keys - old_keys), sorted(old_keys - new_keys)
+
+
 def _slug_name(name: str) -> str:
     return " ".join(str(name or "").split())
+
+
+def _support_name(card: dict[str, Any]) -> str:
+    return _slug_name(card.get("char_name") or card.get("name_en") or card.get("name_jp") or "")
+
+
+def _chara_name(card: dict[str, Any]) -> str:
+    return _slug_name(card.get("name_en") or card.get("name_jp") or "")
 
 
 def _current_effects(effect_rows: list[list[int]], max_level: int) -> dict[str, int]:
@@ -198,6 +231,28 @@ def build_support_card_bonuses(support_cards: list[dict[str, Any]]) -> dict[str,
     return out
 
 
+def build_support_list(support_cards: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build the lightweight support index used by UI/search code.
+
+    `support_card_bonuses.json` carries the full simulator data, but several
+    app paths use `support_list.json` for fast card names/types. Keep both
+    generated from the same upstream payload so newly released cards appear
+    everywhere after one update command.
+    """
+    out: dict[str, Any] = {}
+    for card in sorted(support_cards, key=lambda item: int(item.get("support_id") or 0)):
+        support_id = int(card.get("support_id") or 0)
+        if not support_id:
+            continue
+        rarity = int(card.get("rarity") or 0)
+        out[str(support_id)] = {
+            "name": _support_name(card),
+            "rarity": RARITY_NAME.get(rarity, str(rarity)),
+            "type": str(card.get("type") or "").title(),
+        }
+    return out
+
+
 def build_chara_growth_rates(character_cards: list[dict[str, Any]]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for card in sorted(character_cards, key=lambda item: int(item.get("card_id") or 0)):
@@ -218,6 +273,28 @@ def build_chara_growth_rates(character_cards: list[dict[str, Any]]) -> dict[str,
             "skills_awakening": [int(x) for x in card.get("skills_awakening") or [] if x],
             "source_url": f"{GAMETORA_BASE}/umamusume/characters/{card.get('url_name')}",
         }
+    return out
+
+
+def build_chara_list(character_cards: list[dict[str, Any]]) -> dict[str, str]:
+    """Build the lightweight trainee index used by UI/search code."""
+    out: dict[str, str] = {}
+    for card in sorted(character_cards, key=lambda item: int(item.get("card_id") or 0)):
+        card_id = int(card.get("card_id") or 0)
+        if not card_id:
+            continue
+        out[str(card_id)] = _chara_name(card)
+    return out
+
+
+def build_master_map(skills: list[dict[str, Any]], existing: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Refresh skill names while preserving hand-maintained race/scenario maps."""
+    out = dict(existing or {})
+    out["skill"] = {
+        str(int(skill.get("id") or 0)): skill.get("name_en") or skill.get("enname") or skill.get("jpname") or ""
+        for skill in sorted(skills, key=lambda item: int(item.get("id") or 0))
+        if int(skill.get("id") or 0)
+    }
     return out
 
 
@@ -301,39 +378,51 @@ def build_skill_activation_data(skills: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
-def _scaled_gains(base: dict[str, int], multiplier: float) -> dict[str, int]:
-    out = {}
-    for key, value in base.items():
-        if key == "energy":
-            out[key] = value
-        else:
-            out[key] = int(math.floor(value * multiplier))
-    return out
-
-
 def build_training_facility_curves() -> dict[str, Any]:
-    # Current URA/global base values from GameTora's URA Finale page. MANT uses
-    # the same training stat-gain formula; scenario-specific shop/items are
-    # modeled separately in the simulator.
-    base_level_1 = {
-        "speed": {"speed": 11, "power": 6, "skill_pt": 4, "energy": -21},
-        "stamina": {"stamina": 10, "guts": 6, "skill_pt": 4, "energy": -19},
-        "power": {"stamina": 6, "power": 9, "skill_pt": 4, "energy": -20},
-        "guts": {"speed": 5, "power": 5, "guts": 8, "skill_pt": 4, "energy": -22},
-        "wit": {"speed": 2, "wit": 10, "skill_pt": 5, "energy": 5},
-    }
-    multipliers = {1: 1.00, 2: 1.25, 3: 1.50, 4: 1.75, 5: 2.00}
+    # Trackblazer/Make a New Track has lower base facility gains than URA.
+    # Values are stored directly instead of deriving from multipliers because
+    # the game table has per-level rounding and energy changes.
     facilities = {
-        stat: {
-            str(level): _scaled_gains(base, mult)
-            for level, mult in multipliers.items()
-        }
-        for stat, base in base_level_1.items()
+        "speed": {
+            "1": {"speed": 8, "power": 4, "skill_pt": 2, "energy": -19},
+            "2": {"speed": 9, "power": 4, "skill_pt": 2, "energy": -20},
+            "3": {"speed": 10, "power": 4, "skill_pt": 2, "energy": -21},
+            "4": {"speed": 11, "power": 5, "skill_pt": 2, "energy": -23},
+            "5": {"speed": 12, "power": 6, "skill_pt": 2, "energy": -25},
+        },
+        "stamina": {
+            "1": {"stamina": 7, "guts": 3, "skill_pt": 2, "energy": -17},
+            "2": {"stamina": 8, "guts": 3, "skill_pt": 2, "energy": -18},
+            "3": {"stamina": 9, "guts": 3, "skill_pt": 2, "energy": -19},
+            "4": {"stamina": 10, "guts": 4, "skill_pt": 2, "energy": -21},
+            "5": {"stamina": 11, "guts": 5, "skill_pt": 2, "energy": -23},
+        },
+        "power": {
+            "1": {"stamina": 4, "power": 6, "skill_pt": 2, "energy": -18},
+            "2": {"stamina": 4, "power": 7, "skill_pt": 2, "energy": -19},
+            "3": {"stamina": 4, "power": 8, "skill_pt": 2, "energy": -20},
+            "4": {"stamina": 5, "power": 9, "skill_pt": 2, "energy": -22},
+            "5": {"stamina": 6, "power": 10, "skill_pt": 2, "energy": -24},
+        },
+        "guts": {
+            "1": {"speed": 3, "power": 3, "guts": 6, "skill_pt": 2, "energy": -20},
+            "2": {"speed": 3, "power": 3, "guts": 7, "skill_pt": 2, "energy": -21},
+            "3": {"speed": 3, "power": 3, "guts": 8, "skill_pt": 2, "energy": -22},
+            "4": {"speed": 4, "power": 3, "guts": 9, "skill_pt": 2, "energy": -24},
+            "5": {"speed": 4, "power": 4, "guts": 10, "skill_pt": 2, "energy": -26},
+        },
+        "wit": {
+            "1": {"speed": 2, "wit": 6, "skill_pt": 3, "energy": 5},
+            "2": {"speed": 2, "wit": 7, "skill_pt": 3, "energy": 5},
+            "3": {"speed": 2, "wit": 8, "skill_pt": 3, "energy": 5},
+            "4": {"speed": 3, "wit": 9, "skill_pt": 3, "energy": 5},
+            "5": {"speed": 4, "wit": 10, "skill_pt": 3, "energy": 5},
+        },
     }
     return {
-        "source": "GameTora URA Finale base values + public training-level multipliers",
+        "source": "Trackblazer/Make a New Track facility table",
         "level_up_every_uses": 4,
-        "level_multipliers": {str(k): v for k, v in multipliers.items()},
+        "level_multipliers": {str(level): 1.0 for level in range(1, 6)},
         "facilities": facilities,
         "partner_count_distribution": {
             "preferred_support_base_chance": 0.42,
@@ -387,25 +476,46 @@ def build_race_distance_demands() -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", default=str(DATA_DIR), help="Output data directory")
+    parser.add_argument("--backup", action="store_true", help="Back up overwritten JSON files under data/backups/game_data_updates")
+    parser.add_argument("--dry-run", action="store_true", help="Fetch and diff data, but do not write files")
     args = parser.parse_args()
 
     out_dir = Path(args.out)
+    existing_master = _load_existing_json(out_dir / "master_map.json")
     manifest = _get_json(MANIFEST_URL)
     support_cards = _load_gametora_key(manifest, "support-cards")
     character_cards = _load_gametora_key(manifest, "character-cards")
     skills = _load_gametora_key(manifest, "skills")
 
     outputs = {
+        "support_list.json": build_support_list(support_cards),
         "support_card_bonuses.json": build_support_card_bonuses(support_cards),
+        "chara_list.json": build_chara_list(character_cards),
         "chara_growth_rates.json": build_chara_growth_rates(character_cards),
+        "master_map.json": build_master_map(skills, existing_master if isinstance(existing_master, dict) else {}),
         "skill_activation_data.json": build_skill_activation_data(skills),
         "training_facility_curves.json": build_training_facility_curves(),
         "race_distance_demands.json": build_race_distance_demands(),
     }
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_root = out_dir / "backups" / "game_data_updates"
     for name, payload in outputs.items():
-        _write_json(out_dir / name, payload)
+        path = out_dir / name
+        existing = _load_existing_json(path)
+        added, removed = _diff_top_level_keys(existing, payload)
+        if args.backup and not args.dry_run:
+            backup_path = _backup_existing(path, backup_root, timestamp)
+            if backup_path:
+                print(f"backup {name} -> {backup_path}")
+        if not args.dry_run:
+            _write_json(path, payload)
         count = len(payload.get("entries", payload)) if isinstance(payload, dict) else len(payload)
-        print(f"wrote {out_dir / name} ({count} records)")
+        action = "would write" if args.dry_run else "wrote"
+        print(f"{action} {path} ({count} records; +{len(added)} / -{len(removed)} ids)")
+        if added:
+            print("  new ids:", ", ".join(added[:20]) + (" ..." if len(added) > 20 else ""))
+        if removed:
+            print("  removed ids:", ", ".join(removed[:20]) + (" ..." if len(removed) > 20 else ""))
     return 0
 
 

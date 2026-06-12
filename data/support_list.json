@@ -62,7 +62,7 @@
   "10013": {
     "name": "Symboli Rudolf",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10014": {
     "name": "Seiun Sky",
@@ -102,17 +102,17 @@
   "10021": {
     "name": "Tazuna Hayakawa",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10022": {
     "name": "Aoi Kiryuin",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10023": {
     "name": "Daiwa Scarlet",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10024": {
     "name": "Hishi Amazon",
@@ -137,7 +137,7 @@
   "10028": {
     "name": "Fine Motion",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10029": {
     "name": "Biwa Hayahide",
@@ -177,12 +177,12 @@
   "10036": {
     "name": "Agnes Tachyon",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10037": {
     "name": "Air Shakur",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10038": {
     "name": "Eishin Flash",
@@ -212,12 +212,12 @@
   "10043": {
     "name": "Marvelous Sunday",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10044": {
     "name": "Matikanefukukitaru",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10045": {
     "name": "Meisho Doto",
@@ -227,7 +227,7 @@
   "10046": {
     "name": "Mejiro Dober",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10047": {
     "name": "Nice Nature",
@@ -242,7 +242,7 @@
   "10049": {
     "name": "Fuji Kiseki",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10050": {
     "name": "Sweep Tosho",
@@ -262,7 +262,7 @@
   "10053": {
     "name": "Ikuno Dictus",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10054": {
     "name": "Mejiro Palmer",
@@ -297,7 +297,7 @@
   "10060": {
     "name": "Riko Kashimoto",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10061": {
     "name": "Seeking the Pearl",
@@ -342,7 +342,7 @@
   "10069": {
     "name": "Mejiro Ardan",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10070": {
     "name": "Tosen Jordan",
@@ -362,12 +362,12 @@
   "10073": {
     "name": "Curren Chan",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10074": {
     "name": "Sasami Anshinzawa",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10075": {
     "name": "Admire Vega",
@@ -387,7 +387,7 @@
   "10078": {
     "name": "Mr. C.B.",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10079": {
     "name": "Daiichi Ruby",
@@ -412,7 +412,7 @@
   "10083": {
     "name": "Light Hello",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10084": {
     "name": "Tanino Gimlet",
@@ -437,7 +437,7 @@
   "10088": {
     "name": "Mejiro Ramonu",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10089": {
     "name": "Jungle Pocket",
@@ -467,7 +467,7 @@
   "10094": {
     "name": "Mei Satake",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10095": {
     "name": "Tap Dance City",
@@ -507,7 +507,7 @@
   "10102": {
     "name": "North Flight",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10103": {
     "name": "Orfevre",
@@ -517,7 +517,7 @@
   "10104": {
     "name": "Ryoka Tsurugi",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10105": {
     "name": "Cheval Grand",
@@ -527,7 +527,7 @@
   "10106": {
     "name": "Neo Universe",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10107": {
     "name": "Hishi Miracle",
@@ -537,12 +537,12 @@
   "10108": {
     "name": "Dantsu Flame",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10109": {
     "name": "Yayoi Akikawa",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10110": {
     "name": "Espoir City",
@@ -567,7 +567,7 @@
   "10115": {
     "name": "Cesario",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10116": {
     "name": "Blast Onepiece",
@@ -592,7 +592,7 @@
   "10120": {
     "name": "Daring Tact",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10121": {
     "name": "Daring Heart",
@@ -607,7 +607,7 @@
   "10123": {
     "name": "Lucky Lilac",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10124": {
     "name": "Gran Alegria",
@@ -627,12 +627,12 @@
   "10127": {
     "name": "Air Messiah",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10128": {
     "name": "Tucker Bryne",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10129": {
     "name": "Fusaichi Pandora",
@@ -642,7 +642,7 @@
   "10131": {
     "name": "Win Variation",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10132": {
     "name": "Stay Gold",
@@ -657,7 +657,7 @@
   "10134": {
     "name": "Chrono Genesis",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10135": {
     "name": "Calstone Light O",
@@ -667,7 +667,7 @@
   "10136": {
     "name": "Durandal",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10137": {
     "name": "Sakura Chitose O",
@@ -677,7 +677,7 @@
   "10138": {
     "name": "Kiyoko Hoshina",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10139": {
     "name": "Fenomeno",
@@ -687,12 +687,12 @@
   "10140": {
     "name": "Forever Young",
     "rarity": "R",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "10141": {
     "name": "Casino Drive",
     "rarity": "R",
-    "type": "Friends"
+    "type": "Friend"
   },
   "10142": {
     "name": "Red Desire",
@@ -712,12 +712,12 @@
   "20001": {
     "name": "Fuji Kiseki",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20002": {
     "name": "Daiwa Scarlet",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20003": {
     "name": "Hishi Amazon",
@@ -767,7 +767,7 @@
   "20012": {
     "name": "Agnes Tachyon",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20013": {
     "name": "Eishin Flash",
@@ -782,12 +782,12 @@
   "20015": {
     "name": "Marvelous Sunday",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20016": {
     "name": "Matikanefukukitaru",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20017": {
     "name": "Meisho Doto",
@@ -797,7 +797,7 @@
   "20018": {
     "name": "Mejiro Dober",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20019": {
     "name": "Nice Nature",
@@ -812,7 +812,7 @@
   "20021": {
     "name": "Aoi Kiryuin",
     "rarity": "SR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "20022": {
     "name": "Tamamo Cross",
@@ -832,12 +832,12 @@
   "20025": {
     "name": "Ikuno Dictus",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20026": {
     "name": "Nice Nature",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20027": {
     "name": "Nishino Flower",
@@ -857,7 +857,7 @@
   "20030": {
     "name": "Ines Fujin",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20031": {
     "name": "Shinko Windy",
@@ -877,7 +877,7 @@
   "20034": {
     "name": "Mejiro Ardan",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20035": {
     "name": "Tosen Jordan",
@@ -937,7 +937,7 @@
   "20046": {
     "name": "Sweep Tosho",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20047": {
     "name": "Tokai Teio",
@@ -952,12 +952,12 @@
   "20049": {
     "name": "Gold City",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20050": {
     "name": "Seiun Sky",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20051": {
     "name": "K.S.Miracle",
@@ -1017,7 +1017,7 @@
   "20062": {
     "name": "Maruzensky",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20063": {
     "name": "Silence Suzuka",
@@ -1042,7 +1042,7 @@
   "20067": {
     "name": "Taiki Shuttle",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20068": {
     "name": "Nice Nature",
@@ -1067,7 +1067,7 @@
   "20072": {
     "name": "Tanino Gimlet",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20073": {
     "name": "Tosen Jordan",
@@ -1092,7 +1092,7 @@
   "20077": {
     "name": "Dantsu Flame",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20078": {
     "name": "Matikanefukukitaru",
@@ -1107,7 +1107,7 @@
   "20080": {
     "name": "Sakura Laurel",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20081": {
     "name": "North Flight",
@@ -1127,7 +1127,7 @@
   "20084": {
     "name": "Lucky Lilac",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20085": {
     "name": "Mejiro McQueen",
@@ -1157,7 +1157,7 @@
   "20090": {
     "name": "Biko Pegasus",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "20091": {
     "name": "Sakura Chitose O",
@@ -1197,7 +1197,12 @@
   "20098": {
     "name": "Hishi Amazon",
     "rarity": "SR",
-    "type": "Wisdom"
+    "type": "Intelligence"
+  },
+  "20099": {
+    "name": "Mejiro Ardan",
+    "rarity": "SR",
+    "type": "Stamina"
   },
   "30001": {
     "name": "Special Week",
@@ -1247,7 +1252,7 @@
   "30010": {
     "name": "Fine Motion",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30011": {
     "name": "Ines Fujin",
@@ -1262,7 +1267,7 @@
   "30013": {
     "name": "Air Shakur",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30014": {
     "name": "Gold City",
@@ -1302,7 +1307,7 @@
   "30021": {
     "name": "Tazuna Hayakawa",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30022": {
     "name": "Mejiro McQueen",
@@ -1352,7 +1357,7 @@
   "30031": {
     "name": "Yukino Bijin",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30032": {
     "name": "Yaeno Muteki",
@@ -1372,7 +1377,7 @@
   "30036": {
     "name": "Riko Kashimoto",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30037": {
     "name": "Symboli Rudolf",
@@ -1397,7 +1402,7 @@
   "30041": {
     "name": "Mejiro Dober",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30042": {
     "name": "Bamboo Memory",
@@ -1437,7 +1442,7 @@
   "30052": {
     "name": "Light Hello",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30053": {
     "name": "Taiki Shuttle",
@@ -1447,12 +1452,12 @@
   "30054": {
     "name": "Nice Nature",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30055": {
     "name": "Seiun Sky",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30056": {
     "name": "King Halo",
@@ -1482,7 +1487,7 @@
   "30061": {
     "name": "Biwa Hayahide",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30062": {
     "name": "Silence Suzuka",
@@ -1507,7 +1512,7 @@
   "30066": {
     "name": "Mihono Bourbon",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30067": {
     "name": "The Throne's Assemblage",
@@ -1517,7 +1522,7 @@
   "30068": {
     "name": "Curren Chan",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30069": {
     "name": "Narita Brian",
@@ -1542,7 +1547,7 @@
   "30073": {
     "name": "Narita Taishin",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30074": {
     "name": "Marvelous Sunday",
@@ -1577,7 +1582,7 @@
   "30080": {
     "name": "Sasami Anshinzawa",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30081": {
     "name": "Team Sirius",
@@ -1587,7 +1592,7 @@
   "30082": {
     "name": "Nishino Flower",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30083": {
     "name": "Sakura Bakushin O",
@@ -1617,7 +1622,7 @@
   "30088": {
     "name": "Satono Diamond",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30089": {
     "name": "Marvelous Sunday",
@@ -1632,7 +1637,7 @@
   "30091": {
     "name": "Sirius Symboli",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30092": {
     "name": "Air Shakur",
@@ -1662,7 +1667,7 @@
   "30097": {
     "name": "Mr. C.B.",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30098": {
     "name": "Haru Urara",
@@ -1677,7 +1682,7 @@
   "30100": {
     "name": "Rice Shower",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30101": {
     "name": "Agnes Tachyon",
@@ -1692,7 +1697,7 @@
   "30103": {
     "name": "Matikanetannhauser",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30104": {
     "name": "Zenno Rob Roy",
@@ -1717,7 +1722,7 @@
   "30108": {
     "name": "Nakayama Festa",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30109": {
     "name": "Sakura Chiyono O",
@@ -1732,7 +1737,7 @@
   "30111": {
     "name": "Tokai Teio",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30112": {
     "name": "Twin Turbo",
@@ -1797,7 +1802,7 @@
   "30124": {
     "name": "Air Groove",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30125": {
     "name": "Sakura Laurel",
@@ -1817,7 +1822,7 @@
   "30128": {
     "name": "Sweep Tosho",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30129": {
     "name": "Grass Wonder",
@@ -1842,12 +1847,12 @@
   "30133": {
     "name": "Hishi Akebono",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30134": {
     "name": "Mejiro Ramonu",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30135": {
     "name": "Katsuragi Ace",
@@ -1882,7 +1887,7 @@
   "30141": {
     "name": "Mihono Bourbon",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30142": {
     "name": "Sakura Laurel",
@@ -1902,7 +1907,7 @@
   "30146": {
     "name": "Oguri Cap",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30147": {
     "name": "Jungle Pocket",
@@ -1917,7 +1922,7 @@
   "30149": {
     "name": "Aston Machan",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30150": {
     "name": "Vodka",
@@ -1932,7 +1937,7 @@
   "30152": {
     "name": "TM Opera O",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30153": {
     "name": "Gold City",
@@ -1947,7 +1952,7 @@
   "30155": {
     "name": "Daitaku Helios",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30156": {
     "name": "Wonder Acute",
@@ -1957,7 +1962,7 @@
   "30157": {
     "name": "Manhattan Cafe",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30158": {
     "name": "Jungle Pocket",
@@ -1972,7 +1977,7 @@
   "30160": {
     "name": "Mei Satake",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30161": {
     "name": "El Condor Pasa",
@@ -1987,7 +1992,7 @@
   "30163": {
     "name": "Nakayama Festa",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30164": {
     "name": "Hishi Amazon",
@@ -2032,7 +2037,7 @@
   "30172": {
     "name": "Mejiro McQueen",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30173": {
     "name": "Sounds of Earth",
@@ -2067,7 +2072,7 @@
   "30179": {
     "name": "Satono Diamond",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30180": {
     "name": "Carvers of History",
@@ -2097,7 +2102,7 @@
   "30185": {
     "name": "North Flight",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30186": {
     "name": "Gentildonna",
@@ -2112,7 +2117,7 @@
   "30188": {
     "name": "Ryoka Tsurugi",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30189": {
     "name": "Kitasan Black",
@@ -2162,7 +2167,7 @@
   "30198": {
     "name": "Neo Universe",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30199": {
     "name": "Hishi Miracle",
@@ -2177,7 +2182,7 @@
   "30201": {
     "name": "Narita Taishin",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30202": {
     "name": "Vodka",
@@ -2207,7 +2212,7 @@
   "30207": {
     "name": "Yayoi Akikawa",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30208": {
     "name": "Nishino Flower",
@@ -2227,7 +2232,7 @@
   "30211": {
     "name": "Copano Rickey",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30212": {
     "name": "Wonder Acute",
@@ -2257,12 +2262,12 @@
   "30217": {
     "name": "Cesario",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30218": {
     "name": "Taiki Shuttle",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30219": {
     "name": "Fuji Kiseki",
@@ -2272,7 +2277,7 @@
   "30220": {
     "name": "Symboli Kris S",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30221": {
     "name": "Satono Diamond",
@@ -2307,7 +2312,7 @@
   "30227": {
     "name": "Daiwa Scarlet",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30228": {
     "name": "Symboli Kris S",
@@ -2317,7 +2322,7 @@
   "30229": {
     "name": "Agnes Digital",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30230": {
     "name": "Meisho Doto",
@@ -2337,7 +2342,7 @@
   "30233": {
     "name": "Symboli Rudolf",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30234": {
     "name": "Mejiro Ardan",
@@ -2362,7 +2367,7 @@
   "30238": {
     "name": "Ikuno Dictus",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30239": {
     "name": "Nice Nature",
@@ -2412,7 +2417,7 @@
   "30248": {
     "name": "Daring Tact",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30249": {
     "name": "Transcend",
@@ -2442,12 +2447,12 @@
   "30254": {
     "name": "Daring Heart",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30255": {
     "name": "Air Messiah",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30256": {
     "name": "Tamamo Cross",
@@ -2457,7 +2462,7 @@
   "30257": {
     "name": "Tucker Bryne",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30258": {
     "name": "Mejiro Ryan",
@@ -2477,7 +2482,7 @@
   "30261": {
     "name": "Win Variation",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30262": {
     "name": "Duramente",
@@ -2502,7 +2507,7 @@
   "30266": {
     "name": "Chrono Genesis",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30267": {
     "name": "Calstone Light O",
@@ -2512,7 +2517,7 @@
   "30268": {
     "name": "Durandal",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30269": {
     "name": "Dantsu Flame",
@@ -2552,7 +2557,7 @@
   "30276": {
     "name": "Kiyoko Hoshina",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30277": {
     "name": "Mihono Bourbon",
@@ -2612,17 +2617,17 @@
   "30288": {
     "name": "Silence Suzuka",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30289": {
     "name": "Forever Young",
     "rarity": "SSR",
-    "type": "Wisdom"
+    "type": "Intelligence"
   },
   "30290": {
     "name": "Casino Drive",
     "rarity": "SSR",
-    "type": "Friends"
+    "type": "Friend"
   },
   "30291": {
     "name": "Victoire Pisa",
@@ -2668,5 +2673,25 @@
     "name": "Agnes Tachyon",
     "rarity": "SSR",
     "type": "Guts"
+  },
+  "30300": {
+    "name": "Sakura Chiyono O",
+    "rarity": "SSR",
+    "type": "Stamina"
+  },
+  "30301": {
+    "name": "Gran Alegria",
+    "rarity": "SSR",
+    "type": "Power"
+  },
+  "30302": {
+    "name": "Satono Diamond",
+    "rarity": "SSR",
+    "type": "Speed"
+  },
+  "30303": {
+    "name": "Blast Onepiece",
+    "rarity": "SSR",
+    "type": "Stamina"
   }
 }

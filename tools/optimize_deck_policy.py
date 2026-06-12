@@ -440,6 +440,15 @@ def _main():
             ss_hits = sum(1 for r in results if r.rating_score >= args.ss_threshold)
             print(f"    objective={args.objective} score={score:.3f} "
                   f"(SS-hits: {ss_hits}/{len(results)})", flush=True)
+        elif args.objective == "clean_rate":
+            # Fractional objective: ".0f" collapsed every candidate to
+            # "score=0" in production logs. Show the rate AND the count.
+            clean = sum(
+                1 for r in results
+                if not any(not race.get("won") for race in (r.races_run or []))
+            )
+            print(f"    objective={args.objective} score={score:.4f} "
+                  f"(clean: {clean}/{len(results)})", flush=True)
         else:
             print(f"    objective={args.objective} score={score:.0f}", flush=True)
         candidates.append({

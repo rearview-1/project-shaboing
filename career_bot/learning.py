@@ -92,6 +92,81 @@ DECK_AWARE_TOP_SCORE_FLOORS = {
     1: 16000,  # sr_heavy:          no A+ "top" samples
     0: 16000,  # r_heavy_baseline:  no A+ "top" samples
 }
+# Absolute lower bound for the adaptive floor fallback. This is a junk
+# filter (aborted/degenerate careers), not a quality bar — the account's
+# own score distribution provides the quality bar. Worst FINISHED live
+# career observed on 2026-06-12 scored 3.9k; broken ones score near 0.
+ADAPTIVE_SCORE_FLOOR_MINIMUM = 4000.0
+
+
+def adapt_score_floors_to_account(behavior_samples, score_floor, score_floors_by_deck,
+                                  *, enabled=True, recent=24, min_bot_samples=8):
+    """Lower unreachable score floors to the account's own best quartile.
+
+    The static/empirical deck-aware floors only ever ratchet UP, so an
+    account whose careers score below its bucket's bar can never produce
+    a top sample — auto-learning then skips on
+    `no_top_samples_above_score_floor` for every career, forever
+    (observed live 2026-06-12: best bot career 14.3k vs a 17.5k+ floor;
+    eight straight careers skipped). Keeping the bar absolute starves
+    the loop of exactly the data it needs to climb.
+
+    When NO bot career clears its bucket floor and we have enough bot
+    history to judge, fall back to "learn from this account's own best
+    work": the 75th percentile of recent finished bot career scores,
+    clamped to [R-deck minimum, configured floor]. The philosophy of the
+    original gate (train on the best, not mediocre echoes) is preserved —
+    the bar is just relative to what this account demonstrably produces.
+
+    Returns (score_floor, score_floors_by_deck, adaptation_report).
+    """
+    report = {"applied": False, "reason": ""}
+    if not enabled:
+        report["reason"] = "disabled"
+        return score_floor, score_floors_by_deck, report
+    bot_rows = []
+    for sample in behavior_samples or []:
+        if str((sample or {}).get("source") or "").lower() != "bot":
+            continue
+        if not is_full_career_sample(sample):
+            continue
+        score = as_float(sample.get("score"))
+        if score <= 0:
+            continue
+        bucket = as_int(sample.get("deck_quality_bucket"), 2)
+        details = _sample_observed_details(sample)
+        bot_rows.append((as_float((details or {}).get("timestamp"), -1.0), score, bucket))
+    if len(bot_rows) < max(1, int(min_bot_samples)):
+        report["reason"] = f"insufficient_bot_samples ({len(bot_rows)})"
+        return score_floor, score_floors_by_deck, report
+    any_clears = any(
+        score >= float(score_floors_by_deck.get(int(bucket), score_floor))
+        for _ts, score, bucket in bot_rows
+    )
+    if any_clears:
+        report["reason"] = "configured_floor_reachable"
+        return score_floor, score_floors_by_deck, report
+    bot_rows.sort(key=lambda row: row[0])
+    recent_scores = sorted(score for _ts, score, _bucket in bot_rows[-max(1, int(recent)):])
+    idx = max(0, int(round(0.75 * (len(recent_scores) - 1))))
+    p75 = float(recent_scores[idx])
+    # Absolute junk filter, NOT tied to the deck floor table (that table is
+    # the unreachable bar we're adapting away from). Full finished careers
+    # score well above this; aborted/broken ones don't.
+    sanity_min = float(ADAPTIVE_SCORE_FLOOR_MINIMUM)
+    adapted = {}
+    for bucket, configured in score_floors_by_deck.items():
+        adapted[int(bucket)] = round(min(float(configured), max(sanity_min, p75)), 2)
+    adapted_floor = round(min(float(score_floor), max(sanity_min, p75)), 2)
+    report.update({
+        "applied": True,
+        "reason": "no_bot_sample_cleared_configured_floor",
+        "bot_sample_count": len(bot_rows),
+        "recent_p75_score": round(p75, 2),
+        "configured_floors": {int(k): float(v) for k, v in score_floors_by_deck.items()},
+        "adapted_floors": dict(adapted),
+    })
+    return adapted_floor, adapted, report
 
 
 def compute_empirical_score_floors(parent_library_samples, minimum=DEFAULT_TOP_SCORE_FLOOR):
@@ -6674,6 +6749,16 @@ def learn_preset(
                 float(score_floors_by_deck.get(int(bucket), DEFAULT_TOP_SCORE_FLOOR)),
                 float(floor),
             )
+    # Adaptive fallback: if the configured floors are unreachable for this
+    # account's bot careers, lower the bar to the account's own best
+    # quartile so the loop can learn from its best work instead of
+    # skipping forever. Disable via learning_adaptive_score_floor=false.
+    score_floor, score_floors_by_deck, score_floor_adaptation = adapt_score_floors_to_account(
+        behavior_usable,
+        score_floor,
+        score_floors_by_deck,
+        enabled=bool(preset.get("learning_adaptive_score_floor", True)),
+    )
     if previous_metadata.get("sample_signature") == signature and previous_metadata.get("objective") == LEARNING_OBJECTIVE_VERSION:
         learned = normalize_preset(copy.deepcopy(preset))
         if reference_rules:
@@ -6788,6 +6873,7 @@ def learn_preset(
             "changes": {},
             "skipped": "no_top_samples_above_score_floor",
             "score_floor": score_floor,
+            "score_floor_adaptation": score_floor_adaptation,
             "score_floors_by_deck": score_floors_by_deck,
             "empirical_score_floors": empirical_score_floor_diagnostic,
             "best_score": max((as_float(s.get("score")) for s in usable), default=0),
@@ -7275,6 +7361,7 @@ def learn_preset(
         "training_policy_model": learned.get("training_policy_model") or {},
         "training_policy_validation": policy_validation,
         "score_floor": score_floor,
+        "score_floor_adaptation": score_floor_adaptation,
         "score_floors_by_deck": score_floors_by_deck,
         "empirical_score_floors": empirical_score_floor_diagnostic,
         "reference_group_strategy": reference_group_strategy,

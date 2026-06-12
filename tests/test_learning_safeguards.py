@@ -2307,3 +2307,57 @@ class RaceStyleOverrideLearningTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AdaptiveScoreFloorTests(unittest.TestCase):
+    """The configured deck-aware floors only ratchet up; an account whose
+    careers never reach them must fall back to learning from its own best
+    quartile instead of skipping forever."""
+
+    @staticmethod
+    def _bot(score, ts, bucket=2):
+        return {
+            "source": "bot", "status": "finished", "score": score,
+            "deck_quality_bucket": bucket, "first_turn": 1, "final_turn": 78,
+            "observed_turn_count": 78, "path": f"p{ts}",
+        }
+
+    def test_unreachable_floor_adapts_to_account_p75(self):
+        from career_bot.learning import adapt_score_floors_to_account
+        rows = [self._bot(5000 + i * 500, i) for i in range(12)]
+        floor, by_deck, report = adapt_score_floors_to_account(
+            rows, 17500.0, {2: 17500.0, 3: 22000.0})
+        self.assertTrue(report["applied"])
+        self.assertEqual(floor, 9000.0)
+        self.assertEqual(by_deck, {2: 9000.0, 3: 9000.0})
+
+    def test_reachable_floor_left_alone(self):
+        from career_bot.learning import adapt_score_floors_to_account
+        rows = [self._bot(5000 + i * 500, i) for i in range(12)]
+        rows.append(self._bot(18000, 99))
+        floor, by_deck, report = adapt_score_floors_to_account(
+            rows, 17500.0, {2: 17500.0})
+        self.assertFalse(report["applied"])
+        self.assertEqual(floor, 17500.0)
+        self.assertEqual(by_deck, {2: 17500.0})
+
+    def test_sanity_minimum_filters_degenerate_accounts(self):
+        from career_bot.learning import adapt_score_floors_to_account
+        rows = [self._bot(2000 + i * 100, i) for i in range(12)]
+        floor, _by_deck, report = adapt_score_floors_to_account(
+            rows, 17500.0, {2: 17500.0})
+        self.assertTrue(report["applied"])
+        self.assertEqual(floor, 4000.0)
+
+    def test_insufficient_history_or_disabled_no_adaptation(self):
+        from career_bot.learning import adapt_score_floors_to_account
+        rows = [self._bot(5000, i) for i in range(3)]
+        floor, _by_deck, report = adapt_score_floors_to_account(
+            rows, 17500.0, {2: 17500.0})
+        self.assertFalse(report["applied"])
+        self.assertEqual(floor, 17500.0)
+        rows = [self._bot(5000 + i * 500, i) for i in range(12)]
+        floor, _by_deck, report = adapt_score_floors_to_account(
+            rows, 17500.0, {2: 17500.0}, enabled=False)
+        self.assertFalse(report["applied"])
+        self.assertEqual(floor, 17500.0)

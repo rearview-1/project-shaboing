@@ -352,6 +352,27 @@ def _summary(results):
     }
 
 
+def _release_scheduler_pid():
+    """Zero our pid in the cadence scheduler state on exit.
+
+    The runner's spawn-time liveness check can deadlock on pid reuse (a
+    finished run's pid gets claimed by an unrelated process and the
+    cadence never fires again — happened twice on 2026-06-12). The
+    spawned optimizer always runs current code, so clearing our own pid
+    here makes the cadence self-healing even when the long-lived server
+    still runs the old pid-only check.
+    """
+    me = os.getpid()
+    for state_path in (PROJECT_ROOT / "uma_runtime" / "instances").glob("*/learning/policy_optimizer_state.json"):
+        try:
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            if int(state.get("running_pid") or 0) == me:
+                state["running_pid"] = 0
+                state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+        except Exception:
+            continue
+
+
 def main():
     """Snapshot-wrapping entry point. The real work happens in _main."""
     global SIM_PROJECT_ROOT
@@ -364,6 +385,7 @@ def main():
     finally:
         SIM_PROJECT_ROOT = PROJECT_ROOT
         _cleanup_snapshot(snapshot)
+        _release_scheduler_pid()
 
 
 def _main():

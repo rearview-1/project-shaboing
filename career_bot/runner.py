@@ -978,6 +978,12 @@ class CareerRunner:
             creationflags = 0
             if os.name == "nt":
                 creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            # Force UTF-8 stdio in the child: with piped stdout on Windows
+            # it otherwise inherits cp1252 and any non-ASCII print kills
+            # the run (observed: a unicode arrow crashed a production pass
+            # right after its cache save).
+            child_env = dict(os.environ)
+            child_env["PYTHONUTF8"] = "1"
             with open(log_path, "w", encoding="utf-8") as log_fh:
                 proc = subprocess.Popen(
                     cmd,
@@ -985,6 +991,7 @@ class CareerRunner:
                     stdout=log_fh,
                     stderr=subprocess.STDOUT,
                     creationflags=creationflags,
+                    env=child_env,
                 )
             state["careers_since_optimize"] = 0
             state["running_pid"] = proc.pid

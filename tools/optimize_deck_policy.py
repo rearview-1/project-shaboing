@@ -530,7 +530,11 @@ def _main():
         )
         save_cache(cache, PROJECT_ROOT, args.instance)
         from career_bot.deck_policy_cache import cache_path as _cp
-        print(f"  saved → {_cp(PROJECT_ROOT, args.instance)}", flush=True)
+        # ASCII only: the auto-cadence subprocess can inherit a cp1252
+        # stdout on Windows, and a non-encodable character here killed a
+        # production run AFTER the cache write (crash was cosmetic but
+        # masked the success and aborted the summary).
+        print(f"  saved -> {_cp(PROJECT_ROOT, args.instance)}", flush=True)
         saved = True
     else:
         print(f"\n[4/4] Winner did NOT outperform baseline on {args.objective} "

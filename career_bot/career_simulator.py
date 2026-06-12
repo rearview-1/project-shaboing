@@ -2448,7 +2448,20 @@ class CareerSimulator:
         if loaded_thresholds:
             self.fidelity_warnings.append(f"manual race thresholds: {self.manual_race_data_path}")
         else:
-            self.fidelity_warnings.append("manual race thresholds unavailable; using fallback race thresholds")
+            # The probability model prefers the postmortem-learned
+            # race_thresholds.json (see _manual_threshold_probability_estimate);
+            # manual_race_data.json is only one fallback layer. Report which
+            # source is actually in play so audits aren't misled.
+            learned_path = next(
+                (p for p in _race_threshold_json_candidates(self.project_root, self.preset) if p.exists()),
+                None,
+            )
+            if learned_path is not None:
+                self.fidelity_warnings.append(
+                    f"manual race data absent; postmortem-learned race thresholds in use: {learned_path}"
+                )
+            else:
+                self.fidelity_warnings.append("manual race thresholds unavailable; using fallback race thresholds")
         self.race_thresholds = dict(loaded_thresholds) if loaded_thresholds else {
             # Minimal fallback for CI/tests where manual_race_data.json isn't present
             "Tokyo Yushun (Japanese Derby)": {"speed": 405, "stamina": 317, "power": 443, "guts": 327, "wit": 404},

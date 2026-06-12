@@ -76,6 +76,14 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~20:00 — FIRST CLEAN CAREER
+- 16:57 career: 0 losses, 0 G1 losses, sum 4388 (1004/780/864/559/1181). First clean
+  record of the entire project under the autonomous stack — and likely among the first
+  careers on fully current code post-restart (16:40 truncated career suggests the
+  operator restarted). 1000+ speed, wit 1181: an inheritable parent.
+- Mission metric officially moving: clean rate no longer zero. Watch the next cadence
+  corpus pick this career up as a top sample (it should dominate the learning pool).
+
 ### 2026-06-12 ~19:00 — churn-save guard
 - 15:27 cadence verdict: validation IDENTICAL to baseline (clean 0.060 both, rating -10)
   yet saved on a microscopic loss-term tiebreak. 7d53e8e: saves now require a meaningful

@@ -76,6 +76,17 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~15:00 — cohort verdict (5/5)
+- Post-policy cohort complete: losses 7, 8, 2, 5, 4 (G1: 4,3,2,4,3). Mean 5.2 vs ~7.6
+  pre-policy today. Trend right, not clean yet. Stats clearly better: final career hit
+  speed 1059 (first 1000+ live speed today), wit 1066, sum 4296; guts stable 570-700.
+- New sim model implies ~2.9 losses/career at 91.9% win rate over ~36 races — live mean
+  5.2 still above it, but live includes the two pre-learned-update careers (7, 8). The
+  three careers with the full stack: 2, 5, 4 (mean 3.7) — close to sim. Calibration
+  holding; full re-audit still queued at ~20 current-code careers.
+- Next event: cadence optimizer run (monitor b7xk0970v) — honest-odds validation of the
+  incumbent policy.
+
 ### 2026-06-12 ~14:30 — autonomous block 8: T8 SHIPPED (race-model realism)
 - Branch probe pinpointed it: 92% of sim races rode threshold branches at flat 0.985 →
   95% sim win rate vs ~80% live. 199edb8 ships three bounded fixes (lift 0.985→0.95,

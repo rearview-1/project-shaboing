@@ -30,6 +30,16 @@ MAX_OPPONENT_SKILLS_PER_LOSS = 15
 CAREER_INVISIBLE_STAT_BONUS = 400
 
 
+# NOTE on gap basis: gaps compare NPC listed stats against the player's RAW
+# trainer-screen stats, NOT the +400 effective values. Whether NPC opponents
+# receive their own in-race bonus is unverified, but race outcomes settle the
+# practical question: fields whose listed stats sit hundreds of points below
+# the player's effective values still win these races regularly, so the raw
+# comparison tracks relative strength far better than (field - player - 400),
+# which would zero out every observed deficit. Do not switch the basis to
+# effective without a cited source on NPC stat bonuses.
+
+
 def _safe_int(value, default=0):
     try:
         return int(value or 0)
@@ -221,6 +231,7 @@ def analyze_trace(trace_path, race_program_map=None, started_at=None, ended_at=N
             opponents = _opponents(horses)
             player_stats = _horse_stats(player)
             opponent_summary = _opponent_stat_summary(opponents)
+            effective_player = {key: player_stats[key] + CAREER_INVISIBLE_STAT_BONUS for key in STAT_KEYS}
             field_max_gaps = {
                 key: opponent_summary[key]["max"] - player_stats.get(key, 0) for key in STAT_KEYS
             }
@@ -229,7 +240,8 @@ def analyze_trace(trace_path, race_program_map=None, started_at=None, ended_at=N
                 for key in STAT_KEYS
             }
             primary_stat, primary_gap = max(field_max_gaps.items(), key=lambda item: item[1]) if field_max_gaps else (None, 0)
-            effective_player = {key: player_stats[key] + CAREER_INVISIBLE_STAT_BONUS for key in STAT_KEYS}
+            if primary_stat is not None and primary_gap <= 0:
+                primary_stat, primary_gap = None, 0
             # Richer capture (added 2026-05): style, skills, finish time,
             # environment. The legacy stats-only postmortem misses cases
             # like "lost NHK Mile Cup to a field full of Pace Chasers

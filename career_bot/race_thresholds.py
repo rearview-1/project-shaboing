@@ -27,6 +27,7 @@ from pathlib import Path
 
 from career_bot.postmortem_feedback import (
     STAT_KEYS,
+    _worst_stat_with_dominance_guard,
     load_recent_postmortems,
 )
 
@@ -58,13 +59,19 @@ def _per_loss_target(loss, cushion):
     """
     effective = loss.get("effective_player_stats") or {}
     gaps = loss.get("field_max_gap_over_player") or {}
+    # Dominance guard (same rule as hint aggregation): when the only
+    # positive gap is the phantom small-deficit pattern, don't raise any
+    # target — stat pressure can't fix that loss.
+    guarded_stat, _guarded_gap = _worst_stat_with_dominance_guard(
+        {stat: float(_coerce_int(gaps.get(stat))) for stat in STAT_KEYS if stat in gaps}
+    )
     target = {}
     for stat in STAT_KEYS:
         eff = _coerce_int(effective.get(stat))
         if eff <= 0:
             continue
         gap = _coerce_int(gaps.get(stat))
-        if gap > 0:
+        if gap > 0 and guarded_stat is not None:
             target[stat] = eff + gap + cushion
         else:
             target[stat] = eff

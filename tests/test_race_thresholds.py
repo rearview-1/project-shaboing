@@ -36,13 +36,13 @@ def _postmortem(losses, career_log="logs/career_a.json"):
 
 class BuildRaceThresholdsTests(unittest.TestCase):
     def test_single_loss_raises_target_on_gap_stat_only(self):
-        """Lost Tenno Sho with effective stamina=984, gap=+22 stamina.
-        Target stamina must be 984 + 22 + cushion. Other stats had
+        """Lost Tenno Sho with effective stamina=984, gap=+122 stamina.
+        Target stamina must be 984 + 122 + cushion. Other stats had
         negative gaps (player led) — they stay at observed effective."""
         loss = _loss(
             program_id=4,
             effective={"speed": 1046, "stamina": 984, "power": 1090, "guts": 861, "wit": 855},
-            gaps={"speed": -239, "stamina": 22, "power": -190, "guts": -20, "wit": -5},
+            gaps={"speed": -239, "stamina": 122, "power": -190, "guts": -20, "wit": -5},
             race_name="Tenno Sho (Spring)",
         )
         thresholds = build_race_thresholds([_postmortem([loss])])
@@ -52,8 +52,28 @@ class BuildRaceThresholdsTests(unittest.TestCase):
         self.assertEqual(entry["race_name"], "Tenno Sho (Spring)")
         target = entry["target_effective"]
         # Stamina was the gap — raise it by gap + cushion.
-        self.assertEqual(target["stamina"], 984 + 22 + DEFAULT_CUSHION)
+        self.assertEqual(target["stamina"], 984 + 122 + DEFAULT_CUSHION)
         # Player led on the rest — keep observed effective as floor.
+        self.assertEqual(target["speed"], 1046)
+        self.assertEqual(target["power"], 1090)
+        self.assertEqual(target["guts"], 861)
+        self.assertEqual(target["wit"], 855)
+
+    def test_small_gap_while_dominating_elsewhere_does_not_raise_target(self):
+        """Phantom-deficit guard: a small (<100 pt) single-stat gap while
+        the player leads every other stat by 100+ on average cannot be the
+        loss cause — no target is raised, all stats stay at the observed
+        effective floor. This was the pattern that pushed guts training
+        in every career on speed/wit decks."""
+        loss = _loss(
+            program_id=4,
+            effective={"speed": 1046, "stamina": 984, "power": 1090, "guts": 861, "wit": 855},
+            gaps={"speed": -239, "stamina": 22, "power": -190, "guts": -20, "wit": -5},
+            race_name="Tenno Sho (Spring)",
+        )
+        thresholds = build_race_thresholds([_postmortem([loss])])
+        target = thresholds[4]["target_effective"]
+        self.assertEqual(target["stamina"], 984)
         self.assertEqual(target["speed"], 1046)
         self.assertEqual(target["power"], 1090)
         self.assertEqual(target["guts"], 861)

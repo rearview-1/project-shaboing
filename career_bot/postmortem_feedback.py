@@ -44,6 +44,40 @@ RUNNING_STYLE_NAMES = {
 }
 
 
+# Dominance guard for worst-stat selection. A small positive gap in one
+# stat cannot plausibly be the loss cause when the player leads every other
+# stat by a wide margin — but exactly that pattern shows up in nearly every
+# loss, because the build's lowest stat (guts on speed/wit decks) sits a few
+# dozen points under the field max while everything else leads by hundreds.
+# Without the guard, that phantom deficit soaked up training bias career
+# after career while the actual loss causes (HP, pacing, RNG) went
+# unaddressed. Gaps >= 100 pts are big enough to act on regardless.
+PHANTOM_GAP_MAX_PTS = 100.0
+DOMINANT_LEAD_GUARD_PTS = 100.0
+
+
+def _worst_stat_with_dominance_guard(avg_gap):
+    """Return (worst_stat, worst_gap) from an avg_gap dict, or (None, 0.0).
+
+    Positive gap = the field had more of the stat than the player. The
+    largest positive gap wins, except when it is small (< PHANTOM_GAP_MAX_PTS)
+    while the player leads the remaining stats by DOMINANT_LEAD_GUARD_PTS or
+    more on average — that combination is a phantom deficit, not a cause.
+    """
+    if not avg_gap:
+        return None, 0.0
+    worst_stat, worst_gap = max(avg_gap.items(), key=lambda kv: kv[1])
+    if worst_gap <= 0:
+        return None, 0.0
+    if worst_gap < PHANTOM_GAP_MAX_PTS:
+        others = [float(value or 0) for key, value in avg_gap.items() if key != worst_stat]
+        if others:
+            mean_lead = -(sum(others) / len(others))  # positive = player ahead
+            if mean_lead >= DOMINANT_LEAD_GUARD_PTS:
+                return None, 0.0
+    return worst_stat, worst_gap
+
+
 def load_recent_postmortems(runtime_root, limit=RECENT_POSTMORTEM_LIMIT):
     """Read the N most recently-written postmortem files.
 
@@ -141,10 +175,7 @@ def aggregate_by_race(postmortems):
     for program_id, entry in by_race.items():
         count = max(1, entry["loss_count"])
         avg_gap = {key: round(entry["_gap_totals"][key] / count, 1) for key in STAT_KEYS}
-        worst_stat, worst_gap = max(avg_gap.items(), key=lambda kv: kv[1])
-        if worst_gap <= 0:
-            worst_stat = None
-            worst_gap = 0.0
+        worst_stat, worst_gap = _worst_stat_with_dominance_guard(avg_gap)
         # Style advice: if the field consistently runs a particular style
         # and the bot was running a different one in the lost races, the
         # advice flags the dominant field style as worth trying.
@@ -254,6 +285,9 @@ def diagnose_loss_pattern(hint, history_entry=None):
     # mislabeled as "style_mismatch" when the operator's rule is to
     # never switch styles — losses should always feed back as training
     # adjustments, not style changes.
+    # Note: `worst_stat` arrives pre-filtered by the dominance guard in
+    # `_worst_stat_with_dominance_guard` (via aggregate_by_race), so a
+    # phantom small-gap deficit never reaches this threshold check.
     stat_significant = stat_gap_pts >= 30.0
 
     candidates = []
@@ -425,8 +459,8 @@ def merge_global_signal(per_race_hints):
         for key in STAT_KEYS:
             weighted_totals[key] += float(hint["avg_gap"].get(key, 0)) * count
     avg_gap = {key: round(weighted_totals[key] / max(1, total_losses), 1) for key in STAT_KEYS}
-    worst_stat, worst_gap = max(avg_gap.items(), key=lambda kv: kv[1])
-    if worst_gap <= 0:
+    worst_stat, worst_gap = _worst_stat_with_dominance_guard(avg_gap)
+    if not worst_stat:
         return {"worst_stat": None, "worst_stat_gap": 0.0, "avg_gap": avg_gap, "total_losses": total_losses}
     return {
         "worst_stat": worst_stat,

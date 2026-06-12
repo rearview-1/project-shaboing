@@ -76,6 +76,14 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~18:30 — second pid-reuse deadlock; made cadence self-healing
+- Cadence froze again at careers_since=15 (12:51 run's pid reused). Manual unstick #2.
+- Permanent fix that works WITHOUT a server restart: the spawned optimizer (always
+  current code) now zeroes its own pid in policy_optimizer_state.json on exit
+  (finally block). Plus 1f2fe18's log-based liveness applies post-restart.
+- Career stream since last entry: 4, 8, 8, 5, 9 losses (sums 3741-4304; stamina>=840
+  careers keep being the good ones). Next finished career spawns the overdue cadence.
+
 ### 2026-06-12 ~17:45 — revert rule resolved: policy stays
 - Post-save (13:50 clean-rate policy) cohort: 2, 16, 8, 6 losses (G1: 2, 11, 6, 1).
   The 16-loss career triggered a revert watch; rule was 'two consecutive >8 -> revert'.

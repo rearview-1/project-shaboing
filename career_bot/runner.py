@@ -1050,15 +1050,41 @@ class CareerRunner:
         previous_pid = int(state.get("running_pid") or 0)
         previous_alive = False
         if previous_pid > 0:
-            try:
-                import psutil  # optional; fall back to os-level check
-                previous_alive = psutil.pid_exists(previous_pid)
-            except ImportError:
+            # Liveness cannot rely on the pid alone: Windows reuses pids,
+            # and a reused pid deadlocked the cadence at careers_since=11
+            # (the finished 10:52 run's pid belonged to an unrelated
+            # process, so no new run ever spawned). The run's own log is
+            # the source of truth — a terminal marker or age beyond the
+            # max runtime means it is over. NOTE: os.kill(pid, 0) is NOT a
+            # safe probe on Windows (it calls TerminateProcess); never use
+            # it here.
+            log_terminal = False
+            last_log = str(state.get("last_log") or "")
+            if last_log:
                 try:
-                    os.kill(previous_pid, 0)
-                    previous_alive = True
+                    log_tail = Path(last_log).read_text(encoding="utf-8", errors="replace")[-4000:]
+                    log_terminal = any(
+                        marker in log_tail
+                        for marker in ("Saved to cache", "NOT saved", "did NOT outperform", "Traceback")
+                    )
                 except OSError:
-                    previous_alive = False
+                    log_terminal = False
+            too_old = True
+            started_at = str(state.get("last_started_at") or "")
+            if started_at:
+                try:
+                    started_struct = time.strptime(started_at, "%Y-%m-%dT%H:%M:%S")
+                    too_old = (time.time() - time.mktime(started_struct)) > 2.5 * 3600
+                except (ValueError, OverflowError):
+                    too_old = True
+            if not log_terminal and not too_old:
+                try:
+                    import psutil
+                    previous_alive = psutil.pid_exists(previous_pid)
+                except ImportError:
+                    # No safe pid probe on Windows without psutil; a recent,
+                    # non-terminal log means the run is plausibly still going.
+                    previous_alive = True
 
         if state["careers_since_optimize"] >= every and not previous_alive:
             import subprocess

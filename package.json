@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe main.py) else (python main.py)\"",
+    "build": "npm run check:compile",
+    "test": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe -m unittest discover -s tests -p test_*.py) else (python -m unittest discover -s tests -p test_*.py)\"",
     "check": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe tools\\verify_project_integrity.py) else (python tools\\verify_project_integrity.py)\"",
     "check:compile": "cmd /c \"if exist .venv\\Scripts\\python.exe (.venv\\Scripts\\python.exe tools\\verify_project_integrity.py --compile) else (python tools\\verify_project_integrity.py --compile)\""
   },

@@ -22,6 +22,9 @@ REQUIRED_FILES = (
     "run_sweepy.bat",
     "setup_and_run_sweepy.bat",
     "optimizer.bat",
+    "run_dry_preflight.bat",
+    "run_dual_sweepy.bat",
+    "run_smoke_tests.bat",
     "career_bot/__init__.py",
     "career_bot/deck_advice.py",
     "career_bot/runner.py",
@@ -65,6 +68,9 @@ SKIP_COMPILE_DIRS = {
 LAUNCHER_EXPECTATIONS = {
     "run_sweepy.bat": ("tools\\verify_project_integrity.py", "main.py"),
     "optimizer.bat": ("scripts\\windows\\run_calibrate.bat",),
+    "run_dry_preflight.bat": ("scripts\\windows\\run_dry_preflight.bat",),
+    "run_dual_sweepy.bat": ("scripts\\windows\\run_dual_sweepy.bat",),
+    "run_smoke_tests.bat": ("scripts\\windows\\run_smoke_tests.bat",),
     "scripts/windows/run_calibrate.bat": ("cd /d \"%~dp0..\\..\"", "tools\\calibrate_deck.py"),
     "scripts/windows/run_dry_preflight.bat": ("cd /d \"%~dp0..\\..\"", "tools\\dry_run_preflight.py"),
     "scripts/windows/run_dual_sweepy.bat": ("cd /d \"%~dp0..\\..\"", "tools\\launch_dual_sweepy.py"),
@@ -104,7 +110,12 @@ def verify(*, compile_python: bool = False) -> tuple[bool, list[str]]:
         ):
             errors.append(f"launcher {rel} still references the old nested project layout")
         if rel.endswith(".bat") and rel != "setup_and_run_sweepy.bat":
-            if ".venv\\Scripts\\python.exe" not in text and "run_calibrate.bat" not in text:
+            delegates_to_windows_launcher = "scripts\\windows\\" in text
+            if (
+                ".venv\\Scripts\\python.exe" not in text
+                and "run_calibrate.bat" not in text
+                and not delegates_to_windows_launcher
+            ):
                 errors.append(f"launcher {rel} does not prefer .venv\\Scripts\\python.exe")
 
     # Make the project root explicit so this works from .bat launchers and

@@ -930,6 +930,12 @@ class CareerRunner:
         if str((report_snapshot or {}).get("status") or "") != "finished":
             return
         runtime_root = Path(runtime_root)
+        if runtime_root.name == "uma_runtime" or runtime_root.parent.name != "instances":
+            # Root-level runtime reports are test/aggregate artifacts, not a
+            # concrete account instance. Spawning the optimizer here produces
+            # unusable "--instance uma_runtime" jobs and can leave background
+            # subprocesses running after smoke tests.
+            return
         state_path = runtime_root / "learning" / "policy_optimizer_state.json"
         try:
             state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}

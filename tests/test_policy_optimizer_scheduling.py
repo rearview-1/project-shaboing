@@ -71,6 +71,17 @@ class PolicyOptimizerSchedulingTests(unittest.TestCase):
             self.runner._maybe_schedule_policy_optimizer(self.runtime_root, preset, {"status": "stopped"})
         self.assertEqual(self.spawned, [])
 
+    def test_root_runtime_does_not_spawn_invalid_instance_job(self):
+        root_runtime = Path(self._tmp.name) / "uma_runtime"
+        (root_runtime / "learning").mkdir(parents=True)
+        preset = {"auto_policy_optimizer_every": 2}
+
+        for _ in range(3):
+            self.runner._maybe_schedule_policy_optimizer(root_runtime, preset, {"status": "finished"})
+
+        self.assertEqual(self.spawned, [])
+        self.assertFalse((root_runtime / "learning" / "policy_optimizer_state.json").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -232,3 +232,48 @@ def test_at_or_above_splus_proposes_smaller_steps():
     # No skill-budget bump (gating is median < S floor) — confirm
     budget = [d for d in decisions if d["param"] == "calendar_race_prebuy_budget"]
     assert budget == []
+
+
+def test_wit_pressure_not_escalated_when_wit_already_leads_speed():
+    """Rule 12 guard: with a 2-Wit deck and median Wit < 1100, Wit pressure
+    must NOT be raised when Wit already leads Speed — the stat-sum
+    shortfall is in the lagging stats, and more Wit turns made final
+    Speed sit at 800-950 on the Jun-12 overnight batch."""
+    careers = [
+        dict(_make_career(3850, speed=860, wit=1000), deck_wit_count=2, wit_training_count=14)
+        for _ in range(10)
+    ]
+    summary = summarize_recent_outcomes(careers, {})
+    # Escalated values (what the un-guarded rule produced overnight) — the
+    # down-rule needs room above the param floor to unwind.
+    learned = {
+        "wit_priority_bonus_mid": 0.40,
+        "wit_priority_bonus_late": 0.60,
+    }
+    decisions = propose_tune_decisions(summary, learned)
+    wit_ups = [
+        d for d in decisions
+        if d["param"].startswith("wit_priority_bonus") and d["new"] > d["old"]
+    ]
+    assert wit_ups == []
+    # And with a 100+ lead, the pressure unwinds.
+    wit_downs = [
+        d for d in decisions
+        if d["param"].startswith("wit_priority_bonus") and d["new"] < d["old"]
+    ]
+    assert len(wit_downs) >= 1
+
+
+def test_wit_pressure_still_escalates_when_wit_lags():
+    """Rule 12 still fires when the 2-Wit deck's Wit lane genuinely lags."""
+    careers = [
+        dict(_make_career(3850, speed=1000, wit=820), deck_wit_count=2, wit_training_count=5)
+        for _ in range(10)
+    ]
+    summary = summarize_recent_outcomes(careers, {})
+    decisions = propose_tune_decisions(summary, {})
+    wit_ups = [
+        d for d in decisions
+        if d["param"] == "wit_priority_bonus_mid" and d["new"] > d["old"]
+    ]
+    assert len(wit_ups) == 1

@@ -132,6 +132,12 @@ TUNABLE_PARAMS = {
     # failure mode on race-heavy routes: too many full rest turns and too few
     # low-HP Wit/Riko recovery substitutes after deck changes.
     "rest_threshold":              {"floor": 24,   "ceiling": 75,   "step": 2,    "default": 48},
+    # Structural policy levers (see mant._apply_visible_tile_quality_guard).
+    # Tile scores run ~1.4-5.5; these need to be a meaningful fraction of
+    # 1.0 to flip borderline picks. Defaults 0 = lever off until tuned.
+    "rainbow_take_bonus":          {"floor": 0.0,  "ceiling": 2.5,  "step": 0.1,  "default": 0.0},
+    "junior_bond_build_weight":    {"floor": 0.0,  "ceiling": 1.5,  "step": 0.1,  "default": 0.0},
+    "junior_bond_build_end_turn":  {"floor": 20,   "ceiling": 40,   "step": 2,    "default": 30},
     "race_heavy_rest_threshold_penalty": {"floor": 4, "ceiling": 18, "step": 2,    "default": 4},
     "race_heavy_recreation_max_training_score": {"floor": 0.10, "ceiling": 0.45, "step": 0.03, "default": 0.18},
     "low_hp_wit_training_max_failure": {"floor": 18, "ceiling": 25, "step": 1,    "default": 25},
@@ -725,10 +731,23 @@ def propose_tune_decisions(summary, learned_hyperparameters, source_preset=None,
 
     # Rule 12: Deck-aware Wit pressure. With two Wit cards, sub-1100 Wit means
     # the current deck's best lane is not being converted consistently.
+    # Guard: only escalate while Wit actually LAGS the build. On the Jun-12
+    # overnight batch this rule kept raising Wit pressure to its ceiling
+    # (0.55/0.70) with median Wit already 960-1100 and ABOVE median Speed by
+    # 100+ — every extra Wit turn came out of the lagging stats, which is
+    # why final Speed sat at 800-950. When Wit already leads Speed, the
+    # stat-sum shortfall is not a Wit problem; step the pressure back down
+    # so the turns flow to the stats that are actually short.
     wit_cards = summary.get("deck_wit_median", 0)
     wit_med = summary.get("wit_median", 0)
     wit_turns = summary.get("wit_training_median", 0)
-    if median_sum < SPLUS_TARGET_STAT_SUM and wit_cards >= 2 and (wit_med < 1100 or wit_turns < 8):
+    wit_already_dominant = bool(wit_med and speed_med and wit_med >= speed_med)
+    if (
+        median_sum < SPLUS_TARGET_STAT_SUM
+        and wit_cards >= 2
+        and (wit_med < 1100 or wit_turns < 8)
+        and not wit_already_dominant
+    ):
         _propose(
             "wit_priority_bonus_mid",
             "up",
@@ -746,6 +765,19 @@ def propose_tune_decisions(summary, learned_hyperparameters, source_preset=None,
             "up",
             "2-Wit deck under-capping Wit; keep Wit priority active deeper into the climb",
             step_multiplier=0.8,
+        )
+    elif median_sum < SPLUS_TARGET_STAT_SUM and wit_already_dominant and wit_med - speed_med >= 100:
+        _propose(
+            "wit_priority_bonus_mid",
+            "down",
+            f"median Wit={wit_med} leads Speed={speed_med} by {wit_med - speed_med}; unwind midgame Wit pressure",
+            step_multiplier=2.0,
+        )
+        _propose(
+            "wit_priority_bonus_late",
+            "down",
+            f"median Wit={wit_med} leads Speed={speed_med} by {wit_med - speed_med}; unwind late Wit pressure",
+            step_multiplier=2.0,
         )
 
     # Dedup: keep only the strongest move per param (largest new-old delta)

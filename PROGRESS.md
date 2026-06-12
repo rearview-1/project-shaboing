@@ -76,6 +76,21 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~13:00 — autonomous block 5: variance reality-check
+- c6c24ea: cadence search now seeds from the incumbent policy (verbatim + local
+  perturbations + random explorers) — passes compound instead of re-searching.
+- Post-policy sim baseline (n=30, seeds 777): clean 4/30, mean losses 1.47, SS 0/30,
+  median 15,642 — far below the validation run's numbers on its own 16 seeds. Lesson:
+  clean_rate at n=16 has sigma ~0.12; the save gate was acting on half-sigma evidence.
+  c74b384: validation sims 16 -> 32 (preset-tunable). The saved policy itself is
+  plausibly fine (beat baseline on identical seeds) but absolute claims need bigger n.
+- Live-vs-sim verdict so far: live 0/14 clean vs sim ~13% — NOT yet conclusive sim
+  optimism (p(0/14 | p=.133) ~ 0.14). First post-policy career: 7 losses (policy
+  hydration uncertain — started seconds after the save). Cohort monitor continues.
+- T8 stays queued pending cohort; T10 queued: move per-career auto-learning into a
+  spawned subprocess (like the optimizer) so learning always runs current code without
+  operator restarts.
+
 ### 2026-06-12 ~12:30 — autonomous block 4: THE LOOP CLOSED
 - Production optimizer run 105248 (self-spawned by the cadence) VALIDATED AND SAVED its
   winner: clean_rate 0.500 vs baseline 0.438 on 16 held-out seeds each, mean rating +474,

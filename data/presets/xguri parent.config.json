@@ -9998,5 +9998,6 @@
   "wit_closeout_damping_when_core_behind": 0.28,
   "wit_closeout_damping_when_speed_behind": 0.45,
   "wit_closeout_damping_min_wit": 1000,
-  "wit_closeout_damping_lead_over_speed": 80
+  "wit_closeout_damping_lead_over_speed": 80,
+  "calendar_race_prebuy_allow_midcareer_with_end_buy": true
 }

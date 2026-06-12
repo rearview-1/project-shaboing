@@ -76,6 +76,15 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~15:30 — cadence deadlock found and fixed
+- Optimizer cadence was DEADLOCKED at careers_since=11: the finished 10:52 run's pid was
+  reused by an unrelated process, pid_exists stayed true forever. 1f2fe18: liveness now
+  judged by the run's own log (terminal markers) + 2.5h max age; os.kill(0) probe removed
+  (TerminateProcess on Windows!). Live state unstuck (running_pid=0) -> next finished
+  career spawns the run; monitor bc9np8y6p armed for its verdict.
+- Career stream: 12:28 8L/8G1 (sum 4243), 12:37 1L (best of day, sum 4492), 12:47 9L/6G1
+  (wit 1187 - occasional wit-overinvestment persists). High variance; mean trending down.
+
 ### 2026-06-12 ~15:00 — cohort verdict (5/5)
 - Post-policy cohort complete: losses 7, 8, 2, 5, 4 (G1: 4,3,2,4,3). Mean 5.2 vs ~7.6
   pre-policy today. Trend right, not clean yet. Stats clearly better: final career hit

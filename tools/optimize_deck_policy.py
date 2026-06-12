@@ -578,13 +578,23 @@ def _main():
     print(f"  baseline SS hits: {base_ss}/{n_val}  winner SS hits: {win_ss}/{n_val}", flush=True)
     print(f"  baseline {args.objective} score: {base_obj:.3f}  winner {args.objective} score: {win_obj:.3f}  obj lift: {obj_lift:+.3f}", flush=True)
 
-    # Step 4: Cache if winner is meaningfully better on the chosen objective
+    # Step 4: Cache if winner is meaningfully better on the chosen objective.
+    # "Meaningfully" matters: fractional objectives carry tiny tiebreak terms
+    # (mean losses / rating), so obj_lift > 0 once saved a policy whose
+    # validation was IDENTICAL to baseline (0.060 vs 0.060 clean, -10 rating)
+    # on a microscopic loss-term difference. Require at least half a
+    # clean-career step at the validation sample size for fractional
+    # objectives; rating-scale objectives keep a small absolute bar.
+    if args.objective in ("clean_rate", "ss_rate"):
+        min_obj_lift = 0.5 / max(1, args.validation_sims)
+    else:
+        min_obj_lift = 25.0
     saved = False
     if args.no_skills:
         print("\n[4/4] NO-SKILLS diagnostic run — winner NOT saved to the "
               "policy cache (policies tuned without skill margins are not "
               "directly transferable to live careers).", flush=True)
-    elif obj_lift > 0:
+    elif obj_lift >= min_obj_lift:
         print(f"\n[4/4] Winner outperformed baseline on {args.objective} "
               f"(lift={obj_lift:+.3f}). Saving policy to cache.", flush=True)
         cache = load_cache(PROJECT_ROOT, args.instance)
@@ -612,8 +622,8 @@ def _main():
         print(f"  saved -> {_cp(PROJECT_ROOT, args.instance)}", flush=True)
         saved = True
     else:
-        print(f"\n[4/4] Winner did NOT outperform baseline on {args.objective} "
-              f"(lift={obj_lift:+.3f}). Not saving.", flush=True)
+        print(f"\n[4/4] Winner did NOT meaningfully outperform baseline on {args.objective} "
+              f"(lift={obj_lift:+.4f} < required {min_obj_lift:.4f}). Not saving.", flush=True)
 
     print("\n" + "=" * 70, flush=True)
     print("Summary:", flush=True)

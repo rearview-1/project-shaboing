@@ -76,6 +76,21 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~14:30 — autonomous block 8: T8 SHIPPED (race-model realism)
+- Branch probe pinpointed it: 92% of sim races rode threshold branches at flat 0.985 →
+  95% sim win rate vs ~80% live. 199edb8 ships three bounded fixes (lift 0.985→0.95,
+  global per-race ceiling 0.96, hard observed-evidence block <0.70). Post-fix probe:
+  91.9% overall, threshold branches 0.945-0.952 — inside the live good-career band.
+  30 sim tests green. G1-loss median delta still -2 vs the MIXED live corpus; re-audit
+  against the post-policy cohort once ~20 current-code careers exist before tightening
+  further (do not over-correct against old-policy data).
+- Cohort update (3/5): losses 7, 8, then **2** — the 11:58 career was the first running
+  BOTH the saved policy and the 11:44 self-learned preset update; guts 698 shows the
+  allocation shift landing. Small n, right direction.
+- NOTE: the saved deck policy + incumbent seeding + new race model meet in the NEXT
+  cadence run (monitor b7xk0970v armed) — its validation now happens under honest race
+  odds.
+
 ### 2026-06-12 ~14:00 — autonomous block 7: T8 promoted to top priority
 - Post-policy cohort so far: 2 careers, 7 and 8 losses (G1 4 and 3). No live improvement
   signal from the saved policy yet; n tiny.

@@ -76,6 +76,23 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~14:00 — autonomous block 7: T8 promoted to top priority
+- Post-policy cohort so far: 2 careers, 7 and 8 losses (G1 4 and 3). No live improvement
+  signal from the saved policy yet; n tiny.
+- DECISIVE GAP: live careers lose 7-8 races; sim with the SAME policy claims mean 1.47.
+  Sim G1 win rate far above live (audit already showed G1-loss median -2). The optimizer
+  is tuning in a world where races are nearly free wins -> it under-invests in race
+  safety. T8 (race-model realism) is now the binding constraint on everything else.
+- T8 plan (execute next, regardless of cohort completion):
+  1. Branch probe running (diag_race_model_branches.py): per-model win rates in sim —
+     suspicion: manual_safe_threshold_override (the 0.985 clean-prebuy lift) fires far
+     more generously than reality.
+  2. Compare sim win_probability vs LIVE outcome at the live careers' actual pre-race
+     stats (postmortems have them) — per-race calibration table.
+  3. Recalibrate: cap/temper the optimistic branch(es); validate via audit tool's
+     G1-loss delta reaching ~0 against the post-fix live corpus; full suite + sweep.
+- Monitors active: cohort careers (bjrq2uy2k), next cadence optimizer run (b7xk0970v).
+
 ### 2026-06-12 ~13:30 — autonomous block 6: learning runs current code, always
 - 64b370b (committed by Codex's auto-commit while my suite ran — benign collision,
   identical content; NOTE: commit promptly after validation, Codex sweeps the tree):

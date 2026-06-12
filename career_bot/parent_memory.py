@@ -159,6 +159,7 @@ def compact_node(node):
 
 def compact_parent(parent):
     parent = dict(parent or {})
+    _apply_bot_parent_sp_estimate(parent)
     tree = parent.get("tree") or {}
     compact = {
         "instance_id": safe_int(parent.get("instance_id")),
@@ -425,6 +426,39 @@ def _event_race_history_from_career_log(report):
     return [row for _, _, _, row in rows]
 
 
+def _skill_point_spend_from_career_log(report):
+    """Estimate actual SP spent from recorded turn snapshots.
+
+    The game payload does not expose historical hint discounts on completed
+    veterans. For bot careers we do have per-turn remaining SP. Negative
+    deltas between snapshots are skill purchases; positive deltas are earned
+    SP. This is more faithful than guessing from learned skill names.
+    """
+    turns = report.get("turns") or []
+    if not isinstance(turns, list):
+        return 0
+    snapshots = []
+    for turn in turns:
+        if not isinstance(turn, dict):
+            continue
+        stats = turn.get("stats") or {}
+        raw = stats.get("skill_point", turn.get("skill_point"))
+        if raw is None:
+            continue
+        snapshots.append((safe_int(turn.get("turn")), safe_int(raw)))
+    if len(snapshots) < 2:
+        return 0
+    snapshots.sort(key=lambda row: row[0])
+    spent = 0
+    previous = snapshots[0][1]
+    for _turn, current in snapshots[1:]:
+        delta = current - previous
+        if delta < 0:
+            spent += -delta
+        previous = current
+    return max(0, int(spent))
+
+
 def _win_summary_from_history(history, existing=None):
     summary = dict(existing or {})
     summary.setdefault("g1", 0)
@@ -478,6 +512,18 @@ def _enrich_bot_parent_race_history(parent, info):
     report = _read_json_file(career_log)
     if not isinstance(report, dict):
         return
+    sp_spent = _skill_point_spend_from_career_log(report)
+    if sp_spent > 0:
+        parent["estimated_skill_points"] = sp_spent
+        stats = parent.setdefault("stats", {})
+        if isinstance(stats, dict):
+            stats["estimated_skill_points"] = sp_spent
+        info["estimated_skill_points"] = sp_spent
+        info["estimated_skill_points_source"] = "career_log_sp_deltas"
+        bot_info = parent.get("bot_parent_info")
+        if isinstance(bot_info, dict):
+            bot_info["estimated_skill_points"] = sp_spent
+            bot_info["estimated_skill_points_source"] = "career_log_sp_deltas"
     history = _event_race_history_from_career_log(report)
     if not history:
         return
@@ -486,6 +532,30 @@ def _enrich_bot_parent_race_history(parent, info):
     self_node["race_history"] = history
     self_node["win_race_ids"] = _win_race_ids_from_history(history)
     self_node["wins"] = _win_summary_from_history(history, self_node.get("wins"))
+
+
+def _apply_bot_parent_sp_estimate(parent):
+    if not isinstance(parent, dict) or not parent.get("made_by_bot"):
+        return parent
+    info = parent.get("bot_parent_info") or {}
+    if not isinstance(info, dict):
+        return parent
+    career_log = str(info.get("career_log") or "").strip()
+    if not career_log:
+        return parent
+    report = _read_json_file(career_log)
+    if not isinstance(report, dict):
+        return parent
+    sp_spent = _skill_point_spend_from_career_log(report)
+    if sp_spent <= 0:
+        return parent
+    parent["estimated_skill_points"] = sp_spent
+    stats = parent.setdefault("stats", {})
+    if isinstance(stats, dict):
+        stats["estimated_skill_points"] = sp_spent
+    info["estimated_skill_points"] = sp_spent
+    info["estimated_skill_points_source"] = "career_log_sp_deltas"
+    return parent
 
 
 def write_parent_library_snapshot(base_dir, parents):
@@ -504,4 +574,8 @@ def load_parent_library(base_dir):
         return {"schema": SCHEMA, "parents": []}
     data.setdefault("schema", SCHEMA)
     data.setdefault("parents", [])
+    data["parents"] = [
+        _apply_bot_parent_sp_estimate(parent) if isinstance(parent, dict) else parent
+        for parent in (data.get("parents") or [])
+    ]
     return data

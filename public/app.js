@@ -5646,7 +5646,7 @@ const state = {
                 tree: uma.tree || {},
                 stats: uma.stats || statsFromParentFields(uma),
                 skills: normalizedParentSkills(uma),
-                estimated_skill_points: Number(uma.estimated_skill_points || (uma.stats && uma.stats.estimated_skill_points) || 0),
+                estimated_skill_points: estimatedParentSkillPoints(uma),
                 score: uma.score != null ? Number(uma.score) : (uma.rank_score != null ? Number(uma.rank_score) : null),
                 created_at: uma.created_at || uma.date_made || '',
                 updated_at: uma.updated_at || '',
@@ -7132,7 +7132,7 @@ const state = {
                 stats: uma.stats || statsFromParentFields(uma),
                 skills: normalizedParentSkills(uma),
                 skill_array: uma.skill_array || [],
-                estimated_skill_points: Number(uma.estimated_skill_points || (uma.stats && uma.stats.estimated_skill_points) || 0),
+                estimated_skill_points: estimatedParentSkillPoints(uma),
                 trainer_name: uma.trainer_name,
                 viewer_id: uma.viewer_id,
                 trained_chara_id: uma.trained_chara_id || uma.instance_id,
@@ -7710,15 +7710,19 @@ const state = {
         function estimateParentSkillCost(skill) {
             const skillId = Number(skill && (skill.skill_id || skill.id) || 0);
             const explicit = Number(skill && (skill.estimated_cost || skill.cost || skill.skill_point_cost) || 0);
-            if (Number.isFinite(explicit) && explicit > 0) return explicit;
+            if (!skillId && Number.isFinite(explicit) && explicit > 0) return explicit;
             const name = String(skill && skill.name || '');
-            let base = 160;
+            const hintLevel = Math.max(0, Math.min(5, Number(skill && skill.hint_level || 0) || 0));
+            if (skillId > 0 && skillId < 200000) return 0;
+            let base = 120;
             if (name.includes('\u25cb') || name.includes('\u25ef') || name.includes('â—‹') || name.includes('â—¯')) {
-                base = 130;
-            } else if (skillId >= 900000 || skillId % 10 >= 2) {
+                base = 110;
+            } else if (skillId >= 900000) {
                 base = 200;
+            } else if (skillId % 10 >= 2) {
+                base = 180;
             }
-            return base;
+            return Math.max(1, Math.floor(base * (100 - hintLevel * 10) / 100));
         }
         function normalizedParentSkills(parent) {
             const source = (parent && (parent.skills || parent.skill_array || (parent.tree && parent.tree.self && parent.tree.self.skills))) || [];
@@ -7737,9 +7741,13 @@ const state = {
             }).filter(row => row.skill_id || row.name).sort((a, b) => a.name.localeCompare(b.name));
         }
         function estimatedParentSkillPoints(parent) {
+            const skillRows = normalizedParentSkills(parent);
+            if (skillRows.length) {
+                return skillRows.reduce((sum, skill) => sum + estimateParentSkillCost(skill), 0);
+            }
             const direct = Number(parent && (parent.estimated_skill_points || (parent.stats && parent.stats.estimated_skill_points)) || 0);
             if (Number.isFinite(direct) && direct > 0) return direct;
-            return normalizedParentSkills(parent).reduce((sum, skill) => sum + estimateParentSkillCost(skill), 0);
+            return 0;
         }
         function renderParentStatline(parent) {
             const container = document.getElementById('sparks-modal-statline');

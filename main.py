@@ -2467,15 +2467,20 @@ def estimate_skill_point_cost(skill_id, name="", hint_level=0):
     except (TypeError, ValueError):
         hint_level = 0
     name = str(name or "")
+    # Character unique skills are upgraded by career events, not purchased
+    # with SP. Counting them made parent/run SP estimates drift into impossible
+    # 4k+ ranges.
+    if 0 < skill_id < 200000:
+        return 0
     circle_markers = ("\u25cb", "\u25ef", "â—‹", "â—¯")
     if any(marker in name for marker in circle_markers):
-        base = 130
+        base = 110
     elif skill_id >= 900000:
         base = 200
     elif skill_id % 10 >= 2:
-        base = 200
+        base = 180
     else:
-        base = 160
+        base = 120
     return max(1, int(base * (100 - min(max(hint_level, 0), 5) * 10) / 100))
 
 def get_skill_rows(skill_array):
@@ -2507,7 +2512,15 @@ def get_estimated_skill_points(skill_rows):
     total = 0
     for row in skill_rows or []:
         try:
-            total += int(row.get("estimated_cost") or 0)
+            current_estimate = estimate_skill_point_cost(
+                row.get("skill_id"),
+                row.get("name") or "",
+                row.get("hint_level") or 0,
+            )
+            stored_estimate = int(row.get("estimated_cost") or 0)
+            # Recompute from the current estimator so old cached parent rows
+            # do not keep stale costs for free character unique skills.
+            total += current_estimate if current_estimate != stored_estimate else stored_estimate
         except (TypeError, ValueError):
             continue
     return total

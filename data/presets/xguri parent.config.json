@@ -43,12 +43,6 @@
   ],
   "learn_skill_list": [
     [
-      "Groundwork",
-      "Firm Conditions",
-      "Corner Adept",
-      "Taking The Lead"
-    ],
-    [
       "Late Surger Straightaways",
       "Late Surger Corners",
       "Late Surger Savvy",
@@ -464,12 +458,7 @@
   ],
   "pal_card_multiplier": 0.1,
   "count_conditional_recovery_uniques": false,
-  "skill_buy_on_sight": [
-    "Groundwork",
-    "Firm Conditions",
-    "Corner Adept",
-    "Taking The Lead"
-  ],
+  "skill_buy_on_sight": [],
   "skill_profile_style": "late_surger",
   "skill_profile_distance": "medium",
   "skill_blacklist_custom": [],

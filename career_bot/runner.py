@@ -4900,6 +4900,18 @@ class CareerRunner:
         entry = self.race_planner.entry_for_program(preset, current_turn, program_id)
         if not entry:
             return state
+        resolved_entry = dict(entry or {})
+        try:
+            style_resolution = self.race_planner.style_resolution_for_entry(
+                resolved_entry,
+                preset,
+                program_id,
+            )
+        except Exception:
+            style_resolution = {}
+        resolved_style = str((style_resolution or {}).get("style") or "").strip()
+        if resolved_style:
+            resolved_entry["style"] = resolved_style
         race_info = self._race_info_for_program(program_id)
         grade = str(race_info.get("grade") or entry.get("type") or "").strip().upper()
         raw_grades = (preset or {}).get("calendar_race_prebuy_grades", ["G1"])
@@ -4913,14 +4925,14 @@ class CareerRunner:
 
         self.calendar_prebuy_attempts.add(key)
         try:
-            stamina_check = self.race_planner.stamina_for_program(state, preset, program_id, entry)
+            stamina_check = self.race_planner.stamina_for_program(state, preset, program_id, resolved_entry)
         except Exception as exc:
             self._log("calendar_prebuy_check_failed", current_turn, str(exc))
             stamina_check = {
                 "program_id": int(program_id or 0),
                 "race_name": race_info.get("name") or entry.get("name") or str(program_id),
                 "grade": grade,
-                "style": entry.get("style") or (preset or {}).get("skill_profile_style") or "",
+                "style": resolved_entry.get("style") or (preset or {}).get("skill_profile_style") or "",
                 "distance": entry.get("distance") or race_info.get("distance") or "",
             }
         stamina_check.setdefault("race_name", race_info.get("name") or entry.get("name") or str(program_id))
@@ -4933,12 +4945,12 @@ class CareerRunner:
                 preset,
                 int(program_id or 0),
                 strategy,
-                entry=entry,
+                entry=resolved_entry,
                 stamina_check=stamina_check,
                 reason="calendar pre-race stamina",
             )
             try:
-                stamina_check = self.race_planner.stamina_for_program(state, preset, program_id, entry)
+                stamina_check = self.race_planner.stamina_for_program(state, preset, program_id, resolved_entry)
             except Exception:
                 pass
             stamina_result = dict(getattr(self.skill_buyer, "last_result", {}) or {})
@@ -4959,6 +4971,20 @@ class CareerRunner:
                     f"{stamina_check.get('race_name')} needs recovery; preserving SP ({stamina_result.get('points')})",
                 )
                 return state
+
+        if bool((preset or {}).get("manual_purchase_at_end", False)) and not bool(
+            (preset or {}).get("calendar_race_prebuy_allow_midcareer_with_end_buy", False)
+        ):
+            self._debug("pre_race_calendar_skill_skip", state, {
+                "reason": "manual_purchase_at_end",
+                "program_id": int(program_id or 0),
+                "race_name": stamina_check.get("race_name") or race_info.get("name") or entry.get("name") or str(program_id),
+                "grade": grade,
+                "style": stamina_check.get("style") or resolved_entry.get("style") or "",
+                "style_source": (style_resolution or {}).get("source") or "",
+                "stamina_low": bool(stamina_check.get("stamina_low")) or bool(stamina_check.get("static_stamina_low")),
+            })
+            return state
 
         # The hyperparameter tuner can override these via
         # preset["learned_hyperparameters"]. Resolve learned > preset > default.

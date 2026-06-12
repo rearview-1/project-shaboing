@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+from collections import defaultdict
 from pathlib import Path
 from statistics import mean, median
 
@@ -54,15 +55,17 @@ def _estimated_skill_point_cost(skill_id, name="", hint_level=0):
     except (TypeError, ValueError):
         hint_level = 0
     name = str(name or "")
+    if 0 < skill_id < 200000:
+        return 0
     circle_markers = ("○", "◯", "◎", "\u25cb", "\u25ef", "Ã¢â€”â€¹", "Ã¢â€”Â¯")
     if any(marker in name for marker in circle_markers):
-        base = 130
+        base = 110
     elif skill_id >= 900000:
         base = 200
     elif skill_id % 10 >= 2:
-        base = 200
+        base = 180
     else:
-        base = 160
+        base = 120
     return max(1, int(base * (100 - min(max(hint_level, 0), 5) * 10) / 100))
 
 
@@ -86,6 +89,133 @@ def _real_log_paths(project_root: Path):
                 continue
             seen.add(key)
             yield path
+
+
+def _actual_skill_spend_from_turns(turns):
+    snapshots = []
+    for turn in turns or []:
+        if not isinstance(turn, dict):
+            continue
+        stats = turn.get("stats") or {}
+        raw = stats.get("skill_point", turn.get("skill_point"))
+        if raw is None:
+            continue
+        snapshots.append((int(turn.get("turn") or 0), int(raw or 0)))
+    if len(snapshots) < 2:
+        return 0
+    snapshots.sort(key=lambda row: row[0])
+    spent = 0
+    previous = snapshots[0][1]
+    for _turn, current in snapshots[1:]:
+        delta = current - previous
+        if delta < 0:
+            spent += -delta
+        previous = current
+    return max(0, int(spent))
+
+
+def _event_state_skill_point(raw_state):
+    state = raw_state or {}
+    if not isinstance(state, dict):
+        return None
+    stats = state.get("stats") if isinstance(state.get("stats"), dict) else {}
+    value = state.get("skill_point")
+    if value is None:
+        value = stats.get("skill_point")
+    if value is None:
+        return None
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return None
+
+
+def _selected_training_snapshot_skill_point(turn):
+    command = (turn or {}).get("current_command") or (turn or {}).get("command") or {}
+    if not isinstance(command, dict):
+        return 0
+    try:
+        if int(command.get("command_type") or 0) != 1:
+            return 0
+        command_id = int(command.get("command_id") or 0)
+        command_group_id = int(command.get("command_group_id") or 0)
+    except (TypeError, ValueError):
+        return 0
+    snapshot = (turn or {}).get("training_snapshot") or {}
+    trainings = snapshot.get("trainings") or snapshot.get("command_info_array") or snapshot.get("commands") or []
+    for row in trainings:
+        if not isinstance(row, dict):
+            continue
+        try:
+            row_command_id = int(row.get("command_id") or 0)
+            row_group_id = int(row.get("command_group_id") or 0)
+        except (TypeError, ValueError):
+            continue
+        if command_id and row_command_id != command_id:
+            continue
+        if command_group_id and row_group_id != command_group_id:
+            continue
+        stat_gain = row.get("stat_gain") or {}
+        if isinstance(stat_gain, dict):
+            try:
+                return max(0, int(stat_gain.get("skill_point") or stat_gain.get("skill_pt") or 0))
+            except (TypeError, ValueError):
+                return 0
+    return 0
+
+
+def _sp_event_source_bucket(event, turn_no=0, after_race=False):
+    story_id = str((event or {}).get("story_id") or "")
+    try:
+        event_id = int((event or {}).get("event_id") or 0)
+    except (TypeError, ValueError):
+        event_id = 0
+    climax_story_ids = {"400004051", "400004061", "400004071"}
+    climax_event_ids = {203102, 203104, 203106}
+    race_reward_story_ids = {"400000035", "501020509", "501020708", "501020709"}
+    race_reward_event_ids = {1011, 7004, 7005, 7006}
+    if story_id in climax_story_ids or event_id in climax_event_ids:
+        return "climax"
+    if story_id in race_reward_story_ids or event_id in race_reward_event_ids:
+        return "races"
+    if int(turn_no or 0) <= 1 and story_id.startswith("501"):
+        return "initial"
+    if story_id.startswith(("8", "83")):
+        return "support_events"
+    if story_id.startswith("4"):
+        return "fixed_events"
+    return "general_events"
+
+
+def _career_sp_source_ledger(data):
+    ledger = defaultdict(int)
+    for turn in data.get("turns") or []:
+        if not isinstance(turn, dict):
+            continue
+        try:
+            turn_no = int(turn.get("turn") or 0)
+        except (TypeError, ValueError):
+            turn_no = 0
+        training_sp = _selected_training_snapshot_skill_point(turn)
+        if training_sp > 0:
+            ledger["training"] += training_sp
+        after_race = False
+        for event in turn.get("events") or []:
+            if not isinstance(event, dict):
+                continue
+            if event.get("event") == "race_result":
+                after_race = True
+                continue
+            if event.get("event") != "event_resolution":
+                continue
+            before_sp = _event_state_skill_point(event.get("state_before"))
+            after_sp = _event_state_skill_point(event.get("state_after"))
+            if before_sp is None or after_sp is None:
+                continue
+            delta = after_sp - before_sp
+            if delta > 0:
+                ledger[_sp_event_source_bucket(event, turn_no=turn_no, after_race=after_race)] += delta
+    return dict(ledger)
 
 
 def _real_finished_careers(project_root: Path):
@@ -121,6 +251,10 @@ def _real_finished_careers(project_root: Path):
             for row in owned_skills
             if isinstance(row, dict)
         )
+        actual_skill_spend = _actual_skill_spend_from_turns(turns)
+        if actual_skill_spend > 0:
+            estimated_skill_spend = actual_skill_spend
+        sp_source_ledger = _career_sp_source_ledger(data)
         try:
             resolved = str(path.resolve())
         except OSError:
@@ -133,6 +267,8 @@ def _real_finished_careers(project_root: Path):
             "final_sp": int(last.get("skill_point") or stats_raw.get("skill_point") or 0),
             "owned_skill_count": owned_skill_count,
             "estimated_skill_spend": estimated_skill_spend,
+            "sp_source_ledger": sp_source_ledger,
+            "source_sp_total": sum(max(0, int(value or 0)) for value in sp_source_ledger.values()),
             "g1_losses": postmortem_losses.get(resolved, 0),
         })
     return rows
@@ -165,18 +301,24 @@ def main():
     real_final_sp = [row["final_sp"] for row in real if row.get("final_sp") is not None]
     real_skill_counts = [row["owned_skill_count"] for row in real if row.get("owned_skill_count") is not None]
     real_skill_spend = [row["estimated_skill_spend"] for row in real if row.get("estimated_skill_spend")]
-    real_total_sp_budget = [
-        int(row.get("final_sp") or 0) + int(row.get("estimated_skill_spend") or 0)
-        for row in real
-        if row.get("estimated_skill_spend")
-    ]
+    real_source_sp_total = [row["source_sp_total"] for row in real if row.get("source_sp_total")]
     real_g1_losses = [row["g1_losses"] for row in real if row.get("g1_losses") is not None]
+    real_sp_source_keys = sorted({
+        key
+        for row in real
+        for key in (row.get("sp_source_ledger") or {})
+    })
     print("=== Real finished career logs ===")
     print(f"  Stat sum: {_summary(real_sums)}")
     print(f"  Final SP: {_summary(real_final_sp)}")
     print(f"  Owned skills: {_summary(real_skill_counts)}")
-    print(f"  Estimated owned-skill SP: {_summary(real_skill_spend)}")
-    print(f"  Total SP budget estimate: {_summary(real_total_sp_budget)}")
+    print(f"  Skill SP spend audit only: {_summary(real_skill_spend)}")
+    print(f"  Observed SP source total: {_summary(real_source_sp_total)}")
+    if real_sp_source_keys:
+        print("  Observed SP by source:")
+        for key in real_sp_source_keys:
+            values = [(row.get("sp_source_ledger") or {}).get(key, 0) for row in real]
+            print(f"    {key}: {_summary(values)}")
     print(f"  G1 losses: {_summary(real_g1_losses)}")
 
     instance = args.instance or _runtime_instance_from_env()
@@ -218,7 +360,10 @@ def main():
     sim_final_sp = [result.final_sp for result in sweep["results"]]
     sim_skill_counts = [result.skills_bought for result in sweep["results"]]
     sim_skill_spend = [sum(row.get("discounted_cost") or 0 for row in result.purchased_skills) for result in sweep["results"]]
-    sim_total_sp_budget = [spend + result.final_sp for spend, result in zip(sim_skill_spend, sweep["results"])]
+    sim_source_sp_total = [
+        sum(max(0, int(value or 0)) for value in ((getattr(result, "sp_gain_sources", {}) or {}).values()))
+        for result in sweep["results"]
+    ]
     sim_skill_score = [result.skill_rating_score for result in sweep["results"]]
     sp_source_keys = sorted({
         key
@@ -233,7 +378,7 @@ def main():
     print(f"  Final SP: {_summary(sim_final_sp)}")
     print(f"  Skills bought: {_summary(sim_skill_counts)}")
     print(f"  Skill SP spent: {_summary(sim_skill_spend)}")
-    print(f"  Total SP budget: {_summary(sim_total_sp_budget)}")
+    print(f"  SP source total: {_summary(sim_source_sp_total)}")
     print(f"  Race losses: {_summary(sim_losses)}")
     print(f"  G1 losses: {_summary(sim_g1_losses)}")
     print(f"  Events:   {_summary(sim_events)}")
@@ -252,8 +397,13 @@ def main():
             print(f"  Sim final-SP median delta vs real: {int(median(sim_final_sp)) - int(median(real_final_sp)):+d}")
         if real_skill_spend and sim_skill_spend:
             print(f"  Sim skill-spend median delta vs real estimate: {int(median(sim_skill_spend)) - int(median(real_skill_spend)):+d}")
-        if real_total_sp_budget and sim_total_sp_budget:
-            print(f"  Sim total-SP-budget median delta vs real estimate: {int(median(sim_total_sp_budget)) - int(median(real_total_sp_budget)):+d}")
+        if real_source_sp_total and sim_source_sp_total:
+            print(f"  Sim source-SP-total median delta vs real: {int(median(sim_source_sp_total)) - int(median(real_source_sp_total)):+d}")
+            common_keys = sorted(set(real_sp_source_keys) & set(sp_source_keys))
+            for key in common_keys:
+                real_values = [(row.get("sp_source_ledger") or {}).get(key, 0) for row in real]
+                sim_values = [(getattr(result, "sp_gain_sources", {}) or {}).get(key, 0) for result in sweep["results"]]
+                print(f"  Sim {key} SP median delta vs real: {int(median(sim_values)) - int(median(real_values)):+d}")
         if real_g1_losses and sim_g1_losses:
             print(f"  Sim G1-loss median delta vs real: {int(median(sim_g1_losses)) - int(median(real_g1_losses)):+d}")
 

@@ -298,12 +298,12 @@ _BOND_EQUITY_TARGET_FULL_TURN = 28      # Was 33 — push bonds to 80 earlier pe
                                         # bot was hitting them only from turn 40-50)
 _BOND_EQUITY_TARGET_TOLERANCE = 6       # Was 8 — tighter grace band
 _RACE_HEAVY_CORE_FLOORS = (
-    (24, {"speed": 350, "stamina": 260, "power": 310}),
-    (36, {"speed": 520, "stamina": 390, "power": 480}),
-    (48, {"speed": 700, "stamina": 500, "power": 650}),
-    (60, {"speed": 880, "stamina": 620, "power": 820}),
-    (72, {"speed": 1050, "stamina": 700, "power": 980}),
-    (78, {"speed": 1120, "stamina": 760, "power": 1040}),
+    (24, {"speed": 350, "stamina": 260, "power": 310, "guts": 170}),
+    (36, {"speed": 520, "stamina": 390, "power": 480, "guts": 250}),
+    (48, {"speed": 700, "stamina": 500, "power": 650, "guts": 330}),
+    (60, {"speed": 880, "stamina": 620, "power": 820, "guts": 420}),
+    (72, {"speed": 1050, "stamina": 700, "power": 980, "guts": 520}),
+    (78, {"speed": 1120, "stamina": 760, "power": 1040, "guts": 580}),
 )
 _RACE_HEAVY_EFFICIENCY_START_TURN = 25
 
@@ -421,6 +421,18 @@ _STAT_CONCENTRATION_START_TURN = 42
 _STAT_CONCENTRATION_RAMP_START = 0.50  # ratio current/soft_cap below which no push
 _STAT_CONCENTRATION_PEAK_START = 0.95  # ratio at which peak bonus is reached
 _STAT_CONCENTRATION_PEAK_BONUS = 0.34  # peak magnitude near the soft cap
+
+# Visible-tile quality guard. The policy score can correctly prefer bond/race
+# setup over immediate gain, but live audits showed it was skipping clearly
+# stronger rainbow/high-output tiles too often. This bounded pass reinforces
+# obvious board quality without disabling race hard-floor pressure.
+_VISIBLE_TILE_CLEAR_GAP = 7.0
+_VISIBLE_TILE_BONUS_CAP = 0.28
+_VISIBLE_TILE_PENALTY_CAP = 0.34
+_VISIBLE_TILE_PENALTY_SCALE = 0.024
+_VISIBLE_TILE_RAINBOW_BONUS = 0.12
+_VISIBLE_TILE_MISSED_RAINBOW_PENALTY = 0.10
+_VISIBLE_TILE_RACE_PRESSURE_PROTECTION = 0.60
 
 
 STAT_TARGETS = {
@@ -1059,6 +1071,7 @@ class MantStrategy(ScenarioStrategy):
             "speed": float(chara.get("speed") or 0.0),
             "stamina": float(chara.get("stamina") or 0.0),
             "power": float(chara.get("power") or 0.0),
+            "guts": float(chara.get("guts") or 0.0),
         }
         deficit_ratio = {}
         for key, floor in floors.items():
@@ -1127,6 +1140,110 @@ class MantStrategy(ScenarioStrategy):
         if core_gain <= 10 and int(turn or 0) >= 48 and rainbow_count <= 1:
             bonus -= 0.05
         return max(-0.12, min(0.22, bonus))
+
+    def _training_skill_point_gain(self, command):
+        total = 0.0
+        for item in (command or {}).get("params_inc_dec_info_array") or []:
+            if STAT_TARGETS.get(item.get("target_type")) != 5:
+                continue
+            try:
+                total += max(0.0, float(item.get("value") or 0.0))
+            except (TypeError, ValueError):
+                continue
+        return total
+
+    def _visible_tile_quality(self, command):
+        if not command:
+            return 0.0
+        partners = command.get("training_partner_array") or []
+        bonds = getattr(self, "_last_quality_bonds", {}) or {}
+        deck_partner_count = sum(1 for partner_id in partners if partner_id in DECK_PARTNERS)
+        rainbow_count = sum(
+            1
+            for partner_id in partners
+            if partner_id in DECK_PARTNERS and int(bonds.get(partner_id, 0) or 0) >= 80
+        )
+        hints = command.get("hint_tips_array") or command.get("tips_event_partner_array") or []
+        hint_count = len(hints) if isinstance(hints, list) else 0
+        return (
+            self._training_positive_stat_gain(command)
+            + self._training_skill_point_gain(command) * 0.65
+            + deck_partner_count * 1.4
+            + rainbow_count * 6.0
+            + hint_count * 2.0
+        )
+
+    def _command_race_pressure_bonus(self, command):
+        total = 0.0
+        for key in (
+            "_scheduled_race_safety_bonus",
+            "_race_hard_floor_bonus",
+            "_threshold_deficit_bonus",
+            "_manual_race_specific_demand_bonus",
+            "_postmortem_training_bonus",
+            "_race_success_training_bonus",
+        ):
+            try:
+                total += max(0.0, float((command or {}).get(key) or 0.0))
+            except (TypeError, ValueError):
+                continue
+        return total
+
+    def _apply_visible_tile_quality_guard(self, scored, chara, preset, turn):
+        if not bool((preset or {}).get("visible_tile_quality_guard_enabled", True)):
+            return scored
+        if not scored:
+            return scored
+        try:
+            self._last_quality_bonds = self._bond_map(chara)
+            rows = []
+            for score, command in scored:
+                quality = self._visible_tile_quality(command)
+                partners = command.get("training_partner_array") or []
+                rainbow_count = sum(
+                    1
+                    for partner_id in partners
+                    if partner_id in DECK_PARTNERS and int(self._last_quality_bonds.get(partner_id, 0) or 0) >= 80
+                )
+                rows.append((float(score or 0.0), command, quality, rainbow_count))
+        finally:
+            self._last_quality_bonds = {}
+        best_quality = max((row[2] for row in rows), default=0.0)
+        max_rainbow = max((row[3] for row in rows), default=0)
+        if best_quality <= 0.0 and max_rainbow <= 0:
+            return scored
+
+        clear_gap = float((preset or {}).get("visible_tile_quality_clear_gap") or _VISIBLE_TILE_CLEAR_GAP)
+        bonus_cap = float((preset or {}).get("visible_tile_quality_bonus_cap") or _VISIBLE_TILE_BONUS_CAP)
+        penalty_cap = float((preset or {}).get("visible_tile_quality_penalty_cap") or _VISIBLE_TILE_PENALTY_CAP)
+        penalty_scale = float((preset or {}).get("visible_tile_quality_penalty_scale") or _VISIBLE_TILE_PENALTY_SCALE)
+        adjusted = []
+        for score, command, quality, rainbow_count in rows:
+            delta = 0.0
+            quality_gap = max(0.0, best_quality - quality)
+            race_pressure = self._command_race_pressure_bonus(command)
+            pressure_scale = 0.35 if race_pressure >= _VISIBLE_TILE_RACE_PRESSURE_PROTECTION else 1.0
+
+            if quality >= max(0.0, best_quality - clear_gap):
+                ratio = quality / max(1.0, best_quality)
+                delta += min(bonus_cap, 0.08 + ratio * 0.12)
+            elif quality_gap > clear_gap:
+                delta -= min(penalty_cap, (quality_gap - clear_gap) * penalty_scale) * pressure_scale
+
+            if rainbow_count > 0:
+                delta += min(bonus_cap, _VISIBLE_TILE_RAINBOW_BONUS + 0.04 * max(0, rainbow_count - 1))
+            if max_rainbow > rainbow_count and quality_gap > 3.0:
+                delta -= min(
+                    penalty_cap,
+                    (max_rainbow - rainbow_count) * _VISIBLE_TILE_MISSED_RAINBOW_PENALTY,
+                ) * pressure_scale
+
+            if delta:
+                command["_visible_tile_quality"] = round(quality, 3)
+                command["_visible_tile_quality_best"] = round(best_quality, 3)
+                command["_visible_tile_quality_delta"] = round(delta, 4)
+            adjusted.append((score + delta, command))
+        return adjusted
 
     def _future_turn_effect_totals(self, chara, preset, max_turn=None):
         forecast = (preset or {}).get("future_turn_effects") or {}
@@ -1235,6 +1352,7 @@ class MantStrategy(ScenarioStrategy):
             stat_keys = ["speed", "stamina", "power", "guts", "wiz"]
             highest_idx = max(range(5), key=lambda idx: int(chara.get(stat_keys[idx]) or 0))
             scored = [(score * 0.95 if TRAINING_COMMANDS.get(cmd.get("command_id"), 0) == highest_idx and score > 0 else score, cmd) for score, cmd in scored]
+        scored = self._apply_visible_tile_quality_guard(scored, chara, preset, turn)
         scored, bond_equity_state = self._apply_bond_equity_gate(scored, chara, preset, turn)
         scored, imitation_state = self._apply_imitation_prior(scored, preset, turn)
         sorted_scored = sorted(scored, key=lambda row: row[0], reverse=True)
@@ -2443,6 +2561,9 @@ class MantStrategy(ScenarioStrategy):
         near_rainbow_bonus = float(command.get("_near_rainbow_bonus") or 0.0)
         first_summer_friendship_bonus = float(command.get("_first_summer_friendship_bonus") or 0.0)
         projection_bonus = float(command.get("_projection_bonus") or 0.0)
+        visible_tile_quality = float(command.get("_visible_tile_quality") or 0.0)
+        visible_tile_quality_best = float(command.get("_visible_tile_quality_best") or 0.0)
+        visible_tile_quality_delta = float(command.get("_visible_tile_quality_delta") or 0.0)
         facility_level, facility_progress, facility_until_next = self._facility_level_info(command, chara)
         facility_level_bonus = float(command.get("_facility_level_bonus") or 0.0)
         facility_triggers_level_up = bool(facility_until_next == 1)
@@ -2481,6 +2602,8 @@ class MantStrategy(ScenarioStrategy):
             intent_tags.append("low_risk")
         if score_margin > 0.15:
             intent_tags.append("clear_best_tile")
+        if visible_tile_quality_delta > 0:
+            intent_tags.append("visible_tile_quality")
         primary_intent = next(
             (
                 tag
@@ -2490,6 +2613,7 @@ class MantStrategy(ScenarioStrategy):
                     "bond_equity",
                     "first_summer_friendship",
                     "facility_levelup",
+                    "visible_tile_quality",
                     "rainbow_setup",
                     "lagging_stat_recovery",
                     "late_white_pressure",
@@ -2511,6 +2635,8 @@ class MantStrategy(ScenarioStrategy):
             summary_parts.append(f"accelerate friendship setup in {stat_name} before first summer")
         elif primary_intent == "facility_levelup":
             summary_parts.append(f"train {stat_name} to advance facility level payoff")
+        elif primary_intent == "visible_tile_quality":
+            summary_parts.append(f"take the strongest visible {stat_name} tile")
         elif primary_intent == "rainbow_setup":
             summary_parts.append(f"train {stat_name} while advancing near-rainbow bonds")
         elif primary_intent == "lagging_stat_recovery":
@@ -2574,6 +2700,9 @@ class MantStrategy(ScenarioStrategy):
                 "near_rainbow_bonus": round(near_rainbow_bonus, 4),
                 "first_summer_friendship_bonus": round(first_summer_friendship_bonus, 4),
                 "projection_bonus": round(projection_bonus, 4),
+                "visible_tile_quality": round(visible_tile_quality, 3),
+                "visible_tile_quality_best": round(visible_tile_quality_best, 3),
+                "visible_tile_quality_delta": round(visible_tile_quality_delta, 4),
                 "outing_status": self._outing_summary_for_signals(chara, preset),
                 "facility_level": facility_level,
                 "facility_progress": facility_progress,

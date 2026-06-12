@@ -78,6 +78,15 @@ STAT_CAP = 1200
 TURN_FINISH = 78
 CAREER_INVISIBLE_STAT_BONUS = 400
 EXACT_CONTEXT_MIN_RACE_SAMPLES = 250
+RACE_GRADE_REWARDS = {
+    # In-game race clear rewards before support-card race bonus.
+    # The stat reward is applied to one random stat, not spread across all 5.
+    "PRE-OP": {"stat": 5, "skill_point": 20},
+    "OP": {"stat": 5, "skill_point": 20},
+    "G3": {"stat": 8, "skill_point": 25},
+    "G2": {"stat": 8, "skill_point": 25},
+    "G1": {"stat": 10, "skill_point": 35},
+}
 
 # Approximate per-turn training-gain ranges by stat type and rainbow
 # state. Calibrated against user's actual career_log data — real bot
@@ -176,6 +185,7 @@ CLIMAX_RACE_REWARD_BY_TURN = {
     78: ("400004071", 203106),
 }
 CLIMAX_RACE_REWARD_STORY_IDS = {story_id for story_id, _event_id in CLIMAX_RACE_REWARD_BY_TURN.values()}
+CLIMAX_RACE_REWARD_EVENT_IDS = {event_id for _story_id, event_id in CLIMAX_RACE_REWARD_BY_TURN.values()}
 CLIMAX_RACE_REWARD_ITEM_MULTIPLIERS = {
     11001: 1.20,  # Artisan Cleat Hammer
     11002: 1.35,  # Master Cleat Hammer
@@ -936,6 +946,137 @@ def _skill_calibration_sample_weight(sample_context, target_context, trainee_car
     return weight
 
 
+def _skill_point_spent_from_career_report(report):
+    turns = (report or {}).get("turns") or []
+    if not isinstance(turns, list):
+        return 0
+    snapshots = []
+    for turn in turns:
+        if not isinstance(turn, dict):
+            continue
+        stats = turn.get("stats") or {}
+        raw = stats.get("skill_point", turn.get("skill_point"))
+        if raw is None:
+            continue
+        snapshots.append((_as_int(turn.get("turn")), _as_int(raw)))
+    if len(snapshots) < 2:
+        return 0
+    snapshots.sort(key=lambda row: row[0])
+    spent = 0
+    previous = snapshots[0][1]
+    for _turn, current in snapshots[1:]:
+        delta = current - previous
+        if delta < 0:
+            spent += -delta
+        previous = current
+    return max(0, int(spent))
+
+
+def _event_state_skill_point(raw_state):
+    state = raw_state or {}
+    if not isinstance(state, dict):
+        return None
+    stats = state.get("stats") if isinstance(state.get("stats"), dict) else {}
+    value = state.get("skill_point")
+    if value is None:
+        value = stats.get("skill_point")
+    if value is None:
+        return None
+    return _as_int(value)
+
+
+def _selected_training_snapshot_skill_point(turn):
+    if not isinstance(turn, dict):
+        return 0
+    command = turn.get("current_command") or turn.get("command") or {}
+    if not isinstance(command, dict) or _as_int(command.get("command_type")) != 1:
+        return 0
+    command_id = _as_int(command.get("command_id"))
+    command_group_id = _as_int(command.get("command_group_id"))
+    snapshot = turn.get("training_snapshot") or {}
+    trainings = snapshot.get("trainings") or snapshot.get("command_info_array") or snapshot.get("commands") or []
+    for row in trainings:
+        if not isinstance(row, dict):
+            continue
+        if command_id and _as_int(row.get("command_id")) != command_id:
+            continue
+        if command_group_id and _as_int(row.get("command_group_id")) != command_group_id:
+            continue
+        stat_gain = row.get("stat_gain") or {}
+        if isinstance(stat_gain, dict):
+            return max(0, _as_int(stat_gain.get("skill_point") or stat_gain.get("skill_pt")))
+        for item in row.get("params_inc_dec_info_array") or []:
+            if isinstance(item, dict) and _as_int(item.get("target_type")) == 30:
+                return max(0, _as_int(item.get("value")))
+    return 0
+
+
+def _sp_event_source_bucket(event, turn_no=0, after_race=False):
+    story_id = str((event or {}).get("story_id") or "")
+    event_id = _as_int((event or {}).get("event_id"))
+    if event_id in CLIMAX_RACE_REWARD_EVENT_IDS or story_id in CLIMAX_RACE_REWARD_STORY_IDS:
+        return "climax"
+    if event_id in RACE_REWARD_EVENT_IDS or story_id in RACE_REWARD_STORY_IDS:
+        return "races"
+    if _as_int(turn_no) <= 1 and story_id.startswith("501"):
+        return "initial"
+    if story_id.startswith(("8", "83")):
+        return "support_events"
+    if story_id.startswith("4"):
+        return "fixed_events"
+    return "general_events"
+
+
+def _career_sp_source_ledger(report):
+    """Split observed SP gains by the source the bot can actually model.
+
+    This intentionally does not estimate SP from final SP plus skill spend.
+    Training SP is read from the selected training snapshot when present;
+    event SP is read from event_resolution deltas; race SP is kept as a
+    separate bucket so exact grade/RB/hammer formulas can be compared.
+    """
+    ledger = defaultdict(int)
+    turns = (report or {}).get("turns") or []
+    if not isinstance(turns, list):
+        return {}
+    for turn in turns:
+        if not isinstance(turn, dict):
+            continue
+        turn_no = _as_int(turn.get("turn"))
+        training_sp = _selected_training_snapshot_skill_point(turn)
+        if training_sp > 0:
+            ledger["training"] += training_sp
+        after_race = False
+        for event in turn.get("events") or []:
+            if not isinstance(event, dict):
+                continue
+            if event.get("event") == "race_result":
+                after_race = True
+                continue
+            if event.get("event") != "event_resolution":
+                continue
+            before_sp = _event_state_skill_point(event.get("state_before"))
+            after_sp = _event_state_skill_point(event.get("state_after"))
+            if before_sp is None or after_sp is None:
+                continue
+            delta = after_sp - before_sp
+            if delta <= 0:
+                continue
+            bucket = _sp_event_source_bucket(event, turn_no=turn_no, after_race=after_race)
+            ledger[bucket] += delta
+    return dict(ledger)
+
+
+def _skill_point_spent_from_career_log_path(path):
+    raw = str(path or "").strip()
+    if not raw:
+        return 0
+    report = _load_json_file(Path(raw))
+    if not isinstance(report, dict):
+        return 0
+    return _skill_point_spent_from_career_report(report)
+
+
 def load_empirical_skill_rating_calibration(project_root=None, run_context=None, trainee_card_id=None):
     """Build a real-data skill-rating model from synced parent records.
 
@@ -981,6 +1122,28 @@ def load_empirical_skill_rating_calibration(project_root=None, run_context=None,
                 weight = _skill_calibration_sample_weight(sample_context, target_context, trainee_card_id, made_by_bot)
                 if made_by_bot:
                     weight *= 1.8
+                skill_rows = [
+                    {
+                        "skill_id": _as_int(skill.get("skill_id")),
+                        "name": skill.get("name") or "",
+                        "hint_level": skill.get("hint_level") or 0,
+                    }
+                    for skill in (parent.get("skills") or [])
+                    if isinstance(skill, dict)
+                ]
+                recomputed_estimated_sp = sum(
+                    _estimated_sim_skill_point_cost(row.get("skill_id"), row.get("name") or "", row.get("hint_level") or 0)
+                    for row in skill_rows
+                    if _as_int(row.get("skill_id"))
+                )
+                stored_estimated_sp = _as_int((parent.get("stats") or {}).get("estimated_skill_points") or parent.get("estimated_skill_points"))
+                career_log = (
+                    (parent.get("bot_parent_info") or {}).get("career_log")
+                    or registry_row.get("career_log")
+                    or ""
+                )
+                actual_sp_spent = _skill_point_spent_from_career_log_path(career_log) if made_by_bot else 0
+                estimated_sp = actual_sp_spent or (recomputed_estimated_sp if skill_rows else stored_estimated_sp)
                 samples.append({
                     "instance_id": instance_id,
                     "made_by_bot": made_by_bot,
@@ -989,17 +1152,10 @@ def load_empirical_skill_rating_calibration(project_root=None, run_context=None,
                     "stat_sum": sum(_parent_final_stats(parent).values()),
                     "skill_count": count,
                     "skill_rating_residual": residual,
-                    "estimated_skill_points": _as_int((parent.get("stats") or {}).get("estimated_skill_points") or parent.get("estimated_skill_points")),
+                    "estimated_skill_points": estimated_sp,
                     "weight": weight,
                     "context_match": weight,
-                    "skills": [
-                        {
-                            "skill_id": _as_int(skill.get("skill_id")),
-                            "name": skill.get("name") or "",
-                        }
-                        for skill in (parent.get("skills") or [])
-                        if isinstance(skill, dict)
-                    ],
+                    "skills": skill_rows,
                 })
     bot_samples = [row for row in samples if row["made_by_bot"]]
     model_samples = bot_samples if len(bot_samples) >= 8 else samples
@@ -1046,11 +1202,11 @@ def load_empirical_skill_rating_calibration(project_root=None, run_context=None,
 
 
 def load_empirical_sp_budget_calibration(project_root=None, run_context=None, trainee_card_id=None):
-    """Estimate total career SP budget from finished career logs.
+    """Build an observed SP source ledger from finished career logs.
 
-    Uses final unspent SP plus app-side estimated cost of final owned skills.
-    This is not a score clamp: it calibrates source rewards, primarily race SP,
-    to the same budget the real bot actually finishes with.
+    SP is modeled by source: training snapshots, event_resolution deltas, and
+    exact race reward formulas. Final SP plus inferred skill spend is kept only
+    as an audit field because it is not a reliable source generator.
     """
     root = Path(project_root) if project_root else Path(__file__).resolve().parents[1]
     target_context = run_context or {}
@@ -1077,6 +1233,8 @@ def load_empirical_sp_budget_calibration(project_root=None, run_context=None, tr
                 continue
             last = max(turns, key=lambda turn: _as_int(turn.get("turn")))
             final_sp = _as_int(last.get("skill_point") or (last.get("stats") or {}).get("skill_point"))
+            sp_ledger = _career_sp_source_ledger(data)
+            source_sp_budget = sum(max(0, _as_int(value)) for value in sp_ledger.values())
             owned = last.get("owned_skills") or []
             skill_spend = 0
             skill_count = 0
@@ -1088,28 +1246,69 @@ def load_empirical_sp_budget_calibration(project_root=None, run_context=None, tr
                     continue
                 skill_count += 1
                 skill_spend += _estimated_sim_skill_point_cost(skill_id, row.get("name") or "", row.get("hint_level") or 0)
-            if skill_spend <= 0:
+            actual_sp_spent = _skill_point_spent_from_career_report(data)
+            if actual_sp_spent > 0:
+                skill_spend = actual_sp_spent
+            if skill_spend <= 0 and source_sp_budget <= 0:
                 continue
+            sample_context = data.get("run_context") or {}
+            weight = _skill_calibration_sample_weight(sample_context, target_context, trainee_card_id, True)
             race_count = 0
             race_wins = 0
+            race_sp_samples = []
             for turn in turns:
-                for event in turn.get("events") or []:
+                events = [event for event in (turn.get("events") or []) if isinstance(event, dict)]
+                for idx, event in enumerate(events):
                     if not isinstance(event, dict) or event.get("event") != "race_result":
                         continue
                     race_count += 1
                     if event.get("won") or event.get("finish_rank") == 1 or event.get("status") == "won":
                         race_wins += 1
-            sample_context = data.get("run_context") or {}
-            weight = _skill_calibration_sample_weight(sample_context, target_context, trainee_card_id, True)
+                    post_race_sp = 0
+                    for follow in events[idx + 1:]:
+                        if follow.get("event") == "race_result":
+                            break
+                        if follow.get("event") != "event_resolution":
+                            continue
+                        bucket = _sp_event_source_bucket(follow, turn_no=_as_int(turn.get("turn")), after_race=True)
+                        if bucket not in {"races", "climax"}:
+                            continue
+                        before_sp = _event_state_skill_point(follow.get("state_before"))
+                        after_sp = _event_state_skill_point(follow.get("state_after"))
+                        if before_sp is None or after_sp is None:
+                            continue
+                        delta = after_sp - before_sp
+                        if delta > 0:
+                            post_race_sp += delta
+                    if post_race_sp > 0:
+                        race = event.get("race") or {}
+                        race_name = str(race.get("name") or event.get("race_name") or "")
+                        program_id = _as_int(event.get("program_id") or race.get("program_id"))
+                        turn_no = _as_int(turn.get("turn"))
+                        if "twinkle star climax" in race_name.lower() or program_id in {2315, 2410, 2412, 2513} or turn_no >= 74:
+                            grade_key = "climax"
+                        elif bool(event.get("is_g1")):
+                            grade_key = "g1"
+                        else:
+                            grade_key = "other"
+                        race_sp_samples.append({
+                            "grade": grade_key,
+                            "sp": post_race_sp,
+                            "weight": weight,
+                        })
             samples.append({
                 "path": str(path),
                 "final_sp": final_sp,
                 "skill_spend": skill_spend,
                 "skill_count": skill_count,
-                "total_sp_budget": final_sp + skill_spend,
+                "total_sp_budget": source_sp_budget,
+                "source_sp_budget": source_sp_budget,
+                "final_plus_spend_budget": final_sp + skill_spend,
+                "sp_source_ledger": sp_ledger,
                 "race_count": race_count,
                 "race_wins": race_wins,
                 "race_win_rate": (race_wins / race_count) if race_count else 0.0,
+                "race_sp_samples": race_sp_samples,
                 "weight": weight,
             })
             sources.append(str(path))
@@ -1119,25 +1318,65 @@ def load_empirical_sp_budget_calibration(project_root=None, run_context=None, tr
             "sample_count": len(samples),
             "source_paths": sources,
             "reason": "not_enough_finished_career_logs",
+            "training_sp_model": "mechanical_facility_table",
+            "event_sp_model": "observed_event_resolution_deltas",
+            "race_sp_model": "exact_grade_race_bonus_hammer_formula",
+            "purchase_sp_model": "audit_only",
         })
-    total_target = int(round(_weighted_percentile(samples, "total_sp_budget", 0.50, default=0)))
+    total_target = int(round(_weighted_percentile(samples, "source_sp_budget", 0.50, default=0)))
     final_sp_target = int(round(_weighted_percentile(samples, "final_sp", 0.50, default=100)))
     skill_spend_target = int(round(_weighted_percentile(samples, "skill_spend", 0.50, default=0)))
     final_sp_p85 = int(round(_weighted_percentile(samples, "final_sp", 0.85, default=final_sp_target)))
-    total_p85 = int(round(_weighted_percentile(samples, "total_sp_budget", 0.85, default=total_target)))
+    total_p85 = int(round(_weighted_percentile(samples, "source_sp_budget", 0.85, default=total_target)))
+    final_plus_spend_target = int(round(_weighted_percentile(samples, "final_plus_spend_budget", 0.50, default=0)))
     race_count_target = int(round(_weighted_percentile(samples, "race_count", 0.50, default=0)))
     race_win_rate_target = float(_weighted_percentile(samples, "race_win_rate", 0.50, default=0.85))
+    race_sp_rows = []
+    for sample in samples:
+        for row in sample.get("race_sp_samples") or []:
+            if isinstance(row, dict) and _as_int(row.get("sp")) > 0:
+                race_sp_rows.append(row)
+    race_sp_by_grade = {}
+    for grade_key, default in (("other", 41), ("g1", 57), ("climax", 66)):
+        rows = [row for row in race_sp_rows if row.get("grade") == grade_key]
+        race_sp_by_grade[grade_key] = int(round(_weighted_percentile(rows, "sp", 0.50, default=default)))
+    source_keys = sorted({
+        key
+        for sample in samples
+        for key in (sample.get("sp_source_ledger") or {})
+    })
+    source_sp_budget_by_source = {}
+    for key in source_keys:
+        rows = []
+        for sample in samples:
+            ledger = sample.get("sp_source_ledger") or {}
+            rows.append({
+                "value": _as_int(ledger.get(key)),
+                "weight": sample.get("weight", 1.0),
+            })
+        source_sp_budget_by_source[key] = int(round(_weighted_percentile(rows, "value", 0.50, default=0)))
     return finish({
         "enabled": True,
         "sample_count": len(samples),
         "source_paths": sources,
         "total_sp_budget_target": max(0, total_target),
         "total_sp_budget_p85": max(0, total_p85),
+        "source_sp_budget_target": max(0, total_target),
+        "source_sp_budget_p85": max(0, total_p85),
+        "source_sp_budget_by_source": source_sp_budget_by_source,
+        "final_plus_spend_budget_target": max(0, final_plus_spend_target),
         "final_sp_target": max(0, final_sp_target),
         "final_sp_p85": max(0, final_sp_p85),
         "skill_spend_target": max(0, skill_spend_target),
         "race_count_target": max(0, race_count_target),
         "race_win_rate_target": max(0.0, min(1.0, race_win_rate_target)),
+        "race_sp_reward_by_grade": race_sp_by_grade,
+        "race_sp_reward_sample_count": len(race_sp_rows),
+        "training_sp_model": "mechanical_facility_table",
+        "event_sp_model": "observed_event_resolution_deltas",
+        "race_sp_model": "exact_grade_race_bonus_hammer_formula",
+        "purchase_sp_model": "audit_only",
+        "sp_source_model": "source_ledger",
     })
 
 
@@ -1499,15 +1738,19 @@ def _estimated_sim_skill_point_cost(skill_id, name="", hint_level=0):
     except (TypeError, ValueError):
         hint_level = 0
     name = str(name or "")
+    # Character unique skills are granted/leveled by career events and are not
+    # bought with SP. Counting them as paid skills inflated parent SP estimates.
+    if 0 < skill_id < 200000:
+        return 0
     circle_markers = ("○", "◯", "◎", "\u25cb", "\u25ef", "Ã¢â€”â€¹", "Ã¢â€”Â¯")
     if any(marker in name for marker in circle_markers):
-        base = 130
+        base = 110
     elif skill_id >= 900000:
         base = 200
     elif skill_id % 10 >= 2:
-        base = 200
+        base = 180
     else:
-        base = 160
+        base = 120
     return max(1, int(base * (100 - min(max(hint_level, 0), 5) * 10) / 100))
 
 
@@ -2245,6 +2488,8 @@ class CareerSimulator:
         self.purchased_skills = []
         self._purchased_skill_ids = set()
         self.sp_gain_sources = defaultdict(int)
+        if int(self.state.get("skill_point") or 0) > 0:
+            self.sp_gain_sources["initial"] += int(self.state.get("skill_point") or 0)
         self.skill_rating_meta = _load_skill_rating_metadata(self.project_root)
         self.skill_rating_calibration = load_empirical_skill_rating_calibration(
             self.project_root,
@@ -2278,19 +2523,20 @@ class CareerSimulator:
             run_context=self.preset.get("_run_context") or {},
             trainee_card_id=self.trainee_card_id,
         )
-        self.race_sp_reward_scale = self._calibrated_race_sp_reward_scale()
+        self.race_sp_reward_scale = 1.0
+        self.nonrace_sp_reward_scale = 1.0
+        self.event_sp_reward_scale = 1.0
         if self.sp_budget_calibration.get("enabled"):
             self.fidelity_warnings.append(
-                "empirical SP-budget calibration: "
+                "empirical SP source calibration: "
                 f"{self.sp_budget_calibration.get('sample_count')} finished careers, "
-                f"target total SP={self.sp_budget_calibration.get('total_sp_budget_target')}, "
+                f"source SP={self.sp_budget_calibration.get('source_sp_budget_target')}, "
                 f"target final SP={self.sp_budget_calibration.get('final_sp_target')}, "
-                f"race win-rate={float(self.sp_budget_calibration.get('race_win_rate_target') or 0):.3f}, "
-                f"race SP scale={self.race_sp_reward_scale:.3f}"
+                f"race win-rate={float(self.sp_budget_calibration.get('race_win_rate_target') or 0):.3f}"
             )
         else:
             self.fidelity_warnings.append(
-                "empirical SP-budget calibration unavailable; using unscaled race SP rewards"
+                "empirical SP source calibration unavailable; using mechanical training SP and unscaled event/race SP"
             )
         self.race_stat_gain_calibration = load_empirical_race_stat_gain_calibration(
             self.project_root,
@@ -2358,6 +2604,14 @@ class CareerSimulator:
             78: (2513, "Twinkle Star Climax Race 3", "Mile", "climax"),
         }
         self._climax_turn_set = set(self._final_climax_races)
+        self.race_sp_reward_scale = self._calibrated_race_sp_reward_scale()
+        self.event_sp_reward_scale = self._calibrated_event_sp_reward_scale()
+        self.nonrace_sp_reward_scale = 1.0
+        self.fidelity_warnings.append(
+            "SP reward model: "
+            f"training=mechanical facility table, race={self.race_sp_reward_scale:.3f}, "
+            f"event={self.event_sp_reward_scale:.3f}"
+        )
         self._ensure_calendar_in_preset()
 
         # Use the same race planner + next_decision path as real careers.
@@ -2459,40 +2713,73 @@ class CareerSimulator:
         return out[:2]
 
     def _resolve_selected_parents(self):
+        def row_id(row):
+            return _as_int(row.get("instance_id") or row.get("trained_chara_id") or row.get("id")) if isinstance(row, dict) else 0
+
+        ctx = self.preset.get("_run_context") or {}
+        inline = ctx.get("parents") or self.preset.get("parents") or {}
+        inline_by_id = {}
+        if isinstance(inline, dict):
+            for key in ("parent_1", "parent_2", "guest", "borrow"):
+                row = inline.get(key)
+                rid = row_id(row)
+                if rid and isinstance(row, dict):
+                    inline_by_id.setdefault(rid, row)
+        elif isinstance(inline, list):
+            for row in inline:
+                rid = row_id(row)
+                if rid and isinstance(row, dict):
+                    inline_by_id.setdefault(rid, row)
+
         parents = self.parent_library.get("parents") if isinstance(self.parent_library, dict) else []
-        by_id = {}
+        library_by_id = {}
         for parent in parents or []:
             if not isinstance(parent, dict):
                 continue
-            for key in ("instance_id", "trained_chara_id", "id"):
-                value = _as_int(parent.get(key))
-                if value and value not in by_id:
-                    by_id[value] = parent
-        resolved = [by_id[pid] for pid in self.selected_parent_ids if pid in by_id]
+            rid = row_id(parent)
+            if rid and rid not in library_by_id:
+                library_by_id[rid] = parent
+
+        resolved = []
+        for pid in self.selected_parent_ids:
+            row = inline_by_id.get(pid)
+            if isinstance(row, dict) and row.get("tree"):
+                resolved.append(row)
+                continue
+            row = library_by_id.get(pid)
+            if isinstance(row, dict):
+                resolved.append(row)
+                continue
+            row = inline_by_id.get(pid)
+            if isinstance(row, dict):
+                resolved.append(row)
+
         if len(resolved) >= 2:
             return resolved[:2]
 
-        # Fallback: if the preset inlined richer parent records, use those.
-        ctx = self.preset.get("_run_context") or {}
-        inline = ctx.get("parents") or self.preset.get("parents") or {}
-        if isinstance(inline, dict):
-            for key in ("parent_1", "parent_2"):
-                row = inline.get(key)
-                if isinstance(row, dict) and row.get("tree"):
-                    rid = _as_int(row.get("instance_id") or row.get("id"))
-                    if rid and all(_as_int(parent.get("instance_id") or parent.get("id")) != rid for parent in resolved):
-                        resolved.append(row)
-        elif isinstance(inline, list):
-            for row in inline:
-                if not isinstance(row, dict) or not row.get("tree"):
+        # Last fallback: use any inline rich parent record not already selected.
+        for row in inline_by_id.values():
+            if not isinstance(row, dict) or not row.get("tree"):
+                continue
+            rid = row_id(row)
+            if not rid:
+                continue
+            if all(row_id(parent) != rid for parent in resolved):
+                resolved.append(row)
+            if len(resolved) >= 2:
+                break
+
+        if len(resolved) < 2:
+            for row in library_by_id.values():
+                if not isinstance(row, dict):
                     continue
-                rid = _as_int(row.get("instance_id") or row.get("trained_chara_id") or row.get("id"))
+                rid = row_id(row)
                 if not rid:
                     continue
-                if self.selected_parent_ids and rid not in self.selected_parent_ids:
-                    continue
-                if all(_as_int(parent.get("instance_id") or parent.get("trained_chara_id") or parent.get("id")) != rid for parent in resolved):
+                if all(row_id(parent) != rid for parent in resolved):
                     resolved.append(row)
+                if len(resolved) >= 2:
+                    break
         return resolved[:2]
 
     def _legacy_factor_entries(self, parents=None, nodes=LEGACY_NODES):
@@ -3041,7 +3328,7 @@ class CareerSimulator:
         # sims at 1200 speed (real bot averages ~100 speed/training and lands
         # at ~890). Lower to 1.65 to match real-bot stat distributions.
         value *= float(self.preset.get("sim_training_gain_scale") or 1.65)
-        return max(0, int(round(value)))
+        return max(0, int(value))
 
     def _support_skill_point_gain(self, training_stat, partner_cards, is_rainbow, facility_level):
         facilities = (self.training_curves or {}).get("facilities") or {}
@@ -4183,7 +4470,87 @@ class CareerSimulator:
         # Parent inheritance usually contributes a tiny amount of SP compared
         # with races/events. Keep it explicit so the SP budget is auditable.
         inheritance_sp = 4.0 if bool(self.preset.get("sim_use_parent_inheritance", True)) else 0.0
-        return max(0.0, initial_sp + training_sp + event_sp + inheritance_sp)
+        climax_sp = self._expected_climax_sp_budget()
+        return max(0.0, initial_sp + training_sp + event_sp + inheritance_sp + climax_sp)
+
+    def _race_sp_grade_key(self, pid=0, race_name="", grade="", turn=None):
+        try:
+            pid = int(pid or 0)
+        except (TypeError, ValueError):
+            pid = 0
+        turn = int(turn if turn is not None else (self.state.get("turn") or 0) or 0)
+        name = str(race_name or "").lower()
+        if "twinkle star climax" in name or pid in {2315, 2410, 2412, 2513} or turn in getattr(self, "_climax_turn_set", set()):
+            return "climax"
+        return "g1" if str(grade or "").upper() == "G1" else "other"
+
+    def _race_reward_grade_key(self, grade):
+        grade_key = str(grade or "").upper().replace("_", "-").strip()
+        if grade_key in {"PREOP", "PRE-OP", "PRE OP"}:
+            return "PRE-OP"
+        if grade_key in {"OP", "OPEN"}:
+            return "OP"
+        if grade_key in {"G3", "GIII"}:
+            return "G3"
+        if grade_key in {"G2", "GII"}:
+            return "G2"
+        if grade_key in {"G1", "GI"}:
+            return "G1"
+        return grade_key
+
+    def _race_base_reward(self, grade):
+        return RACE_GRADE_REWARDS.get(self._race_reward_grade_key(grade), {})
+
+    def _empirical_race_sp_reward_by_grade(self):
+        calibration = getattr(self, "sp_budget_calibration", {}) or {}
+        rewards = calibration.get("race_sp_reward_by_grade") or {}
+        if not calibration.get("enabled") or not isinstance(rewards, dict):
+            return {}
+        return rewards
+
+    def _race_sp_reward_value(self, *, grade, won, pid=0, race_name="", turn=None, rival=False, reward_multiplier=1.0, race_bonus_mult=1.0):
+        """Return in-game race SP: grade base reward scaled by race bonus."""
+        grade_key = self._race_sp_grade_key(pid=pid, race_name=race_name, grade=grade, turn=turn)
+        if grade_key == "climax":
+            # Climax SP is handled by _apply_climax_race_reward so that the
+            # event entry remains visible and scales with the active hammer.
+            return 0
+
+        base = _as_int((self._race_base_reward(grade) or {}).get("skill_point"))
+        if base <= 0:
+            return 0
+        if not won:
+            base = int(base * 0.45)
+        value = float(base) * max(0.0, float(race_bonus_mult or 1.0))
+        if float(reward_multiplier or 1.0) > 1.0:
+            value *= max(1.0, float(reward_multiplier or 1.0))
+        return max(0, int(value))
+
+    def _expected_race_reward_multiplier_for_budget(self, *, grade, turn=0, rival=False, race_name="", pid=0):
+        if not bool(self.preset.get("sim_use_shop_items", True)):
+            return 1.0
+        grade_key = self._race_sp_grade_key(pid=pid, race_name=race_name, grade=grade, turn=turn)
+        if grade_key == "climax":
+            return 1.25
+        if int(turn or 0) >= 60 or str(grade or "").upper() == "G1":
+            return 1.05
+        if rival:
+            return 1.03
+        return 1.0
+
+    def _expected_climax_sp_budget(self):
+        if not getattr(self, "_final_climax_races", None):
+            return 0.0
+        race_bonus_mult = self._deck_race_bonus_multiplier()
+        return sum(
+            int(30 * max(0.0, float(race_bonus_mult or 1.0)) * self._expected_race_reward_multiplier_for_budget(
+                grade="",
+                turn=turn,
+                race_name=race[1],
+                pid=race[0],
+            ))
+            for turn, race in self._final_climax_races.items()
+        )
 
     def _expected_unscaled_race_sp_budget(self):
         rows = list(self.scheduled_g1s or [])
@@ -4205,10 +4572,39 @@ class CareerSimulator:
             rival = bool(row[6]) if len(row) > 6 else False
             if pid:
                 rival = self._is_rival_race(pid, explicit=rival)
-            base = (80.0 * win_rate) + (30.0 * (1.0 - win_rate))
-            reward = base * race_bonus_mult
-            if rival:
-                reward += (18.0 * win_rate) + (8.0 * (1.0 - win_rate))
+            name = row[2] if len(row) > 2 else ""
+            distance = row[3] if len(row) > 3 else ""
+            turn = _as_int(row[0] if row else 0)
+            catalog = self.race_catalog_by_program_id.get(pid) or {}
+            grade = catalog.get("type") or catalog.get("grade") or "G1"
+            reward_multiplier = self._expected_race_reward_multiplier_for_budget(
+                grade=grade,
+                turn=turn,
+                rival=rival,
+                race_name=name,
+                pid=pid,
+            )
+            reward_win = self._race_sp_reward_value(
+                grade=grade,
+                won=True,
+                pid=pid,
+                race_name=name or distance,
+                turn=turn,
+                rival=rival,
+                reward_multiplier=reward_multiplier,
+                race_bonus_mult=race_bonus_mult,
+            )
+            reward_loss = self._race_sp_reward_value(
+                grade=grade,
+                won=False,
+                pid=pid,
+                race_name=name or distance,
+                turn=turn,
+                rival=rival,
+                reward_multiplier=reward_multiplier,
+                race_bonus_mult=race_bonus_mult,
+            )
+            reward = (float(reward_win) * win_rate) + (float(reward_loss) * (1.0 - win_rate))
             total += reward
         return max(0.0, total)
 
@@ -4227,20 +4623,58 @@ class CareerSimulator:
         expected_race = self._expected_unscaled_race_sp_budget()
         calibration["expected_nonrace_sp_budget"] = int(round(expected_nonrace))
         calibration["expected_unscaled_race_sp_budget"] = int(round(expected_race))
-        if target_total <= 0 or expected_race <= 0:
-            return 1.0
-        target_race = max(0.0, target_total - expected_nonrace)
-        raw_scale = target_race / expected_race
+        calibration["race_sp_reward_scale_reason"] = "using_exact_grade_race_sp_formula"
+        calibration["target_race_sp_budget"] = int(round(max(0.0, target_total - expected_nonrace)))
+        calibration["raw_race_sp_reward_scale"] = 1.0
+        calibration["race_sp_reward_scale"] = 1.0
+        return 1.0
+
+    def _expected_raw_training_sp_budget(self):
+        race_count = len(self.scheduled_g1s or [])
         try:
-            min_scale = float(self.preset.get("sim_race_sp_reward_scale_min") or 0.55)
-            max_scale = float(self.preset.get("sim_race_sp_reward_scale_max") or 1.10)
+            nonrace_actions = int(self.preset.get("sim_expected_nonrace_action_count") or (TURN_FINISH - race_count))
         except (TypeError, ValueError):
-            min_scale, max_scale = 0.55, 1.10
-        scale = max(min_scale, min(max_scale, raw_scale))
-        calibration["target_race_sp_budget"] = int(round(target_race))
-        calibration["raw_race_sp_reward_scale"] = round(raw_scale, 4)
-        calibration["race_sp_reward_scale"] = round(scale, 4)
-        return scale
+            nonrace_actions = TURN_FINISH - race_count
+        return self._expected_training_sp_per_action() * max(0, nonrace_actions)
+
+    def _expected_raw_event_sp_budget(self):
+        if not bool(self.preset.get("sim_use_turn_events", True)):
+            return 0.0
+        return self._expected_event_sp_per_fire() * max(0.0, self._expected_event_fire_count())
+
+    def _calibrated_nonrace_sp_reward_scale(self):
+        return 1.0
+
+    def _calibrated_event_sp_reward_scale(self):
+        override = self.preset.get("sim_event_sp_reward_scale")
+        if override is not None:
+            try:
+                return max(0.0, float(override))
+            except (TypeError, ValueError):
+                pass
+        override = self.preset.get("sim_nonrace_sp_reward_scale")
+        if override is not None:
+            try:
+                scale = max(0.0, float(override))
+                calibration = getattr(self, "sp_budget_calibration", {}) or {}
+                calibration["event_sp_reward_scale"] = round(scale, 4)
+                calibration["event_sp_reward_scale_reason"] = "legacy_sim_nonrace_sp_reward_scale_applies_to_events_only"
+                return scale
+            except (TypeError, ValueError):
+                pass
+        calibration = getattr(self, "sp_budget_calibration", {}) or {}
+        initial_sp = float(self.state.get("skill_point") or 0)
+        inheritance_sp = 4.0 if bool(self.preset.get("sim_use_parent_inheritance", True)) else 0.0
+        expected_climax = self._expected_climax_sp_budget()
+        raw_events = self._expected_raw_event_sp_budget()
+        calibration["expected_initial_sp_budget"] = int(round(initial_sp))
+        calibration["expected_climax_sp_budget"] = int(round(expected_climax))
+        calibration["expected_raw_training_sp_budget"] = int(round(self._expected_raw_training_sp_budget()))
+        calibration["expected_raw_event_sp_budget"] = int(round(raw_events))
+        calibration["event_sp_reward_scale"] = 1.0
+        calibration["event_sp_reward_scale_reason"] = "event_sp_uses_observed_event_deltas_training_sp_uses_facility_table"
+        calibration["nonrace_sp_reward_scale"] = 1.0
+        return 1.0
 
     def _apply_epithet_bonuses_if_completed(self, reward_multiplier):
         """Grant +10/+15 to 2 random stats when a MANT epithet set completes.
@@ -4385,30 +4819,27 @@ class CareerSimulator:
             return calibration.get("distribution") or {}
         return {stat: 1.0 / len(STAT_KEYS) for stat in STAT_KEYS}
 
-    def _race_stat_total_gain(self, *, won, era, reward_multiplier=1.0, race_bonus_mult=1.0, rival=False):
+    def _race_stat_total_gain(self, *, won, era, grade="", reward_multiplier=1.0, race_bonus_mult=1.0, rival=False):
         if not won:
             return 0
         if int(self.state.get("turn") or 0) in getattr(self, "_climax_turn_set", set()):
             return 0
-        calibration = getattr(self, "race_stat_gain_calibration", {}) or {}
-        if bool(self.preset.get("sim_use_empirical_race_stat_reward_total", True)) and calibration.get("enabled"):
-            by_era = calibration.get("by_era") or {}
-            era_key = str(era or "").lower()
-            source = None
-            if int(self.state.get("turn") or 0) >= 73 and by_era.get("climax"):
-                source = by_era.get("climax")
-            elif by_era.get(era_key):
-                source = by_era.get(era_key)
-            if not source:
-                source = calibration
-            learned_total = _as_int((source or {}).get("median_total_gain"))
-            if learned_total > 0:
-                return learned_total
+        base = _as_int((self._race_base_reward(grade) or {}).get("stat"))
+        if base <= 0:
+            return 0
+        value = float(base) * max(0.0, float(race_bonus_mult or 1.0))
+        if float(reward_multiplier or 1.0) > 1.0:
+            value *= max(1.0, float(reward_multiplier or 1.0))
+        return max(0, int(round(value)))
 
-        stat_reward = int(round((170 if won else 0) * max(0.8, float(reward_multiplier or 1.0)) * max(0.0, float(race_bonus_mult or 1.0))))
-        if rival:
-            stat_reward += 35 if won else 10
-        return max(0, stat_reward // 5)
+    def _apply_random_race_stat_gain(self, stat_gain):
+        stat_gain = max(0, int(stat_gain or 0))
+        if stat_gain <= 0:
+            return {}
+        stat = self.rng.choice(STAT_KEYS)
+        state_key = "wiz" if stat == "wit" else stat
+        self.state[state_key] = min(STAT_CAP, int(self.state.get(state_key) or 0) + stat_gain)
+        return {stat: stat_gain}
 
     def _apply_distributed_race_stat_gain(self, total_gain, era):
         total_gain = max(0, int(total_gain or 0))
@@ -4979,6 +5410,24 @@ class CareerSimulator:
         scored.sort(key=lambda row: (-row[0], row[1]))
         return scored[0][2]
 
+    def _sim_event_sp_bucket(self, source_info, template):
+        source = (source_info or {}).get("source") or "guest"
+        action = (source_info or {}).get("action") or "event"
+        if action == "recreation":
+            return "recreation_events"
+        if (template or {}).get("static_mant_event"):
+            return "fixed_events"
+        observed_profile = (template or {}).get("observed_profile") or {}
+        if float(observed_profile.get("top_turn_share") or 0.0) >= 0.8:
+            return "fixed_events"
+        if source == "support_card":
+            return "support_events"
+        if source == "scenario":
+            return "fixed_events"
+        if source in {"chara", "guest"}:
+            return "general_events"
+        return "events"
+
     def _apply_sim_event_effects(self, source_info, template, choice):
         effects = dict((choice or {}).get("effects") or {})
         source = source_info.get("source") or "guest"
@@ -5018,9 +5467,12 @@ class CareerSimulator:
                 value = max(-300.0, min(300.0, value)) if observed_delta else max(-60.0, min(60.0, value))
                 gain = int(round(value * (1.0 + event_effectiveness)))
                 if gain:
+                    gain = int(round(gain * float(getattr(self, "event_sp_reward_scale", 1.0) or 0.0)))
+                if gain:
                     self.state["skill_point"] = max(0, int(self.state.get("skill_point") or 0) + gain)
                     sp_gain += gain
-                    self.sp_gain_sources["events"] += gain
+                    if gain > 0:
+                        self.sp_gain_sources[self._sim_event_sp_bucket(source_info, template)] += gain
             elif raw_key == "HP":
                 value = max(-100.0, min(100.0, value)) if observed_delta else max(-35.0, min(35.0, value))
                 gain = int(round(value * (1.0 + (event_recovery if value > 0 else 0.0))))
@@ -5114,8 +5566,10 @@ class CareerSimulator:
             elif tt == 10:  # energy/HP
                 self.state["hp"] = max(0, min(self.state["max_hp"], self.state["hp"] + v - extra_hp_cost))
             elif tt == 30:  # skill point
-                self.state["skill_point"] += v
-                self.sp_gain_sources["training"] += int(v or 0)
+                v = int(v or 0)
+                self.state["skill_point"] = max(0, int(self.state.get("skill_point") or 0) + v)
+                if v > 0:
+                    self.sp_gain_sources["training"] += v
         # Bond gain: partners on this tile get +5 bond each
         for p in cmd.get("training_partner_array") or []:
             self.state["bonds"][p] = min(100, self.state["bonds"].get(p, 0) + 5)
@@ -7117,10 +7571,18 @@ class CareerSimulator:
         # the amount of stats and skill points you gain from finishing a race.
         # No rounding, 34% RB is the threshold for +1 all stats on mandatory."
         race_bonus_mult = self._deck_race_bonus_multiplier()
-        sp_reward = int(round((80 if won else 30) * reward_multiplier * race_bonus_mult))
+        sp_reward = self._race_sp_reward_value(
+            grade=grade,
+            won=won,
+            pid=pid,
+            race_name=race_name,
+            turn=int(self.state.get("turn") or 0),
+            rival=rival,
+            reward_multiplier=reward_multiplier,
+            race_bonus_mult=race_bonus_mult,
+        )
         if rival:
             self.rival_races_run += 1
-            sp_reward += 18 if won else 8
         sp_reward_unscaled = int(sp_reward)
         sp_scale = float(getattr(self, "race_sp_reward_scale", 1.0) or 1.0)
         sp_reward = max(1, int(round(sp_reward_unscaled * sp_scale))) if sp_reward_unscaled > 0 else 0
@@ -7136,11 +7598,12 @@ class CareerSimulator:
             race_stat_gain = self._race_stat_total_gain(
                 won=won,
                 era=era,
+                grade=grade,
                 reward_multiplier=reward_multiplier,
                 race_bonus_mult=race_bonus_mult,
                 rival=rival,
             )
-            stat_allocations = self._apply_distributed_race_stat_gain(race_stat_gain, era)
+            stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)
             self.race_names_won.add(str(race_name or "").strip())
             self._apply_epithet_bonuses_if_completed(reward_multiplier)
         # Twinkle Star Climax rewards fire after the race and scale with

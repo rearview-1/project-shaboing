@@ -262,10 +262,21 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         ])
         by_id = {row["skill_id"]: row for row in rows}
 
-        self.assertEqual(by_id[200352]["estimated_cost"], 130)
-        self.assertEqual(by_id[201601]["estimated_cost"], 160)
+        self.assertEqual(by_id[200352]["estimated_cost"], 110)
+        self.assertEqual(by_id[201601]["estimated_cost"], 120)
         self.assertEqual(by_id[900111]["estimated_cost"], 200)
-        self.assertEqual(main.get_estimated_skill_points(rows), 490)
+        self.assertEqual(main.get_estimated_skill_points(rows), 430)
+
+    def test_character_unique_skills_do_not_count_as_paid_sp(self):
+        rows = main.get_skill_rows([
+            {"skill_id": 100671, "level": 5},  # Character unique
+            {"skill_id": 200542, "level": 1},  # Paid skill
+        ])
+        by_id = {row["skill_id"]: row for row in rows}
+
+        self.assertEqual(by_id[100671]["estimated_cost"], 0)
+        self.assertEqual(by_id[200542]["estimated_cost"], 180)
+        self.assertEqual(main.get_estimated_skill_points(rows), 180)
 
     def test_factor_rows_include_inheritance_effect_summaries(self):
         rows = main.get_factors([3000303, 1000703], owner_card_id=100601)
@@ -290,11 +301,11 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         dashboard = main.build_dashboard_data(data, preserve_friends=False)
         parent = dashboard["parents"][0]
 
-        self.assertEqual(parent["estimated_skill_points"], 290)
-        self.assertEqual(parent["stats"]["estimated_skill_points"], 290)
+        self.assertEqual(parent["estimated_skill_points"], 230)
+        self.assertEqual(parent["stats"]["estimated_skill_points"], 230)
         self.assertEqual(
             [row["estimated_cost"] for row in parent["skills"]],
-            [130, 160],
+            [110, 120],
         )
 
     def test_borrow_uma_score_uses_rank_score(self):

@@ -971,7 +971,11 @@ class CareerRunner:
                 "--candidates", str(int(preset_snapshot.get("auto_policy_optimizer_candidates") or 10)),
                 "--sims-per-candidate", str(int(preset_snapshot.get("auto_policy_optimizer_sims") or 8)),
                 "--baseline-sims", "12",
-                "--validation-sims", "16",
+                # 16 validation sims proved too noisy to gate clean_rate saves
+                # (binomial sigma ~0.12 at n=16; a +0.06 "lift" is half a
+                # sigma). 32 halves the noise for ~10 extra minutes on an
+                # hourly-plus cadence.
+                "--validation-sims", str(int(preset_snapshot.get("auto_policy_optimizer_validation_sims") or 32)),
                 "--objective", str(preset_snapshot.get("auto_policy_optimizer_objective") or "clean_rate"),
                 "--instance", instance,
             ]

@@ -7757,6 +7757,16 @@ class CareerSimulator:
             clean_lift_block_reasons.append(
                 f"observed_win_rate {observed_win_rate:.3f} < {observed_safe_rate:.3f}"
             )
+        # Hard evidence block: when the account demonstrably loses this race
+        # often, the lift stays off even if the threshold model calls the
+        # statline safe. Threshold safety bypassing ALL observed evidence was
+        # a major sim-optimism source (sim won 95% of races vs ~80% live).
+        observed_hard_rate = float(self.preset.get("sim_clean_record_hard_observed_win_rate") or 0.70)
+        if observed_runs >= observed_min_runs and observed_win_rate < observed_hard_rate:
+            clean_lift_allowed = False
+            clean_lift_block_reasons.append(
+                f"observed_win_rate {observed_win_rate:.3f} < hard floor {observed_hard_rate:.3f}"
+            )
         if manual_model.get("stamina_critical"):
             clean_lift_allowed = False
             clean_lift_block_reasons.append("manual stamina critical")
@@ -7786,9 +7796,13 @@ class CareerSimulator:
             )
             and float(prob or 0.0) >= float(self.preset.get("sim_clean_record_safe_probability_threshold") or 0.63)
         ):
+            # 0.985 made prepared races near-certain and drove the sim's
+            # overall win rate to 95% vs ~80% live; the account's BEST
+            # careers run ~94.6% per-race. 0.95 keeps the "prep makes
+            # scheduled races very winnable" intent without erasing risk.
             lifted = max(
                 float(prob or 0.0),
-                float(self.preset.get("sim_clean_record_safe_win_probability") or 0.985),
+                float(self.preset.get("sim_clean_record_safe_win_probability") or 0.95),
             )
             if lifted > float(prob or 0.0):
                 race_model["clean_record_probability_lift"] = True
@@ -7797,6 +7811,16 @@ class CareerSimulator:
                 race_model["win_probability"] = round(float(prob or 0.0), 4)
         elif clean_lift_block_reasons:
             race_model["clean_record_probability_lift_blocked"] = clean_lift_block_reasons
+        # Global per-race certainty ceiling: no branch (threshold override,
+        # empirical exact, lift) may call a race more certain than the best
+        # live careers actually achieve. Live per-race rate at peak prep is
+        # ~0.946; RNG losses at stat dominance are real (see 2026-06-12
+        # postmortems: rank-2 finishes while leading every stat).
+        prob_ceiling = float(self.preset.get("sim_race_max_win_probability") or 0.96)
+        if float(prob or 0.0) > prob_ceiling:
+            race_model["win_probability_ceiling_applied"] = prob_ceiling
+            prob = prob_ceiling
+            race_model["win_probability"] = round(float(prob or 0.0), 4)
         won = self.rng.random() <= float(prob or 0.0)
 
         continues_used = 0

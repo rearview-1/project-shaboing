@@ -175,10 +175,14 @@ def _objective_score(results, objective: str, threshold: int = 17500) -> float:
       Aligns with user's framing of tuning for unreached ranks rather
       than averaging.
     - "p80": 80th-percentile rating (max top-tail)
-    - "clean_rate": fraction of sims with ZERO race losses, with the mean
-      rating as a micro tiebreak. Matches the parent-farming requirement:
-      clean record first, rating second. The tiebreak term is scaled so it
-      can never outweigh a 1/n difference in clean rate.
+    - "clean_rate": lexicographic parent-quality objective. Primary: the
+      fraction of sims with ZERO race losses. Secondary: fewer mean race
+      losses (so candidates still rank when no career is clean yet — with
+      a 0/N clean field the primary term alone has no gradient and the
+      winner degenerates to the rating tiebreak). Tertiary: mean rating.
+      Term scales keep the ordering strict: a 1/N clean-rate step (>=
+      0.0625 at N=16) always beats any plausible loss delta (~5 losses ->
+      0.005), which always beats the rating tiebreak (~1.6e-5).
     """
     ratings = [r.rating_score for r in results]
     if not ratings:
@@ -188,11 +192,13 @@ def _objective_score(results, objective: str, threshold: int = 17500) -> float:
     if objective == "p80":
         return statistics.quantiles(ratings, n=5)[3] if len(ratings) >= 5 else max(ratings)
     if objective == "clean_rate":
-        clean = sum(
-            1 for r in results
-            if not any(not race.get("won") for race in (r.races_run or []))
-        ) / len(results)
-        return clean + statistics.mean(ratings) / 1e9
+        loss_counts = [
+            sum(1 for race in (r.races_run or []) if not race.get("won"))
+            for r in results
+        ]
+        clean = sum(1 for losses in loss_counts if losses == 0) / len(results)
+        mean_losses = statistics.mean(loss_counts)
+        return clean - mean_losses / 1e3 + statistics.mean(ratings) / 1e9
     return statistics.mean(ratings)
 
 

@@ -58083,10 +58083,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -60683,10 +60686,12 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_113",
+        "condition": "friendship_training",
+        "grants": {
+          "energy_cost_reduction": 30
+        },
         "type": 113,
-        "unlock_level": 30,
-        "value": 28
+        "unlock_level": 30
       }
     ]
   },
@@ -60895,10 +60900,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -63940,10 +63949,13 @@
     "type": "Group",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -66966,10 +66978,13 @@
     "type": "Group",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -67175,10 +67190,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -67389,10 +67407,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_102",
+        "condition": "bond_gte_off_type_training",
+        "grants": {
+          "training_effectiveness": 20
+        },
+        "threshold": 80,
         "type": 102,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -67820,10 +67841,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 15
+        },
+        "threshold": 5,
         "type": 103,
-        "unlock_level": 30,
-        "value": 5
+        "unlock_level": 30
       }
     ]
   },
@@ -68033,10 +68057,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_104",
+        "condition": "fans_scaled",
+        "fans_per_step": 10000,
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 20,
         "type": 104,
-        "unlock_level": 30,
-        "value": 10000
+        "unlock_level": 30
       }
     ]
   },
@@ -68243,10 +68271,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -68455,10 +68486,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 4,
         "type": 103,
-        "unlock_level": 40,
-        "value": 4
+        "unlock_level": 40
       }
     ]
   },
@@ -68664,10 +68698,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "mood_effect": 60
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -68877,10 +68914,11 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_105",
+        "condition": "deck_type_initial_stats",
+        "friend_group_all_stats": 2,
+        "same_type_initial_stat": 10,
         "type": 105,
-        "unlock_level": 30,
-        "value": 10
+        "unlock_level": 30
       }
     ]
   },
@@ -69089,10 +69127,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_106",
+        "condition": "friendship_training_count",
+        "grants_per_unit": {
+          "friendship_bonus": 3
+        },
+        "max_count": 5,
         "type": 106,
-        "unlock_level": 30,
-        "value": 5
+        "unlock_level": 30
       }
     ]
   },
@@ -69300,10 +69341,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -69511,10 +69555,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -69723,10 +69770,15 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_107",
+        "condition": "low_hp_scaled",
+        "grants_per_unit": {
+          "friendship_bonus": 5
+        },
+        "hp_floor": 15,
+        "hp_per_step": 10,
+        "max_grant": 30,
         "type": 107,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -69939,10 +69991,15 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_108",
+        "condition": "max_hp_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "hp_floor": 75,
+        "hp_per_step": 5,
+        "max_grant": 20,
         "type": 108,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -70366,10 +70423,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "wit_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -70781,10 +70842,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_109",
+        "condition": "total_bond_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 30,
         "type": 109,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -70992,10 +71056,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -71206,10 +71273,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 20
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -71417,10 +71487,12 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_110",
+        "condition": "same_training_facility_support_count",
+        "grants_per_unit": {
+          "training_effectiveness": 5
+        },
         "type": 110,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -71629,10 +71701,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_friendship_recovery": 5
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -71841,10 +71916,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -72272,10 +72350,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -72487,10 +72569,12 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_111",
+        "condition": "training_facility_level",
+        "grants_per_unit": {
+          "training_effectiveness": 5
+        },
         "type": 111,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -72705,10 +72789,10 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_112",
+        "chance_pct": 20,
+        "condition": "failure_zero_chance",
         "type": 112,
-        "unlock_level": 30,
-        "value": 20
+        "unlock_level": 30
       }
     ]
   },
@@ -72917,10 +73001,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -73128,10 +73215,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -73341,10 +73431,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_109",
+        "condition": "total_bond_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 30,
         "type": 109,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -73553,10 +73646,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_106",
+        "condition": "friendship_training_count",
+        "grants_per_unit": {
+          "friendship_bonus": 3
+        },
+        "max_count": 5,
         "type": 106,
-        "unlock_level": 30,
-        "value": 5
+        "unlock_level": 30
       }
     ]
   },
@@ -73769,10 +73865,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -73986,10 +74085,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -74200,10 +74302,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_114",
+        "condition": "hp_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 20,
         "type": 114,
         "unlock_level": 30,
-        "value": 8
+        "value_per_step": 5
       }
     ]
   },
@@ -74415,10 +74521,11 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_105",
+        "condition": "deck_type_initial_stats",
+        "friend_group_all_stats": 2,
+        "same_type_initial_stat": 10,
         "type": 105,
-        "unlock_level": 30,
-        "value": 10
+        "unlock_level": 30
       }
     ]
   },
@@ -74629,10 +74736,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -74842,10 +74952,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -75051,10 +75164,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -75264,10 +75380,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -75475,10 +75594,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -75687,10 +75809,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -75902,10 +76028,12 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_111",
+        "condition": "training_facility_level",
+        "grants_per_unit": {
+          "training_effectiveness": 5
+        },
         "type": 111,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -76116,10 +76244,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -76330,10 +76462,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -76544,10 +76679,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -76759,10 +76897,12 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_113",
+        "condition": "friendship_training",
+        "grants": {
+          "mood_effect": 60
+        },
         "type": 113,
-        "unlock_level": 30,
-        "value": 2
+        "unlock_level": 30
       }
     ]
   },
@@ -76972,10 +77112,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "specialty_priority": 40
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -77183,10 +77326,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -77394,10 +77540,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -77607,10 +77756,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 15
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -77820,10 +77972,15 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_108",
+        "condition": "max_hp_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "hp_floor": 75,
+        "hp_per_step": 5,
+        "max_grant": 20,
         "type": 108,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -78031,10 +78188,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -78246,10 +78406,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "training_effectiveness": 4
+        },
+        "max_count": 5,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -78460,10 +78624,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -78671,10 +78838,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -78887,16 +79057,23 @@
     "type": "Group",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 10,
+          "mood_effect": 15
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       },
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -79107,10 +79284,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -79322,10 +79502,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -79534,10 +79717,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -79748,10 +79934,11 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_105",
+        "condition": "deck_type_initial_stats",
+        "friend_group_all_stats": 2,
+        "same_type_initial_stat": 10,
         "type": 105,
-        "unlock_level": 30,
-        "value": 10
+        "unlock_level": 30
       }
     ]
   },
@@ -79961,10 +80148,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "stamina_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 3,
         "type": 116,
-        "unlock_level": 30,
-        "value": 3
+        "unlock_level": 30
       }
     ]
   },
@@ -80171,10 +80362,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -80381,10 +80575,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -80598,10 +80795,12 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_115",
+        "condition": "all_supports_initial_bonus",
+        "grants": {
+          "initial_friendship": 5
+        },
         "type": 115,
-        "unlock_level": 30,
-        "value": 14
+        "unlock_level": 30
       }
     ]
   },
@@ -80810,10 +81009,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -81025,10 +81227,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_117",
+        "condition": "combined_facility_level_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "level_per_step": 25,
+        "max_grant": 20,
         "type": 117,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -81238,10 +81444,12 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_113",
+        "condition": "friendship_training",
+        "grants": {
+          "mood_effect": 60
+        },
         "type": 113,
-        "unlock_level": 30,
-        "value": 2
+        "unlock_level": 30
       }
     ]
   },
@@ -81449,10 +81657,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -81660,10 +81871,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -81876,10 +82090,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -82089,10 +82306,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -82303,10 +82523,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "speed_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 3,
         "type": 116,
-        "unlock_level": 30,
-        "value": 3
+        "unlock_level": 30
       }
     ]
   },
@@ -82516,10 +82740,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "specialty_priority": 40
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -82730,10 +82957,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -82944,10 +83174,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "wit_bonus": 2
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -83157,10 +83391,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 20
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -83369,10 +83606,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -83573,10 +83813,11 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_118",
+        "condition": "bond_gte_dual_facility_placement",
+        "facility_count": 1,
+        "threshold": 60,
         "type": 118,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -83788,10 +84029,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -83998,10 +84242,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -84211,10 +84458,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -84424,10 +84674,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -84637,10 +84890,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -84848,10 +85104,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "training_effectiveness": 5
+        },
+        "max_count": 3,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -85058,10 +85318,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -85274,10 +85537,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -85486,10 +85752,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_114",
+        "condition": "hp_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 20,
         "type": 114,
         "unlock_level": 30,
-        "value": 8
+        "value_per_step": 5
       }
     ]
   },
@@ -85698,10 +85968,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "speed_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -85901,10 +86175,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "specialty_priority": 40
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -86115,10 +86392,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -86329,10 +86609,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 4,
         "type": 103,
-        "unlock_level": 30,
-        "value": 4
+        "unlock_level": 30
       }
     ]
   },
@@ -86541,10 +86824,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -86757,10 +87043,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "power_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 2,
         "type": 116,
-        "unlock_level": 30,
-        "value": 2
+        "unlock_level": 30
       }
     ]
   },
@@ -86967,10 +87257,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -87180,10 +87473,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -87391,10 +87687,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 10,
+          "mood_effect": 15
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -87605,10 +87905,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 10,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -87813,10 +88117,13 @@
     "type": "Group",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -88028,10 +88335,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -88239,10 +88549,12 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_113",
+        "condition": "friendship_training",
+        "grants": {
+          "training_effectiveness": 15
+        },
         "type": 113,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -88450,10 +88762,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 20
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -88663,10 +88978,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -88875,10 +89193,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -89088,10 +89409,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -89300,10 +89624,12 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_120",
+        "bonus_per_card": 1,
+        "condition": "bond_gte_deck_type_stat_bonus",
+        "max_per_stat": 2,
+        "threshold": 80,
         "type": 120,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -89504,10 +89830,13 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_119",
+        "condition": "bond_gte_all_supports_specialty_priority",
+        "grants": {
+          "specialty_priority": 50
+        },
+        "threshold": 60,
         "type": 119,
-        "unlock_level": 30,
-        "value": 50
+        "unlock_level": 30
       }
     ]
   },
@@ -89713,10 +90042,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -89921,10 +90253,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -90131,10 +90466,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -90341,10 +90679,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -90554,10 +90896,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -90765,10 +91110,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -90977,10 +91325,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -91189,10 +91541,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -91400,10 +91755,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -91613,10 +91971,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -91825,10 +92186,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 20
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -92036,10 +92400,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -92251,10 +92618,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -92463,10 +92833,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -92674,10 +93048,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -92886,10 +93263,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -93097,10 +93477,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -93308,10 +93691,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -93512,10 +93899,13 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_121",
+        "condition": "training_bond_bonus",
+        "grants": {
+          "bond_gain": 1,
+          "same_facility_bond_gain": 2
+        },
         "type": 121,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -93724,10 +94114,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_109",
+        "condition": "total_bond_scaled",
+        "grants_per_unit": {
+          "training_effectiveness": 1
+        },
+        "max_grant": 30,
         "type": 109,
-        "unlock_level": 30,
-        "value": 8
+        "unlock_level": 30
       }
     ]
   },
@@ -93938,10 +94331,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2,
+          "stamina_bonus": 1
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -94152,10 +94549,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "speed_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -94368,10 +94769,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "wit_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -94577,10 +94982,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -95006,10 +95414,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -95221,10 +95632,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -95432,10 +95847,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -95642,10 +96060,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -95856,10 +96277,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -96068,10 +96492,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -96279,10 +96707,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -96489,10 +96920,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -96703,10 +97138,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -96916,10 +97355,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "training_effectiveness": 4
+        },
+        "max_count": 5,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -97128,10 +97571,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -97337,10 +97784,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -97551,10 +98001,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -97769,10 +98222,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "wit_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -97984,10 +98441,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -98198,10 +98658,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_116",
+        "condition": "owned_skill_category_count",
+        "grants_per_unit": {
+          "wit_bonus": 1
+        },
+        "max_count": 3,
+        "skill_category": 1,
         "type": 116,
-        "unlock_level": 30,
-        "value": 1
+        "unlock_level": 30
       }
     ]
   },
@@ -98412,10 +98876,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 3
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -98622,10 +99089,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -98838,10 +99309,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -99054,10 +99528,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 1,
+          "wit_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -99269,10 +99747,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -99481,10 +99963,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -99694,10 +100180,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 2
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -99909,10 +100399,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -100123,10 +100617,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -100335,10 +100832,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -100546,10 +101046,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -100756,10 +101260,13 @@
     "type": "Group",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -100973,10 +101480,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -101184,10 +101695,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -101399,10 +101913,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "stamina_bonus": 2
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 30,
-        "value": 100
+        "unlock_level": 30
       }
     ]
   },
@@ -101614,10 +102132,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -101830,10 +102352,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -102042,10 +102568,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -102258,10 +102787,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -102474,10 +103006,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -102689,10 +103224,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 4,
         "type": 103,
-        "unlock_level": 30,
-        "value": 4
+        "unlock_level": 30
       }
     ]
   },
@@ -102901,10 +103439,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -103116,10 +103658,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -103331,10 +103876,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -103545,10 +104094,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -103756,10 +104309,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 1,
+          "wit_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -103972,10 +104529,12 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_113",
+        "condition": "friendship_training",
+        "grants": {
+          "mood_effect": 60
+        },
         "type": 113,
-        "unlock_level": 30,
-        "value": 2
+        "unlock_level": 30
       }
     ]
   },
@@ -104177,10 +104736,13 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_122",
+        "condition": "trained_together_next_turn_specialty_priority",
+        "grants": {
+          "specialty_priority": 60
+        },
+        "target_effect_type": 19,
         "type": 122,
-        "unlock_level": 30,
-        "value": 19
+        "unlock_level": 30
       }
     ]
   },
@@ -104391,10 +104953,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -104602,10 +105167,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -104813,10 +105382,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -105030,10 +105602,13 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -105245,10 +105820,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 30,
-        "value": 80
+        "unlock_level": 30
       }
     ]
   },
@@ -105456,10 +106035,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -105675,10 +106257,12 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_120",
+        "bonus_per_card": 1,
+        "condition": "bond_gte_deck_type_stat_bonus",
+        "max_per_stat": 2,
+        "threshold": 80,
         "type": 120,
-        "unlock_level": 1,
-        "value": 1
+        "unlock_level": 1
       }
     ]
   },
@@ -105892,10 +106476,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -106102,10 +106690,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 1,
+          "wit_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 40,
-        "value": 80
+        "unlock_level": 40
       }
     ]
   },
@@ -106321,10 +106913,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "speed_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -106539,10 +107134,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -106750,10 +107349,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -106965,10 +107567,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 4,
         "type": 103,
-        "unlock_level": 1,
-        "value": 4
+        "unlock_level": 1
       }
     ]
   },
@@ -107181,10 +107786,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -107400,10 +108009,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -107612,10 +108225,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "mood_effect": 15,
+          "power_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 1,
-        "value": 80
+        "unlock_level": 1
       }
     ]
   },
@@ -107828,10 +108445,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 20
+        },
+        "threshold": 100,
         "type": 101,
-        "unlock_level": 0,
-        "value": 100
+        "unlock_level": 0
       }
     ]
   },
@@ -108048,10 +108668,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -108252,10 +108875,14 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "energy_cost_reduction": 5,
+          "training_effectiveness": 5
+        },
+        "threshold": 60,
         "type": 101,
-        "unlock_level": 0,
-        "value": 60
+        "unlock_level": 0
       }
     ]
   },
@@ -108470,10 +109097,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -108689,10 +109319,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "stamina_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -108906,10 +109539,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -109118,10 +109755,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -109336,10 +109977,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -109558,10 +110203,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "training_effectiveness": 5
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -109781,10 +110430,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "hint_quantity_bonus": 1,
+          "power_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -109993,10 +110646,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -110211,10 +110868,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -110426,10 +111087,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -110644,10 +111308,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -110857,10 +111525,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "mood_effect": 15,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -111080,10 +111752,14 @@
     "type": "Intelligence",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "hint_quantity_bonus": 1,
+          "training_effectiveness": 5
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -111285,10 +111961,14 @@
     "type": "Friend",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "skill_pt_bonus": 1
+        },
+        "threshold": 60,
         "type": 101,
-        "unlock_level": 0,
-        "value": 60
+        "unlock_level": 0
       }
     ]
   },
@@ -111498,10 +112178,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -111717,10 +112401,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "friendship_bonus": 10,
+          "power_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -111936,10 +112624,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -112155,10 +112847,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_103",
+        "condition": "deck_distinct_support_types_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 4,
         "type": 103,
-        "unlock_level": 0,
-        "value": 4
+        "unlock_level": 0
       }
     ]
   },
@@ -112367,10 +113062,13 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -112591,10 +113289,13 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -112811,10 +113512,11 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_105",
+        "condition": "deck_type_initial_stats",
+        "friend_group_all_stats": 2,
+        "same_type_initial_stat": 10,
         "type": 105,
-        "unlock_level": 0,
-        "value": 10
+        "unlock_level": 0
       }
     ]
   },
@@ -113032,10 +113734,14 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "hint_quantity_bonus": 1,
+          "power_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -113244,10 +113950,14 @@
     "type": "Guts",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "speed_bonus": 1
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -113462,10 +114172,14 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "training_effectiveness": 5
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -113679,10 +114393,14 @@
     "type": "Power",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 1,
+          "training_effectiveness": 5
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -113898,10 +114616,13 @@
     "type": "Speed",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "power_bonus": 2
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   },
@@ -114110,10 +114831,13 @@
     "type": "Stamina",
     "unique_effects": [
       {
-        "key": "effect_101",
+        "condition": "bond_gte",
+        "grants": {
+          "training_effectiveness": 10
+        },
+        "threshold": 80,
         "type": 101,
-        "unlock_level": 0,
-        "value": 80
+        "unlock_level": 0
       }
     ]
   }

@@ -183,6 +183,228 @@ def _current_effects(effect_rows: list[list[int]], max_level: int) -> dict[str, 
     return out
 
 
+def _support_effect_key(value: Any) -> str:
+    try:
+        effect_id = int(value or 0)
+    except (TypeError, ValueError):
+        return ""
+    return SUPPORT_EFFECT_KEYS.get(effect_id, "")
+
+
+def _unique_effect_grant_pairs(raw: dict[str, Any], *, max_pairs: int = 4) -> dict[str, int]:
+    grants: dict[str, int] = {}
+    for index in range(1, max_pairs * 2, 2):
+        key = _support_effect_key(raw.get(f"value_{index}"))
+        if not key:
+            continue
+        try:
+            amount = int(raw.get(f"value_{index + 1}") or 0)
+        except (TypeError, ValueError):
+            amount = 0
+        if amount:
+            grants[key] = grants.get(key, 0) + amount
+    return grants
+
+
+def _unique_row(effect_id: int, unlock_level: int, **fields: Any) -> dict[str, Any]:
+    return {"type": effect_id, "unlock_level": unlock_level, **fields}
+
+
+def _decode_unique_effect(raw: dict[str, Any], unlock_level: int) -> dict[str, Any]:
+    effect_id = int(raw.get("type") or 0)
+    value = int(raw.get("value") or 0)
+    key = SUPPORT_EFFECT_KEYS.get(effect_id)
+    if key:
+        return _unique_row(effect_id, unlock_level, key=key, value=value)
+
+    if effect_id == 101:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="bond_gte",
+            threshold=value,
+            grants=_unique_effect_grant_pairs(raw),
+        )
+    if effect_id == 102:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="bond_gte_off_type_training",
+            threshold=value,
+            grants={"training_effectiveness": int(raw.get("value_1") or 0)},
+        )
+    if effect_id == 103:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="deck_distinct_support_types_gte",
+            threshold=value,
+            grants={"training_effectiveness": int(raw.get("value_1") or 0)},
+        )
+    if effect_id == 104:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="fans_scaled",
+            fans_per_step=value,
+            max_grant=int(raw.get("value_1") or 0),
+            grants_per_unit={"training_effectiveness": 1},
+        )
+    if effect_id == 105:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="deck_type_initial_stats",
+            same_type_initial_stat=value,
+            friend_group_all_stats=int(raw.get("value_1") or 0),
+        )
+    if effect_id == 106:
+        grant_key = _support_effect_key(raw.get("value_1"))
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="friendship_training_count",
+            max_count=value,
+            grants_per_unit={grant_key: int(raw.get("value_2") or 0)} if grant_key else {},
+        )
+    if effect_id == 107:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="low_hp_scaled",
+            hp_per_step=int(raw.get("value_1") or 0),
+            max_grant=int(raw.get("value_2") or 0),
+            hp_floor=int(raw.get("value_3") or 0),
+            grants_per_unit={"friendship_bonus": int(raw.get("value_4") or 0)},
+        )
+    if effect_id == 108:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="max_hp_scaled",
+            hp_floor=int(raw.get("value_2") or 0),
+            hp_per_step=int(raw.get("value_3") or 0),
+            max_grant=int(raw.get("value_4") or 0),
+            grants_per_unit={key: 1} if key else {},
+        )
+    if effect_id == 109:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="total_bond_scaled",
+            max_grant=int(raw.get("value_1") or 0),
+            grants_per_unit={key: 1} if key else {},
+        )
+    if effect_id == 110:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="same_training_facility_support_count",
+            grants_per_unit={key: int(raw.get("value_1") or 0)} if key else {},
+        )
+    if effect_id == 111:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="training_facility_level",
+            grants_per_unit={key: int(raw.get("value_1") or 0)} if key else {},
+        )
+    if effect_id == 112:
+        return _unique_row(effect_id, unlock_level, condition="failure_zero_chance", chance_pct=value)
+    if effect_id == 113:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="friendship_training",
+            grants={key: int(raw.get("value_1") or 0)} if key else {},
+        )
+    if effect_id == 114:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="hp_scaled",
+            value_per_step=int(raw.get("value_1") or 0),
+            max_grant=int(raw.get("value_2") or 0),
+            grants_per_unit={key: 1} if key else {},
+        )
+    if effect_id == 115:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="all_supports_initial_bonus",
+            grants={key: int(raw.get("value_1") or 0)} if key else {},
+        )
+    if effect_id == 116:
+        key = _support_effect_key(raw.get("value_1"))
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="owned_skill_category_count",
+            skill_category=value,
+            max_count=int(raw.get("value_3") or 0),
+            grants_per_unit={key: int(raw.get("value_2") or 0)} if key else {},
+        )
+    if effect_id == 117:
+        key = _support_effect_key(value)
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="combined_facility_level_scaled",
+            level_per_step=int(raw.get("value_1") or 0),
+            max_grant=int(raw.get("value_2") or 0),
+            grants_per_unit={key: 1} if key else {},
+        )
+    if effect_id == 118:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="bond_gte_dual_facility_placement",
+            threshold=int(raw.get("value_1") or 0),
+            facility_count=value,
+        )
+    if effect_id == 119:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="bond_gte_all_supports_specialty_priority",
+            threshold=int(raw.get("value_2") or 0),
+            grants={"specialty_priority": value},
+        )
+    if effect_id == 120:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="bond_gte_deck_type_stat_bonus",
+            threshold=int(raw.get("value_1") or 0),
+            bonus_per_card=value,
+            max_per_stat=int(raw.get("value_3") or 0),
+        )
+    if effect_id == 121:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="training_bond_bonus",
+            grants={"bond_gain": value, "same_facility_bond_gain": int(raw.get("value_1") or 0)},
+        )
+    if effect_id == 122:
+        return _unique_row(
+            effect_id,
+            unlock_level,
+            condition="trained_together_next_turn_specialty_priority",
+            target_effect_type=value,
+            grants={"specialty_priority": int(raw.get("value_1") or 0)},
+        )
+
+    return _unique_row(effect_id, unlock_level, key=f"effect_{effect_id}", value=value)
+
+
 def _apply_unique_effects(base: dict[str, int], unique: dict[str, Any], max_level: int) -> tuple[dict[str, int], list[dict[str, Any]]]:
     effects = dict(base)
     unique_rows = []
@@ -193,10 +415,10 @@ def _apply_unique_effects(base: dict[str, int], unique: dict[str, Any], max_leve
         if not isinstance(raw, dict):
             continue
         effect_id = int(raw.get("type") or 0)
-        value = int(raw.get("value") or 0)
-        key = SUPPORT_EFFECT_KEYS.get(effect_id, f"effect_{effect_id}")
-        row = {"type": effect_id, "key": key, "value": value, "unlock_level": unlock_level}
+        row = _decode_unique_effect(raw, unlock_level)
         unique_rows.append(row)
+        key = str(row.get("key") or "")
+        value = int(row.get("value") or 0)
         if unlock_level and max_level >= unlock_level and key in effects:
             effects[key] = int(effects.get(key) or 0) + value
     return effects, unique_rows

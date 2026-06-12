@@ -3041,7 +3041,7 @@ class CareerSimulator:
             if effects is None and lb_rows:
                 effects = lb_rows[min(lb, len(lb_rows) - 1)]
             effects = dict(effects or {})
-            # Merge unique_effects into the LB effect dict. Each entry has
+            # Merge only unconditional unique_effects into the LB effect dict. Each entry has
             # `key` (the field to add to), `value` (the amount), and
             # `unlock_level` (card level required to unlock). At LB 4 a
             # max-leveled card unlocks at level 50; LB 0 unlocks at 30.
@@ -3052,6 +3052,7 @@ class CareerSimulator:
             # 5-per-LB lower otherwise — close enough for unlock_level
             # checks (most cards use 25/30).
             unique_effects = record.get("unique_effects") or []
+            conditional_unique_effects = []
             max_level = _support_max_level_estimate(record.get("rarity"), lb)
             for ue in unique_effects:
                 if not isinstance(ue, dict):
@@ -3061,6 +3062,9 @@ class CareerSimulator:
                 except (TypeError, ValueError):
                     unlock = 0
                 if unlock and unlock > max_level:
+                    continue
+                if ue.get("condition") or ue.get("grants") or ue.get("grants_per_unit"):
+                    conditional_unique_effects.append(dict(ue))
                     continue
                 key = str(ue.get("key") or "").strip()
                 if not key:
@@ -3090,6 +3094,7 @@ class CareerSimulator:
                 "rarity": record.get("rarity") or raw.get("rarity") or "",
                 "lb": lb,
                 "effects": effects,
+                "conditional_unique_effects": conditional_unique_effects,
                 "friend": friend,
             })
 
@@ -3102,6 +3107,195 @@ class CareerSimulator:
             add_card({"support_card_id": friend_card_id, "lb_level": 4}, friend=True)
         return cards
 
+    @staticmethod
+    def _merge_effect_values(effects, grants, *, scale=1.0, max_grant=None):
+        if not isinstance(grants, dict):
+            return
+        for key, raw_value in grants.items():
+            if not key:
+                continue
+            try:
+                value = float(raw_value or 0) * float(scale or 0)
+            except (TypeError, ValueError):
+                continue
+            if max_grant is not None:
+                try:
+                    cap = abs(float(max_grant))
+                    value = max(-cap, min(cap, value))
+                except (TypeError, ValueError):
+                    pass
+            if value == 0:
+                continue
+            try:
+                existing = float(effects.get(key) or 0)
+            except (TypeError, ValueError):
+                existing = 0.0
+            merged = existing + value
+            effects[key] = int(merged) if merged == int(merged) else merged
+
+    def _card_bond(self, card):
+        try:
+            partner_id = int((card or {}).get("partner_id") or 0)
+            return int((self.state.get("bonds") or {}).get(partner_id, 0))
+        except Exception:
+            return 0
+
+    @staticmethod
+    def _card_in_partners(card, partner_cards):
+        partner_id = int((card or {}).get("partner_id") or 0)
+        return any(int((row or {}).get("partner_id") or 0) == partner_id for row in (partner_cards or []))
+
+    def _deck_distinct_support_type_count(self):
+        return len({
+            str(card.get("type") or "").lower()
+            for card in (self.sim_support_cards or [])
+            if str(card.get("type") or "").strip()
+        })
+
+    def _unique_effect_active(self, unique, card, *, training_stat=None, partner_cards=None, is_rainbow=False):
+        condition = str((unique or {}).get("condition") or "").strip()
+        if not condition:
+            return True
+        if condition == "bond_gte":
+            return self._card_bond(card) >= int(unique.get("threshold") or 0)
+        if condition == "bond_gte_off_type_training":
+            return (
+                self._card_bond(card) >= int(unique.get("threshold") or 0)
+                and bool(training_stat)
+                and str(card.get("type") or "") != str(training_stat)
+            )
+        if condition == "deck_distinct_support_types_gte":
+            return self._deck_distinct_support_type_count() >= int(unique.get("threshold") or 0)
+        if condition == "same_training_facility_support_count":
+            return self._card_in_partners(card, partner_cards)
+        if condition == "training_facility_level":
+            return bool(training_stat)
+        if condition in {"fans_scaled", "total_bond_scaled", "max_hp_scaled", "hp_scaled", "low_hp_scaled", "combined_facility_level_scaled"}:
+            return True
+        if condition == "friendship_training":
+            return bool(is_rainbow) and str(card.get("type") or "") == str(training_stat) and self._card_bond(card) >= 80
+        if condition in {"all_supports_initial_bonus", "deck_type_initial_stats"}:
+            return True
+        if condition == "bond_gte_all_supports_specialty_priority":
+            return self._card_bond(card) >= int(unique.get("threshold") or 0)
+        if condition == "owned_skill_category_count":
+            return True
+        return True
+
+    def _unique_effect_scale(self, unique, card, *, training_stat=None, partner_cards=None, facility_level=None):
+        condition = str((unique or {}).get("condition") or "").strip()
+        if condition == "same_training_facility_support_count":
+            return len(partner_cards or [])
+        if condition == "training_facility_level":
+            try:
+                return int(facility_level or self._facility_level(training_stat))
+            except Exception:
+                return 1
+        if condition == "fans_scaled":
+            try:
+                fans = int(self.state.get("fans") or 0)
+                fans_per_step = max(1, int(unique.get("fans_per_step") or 1))
+                max_grant = int(unique.get("max_grant") or 0)
+                return max(0, min(max_grant, fans // fans_per_step))
+            except Exception:
+                return 0
+        if condition == "total_bond_scaled":
+            bonds = list((self.state.get("bonds") or {}).values())
+            if not bonds:
+                return 0
+            max_grant = float(unique.get("max_grant") or 0)
+            return max(0.0, min(max_grant, (sum(float(x or 0) for x in bonds) / max(1.0, len(bonds) * 100.0)) * max_grant))
+        if condition == "max_hp_scaled":
+            max_hp = int(self.state.get("max_hp") or 100)
+            floor = int(unique.get("hp_floor") or 0)
+            per_step = max(1, int(unique.get("hp_per_step") or 1))
+            max_grant = int(unique.get("max_grant") or 0)
+            return max(0, min(max_grant, (max_hp - floor) // per_step))
+        if condition == "hp_scaled":
+            hp = int(self.state.get("hp") or 0)
+            per_step = max(1, int(unique.get("value_per_step") or 1))
+            max_grant = int(unique.get("max_grant") or 0)
+            return max(0, min(max_grant, hp // per_step))
+        if condition == "low_hp_scaled":
+            hp = int(self.state.get("hp") or 0)
+            floor = int(unique.get("hp_floor") or 0)
+            per_step = max(1, int(unique.get("hp_per_step") or 1))
+            max_grant = int(unique.get("max_grant") or 0)
+            return max(0, min(max_grant, (100 - max(floor, hp)) // per_step))
+        if condition == "combined_facility_level_scaled":
+            per_step = max(1, int(unique.get("level_per_step") or 1))
+            max_grant = int(unique.get("max_grant") or 0)
+            total = sum(int(self._facility_level(stat) or 1) for stat in STAT_KEYS)
+            return max(0, min(max_grant, total // per_step))
+        if condition == "owned_skill_category_count":
+            max_count = int(unique.get("max_count") or 0)
+            return max(0, min(max_count, int(self.skills_bought or 0)))
+        return 1
+
+    def _effective_card_effects(self, card, *, training_stat=None, partner_cards=None, is_rainbow=False, facility_level=None):
+        effects = dict((card or {}).get("effects") or {})
+        for source_card in self.sim_support_cards or []:
+            for unique in source_card.get("conditional_unique_effects") or []:
+                condition = str(unique.get("condition") or "")
+                applies_to_all = condition in {
+                    "all_supports_initial_bonus",
+                    "bond_gte_all_supports_specialty_priority",
+                }
+                if source_card is not card and not applies_to_all:
+                    continue
+                if not self._unique_effect_active(
+                    unique,
+                    source_card,
+                    training_stat=training_stat,
+                    partner_cards=partner_cards,
+                    is_rainbow=is_rainbow,
+                ):
+                    continue
+                self._merge_effect_values(effects, unique.get("grants"))
+                scale = self._unique_effect_scale(
+                    unique,
+                    source_card,
+                    training_stat=training_stat,
+                    partner_cards=partner_cards,
+                    facility_level=facility_level,
+                )
+                self._merge_effect_values(
+                    effects,
+                    unique.get("grants_per_unit"),
+                    scale=scale,
+                    max_grant=unique.get("max_grant"),
+                )
+        return effects
+
+    def _initial_card_effects(self, card):
+        effects = dict((card or {}).get("effects") or {})
+        for source_card in self.sim_support_cards or []:
+            for unique in source_card.get("conditional_unique_effects") or []:
+                condition = str(unique.get("condition") or "")
+                if condition == "all_supports_initial_bonus":
+                    self._merge_effect_values(effects, unique.get("grants"))
+                elif source_card is card and condition == "deck_type_initial_stats":
+                    same_type = int(unique.get("same_type_initial_stat") or 0)
+                    friend_group = int(unique.get("friend_group_all_stats") or 0)
+                    grants = {}
+                    stat_by_type = {
+                        "speed": "initial_speed",
+                        "stamina": "initial_stamina",
+                        "power": "initial_power",
+                        "guts": "initial_guts",
+                        "wit": "initial_wit",
+                    }
+                    for deck_card in self.sim_support_cards or []:
+                        deck_type = str(deck_card.get("type") or "")
+                        stat_key = stat_by_type.get(deck_type)
+                        if stat_key:
+                            grants[stat_key] = grants.get(stat_key, 0) + same_type
+                        elif deck_type in {"friend", "group"}:
+                            for key in stat_by_type.values():
+                                grants[key] = grants.get(key, 0) + friend_group
+                    self._merge_effect_values(effects, grants)
+        return effects
+
     def _sum_partner_effect(self, partner_ids, effect_key):
         """Sum an effect key (e.g. 'failure_protection') across the cards
         whose partner_id appears in `partner_ids`. Friend cards count.
@@ -3113,7 +3307,7 @@ class CareerSimulator:
         for card in self.sim_support_cards or []:
             if int(card.get("partner_id") or 0) in wanted:
                 try:
-                    total += float((card.get("effects") or {}).get(effect_key) or 0)
+                    total += float(self._effective_card_effects(card).get(effect_key) or 0)
                 except (TypeError, ValueError):
                     continue
         return total
@@ -3170,7 +3364,7 @@ class CareerSimulator:
         # MLB gives +30 initial_stamina). Sum across deck + friend slot.
         card_initial = {"speed": 0, "stamina": 0, "power": 0, "guts": 0, "wiz": 0}
         for card in self.sim_support_cards:
-            effects = card.get("effects") or {}
+            effects = self._initial_card_effects(card)
             # Empirical (2026-06-12, 19 live account_b careers): starting
             # bonds cluster at 15-20 for cards without an initial_friendship
             # effect ({15: 35, 20: 38, 30: 15, 35: 19} across deck slots).
@@ -3283,7 +3477,11 @@ class CareerSimulator:
         max_specialty_bonus = float(placement_cfg.get("max_specialty_bonus") or 0.25)
         partners = []
         for card in self.sim_support_cards:
-            effects = card.get("effects") or {}
+            effects = self._effective_card_effects(
+                card,
+                training_stat=stat_name,
+                facility_level=self._facility_level(stat_name),
+            )
             chance = preferred if card.get("type") == stat_name else off_type
             chance += min(max_specialty_bonus, float(effects.get("specialty_priority") or 0) / max(1.0, specialty_scale))
             if card.get("friend"):
@@ -3312,7 +3510,13 @@ class CareerSimulator:
         friendship_eff = 0.0
         matching_bonded = 0
         for card in partner_cards:
-            effects = card.get("effects") or {}
+            effects = self._effective_card_effects(
+                card,
+                training_stat=training_stat,
+                partner_cards=partner_cards,
+                is_rainbow=is_rainbow,
+                facility_level=facility_level,
+            )
             stat_bonus += float(effects.get(f"{gain_stat}_bonus") or 0)
             training_eff += float(effects.get("training_effectiveness") or 0)
             mood_eff += float(effects.get("mood_effect") or 0)
@@ -3339,8 +3543,18 @@ class CareerSimulator:
         facilities = (self.training_curves or {}).get("facilities") or {}
         base_curve = ((facilities.get(training_stat) or {}).get(str(facility_level)) or {})
         base = float(base_curve.get("skill_pt") or 0)
-        bonus = sum(float((card.get("effects") or {}).get("skill_pt_bonus") or 0) for card in partner_cards)
-        training_eff = sum(float((card.get("effects") or {}).get("training_effectiveness") or 0) for card in partner_cards)
+        active_effects = [
+            self._effective_card_effects(
+                card,
+                training_stat=training_stat,
+                partner_cards=partner_cards,
+                is_rainbow=is_rainbow,
+                facility_level=facility_level,
+            )
+            for card in partner_cards
+        ]
+        bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects in active_effects)
+        training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects in active_effects)
         mood = MOOD_BASE_EFFECT.get(int(self.state.get("motivation") or 3), 0.0)
         value = (base + bonus) * (1.0 + max(0.0, mood)) * (1.0 + training_eff / 100.0)
         value *= 1.0 + min(0.25, len(partner_cards) * 0.035)
@@ -3354,7 +3568,17 @@ class CareerSimulator:
         if "energy" not in base_curve:
             return -HP_COSTS.get(training_stat, 10)
         energy = float(base_curve.get("energy") or 0)
-        reduction = sum(float((card.get("effects") or {}).get("energy_cost_reduction") or 0) for card in partner_cards)
+        active_effects = [
+            self._effective_card_effects(
+                card,
+                training_stat=training_stat,
+                partner_cards=partner_cards,
+                is_rainbow=is_rainbow,
+                facility_level=facility_level,
+            )
+            for card in partner_cards
+        ]
+        reduction = sum(float(effects.get("energy_cost_reduction") or 0) for effects in active_effects)
         if energy < 0:
             # The simulator does not execute shop recovery items, so raw
             # game-side energy costs would force unrealistic rest spam.
@@ -3362,7 +3586,7 @@ class CareerSimulator:
             if reduction > 0:
                 energy *= max(0.65, 1.0 - reduction / 100.0)
         if training_stat == "wit" and is_rainbow:
-            recovery = sum(float((card.get("effects") or {}).get("wit_friendship_recovery") or 0) for card in partner_cards)
+            recovery = sum(float(effects.get("wit_friendship_recovery") or 0) for effects in active_effects)
             energy += recovery
         return int(round(energy))
 
@@ -3538,7 +3762,19 @@ class CareerSimulator:
             # Each unit of failure_protection reduces the percentage by 1
             # (game-mechanic approximation). Stacked additively.
             partner_ids_for_fp = list(source.get("training_partner_array") or [])
-            failure_protection_total = self._sum_partner_effect(partner_ids_for_fp, "failure_protection")
+            partner_cards_for_fp = [
+                card for card in self.sim_support_cards or []
+                if int(card.get("partner_id") or 0) in {int(p) for p in partner_ids_for_fp if str(p).isdigit()}
+            ]
+            failure_protection_total = sum(
+                float(self._effective_card_effects(
+                    card,
+                    training_stat=stat_name,
+                    partner_cards=partner_cards_for_fp,
+                    facility_level=target_level,
+                ).get("failure_protection") or 0)
+                for card in partner_cards_for_fp
+            )
             adjusted_failure_rate = max(0, raw_failure_rate - int(round(failure_protection_total)))
             command = {
                 "command_id": int(source.get("command_id") or STAT_TO_COMMAND_ID[stat_name]),
@@ -3638,7 +3874,13 @@ class CareerSimulator:
             raw_failure_rate = max(0, min(30, (100 - self.state["hp"]) // 3))
             # Apply failure_protection from partner cards
             failure_protection_total = sum(
-                float((card.get("effects") or {}).get("failure_protection") or 0)
+                float(self._effective_card_effects(
+                    card,
+                    training_stat=stat_name,
+                    partner_cards=partner_cards,
+                    is_rainbow=is_rainbow,
+                    facility_level=facility_level,
+                ).get("failure_protection") or 0)
                 for card in partner_cards
             )
             failure_rate = max(0, raw_failure_rate - int(round(failure_protection_total)))
@@ -4380,7 +4622,7 @@ class CareerSimulator:
 
     def _deck_race_bonus_multiplier(self):
         deck_race_bonus = sum(
-            float((card.get("effects") or {}).get("race_bonus") or 0)
+            float(self._effective_card_effects(card).get("race_bonus") or 0)
             for card in (self.sim_support_cards or [])
         )
         return 1.0 + deck_race_bonus / 100.0
@@ -4807,7 +5049,7 @@ class CareerSimulator:
         if not won:
             base = int(round(base * 0.35))
         deck_fan_bonus = sum(
-            float((card.get("effects") or {}).get("fan_bonus") or 0)
+            float(self._effective_card_effects(card).get("fan_bonus") or 0)
             for card in (self.sim_support_cards or [])
         )
         return int(round(base * (1.0 + deck_fan_bonus / 100.0)))
@@ -5438,7 +5680,7 @@ class CareerSimulator:
         source = source_info.get("source") or "guest"
         action = source_info.get("action") or "event"
         card = source_info.get("card") or {}
-        card_effects = card.get("effects") or {}
+        card_effects = self._effective_card_effects(card) if card else {}
         observed_delta = bool((template or {}).get("observed_effect_delta"))
         event_effectiveness = 0.0 if observed_delta else (
             float(card_effects.get("event_effectiveness") or 0) / 100.0 if source == "support_card" else 0.0
@@ -5971,7 +6213,7 @@ class CareerSimulator:
         result = {"ids": {}}
         for card in (self.sim_support_cards or []):
             try:
-                hint_level = int((card.get("effects") or {}).get("hint_levels") or 0)
+                hint_level = int(self._effective_card_effects(card).get("hint_levels") or 0)
             except (TypeError, ValueError):
                 hint_level = 0
             if hint_level <= 0:

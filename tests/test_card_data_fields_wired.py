@@ -10,6 +10,9 @@
 These tests pin the wiring so a future refactor that "cleans up" the
 add_card path doesn't silently drop card mechanics again.
 """
+import json
+from pathlib import Path
+
 from career_bot.career_simulator import (
     CareerSimulator,
     _support_max_level_estimate,
@@ -71,6 +74,48 @@ def test_unique_effects_initial_stats_merged():
     assert eff.get("initial_speed", 0) == 40, (
         f"Expected initial_speed=40 (base 20 + unique 20); got {eff.get('initial_speed')}"
     )
+
+
+def test_taiki_unique_decoded_as_bond_gated_grants():
+    data_path = Path(__file__).resolve().parents[1] / "data" / "support_card_bonuses.json"
+    data = json.loads(data_path.read_text(encoding="utf-8"))
+    taiki = data["30053"]
+    assert taiki["unique_effects"] == [{
+        "condition": "bond_gte",
+        "grants": {"skill_pt_bonus": 1, "speed_bonus": 1},
+        "threshold": 80,
+        "type": 101,
+        "unlock_level": 30,
+    }]
+
+
+def test_bond_gated_unique_effect_activates_at_threshold():
+    preset = {
+        "name": "taiki_unique_test",
+        "scenario_id": 4,
+        "sim_use_latest_session_context": False,
+        "_run_context": {
+            "support_card_ids": [30053],
+            "trainee_card_id": 102001,
+        },
+    }
+    sim = CareerSimulator(
+        preset=preset,
+        deck=[{"support_card_id": 30053, "lb_level": 4}],
+        seed=42,
+    )
+    taiki = next(c for c in sim.sim_support_cards if c["support_card_id"] == 30053)
+    partner_id = int(taiki["partner_id"])
+
+    sim.state["bonds"][partner_id] = 79
+    inactive = sim._effective_card_effects(taiki, training_stat="speed", partner_cards=[taiki])
+    assert inactive.get("speed_bonus") == 1
+    assert inactive.get("skill_pt_bonus", 0) == 0
+
+    sim.state["bonds"][partner_id] = 80
+    active = sim._effective_card_effects(taiki, training_stat="speed", partner_cards=[taiki])
+    assert active.get("speed_bonus") == 2
+    assert active.get("skill_pt_bonus") == 1
 
 
 # -------------------- failure_protection --------------------

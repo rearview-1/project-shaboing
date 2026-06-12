@@ -76,6 +76,23 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~13:30 — autonomous block 6: learning runs current code, always
+- 64b370b (committed by Codex's auto-commit while my suite ran — benign collision,
+  identical content; NOTE: commit promptly after validation, Codex sweeps the tree):
+  per-career auto-learning now runs in a spawned subprocess
+  (tools/run_auto_learning_once.py, UTF-8, 30-min timeout, blocking before tuner;
+  rc=2 falls back in-process). Long-lived servers no longer pin learning to
+  start-of-process code.
+- Integration smoke against the live runtime applied the FIRST self-learned update from
+  this account's own careers: 225 usable samples; gate corrective_apply; floor
+  adaptation active (p75 9,721, 40 bot careers); changes across training policy, item
+  policy, stat weights; operator fields preserved (report learning_report_20260612_114454).
+  Career start re-reads the instance preset, so the running server consumes it without
+  restart. The operator-restart note at the top of this file is now LESS urgent (only
+  in-process consumers like the runner's own scoring remain stale).
+- Cohort watch: 1/5 post-policy careers in (7 losses; policy hydration uncertain for
+  that one — started seconds after the cache save).
+
 ### 2026-06-12 ~13:00 — autonomous block 5: variance reality-check
 - c6c24ea: cadence search now seeds from the incumbent policy (verbatim + local
   perturbations + random explorers) — passes compound instead of re-searching.

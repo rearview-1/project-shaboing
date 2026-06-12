@@ -140,3 +140,30 @@ def test_race_heavy_core_floor_has_bounded_guts_pressure():
 
     assert s._race_heavy_core_floor_adjustment(3, low_guts, preset, 44) > 0
     assert s._race_heavy_core_floor_adjustment(3, safe_guts, preset, 44) == 0.0
+
+
+def test_passive_income_credits_stamina_floor_for_riko_deck():
+    """A deck carrying Riko (30036, verified outing payloads) gets its
+    stamina floor reduced by the measured passive income, decaying to
+    zero by career end. Decks without a stat-recreation friend are
+    untouched."""
+    s = MantStrategy(None)
+    riko_preset = {"_run_context": {"friend_card_id": 30036}}
+    income = s._deck_passive_stat_income(riko_preset)
+    assert income.get("stamina") == 110.0
+    assert income.get("guts") == 55.0
+
+    # Turn 0: full credit. Turn 78: no credit (income already realized).
+    assert s._passive_adjusted_floor(riko_preset, "stamina", 800.0, 0) == 690.0
+    assert s._passive_adjusted_floor(riko_preset, "stamina", 800.0, 78) == 800.0
+    mid = s._passive_adjusted_floor(riko_preset, "stamina", 800.0, 39)
+    assert 744.0 <= mid <= 746.0
+
+    # No stat-recreation friend -> floor unchanged.
+    plain = {"_run_context": {"friend_card_id": 0}}
+    assert s._passive_adjusted_floor(plain, "stamina", 800.0, 0) == 800.0
+
+    # Operator override wins over the measured table.
+    override = {"_run_context": {"friend_card_id": 30036},
+                "deck_passive_stat_income": {"stamina": 40}}
+    assert s._passive_adjusted_floor(override, "stamina", 800.0, 0) == 760.0

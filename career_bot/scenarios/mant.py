@@ -250,6 +250,17 @@ _STAT_RECREATION_OUTING_MAX = {
     30276: 5,  # Kiyoko Hoshina - default
 }
 _STAT_RECREATION_OUTING_MAX_DEFAULT = 5
+# Passive stat income per career from stat-recreation friends, credited
+# against stat floors so a deck carrying the card doesn't double-invest
+# training turns in a stat its outings already cover (the "Riko replaces
+# a stamina card" deck strategy). MEASURED, not assumed: 2026-06-12,
+# 19 live account_b careers, Riko event chain (story 809006/830036)
+# delivered 211 stamina deltas at mean +10.2 (~11 events/career ≈ +110
+# stamina) and 101 guts deltas at mean +10.2 (≈ +55 guts). Override per
+# preset via `deck_passive_stat_income`.
+_PASSIVE_STAT_INCOME_BY_CARD = {
+    30036: {"stamina": 110.0, "guts": 55.0},  # Riko Kashimoto
+}
 _STAT_RECREATION_CARD_NAMES = {
     30021: "Tazuna",
     30036: "Riko",
@@ -1927,6 +1938,41 @@ class MantStrategy(ScenarioStrategy):
             if learned:
                 return learned
         return None
+
+    def _deck_passive_stat_income(self, preset):
+        """Expected per-career passive stat income from this deck's
+        stat-recreation friends (measured values; see
+        _PASSIVE_STAT_INCOME_BY_CARD). Preset `deck_passive_stat_income`
+        overrides the estimate entirely."""
+        override = (preset or {}).get("deck_passive_stat_income")
+        if isinstance(override, dict) and override:
+            out = {}
+            for key, value in override.items():
+                try:
+                    out[str(key)] = float(value or 0)
+                except (TypeError, ValueError):
+                    continue
+            return out
+        income = {}
+        for card_id in self._stat_recreation_card_ids(preset):
+            for stat, value in (_PASSIVE_STAT_INCOME_BY_CARD.get(int(card_id)) or {}).items():
+                income[stat] = income.get(stat, 0.0) + float(value)
+        return income
+
+    def _passive_adjusted_floor(self, preset, stat_name, floor, turn):
+        """Reduce a stat floor by the passive income still expected to
+        arrive after `turn`. Already-received income is reflected in the
+        live stat, so the credit decays linearly to zero by career end —
+        early turns trust the outings to cover part of the floor, late
+        turns demand the floor outright."""
+        income = self._deck_passive_stat_income(preset).get(stat_name)
+        if not income:
+            return floor
+        try:
+            remaining = max(0.0, 1.0 - (float(turn or 0) / float(_CHECKPOINT_TURN_END_SENIOR)))
+        except (TypeError, ValueError):
+            remaining = 0.0
+        return max(0.0, float(floor) - float(income) * remaining)
 
     def _stat_recreation_card_ids(self, preset):
         # Scan both deck cards and friend slot. A stat friend only unlocks
@@ -4515,8 +4561,16 @@ class MantStrategy(ScenarioStrategy):
         current_stamina = float(self._current_stat(chara, 1) or 0.0)
         current_power = float(self._current_stat(chara, 2) or 0.0)
         current_wit = float(self._current_stat(chara, 4) or 0.0)
-        stamina_floor = _tuned_value(preset, "stamina_floor_target", _STAMINA_FLOOR_TARGET)
-        power_floor = _tuned_value(preset, "power_floor_target", _POWER_FLOOR_TARGET)
+        stamina_floor = self._passive_adjusted_floor(
+            preset, "stamina",
+            _tuned_value(preset, "stamina_floor_target", _STAMINA_FLOOR_TARGET),
+            turn,
+        )
+        power_floor = self._passive_adjusted_floor(
+            preset, "power",
+            _tuned_value(preset, "power_floor_target", _POWER_FLOOR_TARGET),
+            turn,
+        )
         speed_scale_when_deficit = _tuned_value(
             preset, "speed_priority_deficit_scale", _SPEED_PRIORITY_DEFICIT_SCALE
         )
@@ -4660,6 +4714,11 @@ class MantStrategy(ScenarioStrategy):
             return 0.0
 
         target_floor = float(_tuned_value(preset, base_bonus_key.replace("_bonus_base", "_floor_target"), target_floor))
+        # Credit passive deck income (e.g. Riko outings -> stamina) so the
+        # floor doesn't demand training points the outings will deliver.
+        stat_name_for_index = {1: "stamina", 2: "power"}.get(stat_index)
+        if stat_name_for_index:
+            target_floor = self._passive_adjusted_floor(preset, stat_name_for_index, target_floor, turn)
         race_heavy_power_lane = False
         if stat_index == 2 and self._is_race_heavy_route(preset):
             deck_counts = self._deck_stat_card_counts(preset)

@@ -76,6 +76,17 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~17:45 — revert rule resolved: policy stays
+- Post-save (13:50 clean-rate policy) cohort: 2, 16, 8, 6 losses (G1: 2, 11, 6, 1).
+  The 16-loss career triggered a revert watch; rule was 'two consecutive >8 -> revert'.
+  14:25 hit exactly 8, 14:35 came in at 6 (1 G1) -> NO revert; the 16 reads as outlier.
+  Next cadence (~3 careers) re-validates with this data in corpus.
+- Recurring signal worth a future lever: two of the loss-heavy careers overshot wit to
+  1187 while speed/stamina lagged - the live (stale-server) scoring still over-buys wit
+  occasionally; the optimizer searches wit_priority so the cadence should converge it,
+  but if wit>1150 careers keep pairing with 6+ losses, add a wit-overshoot penalty to
+  the sim objective corpus analysis.
+
 ### 2026-06-12 ~17:15 — 20-career fidelity re-audit: T8 CLOSED
 - Audit vs current-code corpus: G1-loss median delta -1 (was -2 pre-recalibration).
   Decision rule said tighten only if < -1; we're AT the boundary and the integer median

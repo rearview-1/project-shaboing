@@ -76,6 +76,15 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~19:00 — churn-save guard
+- 15:27 cadence verdict: validation IDENTICAL to baseline (clean 0.060 both, rating -10)
+  yet saved on a microscopic loss-term tiebreak. 7d53e8e: saves now require a meaningful
+  lift (0.5/n_validation for fractional objectives, +25 for rating-scale). The saved
+  policy was ~the incumbent, so no revert needed.
+- Self-healing pid release verified in code path (81cbafc); counter cycling normally.
+- Steady state: career stream 4-9 losses, sums 3700-4300; stamina>=840 careers remain
+  the standouts. Next cadence in ~6 careers under the new min-lift gate.
+
 ### 2026-06-12 ~18:30 — second pid-reuse deadlock; made cadence self-healing
 - Cadence froze again at careers_since=15 (12:51 run's pid reused). Manual unstick #2.
 - Permanent fix that works WITHOUT a server restart: the spawned optimizer (always

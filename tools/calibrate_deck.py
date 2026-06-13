@@ -40,8 +40,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from career_bot.career_simulator import CareerSimulator, MANT_EPITHET_SETS
 from career_bot.deck_policy_cache import (
+    apply_policy_to_preset,
     deck_signature,
     load_cache,
+    lookup_policy,
     save_cache,
     save_policy,
 )
@@ -1045,12 +1047,38 @@ def calibrate(
             min_rating=min_rating,
         )
     )
-    if comfortable or best_effort_clean:
+    # Ratchet against LAST SESSION: never overwrite the cached policy with a
+    # worse one. Re-sim the currently-cached policy on the SAME validation
+    # seeds and require the new winner to beat it on the quality key. This is
+    # what makes repeated optimizer.bat runs monotonically improve — a better
+    # policy is applied even when it is not consistently SS, but an unlucky or
+    # short run can no longer regress a good cached policy. No cached policy
+    # for this deck yet -> nothing to beat, save the winner.
+    cache = load_cache(PROJECT_ROOT, instance)
+    existing_policy = lookup_policy(cache, signature)
+    beats_cached = True
+    if existing_policy and (existing_policy.get("learned_hyperparameters")):
+        cached_preset = apply_policy_to_preset(copy.deepcopy(preset), existing_policy)
+        cached_results = _run_sims(cached_preset, n=validation_sims, seed_base=val_seed)
+        winner_qk = _quality_key(
+            val_results, ss_threshold=ss_threshold, target_win_rate=target_win_rate,
+            max_epithet_losses=max_epithet_losses, min_rating=min_rating,
+        )
+        cached_qk = _quality_key(
+            cached_results, ss_threshold=ss_threshold, target_win_rate=target_win_rate,
+            max_epithet_losses=max_epithet_losses, min_rating=min_rating,
+        )
+        beats_cached = winner_qk > cached_qk
+        _log(f"vs last-session cached policy: winner mean={val_mean:.0f} "
+             f"SS={val_ss:.2f} vs cached mean={_mean_rating(cached_results):.0f} "
+             f"SS={_ss_rate(cached_results, ss_threshold):.2f} -> "
+             f"{'BETTER (will apply)' if beats_cached else 'NOT better (keeping cached)'}")
+
+    if (comfortable or best_effort_clean) and beats_cached:
         if comfortable:
             _log("validation hit comfort target; saving winner to cache.")
         else:
             _log("validation is clean best-effort progress; saving winner to cache.")
-        cache = load_cache(PROJECT_ROOT, instance)
         winner_lhp = dict(winner_preset.get("learned_hyperparameters") or {})
         save_policy(
             cache, signature,
@@ -1078,6 +1106,9 @@ def calibrate(
         elif not win_clean:
             _log(f"validation REJECTED: win-rate {val_win_rate:.3f} is below "
                  f"target {target_win_rate:.3f}. Not saving.")
+        elif (comfortable or best_effort_clean) and not beats_cached:
+            _log("winner did NOT beat the last-session cached policy — "
+                 "keeping the better cached policy (no regression).")
         else:
             _log("validation did NOT confirm SS-rate improvement — not saving.")
 
@@ -1089,6 +1120,7 @@ def calibrate(
             "epithet_loss_in_validation" if not epithet_clean
             else "below_min_rating_in_validation" if not floor_clean
             else "below_win_rate_in_validation" if not win_clean
+            else "kept_cached_policy_not_beaten" if (comfortable or best_effort_clean) and not beats_cached
             else "no_ss_improvement"
         ),
         "deck_signature": signature,

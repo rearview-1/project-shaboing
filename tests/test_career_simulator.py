@@ -755,3 +755,31 @@ def test_sim_race_stat_reward_is_one_random_stat_scaled_by_grade_and_rb():
         "wit": sim.state["wiz"] - 100,
     }
     assert sorted(changed.values()) == [0, 0, 0, 0, 14]
+
+
+def test_formula_training_gain_matches_game_table():
+    """Formula-mode tile gain reproduces the game's facility base table
+    instead of the legacy ~2x inflation. L1 Speed, no cards, bad mood:
+    base 8 x 0.90 mood x 1.0 growth ~= 7 (was ~12 under the 1.65 fudge).
+    And the model must have real dynamic range so good play (high facility
+    + rainbow + great mood) is representable -> >=4x the worst tile."""
+    import json, statistics as st
+    from pathlib import Path
+    from career_bot.career_simulator import CareerSimulator, hydrate_preset_with_latest_session_context
+    root = Path(__file__).resolve().parents[1]
+    p = root / "uma_runtime/instances/account_b/instance_learning/presets/xguri parent.json"
+    if not p.exists():
+        import pytest; pytest.skip("account_b preset not present")
+    preset = json.loads(p.read_text(encoding="utf-8-sig")); preset["sim_runtime_instance"] = "account_b"
+    preset = hydrate_preset_with_latest_session_context(preset, root)
+    deck = (preset.get("_run_context") or {}).get("support_cards") or None
+    sim = CareerSimulator(preset=preset, deck=deck, seed=1, project_root=root)
+    sim.state["motivation"] = 2
+    worst = st.median([sim._support_training_gain("speed", "speed", [], False, 1) for _ in range(800)])
+    assert 6 <= worst <= 8, f"L1 speed bad-mood gain {worst} should match game table ~7, not the inflated ~12"
+    cards = sim.sim_support_cards[:3]
+    sim.state["motivation"] = 5
+    for c in cards:
+        sim.state["bonds"][int(c["partner_id"])] = 100
+    strong = st.median([sim._support_training_gain("speed", "speed", cards, True, 5) for _ in range(800)])
+    assert strong >= 4 * worst, f"formula needs dynamic range for good play: strong {strong} vs worst {worst}"

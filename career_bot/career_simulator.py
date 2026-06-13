@@ -3546,10 +3546,16 @@ class CareerSimulator:
 
         value = (base + stat_bonus) * (1.0 + growth) * mood_mult * training_mult
         value *= friendship_mult * rainbow_mult * partner_mult * variance
-        # Empirical: 2.35 scale produced ~127 speed/training and capped most
-        # sims at 1200 speed (real bot averages ~100 speed/training and lands
-        # at ~890). Lower to 1.65 to match real-bot stat distributions.
-        value *= float(self.preset.get("sim_training_gain_scale") or 1.65)
+        # Mechanical model: gain = (facility base + card stat bonuses) x growth
+        # x mood x training-effectiveness x friendship x rainbow x partner.
+        # NO blanket fudge scale. The legacy 1.65 (and 2.35 before it) was a
+        # hand-tuned constant to make the SYNTHETIC path's career totals match
+        # the bot's mediocre output; it inflated every tile ~2x over the
+        # game's facility table (verified 2026-06-13 against the real base
+        # values, e.g. Speed L1 base 8). `sim_training_gain_scale` defaults
+        # to 1.0 so the formula reproduces the game table; it remains
+        # overridable only for explicit experiments.
+        value *= float(self.preset.get("sim_training_gain_scale") or 1.0)
         return max(0, int(value))
 
     def _support_skill_point_gain(self, training_stat, partner_cards, is_rainbow, facility_level):
@@ -3840,9 +3846,18 @@ class CareerSimulator:
 
     def _make_training_commands(self):
         """Generate training tiles from facility level, support cards, mood, and growth."""
-        real_commands = self._make_real_training_commands()
-        if real_commands:
-            return real_commands
+        # Formula mode (sim_formula_training_gain): use the mechanical
+        # facility-table model instead of replaying the bot's observed tiles.
+        # Replay can only reproduce tile TYPES the bot has already played, so
+        # it structurally cannot represent the high-facility / stacked-rainbow
+        # tiles that good (manual) play uses to reach SS — which capped the
+        # optimizer at the bot's own mediocre envelope. The formula path can
+        # represent any tile config. Default OFF until validated against the
+        # game table + manual career end-states, then flipped on.
+        if not bool(self.preset.get("sim_formula_training_gain", False)):
+            real_commands = self._make_real_training_commands()
+            if real_commands:
+                return real_commands
         training_command_ids = {0: 101, 1: 105, 2: 102, 3: 103, 4: 106}
         target_types = {"speed": 1, "stamina": 2, "power": 3, "guts": 4, "wit": 5}
         stat_names = ["speed", "stamina", "power", "guts", "wit"]

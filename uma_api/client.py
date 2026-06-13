@@ -1700,35 +1700,64 @@ class UmaClient:
                             tp_info=None, current_money=0, succession_rank_point=0,
                             rental_viewer_id=0, rental_trained_chara_id=0,
                             difficulty_id=0, difficulty=0, is_boost=0,
-                            boost_story_event_id=0, allow_recover_tp=0):
+                            boost_story_event_id=0, allow_recover_tp=0,
+                            include_empty_optional_blocks=False):
         if not tp_info:
             tp_info = {'current_tp': 100, 'max_tp': 100, 'max_recovery_time': 0}
-        start_payload = {
-            'start_chara': {
-                'card_id': card_id,
-                'support_card_ids': support_card_ids,
-                'friend_support_card_info': {
-                    'viewer_id': friend_viewer_id,
-                    'support_card_id': friend_card_id
-                },
-                'succession_trained_chara_id_1': parent_id_1,
-                'succession_trained_chara_id_2': parent_id_2,
-                'rental_succession_trained_chara': {
-                    'viewer_id': rental_viewer_id,
-                    'trained_chara_id': rental_trained_chara_id,
-                    'is_circle_member': False,
-                    'is_event_rental': False
-                },
-                'scenario_id': scenario_id,
-                'selected_difficulty_info': {
-                    'difficulty_id': difficulty_id,
-                    'difficulty': difficulty,
-                    'is_boost': is_boost
-                },
-                'select_deck_id': deck_id,
-                'boost_story_event_id': boost_story_event_id,
-                'is_play_training_challenge': False
+        try:
+            difficulty_id_int = int(difficulty_id or 0)
+        except (TypeError, ValueError):
+            difficulty_id_int = 0
+        try:
+            difficulty_int = int(difficulty or 0)
+        except (TypeError, ValueError):
+            difficulty_int = 0
+        try:
+            is_boost_int = int(is_boost or 0)
+        except (TypeError, ValueError):
+            is_boost_int = 0
+        try:
+            boost_story_event_id_int = int(boost_story_event_id or 0)
+        except (TypeError, ValueError):
+            boost_story_event_id_int = 0
+        try:
+            rental_viewer_id_int = int(rental_viewer_id or 0)
+        except (TypeError, ValueError):
+            rental_viewer_id_int = 0
+        try:
+            rental_trained_chara_id_int = int(rental_trained_chara_id or 0)
+        except (TypeError, ValueError):
+            rental_trained_chara_id_int = 0
+        start_chara = {
+            'card_id': card_id,
+            'support_card_ids': support_card_ids,
+            'friend_support_card_info': {
+                'viewer_id': friend_viewer_id,
+                'support_card_id': friend_card_id
             },
+            'succession_trained_chara_id_1': parent_id_1,
+            'succession_trained_chara_id_2': parent_id_2,
+            'scenario_id': scenario_id,
+            'select_deck_id': deck_id,
+            'is_play_training_challenge': False
+        }
+        if include_empty_optional_blocks or (rental_viewer_id_int > 0 and rental_trained_chara_id_int > 0):
+            start_chara['rental_succession_trained_chara'] = {
+                'viewer_id': rental_viewer_id_int,
+                'trained_chara_id': rental_trained_chara_id_int,
+                'is_circle_member': False,
+                'is_event_rental': False
+            }
+        if include_empty_optional_blocks or difficulty_id_int > 0 or difficulty_int > 0 or is_boost_int > 0:
+            start_chara['selected_difficulty_info'] = {
+                'difficulty_id': difficulty_id_int,
+                'difficulty': difficulty_int,
+                'is_boost': is_boost_int
+            }
+        if include_empty_optional_blocks or boost_story_event_id_int > 0:
+            start_chara['boost_story_event_id'] = boost_story_event_id_int
+        start_payload = {
+            'start_chara': start_chara,
             'tp_info': tp_info,
             'current_money': current_money,
             'use_tp': use_tp,
@@ -1765,7 +1794,46 @@ class UmaClient:
             boost_story_event_id=boost_story_event_id,
             allow_recover_tp=allow_recover_tp,
         )
-        return self.call('single_mode_free/start', start_payload)
+        try:
+            return self.call(
+                'single_mode_free/start',
+                start_payload,
+                retry_205=0,
+                quiet_result_codes={205},
+            )
+        except ApiCallError as exc:
+            code = int(getattr(exc, "result_code", 0) or getattr(exc, "response_code", 0) or 0)
+            if code != 205:
+                raise
+            # Some server builds are strict about optional start fields while
+            # others tolerate or expect the legacy all-block shape. The normal
+            # first attempt omits empty Showtime/boost/rental blocks; on 205,
+            # try the legacy shape once before surfacing the start failure.
+            fallback_payload = self.build_start_payload(
+                card_id=card_id,
+                support_card_ids=support_card_ids,
+                friend_viewer_id=friend_viewer_id,
+                friend_card_id=friend_card_id,
+                parent_id_1=parent_id_1,
+                parent_id_2=parent_id_2,
+                scenario_id=scenario_id,
+                deck_id=deck_id,
+                use_tp=use_tp,
+                tp_info=tp_info,
+                current_money=current_money,
+                succession_rank_point=succession_rank_point,
+                rental_viewer_id=rental_viewer_id,
+                rental_trained_chara_id=rental_trained_chara_id,
+                difficulty_id=difficulty_id,
+                difficulty=difficulty,
+                is_boost=is_boost,
+                boost_story_event_id=boost_story_event_id,
+                allow_recover_tp=allow_recover_tp,
+                include_empty_optional_blocks=True,
+            )
+            if fallback_payload == start_payload:
+                raise
+            return self.call('single_mode_free/start', fallback_payload, quiet_result_codes={205})
 
     def exec_command(self, command_type, command_id, current_turn, current_vital, command_group_id=0, select_id=0):
         return self.call('single_mode_free/exec_command', {

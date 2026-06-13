@@ -2,7 +2,7 @@ import unittest
 import time
 
 import main
-from uma_api.client import UmaClient
+from uma_api.client import ApiCallError, UmaClient
 
 
 def make_start_request(**overrides):
@@ -520,7 +520,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
         client = object.__new__(UmaClient)
         captured = {}
 
-        def fake_call(endpoint, payload):
+        def fake_call(endpoint, payload, **kwargs):
             captured["endpoint"] = endpoint
             captured["payload"] = payload
             return {"ok": True}
@@ -544,7 +544,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
         client = object.__new__(UmaClient)
         captured = {}
 
-        def fake_call(endpoint, payload):
+        def fake_call(endpoint, payload, **kwargs):
             captured["endpoint"] = endpoint
             captured["payload"] = payload
             return {"ok": True}
@@ -564,6 +564,77 @@ class TpRecoverySmokeTests(unittest.TestCase):
         self.assertEqual(captured["endpoint"], "single_mode_free/start")
         self.assertIs(captured["payload"]["allow_recover_tp"], True)
         self.assertEqual(captured["payload"]["use_tp"], 30)
+
+    def test_client_start_payload_omits_empty_showtime_fields_for_normal_career(self):
+        payload = UmaClient.build_start_payload(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+        )
+
+        start_chara = payload["start_chara"]
+        self.assertNotIn("selected_difficulty_info", start_chara)
+        self.assertNotIn("boost_story_event_id", start_chara)
+        self.assertNotIn("rental_succession_trained_chara", start_chara)
+
+    def test_client_start_payload_keeps_showtime_fields_when_selected(self):
+        payload = UmaClient.build_start_payload(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+            difficulty_id=1003,
+            difficulty=3,
+            is_boost=1,
+            boost_story_event_id=1015,
+        )
+
+        start_chara = payload["start_chara"]
+        self.assertEqual(
+            start_chara["selected_difficulty_info"],
+            {"difficulty_id": 1003, "difficulty": 3, "is_boost": 1},
+        )
+        self.assertEqual(start_chara["boost_story_event_id"], 1015)
+
+    def test_client_start_205_retries_with_legacy_optional_blocks(self):
+        client = object.__new__(UmaClient)
+        calls = []
+
+        def fake_call(endpoint, payload, **kwargs):
+            calls.append((endpoint, payload, kwargs))
+            if len(calls) == 1:
+                raise ApiCallError(
+                    "API error 205 on single_mode_free/start",
+                    endpoint=endpoint,
+                    result_code=205,
+                    response_code=205,
+                )
+            return {"ok": True}
+
+        client.call = fake_call
+
+        result = client.start_career(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+        )
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn("selected_difficulty_info", calls[0][1]["start_chara"])
+        self.assertIn("selected_difficulty_info", calls[1][1]["start_chara"])
+        self.assertIn("rental_succession_trained_chara", calls[1][1]["start_chara"])
 
     def test_client_recovery_item_payload_uses_flat_client_own_num(self):
         client = object.__new__(UmaClient)

@@ -4385,6 +4385,7 @@ const state = {
                 allow_recover_tp: state.tpRecoveryMode
             };
             const showtime = parseShowtimeSelection(state.selectedShowtimeDifficulty || (els.showtimeDifficultySelect && els.showtimeDifficultySelect.value) || '');
+            const includeNewCareerOnlyOptions = !activeCareer || state.loopEnabled;
             const restartFriend = selection.friend || (activeCareer ? {
                 viewer_id: activeCareer.friend_viewer_id,
                 support_card_id: activeCareer.friend_card_id
@@ -4414,10 +4415,13 @@ const state = {
                 deck_id: Number((selection.deck && selection.deck.id) || (activeCareer && activeCareer.deck_id) || 1),
                 scenario_id: 4,
                 use_tp: 30,
-                difficulty_id: showtime.difficulty_id,
-                difficulty: showtime.difficulty,
-                is_boost: showtime.difficulty_id ? 1 : 0,
-                boost_story_event_id: showtime.difficulty_id ? Number((((state.dailyEvents || {}).showtime || {}).story_event_id) || 0) : 0,
+                // Showtime difficulty is a start-only choice. When resuming an
+                // existing career without looping, do not send stale difficulty
+                // metadata because the server has no in-career way to apply it.
+                difficulty_id: includeNewCareerOnlyOptions ? showtime.difficulty_id : 0,
+                difficulty: includeNewCareerOnlyOptions ? showtime.difficulty : 0,
+                is_boost: includeNewCareerOnlyOptions && showtime.difficulty_id ? 1 : 0,
+                boost_story_event_id: includeNewCareerOnlyOptions && showtime.difficulty_id ? Number((((state.dailyEvents || {}).showtime || {}).story_event_id) || 0) : 0,
                 preset_name: selectedPresetName(),
                 max_steps: 2500,
                 ...tpRecoveryPayload,

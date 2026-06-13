@@ -42,9 +42,15 @@ class ShopPoolCountsTests(unittest.TestCase):
         self.assertFalse(self.sim._shop_pool_counts(12).get(9001))
         self.assertGreater(self.sim._shop_pool_counts(48).get(9001, 0), 0)
 
-    def test_pool_disabled_by_default_uses_observed(self):
-        # Flag defaults OFF: buy path must not silently switch to pools.
-        self.assertFalse(bool(self.sim.preset.get("sim_use_shop_refresh_pools", False)))
+    def test_accurate_sim_flags_enabled_in_preset(self):
+        # The accurate offline-sim model (formula training + empirical race
+        # stat total + real shop pools) is enabled in the preset so the
+        # optimizer/sweeps train against accurate physics. These affect
+        # offline sim only; live careers play the real game. If the buy
+        # path can't find a pool it still falls back to observed counts.
+        self.assertTrue(bool(self.sim.preset.get("sim_use_shop_refresh_pools")))
+        self.assertTrue(bool(self.sim.preset.get("sim_formula_training_gain")))
+        self.assertTrue(bool(self.sim.preset.get("sim_empirical_race_stat_total")))
 
 
 if __name__ == "__main__":

@@ -9999,5 +9999,8 @@
   "wit_closeout_damping_when_speed_behind": 0.45,
   "wit_closeout_damping_min_wit": 1000,
   "wit_closeout_damping_lead_over_speed": 80,
-  "calendar_race_prebuy_allow_midcareer_with_end_buy": true
+  "calendar_race_prebuy_allow_midcareer_with_end_buy": true,
+  "sim_formula_training_gain": true,
+  "sim_use_shop_refresh_pools": true,
+  "sim_empirical_race_stat_total": true
 }

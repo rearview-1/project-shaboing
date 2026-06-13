@@ -1658,16 +1658,6 @@ def hot_reload_presets():
     return updated
 
 
-def _looks_like_python_executable_arg(value):
-    text = str(value or "").strip().strip('"')
-    if not text:
-        return False
-    name = Path(text).name.lower()
-    return name in {"python", "python.exe", "pythonw", "pythonw.exe"} or (
-        name.startswith("python") and Path(name).suffix.lower() == ".exe"
-    )
-
-
 def _restart_python_executable():
     candidates = [
         os.environ.get("SWEEPY_RESTART_PYTHON", ""),
@@ -1714,38 +1704,87 @@ def _explicit_restart_script():
     return ""
 
 
-def _restart_script_from_argv(argv):
+def _restart_script_path():
+    """Absolute path to the main.py that should be relaunched on restart.
+
+    The whole point is that the server must find ITSELF on any machine,
+    regardless of how the download was extracted. Earlier logic scanned
+    sys.argv and could hand os.execv a *directory* (e.g. a double-nested
+    ``project-shaboing-main\\project-shaboing-main`` ZIP layout), producing
+    ``can't find '__main__' module in '<dir>'``. We avoid that entirely by
+    trusting the running module's own location.
+
+    Resolution order, most authoritative first:
+      1. SWEEPY_RESTART_SCRIPT, only if it points at an existing ``.py``
+         file (explicit operator/launcher override).
+      2. ``__file__`` — the path to THIS running main.py. Immune to folder
+         renames, ZIP nesting, the process CWD, and directory-as-argv.
+      3. ``base_dir / "main.py"`` as a final fallback.
+    Every branch is validated to be an existing ``.py`` file before use,
+    so os.execv never receives a directory or a phantom path.
+    """
+    candidates = []
     explicit = _explicit_restart_script()
     if explicit:
-        return explicit, []
-    argv = list(argv or [])
-    for idx, raw in enumerate(argv):
-        text = str(raw or "").strip().strip('"')
-        if not text or text.startswith("-") or _looks_like_python_executable_arg(text):
+        candidates.append(Path(explicit))
+    try:
+        candidates.append(Path(__file__).resolve())
+    except (NameError, OSError):
+        pass
+    candidates.append(base_dir / "main.py")
+
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
             continue
-        path = Path(text)
-        if path.suffix.lower() != ".py":
-            continue
-        if not path.is_absolute() and not path.exists():
-            base_candidate = base_dir / path
-            if base_candidate.exists():
-                path = base_candidate
-        return str(path.resolve()), argv[idx + 1:]
-    return str((base_dir / "main.py").resolve()), []
+        if resolved.is_file() and resolved.suffix.lower() == ".py":
+            return str(resolved)
+    return None
 
 
 def build_exec_args():
     python_exe = _restart_python_executable()
-    script, extra_args = _restart_script_from_argv(sys.argv)
-    return [python_exe, script, *extra_args]
+    script = _restart_script_path()
+    if not script:
+        raise FileNotFoundError(
+            "backend restart cannot locate a main.py to relaunch "
+            f"(checked SWEEPY_RESTART_SCRIPT, __file__, and {base_dir / 'main.py'})"
+        )
+    return [python_exe, script]
 
 
 def restart_backend_process(reason):
     persist_dev_session_cache(reason)
     print(f"backend dev reload: restarting process ({reason})", flush=True)
     time.sleep(0.25)
-    args = build_exec_args()
-    os.execv(args[0], args)
+    try:
+        args = build_exec_args()
+    except FileNotFoundError as exc:
+        dev_reloader_state["restart_requested"] = False
+        print(f"backend restart aborted: {exc}", flush=True)
+        return
+    # os.execv inherits the current working directory. Force it to the
+    # project root so the relaunched interpreter and every relative path
+    # the app uses resolve correctly regardless of where the server was
+    # originally started from.
+    try:
+        os.chdir(base_dir)
+    except OSError as exc:
+        print(f"backend restart: could not chdir to {base_dir}: {exc}", flush=True)
+    print(f"backend restart exec: {args}", flush=True)
+    try:
+        os.execv(args[0], args)
+    except OSError as exc:
+        # execv only returns on failure. Surface a clear message and clear
+        # the in-flight flag so the operator can retry instead of being
+        # stuck with a server that thinks a restart is already queued.
+        dev_reloader_state["restart_requested"] = False
+        print(
+            f"backend restart failed to exec {args[0]!r} with {args}: {exc}. "
+            f"Server left running on old code; click REFRESH BACKEND to retry.",
+            flush=True,
+        )
 
 
 def schedule_backend_restart(reason, delay_sec=0.35):

@@ -1271,10 +1271,103 @@ class LoopConfigSmokeTests(unittest.TestCase):
         with patch.object(main, "persist_dev_session_cache", return_value=True), \
              patch.object(main.time, "sleep", return_value=None), \
              patch.object(main, "build_exec_args", return_value=["C:\\real\\python.exe", "C:\\repo\\main.py"]), \
+             patch.object(main.os, "chdir") as chdir, \
              patch.object(main.os, "execv") as execv:
             main.restart_backend_process("test")
 
         execv.assert_called_once_with("C:\\real\\python.exe", ["C:\\real\\python.exe", "C:\\repo\\main.py"])
+        # CWD is forced to the project root before exec so the relaunched
+        # interpreter resolves main.py and relative paths correctly.
+        chdir.assert_called_once_with(main.base_dir)
+
+    def test_build_exec_args_resolves_relative_script_against_base_dir(self):
+        # Server launched as `python main.py` (relative argv) while the
+        # process CWD is somewhere with no main.py. os.execv inherits that
+        # CWD, so the restart must resolve against base_dir, not CWD —
+        # otherwise the relaunch fails with "can't open file 'main.py'".
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            orig_cwd = os.getcwd()
+            try:
+                os.chdir(tmp)
+                with patch.object(main.sys, "executable", str(fake_python)), \
+                     patch.object(main.sys, "argv", ["main.py"]):
+                    args = main.build_exec_args()
+            finally:
+                os.chdir(orig_cwd)
+
+        self.assertEqual(args[1], str((main.base_dir / "main.py").resolve()))
+        self.assertTrue(Path(args[1]).exists())
+
+    def test_build_exec_args_falls_back_when_argv_script_missing(self):
+        # A discovered .py token that does not point at a real file must
+        # not be handed to execv — fall back to base_dir/main.py.
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            ghost = Path(tmp) / "does_not_exist" / "ghost.py"
+            with patch.object(main.sys, "executable", str(fake_python)), \
+                 patch.object(main.sys, "argv", [str(fake_python), str(ghost)]):
+                args = main.build_exec_args()
+
+        self.assertEqual(Path(args[1]).name.lower(), "main.py")
+        self.assertTrue(Path(args[1]).exists())
+
+    def test_build_exec_args_never_returns_directory(self):
+        # Regression for `can't find '__main__' module in '<dir>'`: a
+        # double-nested ZIP extraction (project-shaboing-main/
+        # project-shaboing-main) where argv[0] is the OUTER directory must
+        # never be handed to python as the script. The resolver must fall
+        # through to the real main.py (this running module).
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            outer_dir = Path(tmp) / "project-shaboing-main"
+            outer_dir.mkdir()
+            with patch.object(main.sys, "executable", str(fake_python)), \
+                 patch.object(main.sys, "argv", [str(outer_dir)]):
+                args = main.build_exec_args()
+
+        resolved_script = Path(args[1])
+        self.assertTrue(resolved_script.is_file())
+        self.assertEqual(resolved_script.name.lower(), "main.py")
+        self.assertNotEqual(resolved_script, outer_dir)
+
+    def test_build_exec_args_rejects_directory_restart_script_env(self):
+        # A SWEEPY_RESTART_SCRIPT pointed at a directory must be ignored,
+        # not passed through (which produced the __main__ module error).
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            bogus_dir = Path(tmp) / "project-shaboing-main"
+            bogus_dir.mkdir()
+            with patch.dict(
+                os.environ,
+                {"SWEEPY_RESTART_SCRIPT": str(bogus_dir)},
+                clear=False,
+            ), patch.object(main.sys, "executable", str(fake_python)):
+                args = main.build_exec_args()
+
+        resolved_script = Path(args[1])
+        self.assertTrue(resolved_script.is_file())
+        self.assertEqual(resolved_script.name.lower(), "main.py")
+
+    def test_restart_backend_clears_flag_on_exec_failure(self):
+        # execv only returns on failure; the in-flight flag must be reset
+        # so the operator can retry instead of being stuck with a server
+        # that believes a restart is already queued.
+        main.dev_reloader_state["restart_requested"] = True
+        try:
+            with patch.object(main, "persist_dev_session_cache", return_value=True), \
+                 patch.object(main.time, "sleep", return_value=None), \
+                 patch.object(main, "build_exec_args", return_value=["py", "main.py"]), \
+                 patch.object(main.os, "chdir", return_value=None), \
+                 patch.object(main.os, "execv", side_effect=OSError("exec boom")):
+                main.restart_backend_process("test")
+            self.assertFalse(main.dev_reloader_state["restart_requested"])
+        finally:
+            main.dev_reloader_state["restart_requested"] = False
 
     def test_git_auto_update_waits_for_idle_before_pull(self):
         main.git_auto_update_state["running"] = False

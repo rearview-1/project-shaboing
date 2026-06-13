@@ -15,6 +15,7 @@ from career_bot.race_schedule import TACTIC_TO_STYLE, STYLE_TO_TACTIC
 from career_bot.skills import SkillBuyer
 from career_bot.items import MantItemManager, ITEM_NAMES, SHOP_ITEM_COSTS, DISPLAY_TO_ID, display_to_slug
 from career_bot.mant_fixed_events import career_turn_calendar, career_turn_label, static_mant_event_for_story
+from career_bot.shop_refresh import build_shop_decision_state
 
 
 from career_bot.report import new_report, add_event, add_decision, finish_report, write_report, set_error
@@ -3004,6 +3005,8 @@ class CareerRunner:
         chara = data.get("chara_info") or {}
         free = data.get("free_data_set") or {}
         self.skill_buyer.preview(state, preset)
+        shop_refresh_decision = build_shop_decision_state(state, preset=preset, item_names=ITEM_NAMES)
+        self.item_manager.last_shop_decision_state = shop_refresh_decision
         self._debug("turn", state, {
             "training_snapshot": self._training_snapshot(state, preset),
             "bot_race_skip_reason": getattr(self.race_planner, "last_skip_reason", None),
@@ -3019,6 +3022,7 @@ class CareerRunner:
             "bot_skill_result": dict(self.skill_buyer.last_result),
             "server_shop_rows_raw": free.get("pick_up_item_info_array") or [],
             "shop_rows_enriched": self._debug_item_buy_options(state, preset),
+            "shop_refresh_decision": shop_refresh_decision,
             "bot_shop_candidates": list(self.item_manager.last_buy_options),
             "bot_shop_selected": list(self.item_manager.last_buy_selected),
             "bot_shop_attempt": list(self.item_manager.last_buy_attempt),
@@ -3539,6 +3543,7 @@ class CareerRunner:
             "owned_map": owned_map,
             "active_bad_statuses": self.item_manager._active_bad_statuses(data),
             "mant_config": cfg,
+            "shop_refresh_decision": build_shop_decision_state(state, preset=preset, item_names=ITEM_NAMES),
             "source_state_turn": source_state_turn,
             "request_current_turn": request_current_turn,
             "turn_drift": turn_drift,
@@ -3875,6 +3880,7 @@ class CareerRunner:
                 "inventory": inventory,
                 "skill_rows_enriched": skill_rows_enriched,
                 "shop_rows_enriched": shop_rows_enriched,
+                "shop_refresh_decision": build_shop_decision_state(state, preset=preset, item_names=ITEM_NAMES),
                 "server_skill_tips_raw": chara.get("skill_tips_array") or [],
                 "server_owned_skill_raw": chara.get("skill_array") or [],
                 "server_shop_rows_raw": free.get("pick_up_item_info_array") or [],

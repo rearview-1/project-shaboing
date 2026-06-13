@@ -1,5 +1,7 @@
 import traceback
 
+from career_bot.shop_refresh import build_shop_decision_state
+
 ITEM_NAMES = {
     1001: "Speed Notepad",
     1002: "Stamina Notepad",
@@ -338,6 +340,7 @@ class MantItemManager:
         self.last_buy_selected = []
         self.last_buy_attempt = []
         self.last_buy_result = {}
+        self.last_shop_decision_state = {}
         self.last_use_options = []
         self.last_use_selected = []
         self.last_use_attempt = []
@@ -362,6 +365,7 @@ class MantItemManager:
         self.last_buy_selected = []
         self.last_buy_attempt = []
         self.last_buy_result = {}
+        self.last_shop_decision_state = {}
         self.last_use_options = []
         self.last_use_selected = []
         self.last_use_attempt = []
@@ -708,16 +712,17 @@ class MantItemManager:
             coin_val = free.get("gained_coin_num")
         budget = int(coin_val or 0)
         start_budget = budget
+        self.last_shop_decision_state = build_shop_decision_state(state, preset=preset, item_names=ITEM_NAMES)
         self.last_buy_options = []
         self.last_buy_selected = []
         self.last_buy_attempt = []
-        self.last_buy_result = {"mant_coin": budget}
+        self.last_buy_result = {"mant_coin": budget, "shop_decision": self.last_shop_decision_state}
         self.buy_attempt_events = []
         if not pickups:
-            self.last_buy_result = {"skip": "no_pickups", "mant_coin": budget}
+            self.last_buy_result = {"skip": "no_pickups", "mant_coin": budget, "shop_decision": self.last_shop_decision_state}
             return state, 0
         if budget <= 0:
-            self.last_buy_result = {"skip": "no_mant_coin", "mant_coin": budget}
+            self.last_buy_result = {"skip": "no_mant_coin", "mant_coin": budget, "shop_decision": self.last_shop_decision_state}
             return state, 0
 
         owned = self._owned_map(free)
@@ -783,7 +788,7 @@ class MantItemManager:
                 available.append((name, row))
 
         if not available:
-            self.last_buy_result = {"skip": "no_available", "mant_coin": budget}
+            self.last_buy_result = {"skip": "no_available", "mant_coin": budget, "shop_decision": self.last_shop_decision_state}
             return state, 0
 
         effective_rows = []
@@ -878,7 +883,12 @@ class MantItemManager:
                 budget = remaining
 
         if not targets:
-            self.last_buy_result = {"skip": "no_targets", "mant_coin": budget, "start_mant_coin": start_budget}
+            self.last_buy_result = {
+                "skip": "no_targets",
+                "mant_coin": budget,
+                "start_mant_coin": start_budget,
+                "shop_decision": self.last_shop_decision_state,
+            }
             return state, 0
 
         self.last_buy_selected = [{
@@ -897,7 +907,12 @@ class MantItemManager:
                 payload.append({"shop_item_id": sid, "current_num": 0})
 
         if not payload:
-            self.last_buy_result = {"skip": "empty_payload", "mant_coin": budget, "start_mant_coin": start_budget}
+            self.last_buy_result = {
+                "skip": "empty_payload",
+                "mant_coin": budget,
+                "start_mant_coin": start_budget,
+                "shop_decision": self.last_shop_decision_state,
+            }
             return state, 0
 
         return self._exchange_batch(client, state, payload, current_turn)

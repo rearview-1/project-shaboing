@@ -76,6 +76,32 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 — DECISIVE: sim under-produces ~20% even on a PROVEN-SS deck
+- Ran the sim on the EXACT deck+trainee that hit 4901 manually (trainee 106102, friend
+  30094, deck [30054,30019,30010,30028,20041]) in formula mode + shop pools + good-play
+  levers -> stat_sum median 3915, MAX 4166. Cannot reproduce 4901 on a 4901 deck.
+  => IT'S THE SIM, NOT THE DECK. Systematic ~15-20% total-stat under-production, deck-agnostic.
+- This corrects two earlier framings:
+  * My "deck can't hit SS" (wrong - user's manual proves the card pool can).
+  * Tonight's "concentration is the bottleneck" (partly wrong - even a proven-SS deck with
+    concentration caps ~4166; the gap is AGGREGATE production, not distribution).
+  * NOTE: none of the 4800+ manual careers used the CURRENTLY-LOADED deck (trainee 106701 +
+    Riko friend) - they used 106102/104101/102001 + meta SSRs. Current deck's true ceiling
+    is unproven, but the proven-deck test isolates the sim as the under-producer regardless.
+- Off-core suppression change was built then REVERTED: no-op on this deck (stamina 636 /
+  guts 413 already low - nothing to suppress). Diagnosis kept, code reverted (validation gate).
+- THE fidelity bug to fix (next session, highest priority): decompose a formula-mode career
+  on the proven deck into stat-by-source (training total / race rewards / events / climax
+  +10-all x3 / epithets) and compare to where 4901 must come from. Candidates for the ~20%:
+  (a) too few training turns, (b) high-facility/rainbow/great-mood regime under-modeled,
+  (c) non-training sources (race/climax/epithet stats) under-credited, (d) mood lower than
+  real play. Likely (c)+(b). Fix so the sim reproduces ~4900 on the proven deck BEFORE any
+  more policy/optimizer work - a policy tuned on a 20%-light sim learns wrong lessons.
+- Shop-pool sim wiring (ed71e2f) stands: validated correct, default off, A/B showed it
+  doubles boost-item buys but is outcome-dormant (consistent - amplifier on a short sim).
+
+
+
 ### 2026-06-13 ~03:00 — shop-refresh data landed (Codex) + sim wiring (mine)
 - Codex shipped (69488b3): data/shop_refresh_pools.json from the REAL hakuraku API
   (/api/shop-refresh; 14,720 scheduled + 29,505 race samples). Structure exactly to spec:

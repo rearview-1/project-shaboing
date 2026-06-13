@@ -76,6 +76,36 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 — SIM UNDER-PRODUCTION ROOT-CAUSED + FIXED (the ~20% gap)
+- Decomposed a proven-SS-deck career by stat source. Found the dominant bug: race stat
+  rewards used hardcoded RACE_GRADE_REWARDS (G1=10, one random stat) while the sim ALREADY
+  loaded real per-race-turn data (empirical median ~31, distributed) but BYPASSED it; the
+  distributed-application path was dead code. Those hardcoded rewards were tuned to the
+  bot's mediocre stat_sum and, with the inflated replay training scale (1.95), were two
+  OFFSETTING errors. Formula training (accurate) exposed the race under-credit.
+- FIX (acd7866, flag sim_empirical_race_stat_total): use empirical per-era total +
+  distributed application. Proven-SS deck: 3976 -> 4468 median / 4626 max, rating S -> S+.
+  +492 stat sum from one fix. 31 sim tests green.
+- Enabled all 3 accurate-model flags in the preset (837c173): sim_formula_training_gain +
+  sim_empirical_race_stat_total + sim_use_shop_refresh_pools. OFFLINE-SIM ONLY (live plays
+  the real game; the sim is the optimizer's training ground). The optimizer/cadence now
+  train against accurate physics instead of an S-capped offsetting-error model.
+- Decomposition after fix (proven deck, 4416 this seed): start 696, training +1532,
+  race_dist +964, climax +275, event +496. Remaining gap to manual 4901 (~430-485) is
+  now POLICY: running the proven deck's CARDS through the CURRENT preset's LEVERS (tuned
+  for a speed/wit deck, not the proven speed/power/guts deck) -> power 866/guts 683 vs
+  manual 1114/1200. Concentration for the actual deck is the optimizer's job now.
+- Calibration caveats (honest): (a) accurate model reads +331 vs the bot's HISTORICAL
+  (pre-fix, mediocre) logs - confounded; re-audit vs fresh post-fix live careers (farm
+  down). (b) empirical race total is a MEDIAN; manual good play may exceed it (more/higher
+  wins) - a percentile or win-quality scaling could close more of the residual.
+- STATUS vs mission: sim went from "cannot represent SS, capped S+/4166" to "represents
+  good play at S+/4468, max 4626" on a proven-SS deck. The training ground is now honest
+  enough for the optimizer/self-play to target SS. NEXT: let the optimizer find the
+  concentration policy for the live deck in the accurate sim; re-audit vs fresh live data.
+
+
+
 ### 2026-06-13 — DECISIVE: sim under-produces ~20% even on a PROVEN-SS deck
 - Ran the sim on the EXACT deck+trainee that hit 4901 manually (trainee 106102, friend
   30094, deck [30054,30019,30010,30028,20041]) in formula mode + shop pools + good-play

@@ -5160,11 +5160,47 @@ class CareerSimulator:
             return calibration.get("distribution") or {}
         return {stat: 1.0 / len(STAT_KEYS) for stat in STAT_KEYS}
 
+    def _empirical_race_stat_total(self, era):
+        """Per-race-turn total stat gain from real finished-career logs
+        (already includes the deck's race bonus — it's observed realized
+        gain). Prefers the per-era figure, falls back to the overall
+        median. Returns 0 when calibration is unavailable."""
+        calib = getattr(self, "race_stat_gain_calibration", {}) or {}
+        if not calib.get("enabled"):
+            return 0.0
+        by_era = calib.get("by_era") or {}
+        era_key = str(era or "").lower()
+        if int(self.state.get("turn") or 0) >= 73 and by_era.get("climax"):
+            v = by_era["climax"].get("median_total_gain")
+            if v:
+                return float(v)
+        if by_era.get(era_key) and by_era[era_key].get("median_total_gain"):
+            return float(by_era[era_key]["median_total_gain"])
+        return float(calib.get("median_total_gain") or 0.0)
+
     def _race_stat_total_gain(self, *, won, era, grade="", reward_multiplier=1.0, race_bonus_mult=1.0, rival=False):
         if not won:
             return 0
         if int(self.state.get("turn") or 0) in getattr(self, "_climax_turn_set", set()):
             return 0
+        # Prefer the empirical per-race-turn total (real career-log data,
+        # ~31 vs the hardcoded grade base of 10) when available. The old
+        # hardcoded RACE_GRADE_REWARDS stat values were calibrated to
+        # reproduce the BOT's mediocre stat_sum (~3500-3900) and, combined
+        # with the inflated replay training scale, formed two offsetting
+        # errors. With the formula training model (accurate), races must
+        # also be accurate or the total falls ~20% short of real careers.
+        # The empirical figure already includes deck race bonus, so it is
+        # NOT multiplied by race_bonus_mult again; the race-reward hammer
+        # (reward_multiplier) still scales it. Gated by
+        # `sim_empirical_race_stat_total`; falls back to the grade base.
+        if bool(self.preset.get("sim_empirical_race_stat_total", False)):
+            empirical = self._empirical_race_stat_total(era)
+            if empirical > 0:
+                value = empirical
+                if float(reward_multiplier or 1.0) > 1.0:
+                    value *= max(1.0, float(reward_multiplier or 1.0))
+                return max(0, int(round(value)))
         base = _as_int((self._race_base_reward(grade) or {}).get("stat"))
         if base <= 0:
             return 0
@@ -7976,7 +8012,14 @@ class CareerSimulator:
                 race_bonus_mult=race_bonus_mult,
                 rival=rival,
             )
-            stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)
+            # Distribute the race stat gain across stats per the empirical
+            # distribution (real careers spread race rewards, not single
+            # random stat) when using the empirical total; otherwise keep
+            # the legacy single-random-stat behavior.
+            if bool(self.preset.get("sim_empirical_race_stat_total", False)) and (getattr(self, "race_stat_gain_calibration", {}) or {}).get("enabled"):
+                stat_allocations = self._apply_distributed_race_stat_gain(race_stat_gain, era)
+            else:
+                stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)
             self.race_names_won.add(str(race_name or "").strip())
             self._apply_epithet_bonuses_if_completed(reward_multiplier)
         # Twinkle Star Climax rewards fire after the race and scale with

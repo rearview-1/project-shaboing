@@ -1463,8 +1463,14 @@ class UmaClient:
             })
             data = res.get('data', {})
             self.refresh_cached_account_state(data)
-            self.read_info()
-            
+            # Optional home-screen fetch — a transient state code (e.g. 201)
+            # must not abort the hard reset; the chara check below is what
+            # actually validates recovery.
+            try:
+                self.read_info()
+            except Exception as read_info_exc:
+                print(f"read_info/index skipped during hard reset (non-fatal): {read_info_exc}", flush=True)
+
             try:
                 sm_res = self.call('single_mode_free/load', {})
                 chara = sm_res.get('data', {}).get('chara_info')
@@ -1528,7 +1534,17 @@ class UmaClient:
                 res = self.call('load/index', {'adid': ''})
                 data = res.get('data', {})
                 self.refresh_cached_account_state(data)
-                self.read_info()
+                # read_info/index only fetches optional home-screen data
+                # (stories/episodes/posters/tutorial) and its result is unused
+                # — the session is already established by load/index above. A
+                # transient state code here (e.g. 201) must NOT abort an
+                # otherwise successful login; that previously logged the user
+                # out on dev session restore. Genuine auth failures would have
+                # surfaced on tool/start_session or load/index already.
+                try:
+                    self.read_info()
+                except Exception as read_info_exc:
+                    print(f"read_info/index skipped (non-fatal; session already established): {read_info_exc}", flush=True)
                 return res
             except Exception as e:
                 err = str(e)
@@ -1547,13 +1563,18 @@ class UmaClient:
                 raise
 
     def read_info(self):
+        # 102/201 here mean the optional home-screen payload isn't available
+        # right now; quiet them so the console doesn't show a scary
+        # "API error 201 on read_info/index" line. (quiet_result_codes only
+        # suppresses the print — the call still raises — so callers that must
+        # not abort on this still need to guard the call; see login().)
         return self.call('read_info/index', {
             'add_home_story_data_array': [],
             'add_short_episode_data_array': [],
             'add_home_poster_data_array': [],
             'add_tutorial_guide_data_array': [],
             'add_released_episode_data_array': [],
-        })
+        }, quiet_result_codes={102, 201})
 
     def finish_career(self, current_turn=0, is_force_delete=False):
         return self.call('single_mode_free/finish', {

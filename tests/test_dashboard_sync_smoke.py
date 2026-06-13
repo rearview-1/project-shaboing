@@ -605,5 +605,43 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9011)
 
 
+class LoginReadInfoToleranceTests(unittest.TestCase):
+    def test_login_does_not_abort_on_read_info_state_code(self):
+        # read_info/index is the last, auxiliary step of login() (home-screen
+        # data, result unused). A 201 there must not kill an otherwise good
+        # login — that logged the user out on dev session restore.
+        import requests
+        from uma_api.client import UmaClient, ApiCallError
+
+        client = UmaClient.__new__(UmaClient)
+        client.session = requests.Session()
+        client.has_captured_auth = lambda: True
+        client.regen_sid = lambda: None
+        client.refresh_cached_account_state = lambda data: None
+
+        load_res = {"data": {"account": "ok"}}
+        calls = []
+
+        def fake_call(ep, args=None, **kwargs):
+            calls.append(ep)
+            if "read_info" in ep:
+                raise ApiCallError(
+                    "API error 201 on read_info/index: {'result_code': 201}",
+                    endpoint=ep,
+                    result_code=201,
+                )
+            if "load" in ep:
+                return load_res
+            return {"data": {}}
+
+        client.call = fake_call
+
+        res = client.login(max_retries=0)
+
+        # Returns the load/index result; the read_info 201 is swallowed.
+        self.assertEqual(res, load_res)
+        self.assertTrue(any("read_info" in ep for ep in calls))
+
+
 if __name__ == "__main__":
     unittest.main()

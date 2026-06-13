@@ -1166,10 +1166,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--target-win-rate", type=float, default=0.95,
                    help="comfort threshold: total race-win rate (default 0.95 — "
                         ">95%% of all races won in calibration sims)")
-    p.add_argument("--max-epithet-losses", type=int, default=0,
-                   help="comfort threshold: max losses on epithet-bonus races "
-                        "across all calibration sims (default 0 — any epithet "
-                        "loss disqualifies the candidate)")
+    p.add_argument("--max-epithet-losses", type=int, default=2,
+                   help="max losses on epithet-bonus races across calibration "
+                        "sims (default 2 — tolerates 2-sim screening noise; a "
+                        "career drops 2-3 races by luck and ~7 G1s gate "
+                        "epithets, so 0 rejected every candidate on noise. The "
+                        "quality ranking still prefers fewer epithet losses.)")
     p.add_argument("--min-rating", type=int, default=14500,
                    help="minimum allowed rating in validation sims "
                         "(default 14500 = no A+ outcomes)")

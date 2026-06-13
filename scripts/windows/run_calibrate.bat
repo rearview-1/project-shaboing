@@ -21,15 +21,18 @@ REM   - SS rate     >= TARGET_SS_RATE       (default 0.95)
 REM   - Mean rating >= TARGET_MEAN          (default 17500 = SS threshold)
 REM   - Min rating  >= MIN_RATING           (default 14500 = no A+ batches)
 REM   - Win rate    >= TARGET_WIN_RATE      (default 0.95)
-REM   - Epithet-bonus losses <= MAX_EPITHET_LOSS  (default 0 - no losses on
-REM     races that gate Lady/Stunning/Heroine/Goddess/etc bonuses)
+REM   - Epithet-bonus losses <= MAX_EPITHET_LOSS  (default 2 - tolerates the
+REM     2-sim screening noise; a career naturally drops 2-3 races by luck and
+REM     ~7 G1s gate epithets, so demanding 0 rejected every candidate on noise
+REM     even when it out-scored the baseline. The quality ranking still
+REM     prefers FEWER epithet losses among savable candidates.)
 REM
 REM Optional env-var overrides:
 REM   SWEEPY_CALIBRATE_TIME_BUDGET_SEC   default 240 (4 minutes; raise for a deeper search)
 REM   SWEEPY_CALIBRATE_TARGET_SS_RATE    default 0.95
 REM   SWEEPY_CALIBRATE_TARGET_MEAN       default 17500
 REM   SWEEPY_CALIBRATE_TARGET_WIN_RATE   default 0.95
-REM   SWEEPY_CALIBRATE_MAX_EPITHET_LOSS  default 0
+REM   SWEEPY_CALIBRATE_MAX_EPITHET_LOSS  default 2 (set 0 for strict no-epithet-loss)
 REM   SWEEPY_CALIBRATE_MIN_RATING        default 14500
 
 cd /d "%~dp0..\.."
@@ -56,7 +59,7 @@ set TIME_BUDGET=240
 set TARGET_SS_RATE=0.95
 set TARGET_MEAN=17500
 set TARGET_WIN_RATE=0.95
-set MAX_EPITHET_LOSS=0
+set MAX_EPITHET_LOSS=2
 set MIN_RATING=14500
 
 if not "%SWEEPY_CALIBRATE_TIME_BUDGET_SEC%"=="" set TIME_BUDGET=%SWEEPY_CALIBRATE_TIME_BUDGET_SEC%

@@ -2,6 +2,7 @@ import os
 import json
 import re
 import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, Response
@@ -219,21 +220,23 @@ JS_CODE = r'''
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = FastAPI()
-SERVER_START_TIME = time.time()
-SERVER_VERSION_TOKEN = f"{int(SERVER_START_TIME * 1000)}-{os.getpid()}"
-
-
 _session_sidecar_watcher = None
 
 
-@app.on_event("startup")
-async def _start_session_sidecar_watcher():
-    """Path B from docs/capture-tool-clarification.md: poll the hachimi
-    Career turn data folder and drop a learning_session.json sidecar into
-    each new career so the bot loader can pair it with the active session
-    even without a DLL rebuild. Auto-disables under unittest/pytest via
-    the same `_hachimi_capture_career_dirs` guard the loader uses."""
+@asynccontextmanager
+async def _app_lifespan(app):
+    """Startup/shutdown via FastAPI's lifespan API.
+
+    Replaces the deprecated ``@app.on_event("startup")`` hook, which printed
+    a ``DeprecationWarning`` on every boot — visible on the console after each
+    backend refresh. Startup work: launch the hachimi session sidecar watcher
+    (Path B from docs/capture-tool-clarification.md — drops a
+    learning_session.json sidecar into each new career so the bot loader can
+    pair it with the active session without a DLL rebuild), run storage
+    cleanup, and sync the latest manual capture. The sidecar watcher
+    auto-disables under unittest/pytest via the same
+    `_hachimi_capture_career_dirs` guard the loader uses. No shutdown work is
+    required."""
     global _session_sidecar_watcher
     try:
         from career_bot.session_sidecar import SessionSidecarWatcher
@@ -257,6 +260,12 @@ async def _start_session_sidecar_watcher():
         sync_latest_manual_capture_to_runtime()
     except Exception as exc:
         print(f"[main] failed to sync latest manual capture: {exc}", flush=True)
+    yield
+
+
+app = FastAPI(lifespan=_app_lifespan)
+SERVER_START_TIME = time.time()
+SERVER_VERSION_TOKEN = f"{int(SERVER_START_TIME * 1000)}-{os.getpid()}"
 
 chara_map = {}
 support_map = {}

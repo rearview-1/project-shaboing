@@ -913,6 +913,8 @@ def client_dev_session_config(client):
         "steam_id": getattr(client, "steam_id", ""),
         "steam_session_ticket": getattr(client, "steam_ticket", ""),
         "steam_app_id": getattr(client, "steam_app_id", APP_ID),
+        "steam_username_seed": cfg.get("steam_username_seed", ""),
+        "steam_password_seed": cfg.get("steam_password_seed", ""),
         "device_id": getattr(client, "device_id", ""),
         "device_identity_mode": getattr(client, "device_identity_mode", ""),
         "device_identity_instance": getattr(client, "device_identity_instance", ""),
@@ -1127,6 +1129,17 @@ def remove_reusable_auth_profile(steam_id):
         return False
 
 
+def invalidate_reusable_auth_profile(steam_id, reason=""):
+    steam_id = str(steam_id or "").strip()
+    if not steam_id:
+        return False
+    removed = remove_reusable_auth_profile(steam_id)
+    if removed:
+        suffix = f": {reason}" if reason else ""
+        print(f"invalidated reusable auth profile for Steam account {steam_id}{suffix}", flush=True)
+    return removed
+
+
 def reusable_auth_config_for_steam_id(steam_id, *, require_fresh=True):
     steam_id = str(steam_id or "").strip()
     if not steam_id:
@@ -1324,15 +1337,16 @@ def refresh_reusable_auth_headlessly(req):
 
     has_form_creds = bool(req and req.username and req.password)
     steam_app_id = str(getattr(req, "steam_app_id", "") or APP_ID).strip() or APP_ID
-    if req and req.steam_id and req.steam_session_ticket:
+    if has_form_creds:
+        sid, tkt = get_ticket(req.username, req.password, getattr(req, "code", ""), appid=steam_app_id)
+    elif req and req.steam_id and req.steam_session_ticket:
         sid = str(req.steam_id or "").strip()
         tkt = str(req.steam_session_ticket or "").strip()
-    elif has_form_creds:
-        sid, tkt = get_ticket(req.username, req.password, getattr(req, "code", ""), appid=steam_app_id)
     else:
         raise Exception("Steam username/password is required for clientless auth refresh.")
 
     trace_api = os.environ.get("SWEEPY_TRACE_API", "1").strip().lower() not in {"0", "false", "no"}
+    username_seed = getattr(req, "username", "")
     password_seed = getattr(req, "password", "")
     seed = best_known_headless_auth_seed(sid)
     existing_cfg = reusable_auth_config_for_steam_id(sid, require_fresh=False)
@@ -1349,6 +1363,7 @@ def refresh_reusable_auth_headlessly(req):
             if not res:
                 raise Exception(f"{reason} auth refresh failed")
             resolved_cfg = client_dev_session_config(client) or dict(cfg)
+            resolved_cfg["steam_username_seed"] = username_seed
             resolved_cfg["steam_password_seed"] = password_seed
             client._sweepy_auth_config = dict(resolved_cfg)
             pending_game_auth_config = dict(resolved_cfg)
@@ -1369,6 +1384,7 @@ def refresh_reusable_auth_headlessly(req):
             "steam_id": sid,
             "steam_session_ticket": tkt,
             "steam_app_id": steam_app_id,
+            "steam_username_seed": username_seed,
             "steam_password_seed": password_seed,
         })
         try:
@@ -1378,8 +1394,11 @@ def refresh_reusable_auth_headlessly(req):
                 raise RuntimeError(client_version_stale_detail(exc)) from exc
             attempt_errors.append(exc)
             if os.environ.get("SWEEPY_AUTH_ALLOW_SIGNUP_AFTER_EXISTING_FAILURE", "").strip().lower() not in {"1", "true", "yes"}:
+                if "501" in str(exc) or "394" in str(exc):
+                    invalidate_reusable_auth_profile(sid, "server rejected cached game auth during headless refresh")
                 raise Exception(
                     "Headless auth refresh failed. The cached reusable auth for this Steam account was rejected by the game server. "
+                    "Sweepy invalidated that cached reusable auth profile so future attempts will not replay the same rejected identity. "
                     "Sweepy will not call tool/signup for an existing game profile because that path is expected to return 394 and cannot repair stale auth. "
                     "Refresh auth once from the current game client, then retry. "
                     f"Existing auth retry error: {redact_sensitive_error_text(exc)}"
@@ -1390,6 +1409,7 @@ def refresh_reusable_auth_headlessly(req):
         "steam_id": sid,
         "steam_session_ticket": tkt,
         "steam_app_id": steam_app_id,
+        "steam_username_seed": username_seed,
         "steam_password_seed": password_seed,
     })
     if not has_form_creds:
@@ -1434,7 +1454,7 @@ def _headless_refresh_request_from_cfg(cfg):
     return SimpleNamespace(
         steam_id=steam_id,
         steam_session_ticket=steam_ticket,
-        username="",
+        username=str(cfg.get("steam_username_seed") or cfg.get("username") or "").strip(),
         password=str(cfg.get("steam_password_seed") or "").strip(),
         code="",
         steam_app_id=str(cfg.get("steam_app_id") or APP_ID).strip(),
@@ -7195,6 +7215,7 @@ async def login(req: LoginRequest):
             'steam_id': sid,
             'steam_session_ticket': tkt,
             'steam_app_id': steam_app_id,
+            'steam_username_seed': req.username,
             'steam_password_seed': req.password
         })
         if not has_fresh_auth_config(cfg):
@@ -7227,6 +7248,7 @@ async def login(req: LoginRequest):
         dashboard = build_dashboard_data(d, career_data, preserve_friends=False)
         active_dashboard_data = dashboard
         resolved_cfg = client_dev_session_config(c) or dict(cfg)
+        resolved_cfg["steam_username_seed"] = req.username
         resolved_cfg["steam_password_seed"] = req.password
         c._sweepy_auth_config = dict(resolved_cfg)
         save_reusable_auth_profile(resolved_cfg, "login")
@@ -7258,6 +7280,8 @@ async def login(req: LoginRequest):
         )
         detail = msg
         if needs_refresh:
+            if steam_id_for_cleanup:
+                invalidate_reusable_auth_profile(steam_id_for_cleanup, "server rejected cached game auth during login")
             if used_headless_bootstrap and not used_cached_reusable_auth:
                 detail = (
                     "Headless auth bootstrap failed. Local game version metadata may be stale for the current server build. "
@@ -7290,6 +7314,8 @@ async def session_status():
 @app.post("/api/auth/login_reusable")
 async def login_with_reusable_auth(req: ReusableAuthLoginRequest):
     global active_client, active_account, active_dashboard_data, active_start_state, active_start_debug, active_parent_cards, active_parent_rank_points, pending_game_auth_config, raw_load_index_response, active_selection, seen_trained_chara_ids, most_recent_trained_chara_id
+    requested_steam_id = ""
+    selected_steam_id = ""
     try:
         requested_steam_id = str(req.steam_id or "").strip()
         profiles = load_reusable_auth_profiles()
@@ -7310,6 +7336,7 @@ async def login_with_reusable_auth(req: ReusableAuthLoginRequest):
             }
         candidates.sort(key=lambda row: row[0], reverse=True)
         _, steam_id, cfg = candidates[0]
+        selected_steam_id = steam_id
 
         reset_loop_state()
         seen_trained_chara_ids = None
@@ -7346,6 +7373,9 @@ async def login_with_reusable_auth(req: ReusableAuthLoginRequest):
         persist_dev_session_cache("login_reusable")
         return active_dashboard_data
     except Exception as exc:
+        stale_steam_id = selected_steam_id or requested_steam_id
+        if stale_steam_id and is_recoverable_session_error(exc):
+            invalidate_reusable_auth_profile(stale_steam_id, "server rejected cached game auth during reusable login")
         return {
             "success": False,
             "detail": str(exc),
@@ -9506,12 +9536,31 @@ async def dev_version_head():
 async def dev_reload():
     if runner_is_active():
         return {"success": False, "detail": "Stop the career runner before refreshing the backend"}
+    git_result = perform_git_auto_update(manual=True)
+    git_status = str((git_result or {}).get("status") or "")
+    git_detail = str((git_result or {}).get("detail") or "").strip()
+    if git_result and git_result.get("success") and git_status == "updated":
+        return {
+            "success": True,
+            "detail": git_detail or "Git update applied. Page will reconnect automatically.",
+            "git_auto_update": git_result,
+        }
     if dev_reloader_state.get("restart_requested"):
-        return {"success": True, "detail": "Backend refresh already queued. Page will reconnect automatically."}
+        detail = "Backend refresh already queued. Page will reconnect automatically."
+        if git_detail:
+            detail = f"{detail} Git check: {git_detail}"
+        return {"success": True, "detail": detail, "git_auto_update": git_result}
     scheduled = schedule_backend_restart("manual_backend_refresh")
     if not scheduled:
-        return {"success": False, "detail": "Backend refresh is already in progress"}
-    return {"success": True, "detail": "Backend refresh queued. Page will reconnect automatically."}
+        return {
+            "success": False,
+            "detail": "Backend refresh is already in progress",
+            "git_auto_update": git_result,
+        }
+    detail = "Backend refresh queued. Page will reconnect automatically."
+    if git_detail:
+        detail = f"{detail} Git check: {git_detail}"
+    return {"success": True, "detail": detail, "git_auto_update": git_result}
 
 
 @app.post("/api/dev/update")

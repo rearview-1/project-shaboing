@@ -425,6 +425,65 @@ class LoopConfigSmokeTests(unittest.TestCase):
         headless_refresh.assert_called_once()
         capture_refresh.assert_not_called()
 
+    def test_cached_ticket_rebuild_regenerates_steam_ticket_when_credentials_are_cached(self):
+        created_cfgs = []
+        stale_cfg = {
+            "steam_id": "steam-restore",
+            "steam_session_ticket": "stale-ticket",
+            "steam_username_seed": "user",
+            "steam_password_seed": "pass",
+            "viewer_id": 123456789,
+            "udid": "12345678-1234-1234-1234-1234567890ab",
+            "auth_key": "ab" * 48,
+            "auth_key_len": 48,
+            "app_ver": "1.22.1",
+            "res_ver": "10006400",
+            "locale": "JPN",
+            "unity_ver": "2022.3.62f2",
+        }
+
+        class FakeSession:
+            def close(self):
+                return None
+
+        class FakeClient:
+            def __init__(self, cfg, trace_enabled=True):
+                created_cfgs.append(dict(cfg))
+                self.viewer_id = cfg.get("viewer_id")
+                self.udid_str = cfg.get("udid")
+                self.auth_key_hex = cfg.get("auth_key")
+                self.steam_id = str(cfg.get("steam_id") or "")
+                self.steam_ticket = cfg.get("steam_session_ticket")
+                self.device_id = cfg.get("device_id", "")
+                self.device_identity_mode = cfg.get("device_identity_mode", "")
+                self.device_identity_instance = cfg.get("device_identity_instance", "")
+                self.device_name = cfg.get("device_name", "")
+                self.graphics_device = cfg.get("graphics_device_name", "")
+                self.ip_address = cfg.get("ip_address", "")
+                self.platform_os = cfg.get("platform_os_version", "")
+                self.locale = cfg.get("locale", "JPN")
+                self.unity_ver = cfg.get("unity_ver", "")
+                self.app_ver = cfg.get("app_ver", "")
+                self.res_ver = cfg.get("res_ver", "")
+                self.session = FakeSession()
+
+            def login(self, max_retries=3):
+                return {"data": {}}
+
+        with patch("uma_api.client.get_ticket", return_value=("steam-restore", "fresh-ticket")) as get_ticket, \
+             patch.object(main, "UmaClient", FakeClient), \
+             patch("uma_api.client.UmaClient", FakeClient), \
+             patch.object(main, "attach_turn_delay", side_effect=lambda client: client), \
+             patch.object(main, "save_reusable_auth_profile", return_value=True):
+            refreshed_cfg, _client, result = main.rebuild_reusable_auth_from_cached_ticket(stale_cfg)
+
+        self.assertEqual(result["data"], {})
+        get_ticket.assert_called_once_with("user", "pass", "", appid=main.APP_ID)
+        self.assertGreaterEqual(len(created_cfgs), 2)
+        self.assertEqual(created_cfgs[0]["steam_session_ticket"], "fresh-ticket")
+        self.assertEqual(created_cfgs[1]["steam_session_ticket"], "fresh-ticket")
+        self.assertEqual(refreshed_cfg["steam_session_ticket"], "fresh-ticket")
+
     def test_restore_dev_session_cache_auto_refreshes_after_394(self):
         stale_cfg = {
             "steam_id": "steam-restore",
@@ -683,13 +742,15 @@ class LoopConfigSmokeTests(unittest.TestCase):
         with patch("uma_api.client.get_ticket", return_value=("steam-555", "fresh-ticket")), \
              patch.object(main, "reusable_auth_config_for_steam_id", side_effect=lambda sid, require_fresh=True: existing_cfg if not require_fresh else None), \
              patch("uma_api.client.UmaClient", FakeClient), \
-             patch.object(main, "attach_turn_delay", side_effect=lambda client: client):
+             patch.object(main, "attach_turn_delay", side_effect=lambda client: client), \
+             patch.object(main, "invalidate_reusable_auth_profile", return_value=True) as invalidate_profile:
             with self.assertRaises(Exception) as caught:
                 main.refresh_reusable_auth_headlessly(main.LoginRequest(username="user", password="pass"))
 
         message = str(caught.exception)
         self.assertIn("will not call tool/signup", message)
         self.assertIn("Existing auth retry error", message)
+        invalidate_profile.assert_called_once_with("steam-555", "server rejected cached game auth during headless refresh")
         self.assertEqual(len(created_cfgs), 1)
         self.assertEqual(created_cfgs[0]["viewer_id"], existing_cfg["viewer_id"])
 
@@ -1126,12 +1187,37 @@ class LoopConfigSmokeTests(unittest.TestCase):
     def test_dev_reload_endpoint_schedules_restart_when_idle(self):
         main.dev_reloader_state["restart_requested"] = False
 
-        with patch.object(main, "runner_is_active", return_value=False), patch.object(main, "schedule_backend_restart", return_value=True) as schedule:
+        with patch.object(main, "runner_is_active", return_value=False), \
+             patch.object(
+                 main,
+                 "perform_git_auto_update",
+                 return_value={"success": True, "status": "up_to_date", "detail": "main is up to date"},
+             ) as git_update, \
+             patch.object(main, "schedule_backend_restart", return_value=True) as schedule:
             result = asyncio.run(main.dev_reload())
 
         self.assertTrue(result["success"])
         self.assertIn("Page will reconnect automatically", result["detail"])
+        self.assertIn("Git check", result["detail"])
+        git_update.assert_called_once_with(manual=True)
         schedule.assert_called_once_with("manual_backend_refresh")
+
+    def test_dev_reload_endpoint_uses_git_update_restart_when_pull_applies(self):
+        main.dev_reloader_state["restart_requested"] = False
+
+        with patch.object(main, "runner_is_active", return_value=False), \
+             patch.object(
+                 main,
+                 "perform_git_auto_update",
+                 return_value={"success": True, "status": "updated", "detail": "updated main; backend restart queued"},
+             ) as git_update, \
+             patch.object(main, "schedule_backend_restart", return_value=True) as schedule:
+            result = asyncio.run(main.dev_reload())
+
+        self.assertTrue(result["success"])
+        self.assertIn("updated main", result["detail"])
+        git_update.assert_called_once_with(manual=True)
+        schedule.assert_not_called()
 
     def test_git_auto_update_waits_for_idle_before_pull(self):
         main.git_auto_update_state["running"] = False

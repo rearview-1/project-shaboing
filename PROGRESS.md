@@ -76,6 +76,29 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-12 ~23:45 — DECK-CEILING FINDING (re-scopes the SS goal)
+- Goal restated by operator: SS consistently (rating >=17,500) + 95% WR on ALL G1s.
+- Two independent sim sweeps with the saved policy (n=40 ceiling + n=40 variance), 80
+  careers total: rating median ~15,400-15,750 (S), max 17,385, **0/80 SS**. p90 ~16,500.
+  CONCLUSION: this deck's ceiling is S+, not SS. SS *consistently* (median SS) needs
+  ~+1,500 rating at the median over the best tuning — NOT reachable by policy on this
+  deck. It is a DECK constraint (trainee 106701 + Riko friend + current 5 supports cap
+  ~4,000-4,400 stat sum; SS needs ~4,600+ concentrated). Operator decision: stronger
+  SSR/limit-breaks for SS. Confirming with a rating-max optimizer (ceiling_search.log).
+- Variance (rating stdev ~654) is normal career RNG, NOT an early-bond collapse: top vs
+  bottom third had near-identical t30 bonds@80 (1.4 vs 1.5) and rainbows (0.2 vs 0.2);
+  the gap is whole-career stat accumulation (+282 sum) + race RNG. No single bug to squash.
+- 95% G1 WR: sim (current code) says this deck+policy already does ~96% (median 1 G1
+  loss). CANNOT trust vs live yet — the live 13:50-16:40 "full-stack" careers (median 6.5
+  losses) ran STALE in-process code (restart was ~16:40). Only the 16:57 clean career is
+  post-restart, and it matches the sim's top third. Need post-restart live careers to
+  judge. FARM IS IDLE since 16:57 (~7h) — no fresh data; restart the runner to resume.
+- ACHIEVABLE near-term: (a) drive this deck reliably to its S+ ceiling with <=1-2 G1
+  losses; (b) per-phase skill modeling (deepest sim gap, serves 95% WR, validatable w/o
+  live). NEXT BUILD = per-phase skills.
+
+
+
 ### 2026-06-12 ~20:00 — FIRST CLEAN CAREER
 - 16:57 career: 0 losses, 0 G1 losses, sum 4388 (1004/780/864/559/1181). First clean
   record of the entire project under the autonomous stack — and likely among the first

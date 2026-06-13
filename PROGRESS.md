@@ -76,6 +76,31 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 ~03:00 — shop-refresh data landed (Codex) + sim wiring (mine)
+- Codex shipped (69488b3): data/shop_refresh_pools.json from the REAL hakuraku API
+  (/api/shop-refresh; 14,720 scheduled + 29,505 race samples). Structure exactly to spec:
+  scheduled[item_id].expected_copies_by_turn, race[item_id].expected_copies_by_grade_result,
+  full name->id mapping (0 unmapped). Plus shop_refresh.py loader, runner hook
+  (build_shop_decision_state - exposes shop + refresh DESCRIPTOR; actual paid refresh left
+  unwired at the auth boundary, correct), rebuild tool, tests. All green.
+- Mine (ed71e2f): _shop_pool_counts wires the real pool into the sim's buy-sampling,
+  replacing replay-biased _observed_item_counts. Behind sim_use_shop_refresh_pools
+  (default OFF). Validated vs source (megaphone 0.62->0.80, anklets T18+, SPD+3 stops T24);
+  caught+fixed a carry-forward bug (absence=not offered=0).
+- NEXT UNITS (fresh session, need A/B validation - do NOT rush tired):
+  1. Flip sim_use_shop_refresh_pools on; A/B career outcomes vs observed-counts baseline
+     (expect better training-item acquisition; measure stat-sum/rating shift).
+  2. Model race-refresh shop (the missing acquisition channel) using race[] pool.
+  3. Buy-priority policy: prioritize megaphone/anklet/hammer when offered (works live now,
+     no refresh needed). Touches items.py (Codex's lane too - coordinate).
+  4. STILL the dominant gap per earlier finding: stat CONCENTRATION (spread 5 -> cap 3).
+     Shop items amplify a concentrated build; wasted on a spread one. Concentration first.
+- Honest status: shop domain now has real data + sim hook; it's a force-multiplier that's
+  mostly dormant until concentration is fixed (measured +135 alone). Not the SS unlock by
+  itself - consistent with the earlier honest assessment.
+
+
+
 ### 2026-06-13 ~02:00 — formula model SHIPPED + validated necessary-but-not-sufficient
 - Committed 10ac98d: formula-based training gain (drops 1.65/1.95 fudges; L1 speed/0card/bad
   mood now = 7/3 matching the game table; 7x dynamic range worst->strong tile). Flag

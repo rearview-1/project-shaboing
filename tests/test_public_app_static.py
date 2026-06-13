@@ -226,10 +226,10 @@ class PublicAppStaticTests(unittest.TestCase):
         index_html = (PROJECT_ROOT / "public" / "index.html").read_text(encoding="utf-8")
 
         self.assertIn('data-cat="test"', index_html)
-        self.assertIn('<span class="rail-name">Test 12</span>', index_html)
+        self.assertIn('<span class="rail-name">Test 21</span>', index_html)
         self.assertIn('data-pane="test"', index_html)
-        self.assertIn("Test 12 tab is wired and selectable.", index_html)
-        self.assertIn("test:'TEST 12'", app_js)
+        self.assertIn("Test 21 tab is wired and selectable.", index_html)
+        self.assertIn("test:'TEST 21'", app_js)
 
     def test_team_trials_searchable_screen_exists(self):
         app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")

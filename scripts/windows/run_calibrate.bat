@@ -8,7 +8,8 @@ REM What this does, step-by-step:
 REM   1. Reads dev_session.json to detect the deck you have set right now
 REM   2. Runs a short baseline to see where the deck currently lands
 REM   3. If baseline already hits SS comfortably, saves it as-is and exits
-REM   4. Otherwise: adaptive candidate sweep within a 30-minute time budget
+REM   4. Otherwise: adaptive candidate sweep within a ~4-minute time budget
+REM      (total run, including final validation, stays at/under ~5 minutes)
 REM   5. Early-stops the second a candidate hits the comfort threshold
 REM   6. Validates the winner on fresh seeds
 REM   7. Saves the winner to uma_runtime/instances/account_b/sim_calibration/deck_policies.json
@@ -24,7 +25,7 @@ REM   - Epithet-bonus losses <= MAX_EPITHET_LOSS  (default 0 - no losses on
 REM     races that gate Lady/Stunning/Heroine/Goddess/etc bonuses)
 REM
 REM Optional env-var overrides:
-REM   SWEEPY_CALIBRATE_TIME_BUDGET_SEC   default 1800 (30 minutes)
+REM   SWEEPY_CALIBRATE_TIME_BUDGET_SEC   default 240 (4 minutes; raise for a deeper search)
 REM   SWEEPY_CALIBRATE_TARGET_SS_RATE    default 0.95
 REM   SWEEPY_CALIBRATE_TARGET_MEAN       default 17500
 REM   SWEEPY_CALIBRATE_TARGET_WIN_RATE   default 0.95
@@ -51,7 +52,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-set TIME_BUDGET=1800
+set TIME_BUDGET=240
 set TARGET_SS_RATE=0.95
 set TARGET_MEAN=17500
 set TARGET_WIN_RATE=0.95
@@ -84,6 +85,7 @@ echo.
 
 "%PY%" tools\calibrate_deck.py ^
   --time-budget-sec %TIME_BUDGET% ^
+  --validation-sims 3 ^
   --target-ss-rate %TARGET_SS_RATE% ^
   --target-mean %TARGET_MEAN% ^
   --target-win-rate %TARGET_WIN_RATE% ^

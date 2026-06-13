@@ -1149,11 +1149,12 @@ def calibrate(
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Fast deck calibration")
-    p.add_argument("--time-budget-sec", type=float, default=1800.0,
-                   help="hard time cap in seconds (default 1800 = 30 min)")
+    p.add_argument("--time-budget-sec", type=float, default=240.0,
+                   help="candidate-sweep time cap in seconds (default 240 = 4 min; "
+                        "total run incl. final validation stays at/under ~5 min)")
     p.add_argument("--sims-per-candidate", type=int, default=2)
     p.add_argument("--baseline-sims", type=int, default=2)
-    p.add_argument("--validation-sims", type=int, default=4)
+    p.add_argument("--validation-sims", type=int, default=3)
     p.add_argument("--target-ss-rate", type=float, default=0.95,
                    help="comfort threshold: SS rate target (default 0.95)")
     p.add_argument("--target-mean", type=int, default=17500,

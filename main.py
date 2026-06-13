@@ -738,6 +738,7 @@ def release_git_auto_update_process_lock():
 
 
 def perform_git_auto_update(manual=False):
+    auto_enabled = git_auto_update_enabled()
     with git_auto_update_lock:
         if git_auto_update_state.get("running"):
             return {
@@ -747,13 +748,13 @@ def perform_git_auto_update(manual=False):
                 "state": git_auto_update_snapshot(),
             }
         git_auto_update_state["running"] = True
-        git_auto_update_state["enabled"] = git_auto_update_enabled()
+        git_auto_update_state["enabled"] = auto_enabled or bool(manual)
         git_auto_update_state["last_check"] = time.strftime("%Y-%m-%d %H:%M:%S")
         git_auto_update_state["status"] = "checking"
         git_auto_update_state["detail"] = ""
     process_lock_acquired = False
     try:
-        if not git_auto_update_enabled():
+        if not auto_enabled and not manual:
             state = set_git_auto_update_state(enabled=False, status="disabled", detail="disabled by SWEEPY_AUTO_GIT_UPDATE")
             return {"success": True, "status": "disabled", "detail": state["detail"], "state": state}
         if not (base_dir / ".git").exists():

@@ -1236,6 +1236,22 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertTrue(main.git_auto_update_state["behind"])
         self.assertFalse(any(call.args[0][0] == "pull" for call in git_cmd.call_args_list))
 
+    def test_manual_git_update_runs_even_when_background_auto_update_disabled(self):
+        main.git_auto_update_state["running"] = False
+        main.dev_reloader_state["restart_requested"] = False
+        with patch.object(main, "git_auto_update_enabled", return_value=False), \
+             patch.object(main, "choose_git_auto_update_remote", return_value=("origin", "")), \
+             patch.object(main, "choose_git_auto_update_branch", return_value=("main", "")), \
+             patch.object(main, "run_git_command", return_value=SimpleNamespace(returncode=0, stdout="", stderr="")) as git_cmd, \
+             patch.object(main, "git_rev_parse", side_effect=[("aaa111", ""), ("aaa111", "")]), \
+             patch.object(main, "git_worktree_dirty", return_value=(False, "")):
+            result = main.perform_git_auto_update(manual=True)
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["status"], "up_to_date")
+        self.assertTrue(main.git_auto_update_state["enabled"])
+        self.assertTrue(any(call.args[0][0] == "fetch" for call in git_cmd.call_args_list))
+
     def test_git_auto_update_refuses_dirty_worktree(self):
         main.git_auto_update_state["running"] = False
         with patch.object(main, "git_auto_update_enabled", return_value=True), \

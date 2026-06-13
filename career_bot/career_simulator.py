@@ -2170,42 +2170,152 @@ class SimResult:
     sim_hakuraku_races: list = field(default_factory=list)
 
 
-# MANT epithet routes (uma.guide/trackblazer). Each entry maps a set name
-# to the race names required and the +stat bonus granted on completion.
-# +10 to 2 random stats for base epithets, +15 for chained ones.
+# MANT (Trackblazer) epithets — FULL list (35 total: 32 grant stats, 3 grant
+# a skill hint). Source: user-provided authoritative route tables 2026-06-13.
+# Reward: stat epithets grant `bonus` to 2 RANDOM stats; hint epithets grant a
+# skill hint (no stat — `bonus` 0, `reward` "hint").
+#
+# Match keys (a single entry uses one form):
+#   "races": {names}        all listed races must be won (subset). Optional
+#                           "min_match": k  -> any k of `races` (not all).
+#   "prereq": {names}       race names that must ALSO all be won (gate).
+#   "prereq_epithets":[...] epithet NAMES that must be acquired first (chains).
+#   "prereq_epithets_any":[...] at least one of these epithets acquired.
+#   "match": {"kind": ...}  predicate over won-race metadata; kinds:
+#       count_grade   {grades:[...], min:n}           wins with grade in set
+#       count_terrain {terrain:"Dirt", min:n}         wins on that surface
+#       count_terrain_grade {terrain, grade, min:n}   surface + grade
+#       count_distance {klass:"standard"|"non_standard", min:n}  needs meters
+#       count_venue   {venues:[...], min:n}           wins at those tracks
+#       count_name    {substr:"...", min:n}           name contains substring
+#       count_country {min:n}                         a country word in name
+#       distance_quad_turf                            >=1 each Sprint/Mile/Medium/Long on turf
+# `races`/`prereq` are kept on named epithets so tools/calibrate_deck.py can
+# still harvest the "can't afford to lose" race set.
+# Globe-Trotter counts FOREIGN country/place names in the race title — the
+# home country (Japan/Japanese) does not count, else nearly every route would
+# trigger it. Verified against the user's all-win ceiling of 270: with Japan
+# excluded the account_b turf route has only Saudi Arabia + American (< 3), so
+# Globe-Trotter correctly does NOT fire.
+EPITHET_COUNTRY_WORDS = (
+    "Saudi Arabia", "American", "Dubai", "Singapore", "Hong Kong",
+    "Arlington", "Korea", "Korean", "China", "Brazil", "Republica Argentina",
+    "Republic", "New Zealand",
+)
+EPITHET_VENUE_REGIONS = {
+    "Kanto": {"Tokyo", "Nakayama", "Oi"},
+    "Kansai": {"Chukyo", "Hanshin", "Kyoto"},
+    "Hokkaido": {"Sapporo", "Hakodate"},
+    "Tohoku": {"Fukushima", "Niigata"},
+}
 MANT_EPITHET_SETS = [
-    {"name": "Lady", "races": {"Oka Sho", "Japanese Oaks", "Shuka Sho"}, "bonus": 10},
-    {"name": "Heroine", "races": {"Oka Sho", "Japanese Oaks", "Shuka Sho", "Queen Elizabeth II Cup"}, "bonus": 10},
-    {"name": "Goddess", "races": {"Oka Sho", "Japanese Oaks", "Shuka Sho", "Victoria Mile", "Hanshin Juvenile Fillies", "Queen Elizabeth II Cup"}, "bonus": 15},
-    {"name": "Stunning", "races": {"Satsuki Sho", "Tokyo Yushun (Japanese Derby)", "Kikuka Sho"}, "bonus": 10},
-    {"name": "Incredible Classic JC", "races": {"Satsuki Sho", "Tokyo Yushun (Japanese Derby)", "Kikuka Sho", "Japan Cup"}, "bonus": 15},
-    {"name": "Incredible Classic Arima", "races": {"Satsuki Sho", "Tokyo Yushun (Japanese Derby)", "Kikuka Sho", "Arima Kinen"}, "bonus": 15},
-    {"name": "Breakneck Miler", "races": {"NHK Mile Cup", "Yasuda Kinen", "Mile Championship"}, "bonus": 15},
-    {"name": "Sprint Go-Getter", "races": {"Takamatsunomiya Kinen", "Sprinters Stakes"}, "bonus": 15},
-    # Phenomenal — per uma.guide/trackblazer: "Stunning + 2 of five major
-    # races → +15". `prereq` (must all be matched, like the standard
-    # `races`) plus `races` + `min_match` (at least K-of-N must be matched).
-    # The five majors used here are Senior G1s outside Stunning itself.
-    {
-        "name": "Phenomenal",
-        "prereq": {"Satsuki Sho", "Tokyo Yushun (Japanese Derby)", "Kikuka Sho"},
-        "races": {"Tenno Sho (Spring)", "Tenno Sho (Autumn)",
-                  "Takarazuka Kinen", "Japan Cup", "Arima Kinen"},
-        "min_match": 2,
-        "bonus": 15,
-    },
-    # Sprint Speedster — "four sprint/mile races → +15". The pool is the
-    # five sprint/mile G1s; any four trigger the epithet.
-    {
-        "name": "Sprint Speedster",
-        "races": {"Takamatsunomiya Kinen", "Sprinters Stakes",
-                  "NHK Mile Cup", "Yasuda Kinen", "Mile Championship"},
-        "min_match": 4,
-        "bonus": 15,
-    },
+    # ---- Tiara route ----
+    {"name": "Lady", "route": "Tiara", "reward": "stat", "bonus": 10,
+     "races": {"Oka Sho", "Japanese Oaks", "Shuka Sho"}},
+    {"name": "Heroine", "route": "Tiara", "reward": "stat", "bonus": 10,
+     "prereq_epithets": ["Lady"], "races": {"Queen Elizabeth II Cup"}},
+    {"name": "Goddess", "route": "Tiara", "reward": "stat", "bonus": 15,
+     "prereq_epithets": ["Lady"],
+     "races": {"Victoria Mile", "Hanshin Juvenile Fillies", "Queen Elizabeth II Cup"}},
+    {"name": "Mile a Minute", "route": "Tiara", "reward": "hint", "bonus": 0,
+     "hint": "Mile Straightaways",
+     "races": {"Hanshin Juvenile Fillies"}, "min_match": 1},
+    # ---- Classic route ----
+    {"name": "Stunning", "route": "Classic", "reward": "stat", "bonus": 10,
+     "races": {"Satsuki Sho", "Tokyo Yushun (Japanese Derby)", "Kikuka Sho"}},
+    {"name": "Incredible", "route": "Classic", "reward": "stat", "bonus": 15,
+     "prereq_epithets": ["Stunning"],
+     "races": {"Japan Cup", "Arima Kinen"}, "min_match": 1},
+    {"name": "Phenomenal", "route": "Classic", "reward": "stat", "bonus": 15,
+     "prereq_epithets": ["Stunning"],
+     "races": {"Tenno Sho (Spring)", "Takarazuka Kinen", "Japan Cup",
+               "Tenno Sho (Autumn)", "Osaka Hai", "Arima Kinen"}, "min_match": 2},
+    # ---- Sprint/Mile route ----
+    {"name": "Breakneck Miler", "route": "Sprint/Mile", "reward": "stat", "bonus": 15,
+     "races": {"NHK Mile Cup", "Yasuda Kinen", "Mile Championship"}},
+    {"name": "Sprint Go-Getter", "route": "Sprint/Mile", "reward": "stat", "bonus": 15,
+     "races": {"Takamatsunomiya Kinen", "Sprinters Stakes"}},
+    {"name": "Sprint Speedster", "route": "Sprint/Mile", "reward": "stat", "bonus": 15,
+     "races": {"Takamatsunomiya Kinen", "Sprinters Stakes", "Yasuda Kinen", "Mile Championship"}},
+    # ---- Spring/Autumn route ----
+    {"name": "Spring Champion", "route": "Spring/Autumn", "reward": "stat", "bonus": 10,
+     "races": {"Osaka Hai", "Tenno Sho (Spring)", "Takarazuka Kinen"}},
+    {"name": "Fall Champion", "route": "Spring/Autumn", "reward": "stat", "bonus": 10,
+     "races": {"Tenno Sho (Autumn)", "Japan Cup", "Arima Kinen"}},
+    {"name": "Shield Bearer", "route": "Spring/Autumn", "reward": "stat", "bonus": 10,
+     "races": {"Tenno Sho (Spring)", "Tenno Sho (Autumn)"}},
+    {"name": "Legendary", "route": "Spring/Autumn", "reward": "hint", "bonus": 0,
+     "hint": "Homestretch Haste",
+     "prereq_epithets": ["Spring Champion", "Fall Champion"],
+     "prereq_epithets_any": ["Lady", "Stunning"]},
+    # ---- Secondary route (naturally acquired) ----
+    {"name": "Pro Racer", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_grade", "grades": ["OP", "G3", "G2", "G1"], "min": 10}},
+    {"name": "Standard Distance Leader", "route": "Secondary", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_distance", "klass": "standard", "min": 10}},
+    {"name": "Non-Standard Distance Leader", "route": "Secondary", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_distance", "klass": "non_standard", "min": 10}},
+    {"name": "Kanto Conqueror", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_venue", "venues": list(EPITHET_VENUE_REGIONS["Kanto"]), "min": 3}},
+    {"name": "West Japan Whiz", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_venue", "venues": list(EPITHET_VENUE_REGIONS["Kansai"]), "min": 3}},
+    {"name": "Hokkaido Hotshot", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_venue", "venues": list(EPITHET_VENUE_REGIONS["Hokkaido"]), "min": 3}},
+    {"name": "Tohoku Top Dog", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_venue", "venues": list(EPITHET_VENUE_REGIONS["Tohoku"]), "min": 3}},
+    {"name": "Kokura Constable", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_venue", "venues": ["Kokura"], "min": 2}},
+    {"name": "Junior Jewel", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_name", "substr": "Junior Stakes", "min": 3}},
+    {"name": "Umatastic", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_name", "substr": "Umamusume Stakes", "min": 3}},
+    {"name": "Globe-Trotter", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_country", "min": 3}},
+    {"name": "Turf Tussler", "route": "Secondary", "reward": "stat", "bonus": 5,
+     "match": {"kind": "distance_quad_turf"}},
+    # ---- Dirt route ----
+    {"name": "Dirty Work", "route": "Dirt", "reward": "stat", "bonus": 5,
+     "match": {"kind": "count_terrain", "terrain": "Dirt", "min": 5}},
+    {"name": "Playing Dirty", "route": "Dirt", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_terrain", "terrain": "Dirt", "min": 10}},
+    {"name": "Eat My Dust", "route": "Dirt", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_terrain", "terrain": "Dirt", "min": 15}},
+    {"name": "Dirt G1 Achiever", "route": "Dirt", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_terrain_grade", "terrain": "Dirt", "grade": "G1", "min": 3}},
+    {"name": "Dirt G1 Star", "route": "Dirt", "reward": "stat", "bonus": 10,
+     "match": {"kind": "count_terrain_grade", "terrain": "Dirt", "grade": "G1", "min": 4}},
+    {"name": "Dirt G1 Powerhouse", "route": "Dirt", "reward": "stat", "bonus": 15,
+     "match": {"kind": "count_terrain_grade", "terrain": "Dirt", "grade": "G1", "min": 5}},
+    {"name": "Dirt G1 Dominator", "route": "Dirt", "reward": "hint", "bonus": 0,
+     "hint": "Top Pick",
+     "match": {"kind": "count_terrain_grade", "terrain": "Dirt", "grade": "G1", "min": 9}},
+    {"name": "Dirt Sprinter", "route": "Dirt", "reward": "stat", "bonus": 10,
+     "races": {"JBC Sprint", "JBC Sprint (Senior)"}, "min_match": 2},
+    {"name": "Kicking Up Dust", "route": "Dirt", "reward": "stat", "bonus": 5,
+     "races": {"Unicorn Stakes", "Leopard Stakes", "Japan Dirt Derby"}},
 ]
 
 EPITHET_STAT_KEYS = ("speed", "stamina", "power", "guts", "wiz")
+
+# Authoritative in-game course distance (meters) by RACE NAME, from the full
+# user-provided race table (data/mant_race_distances.json). The race catalog
+# only stores the distance category, so this is the meters source for the
+# Standard/Non-Standard Distance Leader epithets (standard = multiple of 400 m).
+# NOTE: meters are the real JRA distances (Takarazuka 2200, Arima 2500, Japan
+# Cup 2400) — NOT CourseFurlongNum*200, which was an incorrect earlier guess.
+def _load_mant_race_meters():
+    data = _load_json_data("mant_race_distances.json", {}) or {}
+    meters = data.get("meters") if isinstance(data, dict) else None
+    out = {}
+    for name, value in (meters or {}).items():
+        try:
+            out[str(name).strip()] = int(value)
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+MANT_RACE_METERS_BY_NAME = _load_mant_race_meters()
 
 
 def _rank_for_stat_sum(stat_sum):
@@ -2607,7 +2717,16 @@ class CareerSimulator:
         self.recreations_used = 0
         self.stat_recreation_steps = {}
         self.race_names_won = set()
+        # Per-win metadata (grade/terrain/distance/venue/meters) so the full
+        # epithet engine can evaluate region/distance/name/grade predicates,
+        # not just named-race sets. See _apply_epithet_bonuses_if_completed.
+        self.won_race_meta = []
         self.epithets_completed = []
+        # Fan totals at each year-end checkpoint, for the MANT unique-skill
+        # leveling gates (see _estimated_unique_level). None until reached.
+        self._fans_end_junior = None
+        self._fans_end_classic = None
+        self._fans_end_senior = None
         self.climax_bonus_races = 0
         # Twinkle Star Climax final sequence. These are mandatory scenario
         # races in live MANT careers, not the user's planner calendar.
@@ -3081,6 +3200,17 @@ class CareerSimulator:
                     continue
                 key = str(ue.get("key") or "").strip()
                 if not key:
+                    continue
+                # `race_bonus` unique effects are NOT part of the flat,
+                # always-on deck Race Bonus. The in-game displayed Race
+                # Bonus (which scales race stat+SP rewards) is the LB-table
+                # value only; a card's unique-effect race bonus is
+                # situational and must not inflate the deck multiplier.
+                # Verified: this deck's real Race Bonus is 65% (LB4 sum
+                # 5+15+10+15+10+10), but merging the unconditional +5 unique
+                # on Marvelous Sunday and Nice Nature produced 75%, which
+                # over-credited every race reward in the sim.
+                if key == "race_bonus":
                     continue
                 try:
                     value = float(ue.get("value") or 0)
@@ -5017,50 +5147,162 @@ class CareerSimulator:
         calibration["nonrace_sp_reward_scale"] = 1.0
         return 1.0
 
-    def _apply_epithet_bonuses_if_completed(self, reward_multiplier):
-        """Grant +10/+15 to 2 random stats when a MANT epithet set completes.
+    def _estimated_unique_level(self):
+        """Trainee unique-skill level (1-4) reached over the career.
 
-        Per uma.guide/trackblazer: epithet routes (Lady/Stunning/etc) grant
-        +10 to 2 random stats; chained routes (Heroine/Goddess/Incredible/
-        Phenomenal/Breakneck Miler/Sprint Speedster/Sprint Go-Getter) grant
-        +15 to 2 random stats. The race-bonus multiplier from shop items
-        does NOT apply to epithet rewards (it only applies to race stat
-        rewards); the bonus is a fixed scenario event.
+        MANT levels the unique skill at each year-end checkpoint whose fan +
+        Yayoi Akikawa bond gate is cleared: 5,000 fans / 19 bond after Junior,
+        60,000 / 31 after Classic, 120,000 / 51 after Senior. Starts at Lv1 and
+        caps at Lv4 (per user). Fans are tracked directly; the NPC bond gate is
+        assumed met since the bot interacts with Yayoi every turn of a full
+        career. An explicit `sim_rating_unique_level` preset value overrides
+        this (e.g. for fixed-level what-if sweeps).
         """
-        completed_names = {e["name"] for e in self.epithets_completed}
-        for ep in MANT_EPITHET_SETS:
-            if ep["name"] in completed_names:
-                continue
-            # `prereq` (optional): a base race set that must all be matched
-            # before considering the `races` set. Used by Phenomenal which
-            # needs Stunning completed AND 2 of 5 majors.
-            prereq = ep.get("prereq")
-            if prereq and not prereq.issubset(self.race_names_won):
-                continue
-            # `min_match` (optional): when present, fire when at least
-            # min_match of `races` are matched (the "any K of N" model
-            # used by Phenomenal and Sprint Speedster). Without min_match,
-            # behavior is the original `issubset` (all races must match).
-            min_match = ep.get("min_match")
-            if min_match is None:
-                if not ep["races"].issubset(self.race_names_won):
+        override = self.preset.get("sim_rating_unique_level")
+        if override is not None:
+            try:
+                return int(override)
+            except (TypeError, ValueError):
+                pass
+        fans_final = int(self.state.get("fans") or 0)
+        jr = self._fans_end_junior if self._fans_end_junior is not None else fans_final
+        cl = self._fans_end_classic if self._fans_end_classic is not None else fans_final
+        sr = self._fans_end_senior if self._fans_end_senior is not None else fans_final
+        level = 1
+        if jr >= 5000:
+            level += 1
+        if cl >= 60000:
+            level += 1
+        if sr >= 120000:
+            level += 1
+        return min(4, level)
+
+    def _race_distance_meters(self, pid):
+        """Authoritative in-game course distance (meters) for a program_id.
+
+        The race catalog only stores the distance CATEGORY (Sprint/Mile/
+        Medium/Long), so meters come from MANT_RACE_METERS_BY_NAME (the full
+        user-provided table, real JRA distances) resolved via the catalog
+        race name. Returns None for races not in the table (e.g. JBC 'Varies'
+        venues); the Standard/Non-Standard Distance Leader epithets only count
+        wins with a known meters value.
+        """
+        try:
+            pid_int = int(pid or 0)
+        except (TypeError, ValueError):
+            return None
+        name = str((self.race_catalog_by_program_id.get(pid_int) or {}).get("name") or "").strip()
+        if not name:
+            return None
+        return MANT_RACE_METERS_BY_NAME.get(name)
+
+    def _epithet_match(self, spec):
+        """Evaluate a predicate-based epithet `match` spec against won races."""
+        meta = self.won_race_meta or []
+        kind = str((spec or {}).get("kind") or "")
+        if kind == "count_grade":
+            grades = set(spec.get("grades") or [])
+            return sum(1 for w in meta if w.get("grade") in grades) >= int(spec.get("min") or 0)
+        if kind == "count_terrain":
+            terrain = str(spec.get("terrain") or "")
+            return sum(1 for w in meta if w.get("terrain") == terrain) >= int(spec.get("min") or 0)
+        if kind == "count_terrain_grade":
+            terrain = str(spec.get("terrain") or ""); grade = str(spec.get("grade") or "")
+            return sum(1 for w in meta if w.get("terrain") == terrain and w.get("grade") == grade) >= int(spec.get("min") or 0)
+        if kind == "count_distance":
+            klass = str(spec.get("klass") or "standard")
+            def _is(w):
+                m = w.get("meters")
+                if not m:
+                    return False
+                return (int(m) % 400 == 0) if klass == "standard" else (int(m) % 400 != 0)
+            return sum(1 for w in meta if _is(w)) >= int(spec.get("min") or 0)
+        if kind == "count_venue":
+            venues = set(spec.get("venues") or [])
+            return sum(1 for w in meta if w.get("venue") in venues) >= int(spec.get("min") or 0)
+        if kind == "count_name":
+            sub = str(spec.get("substr") or "")
+            return sum(1 for w in meta if sub and sub in str(w.get("name") or "")) >= int(spec.get("min") or 0)
+        if kind == "count_country":
+            return sum(1 for w in meta if any(c in str(w.get("name") or "") for c in EPITHET_COUNTRY_WORDS)) >= int(spec.get("min") or 0)
+        if kind == "distance_quad_turf":
+            return all(
+                any(w.get("terrain") == "Turf" and w.get("distance") == d for w in meta)
+                for d in ("Sprint", "Mile", "Medium", "Long")
+            )
+        return False
+
+    def _apply_epithet_bonuses_if_completed(self, reward_multiplier):
+        """Award MANT epithets whose requirements are now met.
+
+        Full 35-epithet table (see MANT_EPITHET_SETS). Stat epithets grant
+        `bonus` to 2 RANDOM stats; hint epithets grant a skill hint and 0
+        stat. Race-bonus / hammer multipliers do NOT apply to epithets — the
+        bonus is a fixed scenario reward. Chained epithets (Heroine←Lady,
+        Incredible/Phenomenal←Stunning, Legendary←Spring+Fall Champion) are
+        resolved by looping until a pass awards nothing new, so a single race
+        win can cascade multiple epithets in one call.
+        """
+        while True:
+            completed_names = {e["name"] for e in self.epithets_completed}
+            fired_any = False
+            for ep in MANT_EPITHET_SETS:
+                if ep["name"] in completed_names:
                     continue
-            else:
-                if len(ep["races"] & self.race_names_won) < int(min_match):
+                # Epithet-chain prerequisites.
+                prereq_eps = ep.get("prereq_epithets") or []
+                if any(name not in completed_names for name in prereq_eps):
                     continue
-            # Roll 2 distinct random stats and grant the bonus.
-            gain = int(ep["bonus"])
-            stats = list(EPITHET_STAT_KEYS)
-            self.rng.shuffle(stats)
-            picked = stats[:2]
-            for stat_key in picked:
-                self.state[stat_key] = min(STAT_CAP, int(self.state.get(stat_key) or 0) + gain)
-            self.epithets_completed.append({
-                "name": ep["name"],
-                "bonus": gain,
-                "stats": list(picked),
-                "turn": int(self.state.get("turn") or 0),
-            })
+                any_eps = ep.get("prereq_epithets_any") or []
+                if any_eps and not any(name in completed_names for name in any_eps):
+                    continue
+                # Gate race set (all required) before the main condition.
+                prereq = ep.get("prereq")
+                if prereq and not prereq.issubset(self.race_names_won):
+                    continue
+                # Main condition: predicate match, named-race set, or — for
+                # epithets gated purely by other epithets (Legendary) — the
+                # prereq checks above are the whole condition.
+                match = ep.get("match")
+                races = ep.get("races") or set()
+                if match is not None:
+                    if not self._epithet_match(match):
+                        continue
+                elif races:
+                    min_match = ep.get("min_match")
+                    if min_match is None:
+                        if not races.issubset(self.race_names_won):
+                            continue
+                    else:
+                        if len(races & self.race_names_won) < int(min_match):
+                            continue
+                elif not (prereq_eps or any_eps):
+                    # No condition at all — never fire (guards against a
+                    # malformed entry awarding unconditionally).
+                    continue
+                # Fire. Stat epithets grant bonus x2 random stats; hint
+                # epithets grant a skill hint (no stat).
+                is_stat = str(ep.get("reward") or "stat") == "stat"
+                gain = int(ep.get("bonus") or 0)
+                picked = []
+                if is_stat and gain > 0:
+                    stats = list(EPITHET_STAT_KEYS)
+                    self.rng.shuffle(stats)
+                    picked = stats[:2]
+                    for stat_key in picked:
+                        self.state[stat_key] = min(STAT_CAP, int(self.state.get(stat_key) or 0) + gain)
+                self.epithets_completed.append({
+                    "name": ep["name"],
+                    "route": ep.get("route") or "",
+                    "reward": "stat" if is_stat else "hint",
+                    "bonus": gain if is_stat else 0,
+                    "hint": ep.get("hint") or "",
+                    "stats": list(picked),
+                    "turn": int(self.state.get("turn") or 0),
+                })
+                fired_any = True
+            if not fired_any:
+                break
 
     def _race_reward_multiplier(self, grade, rival=False):
         self._last_race_reward_item_id = None
@@ -8020,7 +8262,17 @@ class CareerSimulator:
                 stat_allocations = self._apply_distributed_race_stat_gain(race_stat_gain, era)
             else:
                 stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)
-            self.race_names_won.add(str(race_name or "").strip())
+            clean_name = str(race_name or "").strip()
+            self.race_names_won.add(clean_name)
+            _cat = self.race_catalog_by_program_id.get(int(pid or 0)) or {}
+            self.won_race_meta.append({
+                "name": clean_name,
+                "grade": str(_cat.get("type") or grade or "").upper(),
+                "terrain": str(_cat.get("terrain") or "").title(),
+                "distance": str(_cat.get("distance") or "").title(),
+                "venue": str(_cat.get("venue") or ""),
+                "meters": self._race_distance_meters(int(pid or 0)),
+            })
             self._apply_epithet_bonuses_if_completed(reward_multiplier)
         # Twinkle Star Climax rewards fire after the race and scale with
         # support-card race bonus plus the active race-reward hammer.
@@ -8210,6 +8462,14 @@ class CareerSimulator:
         """Run a full 78-turn career and return a SimResult."""
         for turn in range(1, TURN_FINISH + 1):
             self.state["turn"] = turn
+            # Snapshot fans at year boundaries (Junior ends T24, Classic T48,
+            # Senior T72) for the unique-skill leveling gates.
+            if turn == 25 and self._fans_end_junior is None:
+                self._fans_end_junior = int(self.state.get("fans") or 0)
+            elif turn == 49 and self._fans_end_classic is None:
+                self._fans_end_classic = int(self.state.get("fans") or 0)
+            elif turn == 73 and self._fans_end_senior is None:
+                self._fans_end_senior = int(self.state.get("fans") or 0)
             if turn in {1, 31, 55}:
                 self._apply_inheritance_event()
             self._simulate_observed_fixed_events_for_turn()
@@ -8314,7 +8574,7 @@ class CareerSimulator:
             final_stats,
             skill_score=self._estimated_skill_rating_score(),
             star_level=self.preset.get("sim_rating_star_level", 3),
-            unique_level=self.preset.get("sim_rating_unique_level", 5),
+            unique_level=self._estimated_unique_level(),
         )
         return SimResult(
             final_stats=final_stats,

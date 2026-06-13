@@ -1,6 +1,10 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
+set "SWEEPY_PROJECT_ROOT=%CD%"
+set "SWEEPY_RESTART_SCRIPT=%CD%\main.py"
+if not defined SWEEPY_AUTO_GIT_UPDATE set "SWEEPY_AUTO_GIT_UPDATE=1"
+if not defined SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC set "SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0"
 
 echo.
 echo Sweepy fresh setup + launcher
@@ -42,7 +46,8 @@ if not exist ".venv\Scripts\python.exe" (
   )
 )
 
-set "PY=.venv\Scripts\python.exe"
+set "PY=%CD%\.venv\Scripts\python.exe"
+set "SWEEPY_RESTART_PYTHON=%PY%"
 
 echo Upgrading pip...
 "%PY%" -m pip install --upgrade pip

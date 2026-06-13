@@ -1670,6 +1670,7 @@ def _looks_like_python_executable_arg(value):
 
 def _restart_python_executable():
     candidates = [
+        os.environ.get("SWEEPY_RESTART_PYTHON", ""),
         sys.executable,
         str(base_dir / ".venv" / "Scripts" / "python.exe"),
         str(base_dir / ".venv" / "bin" / "python"),
@@ -1684,11 +1685,39 @@ def _restart_python_executable():
             if path.is_file():
                 return str(path.resolve())
         except OSError:
-            continue
+            pass
+        resolved = shutil.which(str(candidate).strip().strip('"'))
+        if resolved:
+            try:
+                path = Path(resolved)
+                if path.is_file():
+                    return str(path.resolve())
+            except OSError:
+                continue
     return sys.executable or "python"
 
 
+def _explicit_restart_script():
+    configured = str(os.environ.get("SWEEPY_RESTART_SCRIPT") or "").strip().strip('"')
+    if not configured:
+        return ""
+    path = Path(configured)
+    if path.suffix.lower() != ".py":
+        return ""
+    if not path.is_absolute():
+        path = base_dir / path
+    try:
+        if path.exists():
+            return str(path.resolve())
+    except OSError:
+        return ""
+    return ""
+
+
 def _restart_script_from_argv(argv):
+    explicit = _explicit_restart_script()
+    if explicit:
+        return explicit, []
     argv = list(argv or [])
     for idx, raw in enumerate(argv):
         text = str(raw or "").strip().strip('"')

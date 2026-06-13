@@ -17,6 +17,7 @@ def parse_args():
 
 
 def launch_instance(repo_root, python_exe, *, host, port, instance_name, runtime_dir, shared_runtime_paths):
+    main_script = repo_root / "main.py"
     env = os.environ.copy()
     env["SWEEPY_HOST"] = str(host)
     env["SWEEPY_PORT"] = str(port)
@@ -28,8 +29,13 @@ def launch_instance(repo_root, python_exe, *, host, port, instance_name, runtime
     env["SWEEPY_INSTANCE_DEVICE_IDENTITY"] = "1"
     env["SWEEPY_STEAM_APP_ID"] = "3224770"
     env["SWEEPY_GAME_PROCESS_NAME"] = "UmamusumePrettyDerby.exe"
+    env.setdefault("SWEEPY_PROJECT_ROOT", str(repo_root))
+    env.setdefault("SWEEPY_RESTART_SCRIPT", str(main_script))
+    env.setdefault("SWEEPY_RESTART_PYTHON", str(python_exe))
+    env.setdefault("SWEEPY_AUTO_GIT_UPDATE", "1")
+    env.setdefault("SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC", "0")
 
-    cmd = [python_exe, "main.py"]
+    cmd = [python_exe, str(main_script)]
     kwargs = {
         "cwd": str(repo_root),
         "env": env,

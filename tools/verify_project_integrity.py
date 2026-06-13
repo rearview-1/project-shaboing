@@ -66,14 +66,15 @@ SKIP_COMPILE_DIRS = {
 }
 
 LAUNCHER_EXPECTATIONS = {
-    "run_sweepy.bat": ("tools\\verify_project_integrity.py", "main.py"),
+    "run_sweepy.bat": ("tools\\verify_project_integrity.py", "main.py", "SWEEPY_RESTART_SCRIPT", "SWEEPY_RESTART_PYTHON"),
+    "setup_and_run_sweepy.bat": ("tools\\verify_project_integrity.py", "main.py", "SWEEPY_RESTART_SCRIPT", "SWEEPY_RESTART_PYTHON"),
     "optimizer.bat": ("scripts\\windows\\run_calibrate.bat",),
     "run_dry_preflight.bat": ("scripts\\windows\\run_dry_preflight.bat",),
     "run_dual_sweepy.bat": ("scripts\\windows\\run_dual_sweepy.bat",),
     "run_smoke_tests.bat": ("scripts\\windows\\run_smoke_tests.bat",),
     "scripts/windows/run_calibrate.bat": ("cd /d \"%~dp0..\\..\"", "tools\\calibrate_deck.py"),
     "scripts/windows/run_dry_preflight.bat": ("cd /d \"%~dp0..\\..\"", "tools\\dry_run_preflight.py"),
-    "scripts/windows/run_dual_sweepy.bat": ("cd /d \"%~dp0..\\..\"", "tools\\launch_dual_sweepy.py"),
+    "scripts/windows/run_dual_sweepy.bat": ("cd /d \"%~dp0..\\..\"", "tools\\launch_dual_sweepy.py", "SWEEPY_RESTART_SCRIPT", "SWEEPY_RESTART_PYTHON"),
     "scripts/windows/run_smoke_tests.bat": ("cd /d \"%~dp0..\\..\"", "-m unittest discover"),
 }
 

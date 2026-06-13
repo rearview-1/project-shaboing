@@ -1,8 +1,12 @@
 @echo off
 cd /d "%~dp0..\.."
+set "SWEEPY_PROJECT_ROOT=%CD%"
+set "SWEEPY_RESTART_SCRIPT=%CD%\main.py"
+if not defined SWEEPY_AUTO_GIT_UPDATE set "SWEEPY_AUTO_GIT_UPDATE=1"
+if not defined SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC set "SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0"
 set "PY=python"
 if exist ".venv\Scripts\python.exe" (
-  set "PY=.venv\Scripts\python.exe"
+  set "PY=%CD%\.venv\Scripts\python.exe"
 ) else (
   where python >nul 2>nul
   if errorlevel 1 (
@@ -12,6 +16,7 @@ if exist ".venv\Scripts\python.exe" (
     exit /b 1
   )
 )
+set "SWEEPY_RESTART_PYTHON=%PY%"
 "%PY%" tools\verify_project_integrity.py
 if errorlevel 1 (
   pause

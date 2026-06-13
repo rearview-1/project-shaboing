@@ -1235,6 +1235,38 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertNotIn(".venv", args[1].lower())
         self.assertNotIn("python.exe", args[1].lower())
 
+    def test_build_exec_args_prefers_explicit_restart_environment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            fake_script = Path(tmp) / "main.py"
+            fake_script.write_text("print('restart')\n", encoding="utf-8")
+            stale_venv_python = Path(tmp) / "project-shaboing-main (2)" / "project-shaboing-main" / "(2)" / "project-shaboing-main" / ".venv" / "Scripts" / "python.exe"
+
+            with patch.dict(
+                os.environ,
+                {
+                    "SWEEPY_RESTART_PYTHON": str(fake_python),
+                    "SWEEPY_RESTART_SCRIPT": str(fake_script),
+                },
+                clear=False,
+            ), patch.object(main.sys, "executable", str(fake_python)), \
+                 patch.object(main.sys, "argv", [str(Path(tmp) / "project-shaboing-main"), str(stale_venv_python)]):
+                args = main.build_exec_args()
+
+        self.assertEqual(args[0], str(fake_python.resolve()))
+        self.assertEqual(args[1], str(fake_script.resolve()))
+        self.assertEqual(args[2:], [])
+
+    def test_server_launchers_pin_restart_paths_and_startup_git_check(self):
+        repo = Path(__file__).resolve().parents[1]
+        for rel in ("run_sweepy.bat", "setup_and_run_sweepy.bat", "scripts/windows/run_dual_sweepy.bat"):
+            text = (repo / rel).read_text(encoding="utf-8", errors="replace")
+            self.assertIn("SWEEPY_RESTART_SCRIPT", text, rel)
+            self.assertIn("SWEEPY_RESTART_PYTHON", text, rel)
+            self.assertIn("SWEEPY_AUTO_GIT_UPDATE", text, rel)
+            self.assertIn("SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0", text, rel)
+
     def test_restart_backend_execs_validated_python_path(self):
         with patch.object(main, "persist_dev_session_cache", return_value=True), \
              patch.object(main.time, "sleep", return_value=None), \

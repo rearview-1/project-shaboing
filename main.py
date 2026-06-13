@@ -5,7 +5,7 @@ import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 import random
 import subprocess
@@ -4102,6 +4102,7 @@ class DailyAutomationRequest(BaseModel):
     difficulty_id: int = 0
     difficulty: int = 0
     is_boost: int = 0
+    assignments: dict = Field(default_factory=dict)
 
 class SaveDeckRequest(BaseModel):
     deck_id: int
@@ -7420,15 +7421,26 @@ def _first_daily_record_id(status_section, key):
     return 0
 
 
-def _daily_action_context(req, status):
+def _assignment_for_action(req, action_name):
+    assignments = getattr(req, "assignments", {}) or {}
+    if not isinstance(assignments, dict):
+        assignments = {}
+    raw = assignments.get(action_name) or assignments.get("all") or {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def _daily_action_context(req, status, action_name=""):
     daily = (status or {}).get("daily_race") or {}
     legend = (status or {}).get("legend_race") or {}
     daily_legend = (status or {}).get("daily_legend_race") or {}
     coin_info = getattr(active_client, "coin_info", {}) or {}
     current_num = safe_int(coin_info.get("fcoin")) + safe_int(coin_info.get("coin"))
+    assignment = _assignment_for_action(req, action_name)
+    trained_chara_id = safe_int(assignment.get("trained_chara_id")) or safe_int(req.trained_chara_id)
+    running_style = normalize_style_id(assignment.get("running_style") or req.running_style)
     return {
-        "trained_chara_id": safe_int(req.trained_chara_id),
-        "running_style": normalize_style_id(req.running_style),
+        "trained_chara_id": trained_chara_id,
+        "running_style": running_style,
         "daily_race_id": safe_int(req.daily_race_id) or safe_int(daily.get("next_daily_race_id")) or _first_daily_record_id(daily, "daily_race_id"),
         "legend_race_id": safe_int(req.legend_race_id) or safe_int(legend.get("next_legend_race_id")) or _first_daily_record_id(legend, "legend_race_id"),
         "daily_legend_race_id": safe_int(req.daily_legend_race_id) or safe_int(daily_legend.get("next_legend_race_id")) or _first_daily_record_id(daily_legend, "legend_race_id"),
@@ -7525,12 +7537,13 @@ async def run_dailies(req: DailyAutomationRequest):
         requested.append("daily_shops")
 
     operations = []
-    context = _daily_action_context(req, status)
+    base_context = _daily_action_context(req, status)
     for action_name in requested:
         skip_reason = _daily_skip_reason(action_name, status)
         if skip_reason:
             operations.append({"action": action_name, "ok": True, "skipped": True, "detail": skip_reason})
             continue
+        context = _daily_action_context(req, status, action_name=action_name)
         action_cfg = cfg.action(action_name)
         if action_name == "daily_shops":
             if not action_cfg.get("shops"):
@@ -7560,9 +7573,10 @@ async def run_dailies(req: DailyAutomationRequest):
             "request": {
                 "trained_chara_id": safe_int(req.trained_chara_id),
                 "running_style": normalize_style_id(req.running_style),
-                "legend_race_id": safe_int(context.get("legend_race_id")),
-                "daily_race_id": safe_int(context.get("daily_race_id")),
-                "daily_legend_race_id": safe_int(context.get("daily_legend_race_id")),
+                "legend_race_id": safe_int(base_context.get("legend_race_id")),
+                "daily_race_id": safe_int(base_context.get("daily_race_id")),
+                "daily_legend_race_id": safe_int(base_context.get("daily_legend_race_id")),
+                "assignments": getattr(req, "assignments", {}) or {},
                 "difficulty_id": safe_int(req.difficulty_id),
                 "difficulty": safe_int(req.difficulty),
                 "is_boost": safe_int(req.is_boost),

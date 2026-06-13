@@ -7152,8 +7152,204 @@
     gap: 5px;
 }
 
+.daily-event-tabs {
+    display: inline-flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.daily-event-tab {
+    border: 0;
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--muted);
+    background: transparent;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.daily-event-tab.is-active {
+    color: #fff;
+    background: rgba(var(--accent-rgb), 0.34);
+}
+
+.daily-event-tab-panel {
+    display: none;
+}
+
+.daily-event-tab-panel.is-active {
+    display: block;
+}
+
+.daily-picker-btn {
+    min-height: 28px;
+    padding: 5px 8px;
+}
+
+.daily-assignment-note {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.daily-assignment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.daily-assignment-card {
+    padding: 10px;
+    border: 1px solid rgba(var(--accent-rgb), 0.22);
+    border-radius: 10px;
+    background: rgba(9, 8, 14, 0.75);
+}
+
+.daily-assignment-card-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.daily-assignment-fields {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 8px;
+}
+
+.daily-assignment-course {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+.daily-race-picker-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.daily-race-picker-overlay.is-open {
+    display: flex;
+}
+
+.daily-race-picker-modal {
+    width: min(720px, calc(100vw - 28px));
+    max-height: min(760px, calc(100vh - 34px));
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(var(--accent-rgb), 0.38);
+    border-radius: 14px;
+    background: #130f1b;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+}
+
+.daily-race-picker-head,
+.daily-race-picker-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+}
+
+.daily-race-picker-title {
+    color: var(--text);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.daily-race-picker-subtitle {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.daily-race-picker-close {
+    border: 0;
+    color: var(--muted);
+    background: transparent;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.daily-race-picker-search {
+    width: calc(100% - 24px);
+    margin: 0 12px 10px;
+}
+
+.daily-race-picker-list {
+    overflow: auto;
+    padding: 0 12px 12px;
+}
+
+.daily-race-option {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.035);
+    text-align: left;
+    cursor: pointer;
+}
+
+.daily-race-option.is-selected {
+    border-color: rgba(var(--accent-rgb), 0.72);
+    background: rgba(var(--accent-rgb), 0.12);
+}
+
+.daily-race-option-main {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-weight: 900;
+}
+
+.daily-race-option-meta,
+.daily-race-option-course {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.daily-race-option-empty {
+    padding: 18px;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: var(--muted);
+    text-align: center;
+}
+
 @media (max-width: 900px) {
     .daily-event-grid {
         grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+    .daily-assignment-grid,
+    .daily-assignment-fields {
+        grid-template-columns: 1fr;
     }
 }

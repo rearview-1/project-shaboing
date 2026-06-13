@@ -37,6 +37,70 @@ STYLE_LABEL_TO_ID = {
     "oikomi": 4,
 }
 
+TASK_LABELS = {
+    "daily_race": "Daily Race",
+    "legend_race": "Legend Race",
+    "daily_legend_race": "Daily Legend Race",
+}
+
+WEATHER_LABELS = {
+    1: "Sunny",
+    2: "Cloudy",
+    3: "Rainy",
+    4: "Snowy",
+}
+
+GROUND_CONDITION_LABELS = {
+    1: "Firm",
+    2: "Good",
+    3: "Soft",
+    4: "Heavy",
+}
+
+SURFACE_LABELS = {
+    1: "Turf",
+    2: "Dirt",
+}
+
+DISTANCE_TYPE_LABELS = {
+    1: "Sprint",
+    2: "Mile",
+    3: "Medium",
+    4: "Long",
+}
+
+ROTATION_LABELS = {
+    1: "Right",
+    2: "Left",
+    3: "Straight",
+}
+
+TRACK_KIND_LABELS = {
+    1: "Inner",
+    2: "Outer",
+}
+
+SEASON_LABELS = {
+    1: "Spring",
+    2: "Summer",
+    3: "Fall",
+    4: "Winter",
+}
+
+RACE_INFO_FIELD_SPECS = (
+    ("course_prefecture", "Course prefecture", None, ("course_prefecture", "prefecture", "course", "venue", "race_track_name")),
+    ("surface", "Surface", SURFACE_LABELS, ("surface", "terrain", "ground", "ground_type", "race_track_type")),
+    ("distance_meters", "Distance", None, ("distance_meters", "distance", "distance_value", "race_distance")),
+    ("distance_type", "Type of race", DISTANCE_TYPE_LABELS, ("distance_type", "distance_category", "distance_category_id")),
+    ("rotation", "Track rotation", ROTATION_LABELS, ("rotation", "turn_direction", "direction", "left_right", "course_set")),
+    ("track_kind", "Track layout", TRACK_KIND_LABELS, ("track_kind", "track_layout", "inout", "around")),
+    ("season", "Season", SEASON_LABELS, ("season", "season_id")),
+    ("weather", "Weather", WEATHER_LABELS, ("weather", "weather_id")),
+    ("ground_condition", "Ground condition", GROUND_CONDITION_LABELS, ("ground_condition", "condition", "baba_condition")),
+)
+
+_RACE_META_BY_INSTANCE: dict[int, dict[str, Any]] | None = None
+
 
 def _safe_int(value: Any, default: int = 0) -> int:
     try:
@@ -53,6 +117,122 @@ def _as_list(value: Any) -> list[Any]:
 
 def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
+
+
+def _load_race_meta_by_instance() -> dict[int, dict[str, Any]]:
+    global _RACE_META_BY_INSTANCE
+    if _RACE_META_BY_INSTANCE is not None:
+        return _RACE_META_BY_INSTANCE
+    index: dict[int, dict[str, Any]] = {}
+    path = Path(__file__).resolve().parents[1] / "data" / "race_map.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        data = {}
+    for section_name in ("meta", "program"):
+        for row_id, raw in _as_dict(data.get(section_name)).items():
+            row = _as_dict(raw)
+            instance_id = _safe_int(row.get("race_instance_id"))
+            if instance_id <= 0:
+                continue
+            merged = dict(index.get(instance_id) or {})
+            merged.update(row)
+            merged.setdefault("source_section", section_name)
+            merged.setdefault("source_id", _safe_int(row_id))
+            index[instance_id] = merged
+    _RACE_META_BY_INSTANCE = index
+    return index
+
+
+def _first_present(row: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in row and row.get(key) not in (None, ""):
+            return row.get(key)
+    return None
+
+
+def _display_value(value: Any, enum_map: dict[int, str] | None = None, *, field_key: str = "") -> str:
+    if value is None or value == "":
+        return ""
+    if enum_map:
+        mapped = enum_map.get(_safe_int(value))
+        if mapped:
+            return mapped
+    if field_key == "distance_meters":
+        distance = _safe_int(value)
+        return f"{distance}m" if distance > 0 else str(value)
+    return str(value)
+
+
+def _record_id(row: dict[str, Any], key: str) -> int:
+    return _safe_int(row.get(key))
+
+
+def _record_name(row: dict[str, Any], race_meta: dict[str, Any]) -> str:
+    raw_name = _first_present(
+        row,
+        "name",
+        "race_name",
+        "legend_race_name",
+        "daily_race_name",
+        "opponent_name",
+        "opponent_chara_name",
+        "chara_name",
+    )
+    return str(raw_name or race_meta.get("name") or "").strip()
+
+
+def _race_meta_for_record(row: dict[str, Any]) -> dict[str, Any]:
+    race_instance_id = _safe_int(
+        _first_present(row, "race_instance_id", "program_id", "race_program_id", "single_mode_race_program_id")
+    )
+    if race_instance_id <= 0:
+        return {}
+    return dict(_load_race_meta_by_instance().get(race_instance_id) or {})
+
+
+def _record_course_info(row: dict[str, Any], race_meta: dict[str, Any]) -> list[dict[str, Any]]:
+    combined = dict(race_meta)
+    combined.update(row)
+    info = []
+    for field_key, label, enum_map, aliases in RACE_INFO_FIELD_SPECS:
+        value = _first_present(combined, *aliases)
+        display = _display_value(value, enum_map, field_key=field_key)
+        if not display:
+            continue
+        info.append({"key": field_key, "label": label, "value": display, "raw": value})
+    return info
+
+
+def _status_label(row: dict[str, Any]) -> str:
+    if _safe_int(row.get("is_played")):
+        return "Played"
+    if _safe_int(row.get("is_cleared")):
+        return "Cleared"
+    return "Unplayed"
+
+
+def _enrich_race_record(row: dict[str, Any], id_key: str, fallback_prefix: str) -> dict[str, Any]:
+    race_meta = _race_meta_for_record(row)
+    record_id = _record_id(row, id_key)
+    name = _record_name(row, race_meta)
+    label = name or (f"{fallback_prefix} #{record_id}" if record_id else fallback_prefix)
+    course_info = _record_course_info(row, race_meta)
+    enriched = dict(row)
+    enriched.update(
+        {
+            "record_id": record_id,
+            "record_key": id_key,
+            "display_name": label,
+            "label": label,
+            "status_label": _status_label(row),
+            "played": bool(_safe_int(row.get("is_played"))),
+            "cleared": bool(_safe_int(row.get("is_cleared"))),
+            "course_info": course_info,
+            "course_summary": " / ".join(item["value"] for item in course_info),
+        }
+    )
+    return enriched
 
 
 def normalize_style_id(value: Any) -> int:
@@ -128,9 +308,18 @@ def summarize_daily_event_status(load_data: dict[str, Any]) -> dict[str, Any]:
     story_missions = [_as_dict(row) for row in _as_list(load_data.get("story_event_mission_list"))]
     difficulty_options = showtime_difficulty_options(load_data)
 
-    daily_records = [_as_dict(row) for row in _as_list(daily_info.get("daily_race_record_array"))]
-    legend_records = [_as_dict(row) for row in _as_list(legend_info.get("legend_race_record_array"))]
-    daily_legend_records = [_as_dict(row) for row in _as_list(daily_legend_info.get("daily_legend_race_record"))]
+    daily_records = [
+        _enrich_race_record(_as_dict(row), "daily_race_id", TASK_LABELS["daily_race"])
+        for row in _as_list(daily_info.get("daily_race_record_array"))
+    ]
+    legend_records = [
+        _enrich_race_record(_as_dict(row), "legend_race_id", TASK_LABELS["legend_race"])
+        for row in _as_list(legend_info.get("legend_race_record_array"))
+    ]
+    daily_legend_records = [
+        _enrich_race_record(_as_dict(row), "legend_race_id", TASK_LABELS["daily_legend_race"])
+        for row in _as_list(daily_legend_info.get("daily_legend_race_record"))
+    ]
 
     team_lineup = []
     for row in team_rows:
@@ -157,6 +346,7 @@ def summarize_daily_event_status(load_data: dict[str, Any]) -> dict[str, Any]:
             "raw_difficulty_count": len(_as_list(load_data.get("single_mode_difficulty_info_array"))),
         },
         "daily_race": {
+            "label": TASK_LABELS["daily_race"],
             "state": _safe_int(daily_info.get("state")),
             "trained_chara_id": _safe_int(daily_info.get("trained_chara_id")),
             "records": daily_records,
@@ -167,6 +357,7 @@ def summarize_daily_event_status(load_data: dict[str, Any]) -> dict[str, Any]:
             "ticket_cap": _safe_int(common.get("daily_race_ticket_max_num")),
         },
         "legend_race": {
+            "label": TASK_LABELS["legend_race"],
             "state": _safe_int(legend_info.get("state")),
             "trained_chara_id": _safe_int(legend_info.get("trained_chara_id")),
             "group_id": _safe_int(legend_info.get("group_id")),
@@ -178,6 +369,7 @@ def summarize_daily_event_status(load_data: dict[str, Any]) -> dict[str, Any]:
             "ticket_cap": _safe_int(common.get("legend_race_ticket_max_num")),
         },
         "daily_legend_race": {
+            "label": TASK_LABELS["daily_legend_race"],
             "state": _safe_int(daily_legend_info.get("state")),
             "trained_chara_id": _safe_int(daily_legend_info.get("trained_chara_id")),
             "new_flag": _safe_int(daily_legend_info.get("new_flag")),
@@ -292,4 +484,3 @@ def normalize_action_steps(action_cfg: dict[str, Any]) -> list[dict[str, Any]]:
     if action_cfg.get("endpoint"):
         return [action_cfg]
     return []
-

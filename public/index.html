@@ -371,6 +371,11 @@
                                     </div>
                                     <button id="daily-event-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
                                 </div>
+                                <div class="daily-event-tabs">
+                                    <button id="daily-event-tab-run" class="daily-event-tab is-active" type="button" data-daily-tab="run">Run</button>
+                                    <button id="daily-event-tab-assignments" class="daily-event-tab" type="button" data-daily-tab="assignments">Assignments</button>
+                                </div>
+                                <div id="daily-event-run-panel" class="daily-event-tab-panel is-active">
                                 <div class="daily-event-grid">
                                     <label class="daily-event-field" for="showtime-difficulty-select">
                                         <span>Showtime difficulty</span>
@@ -398,29 +403,43 @@
                                         <select id="daily-race-id-select" class="skill-profile-select">
                                             <option value="">Auto first unplayed</option>
                                         </select>
+                                        <button id="daily-race-picker-btn" class="btn btn-sm daily-picker-btn" type="button">OPEN LIST</button>
                                     </label>
                                     <label class="daily-event-field" for="legend-race-id-input">
                                         <span>Legend race</span>
                                         <select id="legend-race-id-input" class="skill-profile-select">
                                             <option value="">Auto first unplayed</option>
                                         </select>
+                                        <button id="legend-race-picker-btn" class="btn btn-sm daily-picker-btn" type="button">OPEN LIST</button>
                                     </label>
                                     <label class="daily-event-field" for="daily-legend-race-id-select">
-                                        <span>Daily legend</span>
+                                        <span>Daily Legend Race</span>
                                         <select id="daily-legend-race-id-select" class="skill-profile-select">
                                             <option value="">Auto first unplayed</option>
                                         </select>
+                                        <button id="daily-legend-race-picker-btn" class="btn btn-sm daily-picker-btn" type="button">OPEN LIST</button>
                                     </label>
                                 </div>
                                 <div class="daily-event-actions">
                                     <label><input id="daily-run-team-trials" type="checkbox"> Team Trials once</label>
                                     <label><input id="daily-run-daily-race" type="checkbox"> Daily race</label>
                                     <label><input id="daily-run-legend-race" type="checkbox"> Legend race</label>
-                                    <label><input id="daily-run-daily-legend-race" type="checkbox"> Daily legend</label>
+                                    <label><input id="daily-run-daily-legend-race" type="checkbox"> Daily Legend Race</label>
                                     <label><input id="daily-drain-shops" type="checkbox"> Drain daily shops</label>
                                     <button id="daily-event-run-btn" class="btn btn-sm" type="button">RUN SELECTED</button>
                                 </div>
                                 <div id="daily-event-status" class="skill-plan-status"></div>
+                                </div>
+                                <div id="daily-event-assignments-panel" class="daily-event-tab-panel">
+                                    <div class="daily-assignment-note">Assign one saved trained character and style per race type. Use All Tags to copy the same character/style into every race tag.</div>
+                                    <div class="daily-assignment-grid">
+                                        <div id="daily-assignment-all" class="daily-assignment-card" data-assignment-key="all"></div>
+                                        <div id="daily-assignment-daily-race" class="daily-assignment-card" data-assignment-key="daily_race"></div>
+                                        <div id="daily-assignment-legend-race" class="daily-assignment-card" data-assignment-key="legend_race"></div>
+                                        <div id="daily-assignment-daily-legend-race" class="daily-assignment-card" data-assignment-key="daily_legend_race"></div>
+                                    </div>
+                                    <div id="daily-assignment-status" class="skill-plan-status"></div>
+                                </div>
                             </div>
                             <div id="career-stats-panel" class="career-stats-panel" hidden>
                                 <div class="career-stats-header">
@@ -920,6 +939,23 @@
                 <div class="friend-profile-modal-footer">
                     <div id="friend-profile-status" class="friend-status"></div>
                     <button id="friend-profile-close-btn" class="btn btn-sm" type="button">CLOSE</button>
+                </div>
+            </div>
+        </div>
+        <div class="daily-race-picker-overlay" id="daily-race-picker-overlay">
+            <div class="daily-race-picker-modal">
+                <div class="daily-race-picker-head">
+                    <div>
+                        <div id="daily-race-picker-title" class="daily-race-picker-title">Race Picker</div>
+                        <div id="daily-race-picker-subtitle" class="daily-race-picker-subtitle">Choose a race entry or leave it on auto.</div>
+                    </div>
+                    <button class="daily-race-picker-close" id="daily-race-picker-close" type="button">&times;</button>
+                </div>
+                <input id="daily-race-picker-search" class="library-search-input daily-race-picker-search" type="search" placeholder="Search race, opponent, course, surface, distance...">
+                <div id="daily-race-picker-list" class="daily-race-picker-list"></div>
+                <div class="daily-race-picker-footer">
+                    <button id="daily-race-picker-auto" class="btn btn-sm" type="button">AUTO FIRST UNPLAYED</button>
+                    <button id="daily-race-picker-cancel" class="btn btn-sm" type="button">CLOSE</button>
                 </div>
             </div>
         </div>

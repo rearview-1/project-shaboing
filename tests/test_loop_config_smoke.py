@@ -71,6 +71,34 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(config["requested"], 7)
         self.assertEqual(config["career_limit"], 7)
 
+    def test_daily_action_context_uses_action_specific_assignment(self):
+        main.active_client = SimpleNamespace(coin_info={"fcoin": 3, "coin": 4})
+        status = {
+            "daily_race": {"next_daily_race_id": 11, "records": [{"daily_race_id": 11}]},
+            "legend_race": {"next_legend_race_id": 22, "group_id": 333, "records": [{"legend_race_id": 22}]},
+            "daily_legend_race": {"next_legend_race_id": 44, "records": [{"legend_race_id": 44}]},
+        }
+        req = main.DailyAutomationRequest(
+            trained_chara_id=1001,
+            running_style=2,
+            assignments={
+                "legend_race": {"trained_chara_id": 2002, "running_style": 3},
+                "daily_legend_race": {"trained_chara_id": 3003, "running_style": 4},
+            },
+        )
+
+        daily_ctx = main._daily_action_context(req, status, action_name="daily_race")
+        legend_ctx = main._daily_action_context(req, status, action_name="legend_race")
+        daily_legend_ctx = main._daily_action_context(req, status, action_name="daily_legend_race")
+
+        self.assertEqual(daily_ctx["trained_chara_id"], 1001)
+        self.assertEqual(daily_ctx["running_style"], 2)
+        self.assertEqual(legend_ctx["trained_chara_id"], 2002)
+        self.assertEqual(legend_ctx["running_style"], 3)
+        self.assertEqual(daily_legend_ctx["trained_chara_id"], 3003)
+        self.assertEqual(daily_legend_ctx["running_style"], 4)
+        self.assertEqual(legend_ctx["current_num"], 7)
+
     def test_calibrate_endpoint_uses_project_runtime_root(self):
         saved_calibrate_state = dict(main._calibrate_state)
         try:

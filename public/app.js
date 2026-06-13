@@ -56,6 +56,38 @@
                 localStorage.setItem('sweepyFavorites', JSON.stringify(state.favorites));
             } catch (e) {}
         }
+        const DAILY_ASSIGNMENT_KEYS = ['daily_race', 'legend_race', 'daily_legend_race'];
+        const DAILY_ASSIGNMENT_LABELS = {
+            all: 'All Tags',
+            daily_race: 'Daily Race',
+            legend_race: 'Legend Race',
+            daily_legend_race: 'Daily Legend Race'
+        };
+        function defaultDailyAssignment(style = '2') {
+            return { trained_chara_id: '', running_style: String(style || '2') };
+        }
+        function loadDailyAssignments() {
+            let parsed = {};
+            try {
+                parsed = JSON.parse(localStorage.getItem('dailyRaceAssignments') || '{}') || {};
+            } catch (e) {
+                parsed = {};
+            }
+            const result = { all: defaultDailyAssignment() };
+            ['all', ...DAILY_ASSIGNMENT_KEYS].forEach(key => {
+                const row = parsed && typeof parsed[key] === 'object' && parsed[key] ? parsed[key] : {};
+                result[key] = {
+                    trained_chara_id: String(row.trained_chara_id || ''),
+                    running_style: String(row.running_style || '2')
+                };
+            });
+            return result;
+        }
+        function saveDailyAssignments() {
+            try {
+                localStorage.setItem('dailyRaceAssignments', JSON.stringify(state.dailyAssignments || {}));
+            } catch (e) {}
+        }
 const state = { 
             needs2fa: false, 
             isLoading: false, 
@@ -131,7 +163,11 @@ const state = {
             selectedDailyRunningStyle: safeLocalGet('selectedDailyRunningStyle', '2'),
             selectedDailyRaceId: safeLocalGet('selectedDailyRaceId', ''),
             selectedLegendRaceId: safeLocalGet('selectedLegendRaceId', ''),
-            selectedDailyLegendRaceId: safeLocalGet('selectedDailyLegendRaceId', '')
+            selectedDailyLegendRaceId: safeLocalGet('selectedDailyLegendRaceId', ''),
+            dailyAssignments: loadDailyAssignments(),
+            activeDailyEventTab: safeLocalGet('activeDailyEventTab', 'run'),
+            activeDailyRacePicker: null,
+            dailyRacePickerQuery: ''
         };
         function ensureAlarmClockMarkup() {
             if (document.getElementById('alarm-clock-mode-select')) return;
@@ -252,12 +288,32 @@ const state = {
             dailyEventPanel: document.getElementById('daily-event-panel'),
             dailyEventSummary: document.getElementById('daily-event-summary'),
             dailyEventRefreshBtn: document.getElementById('daily-event-refresh-btn'),
+            dailyEventTabRun: document.getElementById('daily-event-tab-run'),
+            dailyEventTabAssignments: document.getElementById('daily-event-tab-assignments'),
+            dailyEventRunPanel: document.getElementById('daily-event-run-panel'),
+            dailyEventAssignmentsPanel: document.getElementById('daily-event-assignments-panel'),
             showtimeDifficultySelect: document.getElementById('showtime-difficulty-select'),
             dailyTrainedCharaSelect: document.getElementById('daily-trained-chara-select'),
             dailyRunningStyleSelect: document.getElementById('daily-running-style-select'),
             dailyRaceIdSelect: document.getElementById('daily-race-id-select'),
             legendRaceIdInput: document.getElementById('legend-race-id-input'),
             dailyLegendRaceIdSelect: document.getElementById('daily-legend-race-id-select'),
+            dailyRacePickerBtn: document.getElementById('daily-race-picker-btn'),
+            legendRacePickerBtn: document.getElementById('legend-race-picker-btn'),
+            dailyLegendRacePickerBtn: document.getElementById('daily-legend-race-picker-btn'),
+            dailyAssignmentAll: document.getElementById('daily-assignment-all'),
+            dailyAssignmentDailyRace: document.getElementById('daily-assignment-daily-race'),
+            dailyAssignmentLegendRace: document.getElementById('daily-assignment-legend-race'),
+            dailyAssignmentDailyLegendRace: document.getElementById('daily-assignment-daily-legend-race'),
+            dailyAssignmentStatus: document.getElementById('daily-assignment-status'),
+            dailyRacePickerOverlay: document.getElementById('daily-race-picker-overlay'),
+            dailyRacePickerTitle: document.getElementById('daily-race-picker-title'),
+            dailyRacePickerSubtitle: document.getElementById('daily-race-picker-subtitle'),
+            dailyRacePickerClose: document.getElementById('daily-race-picker-close'),
+            dailyRacePickerCancel: document.getElementById('daily-race-picker-cancel'),
+            dailyRacePickerAuto: document.getElementById('daily-race-picker-auto'),
+            dailyRacePickerSearch: document.getElementById('daily-race-picker-search'),
+            dailyRacePickerList: document.getElementById('daily-race-picker-list'),
             dailyRunTeamTrials: document.getElementById('daily-run-team-trials'),
             dailyRunDailyRace: document.getElementById('daily-run-daily-race'),
             dailyRunLegendRace: document.getElementById('daily-run-legend-race'),
@@ -1835,6 +1891,14 @@ const state = {
             const value = Number((row || {})[key] || 0);
             return value > 0 ? String(value) : '';
         }
+        function dailyRecordLabel(row, fallbackPrefix) {
+            const record = row || {};
+            const id = Number(record.record_id || record.daily_race_id || record.legend_race_id || 0);
+            const base = record.label || record.display_name || (id ? `${fallbackPrefix} #${id}` : fallbackPrefix);
+            const status = record.status_label || (Number(record.is_played || 0) ? 'Played' : 'Unplayed');
+            const course = record.course_summary ? ` - ${record.course_summary}` : '';
+            return `${base} (${status})${course}`;
+        }
         function renderRaceRecordOptions(select, rows, key, selectedValue, autoLabel) {
             if (!select) return '';
             const list = Array.isArray(rows) ? rows : [];
@@ -1844,12 +1908,221 @@ const state = {
             select.innerHTML = `<option value="">${escapeHtml(autoLabel || 'Auto first unplayed')}</option>` + sorted.map(row => {
                 const value = raceRecordSelectValue(row, key);
                 if (!value) return '';
-                const played = Number(row.is_played || 0) ? 'played' : 'unplayed';
-                const cleared = Number(row.is_cleared || 0) ? 'cleared' : 'uncleared';
-                return `<option value="${escapeAttr(value)}">${escapeHtml(`#${value} - ${played}, ${cleared}`)}</option>`;
+                return `<option value="${escapeAttr(value)}">${escapeHtml(dailyRecordLabel(row, autoLabel || 'Race'))}</option>`;
             }).join('');
             select.value = values.has(normalizedSelected) ? normalizedSelected : '';
             return select.value;
+        }
+        function setDailyEventTab(tabName) {
+            const key = tabName === 'assignments' ? 'assignments' : 'run';
+            state.activeDailyEventTab = key;
+            safeLocalSet('activeDailyEventTab', key);
+            [
+                [els.dailyEventTabRun, 'run'],
+                [els.dailyEventTabAssignments, 'assignments']
+            ].forEach(([btn, value]) => btn && btn.classList.toggle('is-active', value === key));
+            if (els.dailyEventRunPanel) els.dailyEventRunPanel.classList.toggle('is-active', key === 'run');
+            if (els.dailyEventAssignmentsPanel) els.dailyEventAssignmentsPanel.classList.toggle('is-active', key === 'assignments');
+        }
+        function dailyCharacterRows() {
+            return []
+                .concat((dashData && dashData.parents) || [])
+                .filter(row => row && row.instance_id);
+        }
+        function dailyCharacterOptionHtml(current = '') {
+            const rows = dailyCharacterRows();
+            return `<option value="">Choose trained character</option>` + rows.slice(0, 500).map(row => {
+                const value = String(row.instance_id || '');
+                const score = row.score || row.rank_score || 0;
+                const label = `${row.name || 'Uma'} - ${score || 'no score'} - ID ${value}`;
+                return `<option value="${escapeAttr(value)}"${value === String(current || '') ? ' selected' : ''}>${escapeHtml(label)}</option>`;
+            }).join('');
+        }
+        function dailyStyleOptions(current = '2') {
+            const selected = String(current || '2');
+            return [
+                ['1', 'Front'],
+                ['2', 'Pace'],
+                ['3', 'Late'],
+                ['4', 'End']
+            ].map(([value, label]) => `<option value="${value}"${value === selected ? ' selected' : ''}>${label}</option>`).join('');
+        }
+        function assignmentForKey(key) {
+            state.dailyAssignments = state.dailyAssignments || loadDailyAssignments();
+            state.dailyAssignments[key] = state.dailyAssignments[key] || defaultDailyAssignment(state.selectedDailyRunningStyle);
+            return state.dailyAssignments[key];
+        }
+        function assignmentCourseText(key) {
+            if (key === 'all') return 'Copies this character/style to Daily Race, Legend Race, and Daily Legend Race.';
+            const section = (state.dailyEvents || {})[key] || {};
+            const selectedId = key === 'daily_race' ? state.selectedDailyRaceId : key === 'legend_race' ? state.selectedLegendRaceId : state.selectedDailyLegendRaceId;
+            const idKey = key === 'daily_race' ? 'daily_race_id' : 'legend_race_id';
+            const record = (section.records || []).find(row => String(row[idKey] || '') === String(selectedId || ''))
+                || (section.records || []).find(row => !Number(row.is_played || 0))
+                || (section.records || [])[0];
+            if (!record) return 'No race entries are populated from game data yet. Refresh game data after opening this race screen in-game.';
+            if (record.course_summary) return record.course_summary;
+            if (record.course_info && record.course_info.length) {
+                return record.course_info.map(item => `${item.label}: ${item.value}`).join(' / ');
+            }
+            return `${record.label || DAILY_ASSIGNMENT_LABELS[key]} - course details unavailable until the game exposes this record in load/index.`;
+        }
+        function renderDailyAssignments() {
+            const targets = {
+                all: els.dailyAssignmentAll,
+                daily_race: els.dailyAssignmentDailyRace,
+                legend_race: els.dailyAssignmentLegendRace,
+                daily_legend_race: els.dailyAssignmentDailyLegendRace
+            };
+            Object.entries(targets).forEach(([key, container]) => {
+                if (!container) return;
+                const assignment = assignmentForKey(key);
+                const applyAll = key === 'all' ? '<button class="btn btn-sm daily-assignment-apply-all" type="button">APPLY ALL</button>' : '';
+                container.innerHTML = `
+                    <div class="daily-assignment-card-title">
+                        <span>${escapeHtml(DAILY_ASSIGNMENT_LABELS[key] || key)}</span>
+                        ${applyAll}
+                    </div>
+                    <div class="daily-assignment-fields">
+                        <select class="skill-profile-select daily-assignment-character" data-assignment-key="${escapeAttr(key)}">
+                            ${dailyCharacterOptionHtml(assignment.trained_chara_id)}
+                        </select>
+                        <select class="skill-profile-select daily-assignment-style" data-assignment-key="${escapeAttr(key)}">
+                            ${dailyStyleOptions(assignment.running_style)}
+                        </select>
+                    </div>
+                    <div class="daily-assignment-course">${escapeHtml(assignmentCourseText(key))}</div>
+                `;
+            });
+        }
+        function persistAssignmentChange(key, field, value) {
+            const assignment = assignmentForKey(key);
+            assignment[field] = String(value || '');
+            if (field === 'running_style' && !assignment[field]) assignment[field] = '2';
+            saveDailyAssignments();
+            if (els.dailyAssignmentStatus) {
+                els.dailyAssignmentStatus.textContent = `${DAILY_ASSIGNMENT_LABELS[key] || key} assignment saved.`;
+                els.dailyAssignmentStatus.style.color = '';
+            }
+        }
+        function applyAllDailyAssignments() {
+            const all = assignmentForKey('all');
+            DAILY_ASSIGNMENT_KEYS.forEach(key => {
+                state.dailyAssignments[key] = {
+                    trained_chara_id: String(all.trained_chara_id || ''),
+                    running_style: String(all.running_style || '2')
+                };
+            });
+            saveDailyAssignments();
+            renderDailyAssignments();
+            if (els.dailyAssignmentStatus) {
+                els.dailyAssignmentStatus.textContent = 'All daily/legend race tags now use the All Tags assignment.';
+                els.dailyAssignmentStatus.style.color = '';
+            }
+        }
+        function normalizedDailyAssignmentsPayload() {
+            const payload = {};
+            DAILY_ASSIGNMENT_KEYS.forEach(key => {
+                const row = assignmentForKey(key);
+                const trained = Number(row.trained_chara_id || 0);
+                const style = Number(row.running_style || 0);
+                if (trained || style) {
+                    payload[key] = { trained_chara_id: trained, running_style: style };
+                }
+            });
+            return payload;
+        }
+        function racePickerConfig(kind) {
+            const configs = {
+                daily_race: {
+                    title: 'Daily Race',
+                    section: (state.dailyEvents || {}).daily_race || {},
+                    select: els.dailyRaceIdSelect,
+                    stateKey: 'selectedDailyRaceId',
+                    storageKey: 'selectedDailyRaceId',
+                    idKey: 'daily_race_id'
+                },
+                legend_race: {
+                    title: 'Legend Race',
+                    section: (state.dailyEvents || {}).legend_race || {},
+                    select: els.legendRaceIdInput,
+                    stateKey: 'selectedLegendRaceId',
+                    storageKey: 'selectedLegendRaceId',
+                    idKey: 'legend_race_id'
+                },
+                daily_legend_race: {
+                    title: 'Daily Legend Race',
+                    section: (state.dailyEvents || {}).daily_legend_race || {},
+                    select: els.dailyLegendRaceIdSelect,
+                    stateKey: 'selectedDailyLegendRaceId',
+                    storageKey: 'selectedDailyLegendRaceId',
+                    idKey: 'legend_race_id'
+                }
+            };
+            return configs[kind] || configs.daily_race;
+        }
+        function renderDailyRacePicker() {
+            if (!els.dailyRacePickerList || !state.activeDailyRacePicker) return;
+            const config = racePickerConfig(state.activeDailyRacePicker);
+            const rows = Array.isArray(config.section.records) ? config.section.records.slice() : [];
+            const query = String(state.dailyRacePickerQuery || '').trim().toLowerCase();
+            const selected = String(state[config.stateKey] || '');
+            const filtered = rows
+                .filter(row => {
+                    if (!query) return true;
+                    const haystack = [
+                        row.label,
+                        row.display_name,
+                        row.status_label,
+                        row.course_summary,
+                        ...(row.course_info || []).map(item => `${item.label} ${item.value}`)
+                    ].join(' ').toLowerCase();
+                    return haystack.includes(query);
+                })
+                .sort((a, b) => Number(a.is_played || 0) - Number(b.is_played || 0));
+            if (!filtered.length) {
+                els.dailyRacePickerList.innerHTML = `<div class="daily-race-option-empty">No ${escapeHtml(config.title)} entries are populated. Refresh game data after opening that race screen in-game.</div>`;
+                return;
+            }
+            els.dailyRacePickerList.innerHTML = filtered.map(row => {
+                const value = raceRecordSelectValue(row, config.idKey);
+                const info = (row.course_info || []).map(item => `${item.label}: ${item.value}`).join(' / ');
+                return `<button class="daily-race-option ${String(value) === selected ? 'is-selected' : ''}" type="button" data-race-value="${escapeAttr(value)}">
+                    <div class="daily-race-option-main">
+                        <span>${escapeHtml(row.label || row.display_name || `${config.title} #${value}`)}</span>
+                        <span>${escapeHtml(row.status_label || '')}</span>
+                    </div>
+                    <div class="daily-race-option-meta">ID ${escapeHtml(value || '0')}</div>
+                    <div class="daily-race-option-course">${escapeHtml(info || row.course_summary || 'Course details unavailable from current game data.')}</div>
+                </button>`;
+            }).join('');
+        }
+        function openDailyRacePicker(kind) {
+            state.activeDailyRacePicker = kind;
+            state.dailyRacePickerQuery = '';
+            const config = racePickerConfig(kind);
+            if (els.dailyRacePickerTitle) els.dailyRacePickerTitle.textContent = `${config.title} Picker`;
+            if (els.dailyRacePickerSubtitle) {
+                const count = Array.isArray(config.section.records) ? config.section.records.length : 0;
+                els.dailyRacePickerSubtitle.textContent = `${count} entries loaded. Choose one, or keep auto first unplayed.`;
+            }
+            if (els.dailyRacePickerSearch) els.dailyRacePickerSearch.value = '';
+            if (els.dailyRacePickerOverlay) els.dailyRacePickerOverlay.classList.add('is-open');
+            renderDailyRacePicker();
+        }
+        function closeDailyRacePicker() {
+            if (els.dailyRacePickerOverlay) els.dailyRacePickerOverlay.classList.remove('is-open');
+            state.activeDailyRacePicker = null;
+            state.dailyRacePickerQuery = '';
+        }
+        function chooseDailyRacePickerValue(value) {
+            if (!state.activeDailyRacePicker) return;
+            const config = racePickerConfig(state.activeDailyRacePicker);
+            state[config.stateKey] = String(value || '');
+            safeLocalSet(config.storageKey, state[config.stateKey]);
+            if (config.select) config.select.value = state[config.stateKey];
+            renderDailyAssignments();
+            closeDailyRacePicker();
         }
         function setDailyEventStatus(message, isError) {
             if (!els.dailyEventStatus) return;
@@ -1867,6 +2140,7 @@ const state = {
                 showtime.available ? `Showtime ${showtime.difficulty_options?.length || 0} options` : 'Showtime unavailable',
                 `Daily unplayed ${daily.unplayed_count || 0}`,
                 `Legend unplayed ${legend.unplayed_count || 0}`,
+                `Daily Legend Race unplayed ${((status.daily_legend_race || {}).unplayed_count) || 0}`,
                 `RP ${team.rp_current || 0}/${team.rp_max || 0}`,
                 shops.available ? `Limited shop open (${shops.open_count || 0})` : 'Limited shop closed'
             ].join(' · ');
@@ -1894,9 +2168,7 @@ const state = {
             }
             if (els.dailyTrainedCharaSelect) {
                 const current = state.selectedDailyTrainedCharaId || els.dailyTrainedCharaSelect.value || '';
-                const rows = []
-                    .concat((dashData && dashData.parents) || [])
-                    .filter(row => row && row.instance_id);
+                const rows = dailyCharacterRows();
                 els.dailyTrainedCharaSelect.innerHTML = `<option value="">Choose trained character</option>` + rows.slice(0, 300).map(row => {
                     const value = String(row.instance_id || '');
                     const label = `${row.name || 'Uma'} · ${row.score || 0} · ID ${value}`;
@@ -1934,6 +2206,8 @@ const state = {
                 dailyLegend.next_legend_race_id ? `Auto #${dailyLegend.next_legend_race_id}` : 'Auto first unplayed'
             );
             safeLocalSet('selectedDailyLegendRaceId', state.selectedDailyLegendRaceId);
+            setDailyEventTab(state.activeDailyEventTab);
+            renderDailyAssignments();
         }
         async function refreshDailyEvents(force = false) {
             if (state.dailyEventsLoading) return;
@@ -1968,7 +2242,8 @@ const state = {
                 trained_chara_id: Number(state.selectedDailyTrainedCharaId || (els.dailyTrainedCharaSelect && els.dailyTrainedCharaSelect.value) || 0),
                 running_style: Number(state.selectedDailyRunningStyle || (els.dailyRunningStyleSelect && els.dailyRunningStyleSelect.value) || 0),
                 difficulty_id: showtime.difficulty_id,
-                difficulty: showtime.difficulty
+                difficulty: showtime.difficulty,
+                assignments: normalizedDailyAssignmentsPayload()
             };
             try {
                 const data = await apiJson('/api/dailies/run', {
@@ -1990,6 +2265,46 @@ const state = {
         function bindDailyEventControls() {
             els.dailyEventRefreshBtn?.addEventListener('click', () => refreshDailyEvents(true));
             els.dailyEventRunBtn?.addEventListener('click', runSelectedDailyEvents);
+            els.dailyEventTabRun?.addEventListener('click', () => setDailyEventTab('run'));
+            els.dailyEventTabAssignments?.addEventListener('click', () => setDailyEventTab('assignments'));
+            els.dailyRacePickerBtn?.addEventListener('click', () => openDailyRacePicker('daily_race'));
+            els.legendRacePickerBtn?.addEventListener('click', () => openDailyRacePicker('legend_race'));
+            els.dailyLegendRacePickerBtn?.addEventListener('click', () => openDailyRacePicker('daily_legend_race'));
+            els.dailyRacePickerClose?.addEventListener('click', closeDailyRacePicker);
+            els.dailyRacePickerCancel?.addEventListener('click', closeDailyRacePicker);
+            els.dailyRacePickerAuto?.addEventListener('click', () => chooseDailyRacePickerValue(''));
+            els.dailyRacePickerSearch?.addEventListener('input', () => {
+                state.dailyRacePickerQuery = els.dailyRacePickerSearch.value || '';
+                renderDailyRacePicker();
+            });
+            els.dailyRacePickerList?.addEventListener('click', event => {
+                const row = event.target.closest('.daily-race-option');
+                if (!row) return;
+                chooseDailyRacePickerValue(row.dataset.raceValue || '');
+            });
+            els.dailyRacePickerOverlay?.addEventListener('click', event => {
+                if (event.target === els.dailyRacePickerOverlay) closeDailyRacePicker();
+            });
+            [
+                els.dailyAssignmentAll,
+                els.dailyAssignmentDailyRace,
+                els.dailyAssignmentLegendRace,
+                els.dailyAssignmentDailyLegendRace
+            ].forEach(container => {
+                container?.addEventListener('change', event => {
+                    const key = event.target.dataset.assignmentKey || container.dataset.assignmentKey;
+                    if (!key) return;
+                    if (event.target.classList.contains('daily-assignment-character')) {
+                        persistAssignmentChange(key, 'trained_chara_id', event.target.value || '');
+                    }
+                    if (event.target.classList.contains('daily-assignment-style')) {
+                        persistAssignmentChange(key, 'running_style', event.target.value || '2');
+                    }
+                });
+                container?.addEventListener('click', event => {
+                    if (event.target.closest('.daily-assignment-apply-all')) applyAllDailyAssignments();
+                });
+            });
             els.showtimeDifficultySelect?.addEventListener('change', () => {
                 state.selectedShowtimeDifficulty = els.showtimeDifficultySelect.value || '';
                 safeLocalSet('selectedShowtimeDifficulty', state.selectedShowtimeDifficulty);
@@ -1997,6 +2312,7 @@ const state = {
             els.dailyTrainedCharaSelect?.addEventListener('change', () => {
                 state.selectedDailyTrainedCharaId = els.dailyTrainedCharaSelect.value || '';
                 safeLocalSet('selectedDailyTrainedCharaId', state.selectedDailyTrainedCharaId);
+                renderDailyAssignments();
             });
             els.dailyRunningStyleSelect?.addEventListener('change', () => {
                 state.selectedDailyRunningStyle = els.dailyRunningStyleSelect.value || '2';
@@ -2005,15 +2321,20 @@ const state = {
             els.dailyRaceIdSelect?.addEventListener('change', () => {
                 state.selectedDailyRaceId = els.dailyRaceIdSelect.value || '';
                 safeLocalSet('selectedDailyRaceId', state.selectedDailyRaceId);
+                renderDailyAssignments();
             });
             els.legendRaceIdInput?.addEventListener('change', () => {
                 state.selectedLegendRaceId = els.legendRaceIdInput.value || '';
                 safeLocalSet('selectedLegendRaceId', state.selectedLegendRaceId);
+                renderDailyAssignments();
             });
             els.dailyLegendRaceIdSelect?.addEventListener('change', () => {
                 state.selectedDailyLegendRaceId = els.dailyLegendRaceIdSelect.value || '';
                 safeLocalSet('selectedDailyLegendRaceId', state.selectedDailyLegendRaceId);
+                renderDailyAssignments();
             });
+            setDailyEventTab(state.activeDailyEventTab);
+            renderDailyAssignments();
         }
         function syncTpRecoveryControl() {
             if (!els.tpRecoverySelect) return;

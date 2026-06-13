@@ -34,7 +34,7 @@ class DailyTaskStatusTests(unittest.TestCase):
                 "state": 0,
                 "daily_race_record_array": [
                     {"daily_race_id": 1, "is_played": 1, "is_cleared": 1},
-                    {"daily_race_id": 2, "is_played": 0, "is_cleared": 0},
+                    {"daily_race_id": 2, "is_played": 0, "is_cleared": 0, "race_name": "Moonlight Prize", "surface": 1, "distance": 1200, "distance_type": 1, "rotation": 1, "track_kind": 2, "season": 3, "weather": 1, "ground_condition": 1},
                 ],
             },
             "legend_race_playing_info": {
@@ -45,7 +45,9 @@ class DailyTaskStatusTests(unittest.TestCase):
             "daily_legend_race_playing_info": {
                 "state": 0,
                 "new_flag": 1,
-                "daily_legend_race_record": [{"legend_race_id": 50, "is_played": 0}],
+                "daily_legend_race_record": [
+                    {"legend_race_id": 50, "is_played": 0, "race_name": "El Condor Pasa", "surface": 1, "distance": 2400, "distance_type": 3, "rotation": 1, "track_kind": 2, "season": 3, "weather": 1, "ground_condition": 1}
+                ],
             },
             "rp_info": {"current_rp": 5, "max_rp": 5},
             "team_stadium_user": {"team_class": 6, "best_point": 123456},
@@ -66,10 +68,19 @@ class DailyTaskStatusTests(unittest.TestCase):
         self.assertEqual(status["showtime"]["missions_claimable"], 1)
         self.assertEqual(status["daily_race"]["unplayed_count"], 1)
         self.assertEqual(status["daily_race"]["next_daily_race_id"], 2)
+        self.assertEqual(status["daily_race"]["label"], "Daily Race")
+        self.assertEqual(status["daily_race"]["records"][1]["label"], "Moonlight Prize")
+        self.assertIn("1200m", status["daily_race"]["records"][1]["course_summary"])
+        self.assertIn("Firm", status["daily_race"]["records"][1]["course_summary"])
         self.assertEqual(status["legend_race"]["unplayed_count"], 1)
         self.assertEqual(status["legend_race"]["next_legend_race_id"], 49)
+        self.assertEqual(status["legend_race"]["label"], "Legend Race")
         self.assertEqual(status["daily_legend_race"]["unplayed_count"], 1)
         self.assertEqual(status["daily_legend_race"]["next_legend_race_id"], 50)
+        self.assertEqual(status["daily_legend_race"]["label"], "Daily Legend Race")
+        self.assertEqual(status["daily_legend_race"]["records"][0]["label"], "El Condor Pasa")
+        self.assertIn("2400m", status["daily_legend_race"]["records"][0]["course_summary"])
+        self.assertIn("Medium", status["daily_legend_race"]["records"][0]["course_summary"])
         self.assertTrue(status["team_trials"]["can_race_once"])
         self.assertEqual(status["team_trials"]["lineup"][0]["style_label"], "Pace")
         self.assertTrue(status["shops"]["limited_shop"]["available"])

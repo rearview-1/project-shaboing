@@ -1278,6 +1278,15 @@ class LoopConfigSmokeTests(unittest.TestCase):
             self.assertIn(":run", text, rel)
             self.assertIn(f'"%errorlevel%"=="{main.RESTART_EXIT_CODE}" goto run', text, rel)
 
+    def test_single_instance_launchers_warn_when_not_git_clone(self):
+        # Auto-update needs a git working copy; a ZIP extraction can't pull.
+        # The launchers must detect a missing .git and tell the user to clone.
+        repo = Path(__file__).resolve().parents[1]
+        for rel in ("run_sweepy.bat", "setup_and_run_sweepy.bat"):
+            text = (repo / rel).read_text(encoding="utf-8", errors="replace")
+            self.assertIn('if not exist ".git"', text, rel)
+            self.assertIn("git clone https://github.com/rearview-1/project-shaboing.git", text, rel)
+
     def test_restart_backend_execs_validated_python_path(self):
         with patch.object(main, "_supervised_restart_enabled", return_value=False), \
              patch.object(main, "persist_dev_session_cache", return_value=True), \

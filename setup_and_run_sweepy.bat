@@ -4,6 +4,11 @@ cd /d "%~dp0"
 set "SWEEPY_PROJECT_ROOT=%CD%"
 set "SWEEPY_RESTART_SCRIPT=%CD%\main.py"
 set "SWEEPY_SUPERVISED=1"
+if not exist ".git" (
+  echo [WARN] This folder is not a git clone, so Refresh Backend cannot auto-update from GitHub.
+  echo        Reinstall with: git clone https://github.com/rearview-1/project-shaboing.git
+  echo.
+)
 if not defined SWEEPY_AUTO_GIT_UPDATE set "SWEEPY_AUTO_GIT_UPDATE=1"
 if not defined SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC set "SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0"
 

@@ -1,6 +1,20 @@
 # Setup — Fresh Install
 
-This document covers what to do after unzipping the folder onto a new machine.
+Install Sweepy with **`git clone`**, not a ZIP download. The backend
+auto-updates itself from GitHub when you hit **Refresh Backend**, and that only
+works inside a git working copy — a ZIP extraction has no `.git`, so the update
+step silently does nothing (the launcher will warn you if it detects this).
+
+## Install
+
+```bash
+git clone https://github.com/rearview-1/project-shaboing.git
+cd project-shaboing
+```
+
+Then run the one-stop setup below. If you previously ran from an unzipped
+folder, re-clone into a fresh directory — your per-account data lives under
+`uma_runtime/` and is regenerated automatically, so nothing important is lost.
 
 ## Prerequisites
 
@@ -26,10 +40,16 @@ machine and is not included in the repository.
 
 ## Auto-updates from GitHub
 
-When the backend is running, Sweepy checks GitHub for fast-forward updates and
-applies them when no career runner is active. It will not update while a career
-is running, and it will not merge over local edits or divergent local commits.
-After a successful pull, the backend queues a safe restart and the web page
+**This requires a git clone (see Install above).** A ZIP download has no git
+metadata, so the update check finds no repository and silently no-ops — you'd
+restart on the same code every time.
+
+When the backend is running (and installed via `git clone`), Sweepy checks
+GitHub for fast-forward updates and applies them when no career runner is
+active. It will not update while a career is running, and it will not merge
+over local edits or divergent local commits. After a successful pull, the
+backend queues a safe restart and — because the launcher runs a supervisor loop
+— the same console window relaunches on the updated code and the web page
 reconnects automatically.
 
 Useful overrides:
@@ -195,9 +215,9 @@ Other optional Windows helpers live in `scripts\windows\`:
 | `ImportError: No module named 'steam-user'` style Node errors | `npm install` step skipped | Run `npm install` |
 | Bot starts but does nothing | Game client not running / not authed | Launch Umamusume from Steam first, log in, then start the bot |
 
-## What's NOT included in the zip
+## What's NOT included in the repo
 
-- Per-account session credentials (`dev_session.json`) — these are tied to a specific Steam account and shouldn't be shared.
+- Per-account session credentials (`dev_session.json`) — these are tied to a specific Steam account and shouldn't be shared (and are gitignored).
 - Career logs from any other user.
 - Empirical calibration data built from someone else's careers.
 

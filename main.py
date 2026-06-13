@@ -1754,6 +1754,34 @@ def build_exec_args():
     return [python_exe, script]
 
 
+def _execv_argv(args):
+    """Quote argv entries containing spaces for the Windows os.execv path.
+
+    The Windows C runtime's exec/spawn family joins the argv list into a
+    single command-line string and does NOT quote the pieces, so an
+    argument containing a space — e.g. a script path under
+    ``project-shaboing-main (1)`` — gets split and the relaunched python
+    receives a truncated path, producing ``can't find '__main__' module
+    in '<prefix-before-the-space>'``. Wrapping space-containing arguments
+    in double quotes makes the CRT pass them as one argument; the child's
+    CommandLineToArgvW strips the quotes again. POSIX execv takes a real
+    argv array (no shell re-parsing), so it is left untouched. Every path
+    we pass is a validated ``.py`` file (never ends in a backslash), so a
+    plain double-quote wrap is safe — no trailing-backslash escaping edge
+    case to worry about.
+    """
+    if os.name != "nt":
+        return list(args)
+    quoted = []
+    for arg in args:
+        text = str(arg)
+        if " " in text and not (text.startswith('"') and text.endswith('"')):
+            quoted.append(f'"{text}"')
+        else:
+            quoted.append(text)
+    return quoted
+
+
 def restart_backend_process(reason):
     persist_dev_session_cache(reason)
     print(f"backend dev reload: restarting process ({reason})", flush=True)
@@ -1772,16 +1800,20 @@ def restart_backend_process(reason):
         os.chdir(base_dir)
     except OSError as exc:
         print(f"backend restart: could not chdir to {base_dir}: {exc}", flush=True)
-    print(f"backend restart exec: {args}", flush=True)
+    program = args[0]
+    exec_argv = _execv_argv(args)
+    # Plain (non-repr) print so backslashes show as single \ and the real
+    # quoted command is visible.
+    print(f"backend restart exec: python={program} script={args[1] if len(args) > 1 else ''}", flush=True)
     try:
-        os.execv(args[0], args)
+        os.execv(program, exec_argv)
     except OSError as exc:
         # execv only returns on failure. Surface a clear message and clear
         # the in-flight flag so the operator can retry instead of being
         # stuck with a server that thinks a restart is already queued.
         dev_reloader_state["restart_requested"] = False
         print(
-            f"backend restart failed to exec {args[0]!r} with {args}: {exc}. "
+            f"backend restart failed to exec {program!r} with {exec_argv}: {exc}. "
             f"Server left running on old code; click REFRESH BACKEND to retry.",
             flush=True,
         )

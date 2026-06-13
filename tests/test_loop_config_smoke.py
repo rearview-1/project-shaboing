@@ -1280,6 +1280,44 @@ class LoopConfigSmokeTests(unittest.TestCase):
         # interpreter resolves main.py and relative paths correctly.
         chdir.assert_called_once_with(main.base_dir)
 
+    def test_execv_argv_quotes_paths_with_spaces_on_windows(self):
+        args = [
+            "C:\\py\\python.exe",
+            "C:\\Users\\x\\project-shaboing-main (1)\\project-shaboing-main\\main.py",
+        ]
+        with patch.object(main.os, "name", "nt"):
+            out = main._execv_argv(args)
+        self.assertEqual(out[0], "C:\\py\\python.exe")  # no space -> untouched
+        self.assertEqual(
+            out[1],
+            '"C:\\Users\\x\\project-shaboing-main (1)\\project-shaboing-main\\main.py"',
+        )
+
+    def test_execv_argv_is_noop_without_spaces(self):
+        args = ["C:\\py\\python.exe", "C:\\repo\\main.py"]
+        with patch.object(main.os, "name", "nt"):
+            self.assertEqual(main._execv_argv(args), args)
+
+    def test_restart_backend_quotes_spaced_script_for_windows_execv(self):
+        # Regression for `can't find '__main__' module in '<prefix>'`: a
+        # script path under a folder with a space (project-shaboing-main (1))
+        # must be quoted so Windows os.execv does not split it.
+        spaced = "C:\\Users\\x\\project-shaboing-main (1)\\project-shaboing-main\\main.py"
+        with patch.object(main.os, "name", "nt"), \
+             patch.object(main, "persist_dev_session_cache", return_value=True), \
+             patch.object(main.time, "sleep", return_value=None), \
+             patch.object(main, "build_exec_args", return_value=["C:\\py\\python.exe", spaced]), \
+             patch.object(main.os, "chdir"), \
+             patch.object(main.os, "execv") as execv:
+            main.restart_backend_process("test")
+
+        # First arg (program path for lookup) stays unquoted; argv carries
+        # the quoted script so the child receives the full path intact.
+        execv.assert_called_once_with(
+            "C:\\py\\python.exe",
+            ["C:\\py\\python.exe", f'"{spaced}"'],
+        )
+
     def test_build_exec_args_resolves_relative_script_against_base_dir(self):
         # Server launched as `python main.py` (relative argv) while the
         # process CWD is somewhere with no main.py. os.execv inherits that

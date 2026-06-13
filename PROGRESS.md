@@ -76,6 +76,33 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 — fidelity residual characterized; loop running on fixed sim
+- Probed the residual ~430 gap (proven deck 4468 vs manual 4901). Findings:
+  * Found a test bug: my proven-deck reconstruction used the LIVE friend (Riko 30036)
+    instead of the manual career's friend (30094) - so proven-deck numbers were slightly
+    off (right 5 cards/MLB, wrong friend). Live-deck optimizer is unaffected (real setup
+    resolves the correct friend).
+  * The proven deck is wit+guts focused (2 wit:30054/30010, 2 guts:30019/20041, 1 spd:30028)
+    - clarifies why current speed/wit-tuned levers can't push it; and manual's
+    speed1161/power1114/guts1200 distribution implies heavy use of race/event/inheritance
+    stats + 2874 SP (a play pattern the sim only partly models).
+  * Even with aggressive concentration levers the accurate sim caps ~4472 on it - residual
+    is NOT pure lever-tuning; partly the empirical race total being a MEDIAN (good play
+    exceeds it via more/higher wins) and partly non-rainbow stats (power/guts here) reaching
+    cap via sources the sim under-credits. Closing it needs per-grade race-stat data or
+    manual per-turn captures I don't have, or fresh live careers (farm down).
+- DECISION: dominant fidelity bug is fixed (race under-credit, +492, S->S+); the sim now
+  REPRESENTS good play, which is what the optimizer needs. Rather than chase the last ~9%
+  by hand against confounded data, run the self-improvement loop on the fixed ground:
+  launched optimizer (mean obj, 24 cand x10, 32-sim validation) on the LIVE deck in the
+  accurate sim (accurate_sim_opt.log). This is the core deliverable operating on an honest
+  training ground for the first time.
+- RESIDUAL FIDELITY (queued, needs data): (a) race stat total should scale with win
+  quality/grade, not flat per-era median; (b) re-audit absolute bot-match vs FRESH post-fix
+  live careers once the farm runs (current +331 vs stale logs is confounded).
+
+
+
 ### 2026-06-13 — SIM UNDER-PRODUCTION ROOT-CAUSED + FIXED (the ~20% gap)
 - Decomposed a proven-SS-deck career by stat source. Found the dominant bug: race stat
   rewards used hardcoded RACE_GRADE_REWARDS (G1=10, one random stat) while the sim ALREADY

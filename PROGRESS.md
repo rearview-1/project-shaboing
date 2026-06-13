@@ -76,6 +76,26 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 — TRAINING MODEL IS REPLAY-BASED (corrected twice; verified)
+- User gave the game's facility base table + asked what the sim yields for L1 speed/0 cards/bad mood.
+- Direct answer: sim gives ~12 spd/6 pow; game base 8 x0.9 mood x1.0 growth ~7 spd/3 pow.
+- Chased the `x1.65 sim_training_gain_scale` -> RED HERRING. Verified account_b sims use
+  `_make_real_training_commands`: REPLAY the bot's real observed tiles x `_real_training_gain_scale()`
+  = **1.95** (DEFAULT 1.85 + deck bonus). The 1.65 synthetic path is an unused fallback.
+- So: real knob = `_real_training_gain_scale` (~1.95, the measured 2x per-tile inflation).
+  Applied UNIFORMLY -> can't represent good-play tile STRUCTURE (high facility/rainbows).
+  And replay can only reproduce tiles the bot has played -> sim structurally can't represent
+  SS training. THAT is the ceiling (replay-coverage + flat-scale), not a fudge constant.
+- My no-op tests (patching _support_training_gain, setting sim_training_gain_scale) hit the
+  wrong/dead path; sim_training_gain_scale is also stripped by hydration. Memory updated.
+- FIX (scoped, keystone = facility table): build a FORMULA tile-gain model
+  (facility base x growth x mood x training-eff x friendship/rainbow) replacing replay+1.95,
+  so the sim can represent unobserved good-play tiles; validate vs manual careers.
+- Honest note: humbling turn — wrong about the deck ceiling (manual careers prove SS), wrong
+  about which scale, no-op tests. But converged on the verified architecture + the real fix.
+
+
+
 ### 2026-06-12 ~23:45 — DECK-CEILING FINDING (re-scopes the SS goal)
 - Goal restated by operator: SS consistently (rating >=17,500) + 95% WR on ALL G1s.
 - Two independent sim sweeps with the saved policy (n=40 ceiling + n=40 variance), 80

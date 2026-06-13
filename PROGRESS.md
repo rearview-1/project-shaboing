@@ -76,6 +76,31 @@ learned updates validated and reversible.
 
 ## Journal
 
+### 2026-06-13 ~02:00 — formula model SHIPPED + validated necessary-but-not-sufficient
+- Committed 10ac98d: formula-based training gain (drops 1.65/1.95 fudges; L1 speed/0card/bad
+  mood now = 7/3 matching the game table; 7x dynamic range worst->strong tile). Flag
+  sim_formula_training_gain (default OFF, survives hydration unlike sim_training_gain_scale).
+  30 sim tests + regression test green.
+- THEN immediately tested whether formula mode unlocks SS. IT DOES NOT alone:
+  formula + aggressive good-play levers -> max stat sum 4295, 0/12 SS (vs manual 4800-4900).
+- Localized the REMAINING bottleneck with data (NOT the per-tile formula, NOT facilities,
+  NOT rainbow rate):
+  * facilities DO reach L5 (27 L5 speed tiles seen) -> facility-building is fine
+  * rainbows fire 55% of chosen tiles -> rainbow achievement is fine
+  * the gap is STAT CONCENTRATION: bot spreads output across all 5 stats (~780-1000 each,
+    none capping); manual SS careers concentrate 3 racing stats to 1200 + leave 2 low.
+    Convex rating curve punishes spreading. Deck is [2spd,0sta,1pow,2wit]+Riko(sta) ->
+    a concentrated speed/wit/power build (Riko covers stamina via outings) is the target.
+- OPEN / NOT YET PROVEN: that the formula sim can reach 4800 with ANY policy. Current
+  levers max at 4295. Next: hand-construct a maximally-concentrated policy; if it reaches
+  ~4800 the gap is lever-expressiveness (need concentration levers in PARAM_SPACE); if not,
+  the sim still under-produces vs manual and needs further calibration. DO NOT flip the
+  formula flag on for live until this is settled + validated vs manual end-states.
+- Honest state: formula fix was real, necessary, committed. SS is still NOT unlocked.
+  Multi-front as expected: concentration policy is the next layer.
+
+
+
 ### 2026-06-13 — TRAINING MODEL IS REPLAY-BASED (corrected twice; verified)
 - User gave the game's facility base table + asked what the sim yields for L1 speed/0 cards/bad mood.
 - Direct answer: sim gives ~12 spd/6 pow; game base 8 x0.9 mood x1.0 growth ~7 spd/3 pow.

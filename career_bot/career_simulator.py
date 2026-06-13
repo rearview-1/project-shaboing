@@ -4208,6 +4208,63 @@ class CareerSimulator:
             return {item_id: row.get("bought") or 0 for item_id, row in summary.items()}
         return {item_id: row.get("used") or 0 for item_id, row in summary.items()}
 
+    def _shop_refresh_pools(self):
+        """Lazy-load the real MANT shop-refresh pool model (hakuraku data)."""
+        cached = getattr(self, "_shop_refresh_pools_cache", None)
+        if cached is not None:
+            return cached
+        try:
+            from career_bot.shop_refresh import load_shop_refresh_pools
+            pools = load_shop_refresh_pools() or {}
+        except Exception:
+            pools = {}
+        self._shop_refresh_pools_cache = pools
+        return pools
+
+    def _shop_pool_counts(self, turn=None):
+        """Real per-turn shop availability distribution: {item_id: weight}
+        from the measured scheduled-refresh pool (expected_copies_by_turn).
+
+        This replaces the replay-biased `_observed_item_counts` (which
+        samples from the BOT's own mediocre purchase history, circularly
+        under-buying abundant training items like megaphones/weights). The
+        pool reflects what the shop ACTUALLY offers, scaled to 1000x for
+        integer weighting in `_sample_item_id`. Returns {} when the pool
+        data is unavailable so callers fall back to the observed counts.
+        """
+        pools = self._shop_refresh_pools()
+        scheduled = pools.get("scheduled") if isinstance(pools, dict) else None
+        if not scheduled:
+            return {}
+        try:
+            from career_bot.shop_refresh import last_scheduled_refresh_turn, scheduled_refresh_turn_for
+        except Exception:
+            return {}
+        cur = int(turn if turn is not None else (self.state.get("turn") or 0))
+        key_turn = scheduled_refresh_turn_for(cur) or last_scheduled_refresh_turn(cur)
+        if not key_turn:
+            # Before the first scheduled refresh (turn < 12): use the earliest.
+            key_turn = 12
+        key = str(key_turn)
+        counts = {}
+        for raw_id, row in scheduled.items():
+            try:
+                item_id = int(raw_id)
+            except (TypeError, ValueError):
+                continue
+            by_turn = (row or {}).get("expected_copies_by_turn") or {}
+            # Absence of a turn key means the item is NOT offered that turn
+            # (e.g. SPD+3 stops after T24) — must be weight 0, never carried
+            # forward. Only an explicit value counts as availability.
+            exp = by_turn.get(key)
+            try:
+                weight = int(round(float(exp) * 1000)) if exp is not None else 0
+            except (TypeError, ValueError):
+                weight = 0
+            if weight > 0:
+                counts[item_id] = weight
+        return counts
+
     def _sample_item_id(self, counts):
         rows = []
         for raw_id, count in (counts or {}).items():
@@ -4452,7 +4509,16 @@ class CareerSimulator:
         if turn >= 49:
             chance += 0.08
         max_buys = 2 if (turn in SUMMER_CAMP_TURNS or turn >= 49) else 1
-        counts = self._observed_item_counts("bought_by_turn_bucket")
+        # Prefer the real measured shop-refresh pool (what the shop actually
+        # offers) over replay of the bot's own purchase history, which
+        # circularly under-buys abundant training items. Flag default OFF
+        # until the outcome shift is A/B-validated; falls back to observed
+        # counts when the pool is unavailable.
+        counts = {}
+        if bool(self.preset.get("sim_use_shop_refresh_pools", False)):
+            counts = self._shop_pool_counts(turn)
+        if not counts:
+            counts = self._observed_item_counts("bought_by_turn_bucket")
         for _ in range(max_buys):
             if self.rng.random() > chance:
                 continue

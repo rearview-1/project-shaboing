@@ -119,6 +119,23 @@ def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _record_rows(container: dict[str, Any], *keys: str) -> list[dict[str, Any]]:
+    """Return race records from any of the observed list/single-record shapes."""
+
+    for key in keys:
+        value = container.get(key)
+        if isinstance(value, list):
+            return [_as_dict(row) for row in value]
+        if isinstance(value, dict):
+            for nested_key in ("records", "record_array", "race_record_array", "legend_race_record_array", "daily_legend_race_record"):
+                nested = value.get(nested_key)
+                if isinstance(nested, list):
+                    return [_as_dict(row) for row in nested]
+            if any(name.endswith("_id") for name in value):
+                return [value]
+    return []
+
+
 def _load_race_meta_by_instance() -> dict[int, dict[str, Any]]:
     global _RACE_META_BY_INSTANCE
     if _RACE_META_BY_INSTANCE is not None:
@@ -309,16 +326,22 @@ def summarize_daily_event_status(load_data: dict[str, Any]) -> dict[str, Any]:
     difficulty_options = showtime_difficulty_options(load_data)
 
     daily_records = [
-        _enrich_race_record(_as_dict(row), "daily_race_id", TASK_LABELS["daily_race"])
-        for row in _as_list(daily_info.get("daily_race_record_array"))
+        _enrich_race_record(row, "daily_race_id", TASK_LABELS["daily_race"])
+        for row in _record_rows(daily_info, "daily_race_record_array", "daily_race_record", "records")
     ]
     legend_records = [
-        _enrich_race_record(_as_dict(row), "legend_race_id", TASK_LABELS["legend_race"])
-        for row in _as_list(legend_info.get("legend_race_record_array"))
+        _enrich_race_record(row, "legend_race_id", TASK_LABELS["legend_race"])
+        for row in _record_rows(legend_info, "legend_race_record_array", "legend_race_record", "records")
     ]
     daily_legend_records = [
-        _enrich_race_record(_as_dict(row), "legend_race_id", TASK_LABELS["daily_legend_race"])
-        for row in _as_list(daily_legend_info.get("daily_legend_race_record"))
+        _enrich_race_record(row, "legend_race_id", TASK_LABELS["daily_legend_race"])
+        for row in _record_rows(
+            daily_legend_info,
+            "daily_legend_race_record_array",
+            "daily_legend_race_record",
+            "legend_race_record_array",
+            "records",
+        )
     ]
 
     team_lineup = []

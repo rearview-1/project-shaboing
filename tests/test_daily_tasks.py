@@ -91,6 +91,31 @@ class DailyTaskStatusTests(unittest.TestCase):
         self.assertEqual(normalize_style_id("4"), 4)
         self.assertEqual(normalize_style_id("unknown"), 0)
 
+    def test_status_accepts_alternate_daily_legend_record_shapes(self):
+        status = summarize_daily_event_status(
+            {
+                "daily_race_playing_info": {
+                    "daily_race_record": {"daily_race_id": 11, "is_played": 0, "race_name": "Daily One"}
+                },
+                "legend_race_playing_info": {
+                    "legend_race_record": {"legend_race_id": 22, "is_played": 0, "race_name": "Legend One"}
+                },
+                "daily_legend_race_playing_info": {
+                    "daily_legend_race_record_array": [
+                        {"legend_race_id": 33, "is_played": 0, "race_name": "Daily Legend One"}
+                    ]
+                },
+            }
+        )
+
+        self.assertEqual(status["daily_race"]["records_total"], 1)
+        self.assertEqual(status["daily_race"]["next_daily_race_id"], 11)
+        self.assertEqual(status["legend_race"]["records_total"], 1)
+        self.assertEqual(status["legend_race"]["next_legend_race_id"], 22)
+        self.assertEqual(status["daily_legend_race"]["records_total"], 1)
+        self.assertEqual(status["daily_legend_race"]["next_legend_race_id"], 33)
+        self.assertEqual(status["daily_legend_race"]["records"][0]["label"], "Daily Legend One")
+
     def test_empty_config_blocks_actions_instead_of_guessing_payloads(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "daily_automation_endpoints.json"

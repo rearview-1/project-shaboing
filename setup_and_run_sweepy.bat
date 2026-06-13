@@ -3,6 +3,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 set "SWEEPY_PROJECT_ROOT=%CD%"
 set "SWEEPY_RESTART_SCRIPT=%CD%\main.py"
+set "SWEEPY_SUPERVISED=1"
 if not defined SWEEPY_AUTO_GIT_UPDATE set "SWEEPY_AUTO_GIT_UPDATE=1"
 if not defined SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC set "SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0"
 
@@ -95,5 +96,7 @@ echo.
 echo Setup complete. Starting Sweepy...
 echo Open the game client and authenticate if the UI asks for it.
 echo.
+:run
 "%PY%" main.py
+if "%errorlevel%"=="73" goto run
 pause

@@ -1754,6 +1754,23 @@ def build_exec_args():
     return [python_exe, script]
 
 
+# Exit code a supervised process uses to ask its launcher to relaunch it.
+# The .bat launchers (and any supervisor) loop while the process exits with
+# this code. Chosen to avoid clashing with common codes (0 success, 1/2
+# errors, 130 SIGINT, etc.).
+RESTART_EXIT_CODE = 73
+
+
+def _supervised_restart_enabled():
+    """True when a launcher supervises this process and relaunches it on
+    RESTART_EXIT_CODE. Set by run_sweepy.bat / setup_and_run_sweepy.bat via
+    SWEEPY_SUPERVISED=1. When supervised we exit with the sentinel code for a
+    clean single-console restart instead of the Windows os.execv spawn+exit,
+    which orphaned the new server and made the launcher fall through to its
+    tail 'pause' ('Press any key to continue')."""
+    return str(os.environ.get("SWEEPY_SUPERVISED") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _execv_argv(args):
     """Quote argv entries containing spaces for the Windows os.execv path.
 
@@ -1786,6 +1803,19 @@ def restart_backend_process(reason):
     persist_dev_session_cache(reason)
     print(f"backend dev reload: restarting process ({reason})", flush=True)
     time.sleep(0.25)
+    if _supervised_restart_enabled():
+        # The launcher relaunches us on RESTART_EXIT_CODE. Exit cleanly in
+        # place — same console, no orphaned process, and no spurious launcher
+        # 'pause'. This is the preferred path on Windows, where os.execv is
+        # not a true in-place replace (it spawns a new process and exits the
+        # original, which is what made run_sweepy.bat hit 'Press any key').
+        print(
+            f"backend restart: exiting with code {RESTART_EXIT_CODE} for launcher to relaunch with updated code",
+            flush=True,
+        )
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(RESTART_EXIT_CODE)
     try:
         args = build_exec_args()
     except FileNotFoundError as exc:

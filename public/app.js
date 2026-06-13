@@ -7039,7 +7039,7 @@ const state = {
             const label = document.getElementById('lib-current-label');
             if (label) {
                 const counts = retuned.lastCounts || {};
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 75'})[cat] || cat.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 58'})[cat] || cat.toUpperCase();
                 const n = counts[cat];
                 label.innerText = n != null ? `${name} · ${n}` : name;
             }
@@ -7068,7 +7068,7 @@ const state = {
             });
             const label = document.getElementById('lib-current-label');
             if (label && counts[retuned.currentPane] != null) {
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 75'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 58'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
                 label.innerText = `${name} · ${counts[retuned.currentPane]}`;
             }
         }

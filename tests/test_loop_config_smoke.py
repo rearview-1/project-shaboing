@@ -1267,8 +1267,20 @@ class LoopConfigSmokeTests(unittest.TestCase):
             self.assertIn("SWEEPY_AUTO_GIT_UPDATE", text, rel)
             self.assertIn("SWEEPY_AUTO_GIT_UPDATE_INITIAL_DELAY_SEC=0", text, rel)
 
+    def test_single_instance_launchers_supervise_restart_loop(self):
+        # The single-instance launchers must mark themselves as a supervisor
+        # and loop on the restart sentinel exit code, so a backend refresh
+        # relaunches in-place instead of falling through to 'pause'.
+        repo = Path(__file__).resolve().parents[1]
+        for rel in ("run_sweepy.bat", "setup_and_run_sweepy.bat"):
+            text = (repo / rel).read_text(encoding="utf-8", errors="replace")
+            self.assertIn("SWEEPY_SUPERVISED=1", text, rel)
+            self.assertIn(":run", text, rel)
+            self.assertIn(f'"%errorlevel%"=="{main.RESTART_EXIT_CODE}" goto run', text, rel)
+
     def test_restart_backend_execs_validated_python_path(self):
-        with patch.object(main, "persist_dev_session_cache", return_value=True), \
+        with patch.object(main, "_supervised_restart_enabled", return_value=False), \
+             patch.object(main, "persist_dev_session_cache", return_value=True), \
              patch.object(main.time, "sleep", return_value=None), \
              patch.object(main, "build_exec_args", return_value=["C:\\real\\python.exe", "C:\\repo\\main.py"]), \
              patch.object(main.os, "chdir") as chdir, \
@@ -1279,6 +1291,35 @@ class LoopConfigSmokeTests(unittest.TestCase):
         # CWD is forced to the project root before exec so the relaunched
         # interpreter resolves main.py and relative paths correctly.
         chdir.assert_called_once_with(main.base_dir)
+
+    def test_restart_backend_exits_with_sentinel_when_supervised(self):
+        # Under a supervising launcher (SWEEPY_SUPERVISED=1) the process must
+        # exit with RESTART_EXIT_CODE so the launcher relaunches it in the
+        # same console — no os.execv spawn+exit, no orphan, no 'Press any key'
+        # pause.
+        captured = {}
+
+        class _StopExit(Exception):
+            pass
+
+        def fake_exit(code):
+            captured["code"] = code
+            raise _StopExit()
+
+        with patch.object(main, "_supervised_restart_enabled", return_value=True), \
+             patch.object(main, "persist_dev_session_cache", return_value=True), \
+             patch.object(main.time, "sleep", return_value=None), \
+             patch.object(main.os, "_exit", side_effect=fake_exit), \
+             patch.object(main.os, "execv") as execv, \
+             patch.object(main, "build_exec_args") as build_args:
+            try:
+                main.restart_backend_process("test")
+            except _StopExit:
+                pass
+
+        self.assertEqual(captured.get("code"), main.RESTART_EXIT_CODE)
+        execv.assert_not_called()
+        build_args.assert_not_called()
 
     def test_execv_argv_quotes_paths_with_spaces_on_windows(self):
         args = [
@@ -1303,7 +1344,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
         # script path under a folder with a space (project-shaboing-main (1))
         # must be quoted so Windows os.execv does not split it.
         spaced = "C:\\Users\\x\\project-shaboing-main (1)\\project-shaboing-main\\main.py"
-        with patch.object(main.os, "name", "nt"), \
+        with patch.object(main, "_supervised_restart_enabled", return_value=False), \
+             patch.object(main.os, "name", "nt"), \
              patch.object(main, "persist_dev_session_cache", return_value=True), \
              patch.object(main.time, "sleep", return_value=None), \
              patch.object(main, "build_exec_args", return_value=["C:\\py\\python.exe", spaced]), \
@@ -1397,7 +1439,8 @@ class LoopConfigSmokeTests(unittest.TestCase):
         # that believes a restart is already queued.
         main.dev_reloader_state["restart_requested"] = True
         try:
-            with patch.object(main, "persist_dev_session_cache", return_value=True), \
+            with patch.object(main, "_supervised_restart_enabled", return_value=False), \
+                 patch.object(main, "persist_dev_session_cache", return_value=True), \
                  patch.object(main.time, "sleep", return_value=None), \
                  patch.object(main, "build_exec_args", return_value=["py", "main.py"]), \
                  patch.object(main.os, "chdir", return_value=None), \

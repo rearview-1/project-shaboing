@@ -1219,6 +1219,31 @@ class LoopConfigSmokeTests(unittest.TestCase):
         git_update.assert_called_once_with(manual=True)
         schedule.assert_not_called()
 
+    def test_build_exec_args_ignores_malformed_python_argv_script(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_python = Path(tmp) / "python.exe"
+            fake_python.write_text("", encoding="utf-8")
+            bogus_project = Path(tmp) / "project-shaboing-main"
+            stale_venv_python = Path(tmp) / "project-shaboing-main (1)" / "project-shaboing-main" / "(1)" / "project-shaboing-main" / ".venv" / "Scripts" / "python.exe"
+
+            with patch.object(main.sys, "executable", str(fake_python)), \
+                 patch.object(main.sys, "argv", [str(bogus_project), str(stale_venv_python)]):
+                args = main.build_exec_args()
+
+        self.assertEqual(Path(args[0]).name.lower(), "python.exe")
+        self.assertEqual(Path(args[1]).name.lower(), "main.py")
+        self.assertNotIn(".venv", args[1].lower())
+        self.assertNotIn("python.exe", args[1].lower())
+
+    def test_restart_backend_execs_validated_python_path(self):
+        with patch.object(main, "persist_dev_session_cache", return_value=True), \
+             patch.object(main.time, "sleep", return_value=None), \
+             patch.object(main, "build_exec_args", return_value=["C:\\real\\python.exe", "C:\\repo\\main.py"]), \
+             patch.object(main.os, "execv") as execv:
+            main.restart_backend_process("test")
+
+        execv.assert_called_once_with("C:\\real\\python.exe", ["C:\\real\\python.exe", "C:\\repo\\main.py"])
+
     def test_git_auto_update_waits_for_idle_before_pull(self):
         main.git_auto_update_state["running"] = False
         with patch.object(main, "git_auto_update_enabled", return_value=True), \

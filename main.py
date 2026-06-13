@@ -1658,20 +1658,65 @@ def hot_reload_presets():
     return updated
 
 
+def _looks_like_python_executable_arg(value):
+    text = str(value or "").strip().strip('"')
+    if not text:
+        return False
+    name = Path(text).name.lower()
+    return name in {"python", "python.exe", "pythonw", "pythonw.exe"} or (
+        name.startswith("python") and Path(name).suffix.lower() == ".exe"
+    )
+
+
+def _restart_python_executable():
+    candidates = [
+        sys.executable,
+        str(base_dir / ".venv" / "Scripts" / "python.exe"),
+        str(base_dir / ".venv" / "bin" / "python"),
+        shutil.which("python"),
+        shutil.which("py"),
+    ]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        try:
+            path = Path(str(candidate).strip().strip('"'))
+            if path.is_file():
+                return str(path.resolve())
+        except OSError:
+            continue
+    return sys.executable or "python"
+
+
+def _restart_script_from_argv(argv):
+    argv = list(argv or [])
+    for idx, raw in enumerate(argv):
+        text = str(raw or "").strip().strip('"')
+        if not text or text.startswith("-") or _looks_like_python_executable_arg(text):
+            continue
+        path = Path(text)
+        if path.suffix.lower() != ".py":
+            continue
+        if not path.is_absolute() and not path.exists():
+            base_candidate = base_dir / path
+            if base_candidate.exists():
+                path = base_candidate
+        return str(path.resolve()), argv[idx + 1:]
+    return str((base_dir / "main.py").resolve()), []
+
+
 def build_exec_args():
-    if sys.argv:
-        first = sys.argv[0]
-        if first and not first.startswith("-"):
-            return [sys.executable, str(Path(first).resolve()), *sys.argv[1:]]
-        return [sys.executable, *sys.argv]
-    return [sys.executable, str(base_dir / "main.py")]
+    python_exe = _restart_python_executable()
+    script, extra_args = _restart_script_from_argv(sys.argv)
+    return [python_exe, script, *extra_args]
 
 
 def restart_backend_process(reason):
     persist_dev_session_cache(reason)
     print(f"backend dev reload: restarting process ({reason})", flush=True)
     time.sleep(0.25)
-    os.execv(sys.executable, build_exec_args())
+    args = build_exec_args()
+    os.execv(args[0], args)
 
 
 def schedule_backend_restart(reason, delay_sec=0.35):

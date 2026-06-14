@@ -342,6 +342,9 @@ PHYSICS_NPC_SKILLS_BY_TURN = [(12, 0), (30, 2), (42, 3), (54, 3.3), (66, 3.3), (
 PHYSICS_SYNTH_STRENGTH = 1.3
 PHYSICS_SYNTH_SPEED_CONC = 1.5
 PHYSICS_APT_RANK_LETTER = {8: "S", 7: "A", 6: "B", 5: "C", 4: "D", 3: "E", 2: "F", 1: "G"}
+# Opponent finish-time cache, shared across all careers in a process (opponent
+# fields are 'fixed reality', so each distinct field is simulated only once).
+_PHYSICS_OPP_TIME_CACHE = {}
 
 def _physics_interp(points, t):
     if t <= points[0][0]:
@@ -7442,11 +7445,13 @@ class CareerSimulator:
         so we simulate them once and reuse across trials AND across careers in a
         sweep — this is the key speedup vs re-running 18 horses every race."""
         import career_bot.race_sim as race_sim
-        cache = getattr(self, "_physics_opp_cache", None)
-        if cache is None:
-            cache = self._physics_opp_cache = {}
+        # Module-level cache: opponent fields are identical across careers in a
+        # sweep (only ~30 distinct fields total), so simulate each once per process.
+        cache = _PHYSICS_OPP_TIME_CACHE
         has_real = bool(self.race_fields_by_pid.get(int(pid or 0)))
-        key = (int(pid or 0), int(meters), surface) if has_real else ("synth", turn // 6, int(meters), surface)
+        psig = (round(params.hp_drain_scale, 3), round(params.per_skill_velocity, 3), round(params.dt, 3))
+        key = ((int(pid or 0), int(meters), surface) if has_real
+               else ("synth", turn // 6, int(meters), surface)) + psig
         if key in cache:
             return cache[key]
         opponents = self._physics_opponent_field(pid, turn, surface, band)
@@ -7473,6 +7478,16 @@ class CareerSimulator:
         other race-outcome estimators ({won, model, win_probability, ...})."""
         import career_bot.race_sim as race_sim
         turn = int(self.state.get("turn") or 0)
+        # Predictions (sample=False) are called many times per turn for race-skip /
+        # scheduling decisions; the player's stats are fixed within a turn, so memoise
+        # by (pid, turn). Actual outcomes (sample=True) always run fresh.
+        if not sample:
+            pred_cache = getattr(self, "_physics_pred_cache", None)
+            if pred_cache is None:
+                pred_cache = self._physics_pred_cache = {}
+            ck = (int(pid or 0), turn)
+            if ck in pred_cache:
+                return pred_cache[ck]
         meters = self._race_distance_meters(pid)
         if not meters or meters <= 0:
             meters = {"sprint": 1200, "mile": 1600, "medium": 2000, "long": 2800}.get(_distance_key(distance), 2000)
@@ -7489,7 +7504,7 @@ class CareerSimulator:
         apt = {"distance": self._physics_aptitude_letter(band), "surface": self._physics_aptitude_letter(surface)}
         sk = int(self.skills_bought or 0)
         rec = int(self._purchased_recovery_skill_count() or 0)
-        trials = 1 if sample else 5
+        trials = 1 if sample else 3
         wins = 0
         ranks = []
         for _ in range(trials):
@@ -7509,7 +7524,7 @@ class CareerSimulator:
         else:
             won = None
         ranks.sort()
-        return {
+        result = {
             "won": won,
             "model": "physics_engine",
             "win_probability": round(win_probability, 4),
@@ -7517,6 +7532,9 @@ class CareerSimulator:
             "field_size": len(opp_times) + 1,
             "distance_m": int(meters),
         }
+        if not sample:
+            self._physics_pred_cache[(int(pid or 0), turn)] = result
+        return result
 
     def _empirical_race_outcome(self, pid, race_name, distance, era, *, skill_count=None, sample=True):
         if not bool(self.preset.get("sim_use_real_race_snapshots", True)):

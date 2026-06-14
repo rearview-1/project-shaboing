@@ -1,0 +1,300 @@
+# Sweepy — Full Code Audit & Improvement Analysis
+
+> Living document. Goal: understand **every cog**, log problems/bottlenecks/short-sighted
+> losses, fix what's broken, and produce grounded, data-backed plans for using the sim to
+> make the bot meaningfully better. Started 2026-06-14. Every claim is grounded in `file:line`
+> or real data — no speculation; unverified items are marked **⚠ UNVERIFIED**.
+
+## How to read this
+- **§Inventory** — the map of the codebase.
+- **§Subsystem audits** — one section per module group: what it does, every significant
+  function ("cogs"), problems, bottlenecks, improvement ideas.
+- **§Problems ledger** — consolidated, severity-tagged, with fix status.
+- **§Bottlenecks** — what limits the project.
+- **§Sim→better-bot proposals** — the deliverable: in-depth, reasoned, data-backed plans.
+
+---
+
+## §Inventory (2026-06-14)
+
+Source LOC (excl. `.venv`, tests):
+| Area | Files | Lines |
+|---|---|---|
+| `career_bot/` (top level) | 55 | 49,343 |
+| `career_bot/scenarios/` | 3 | 5,792 |
+| `uma_api/` | 2 | 2,184 |
+| `tools/` | 37 | 9,999 |
+| `main.py` (root) | 1 | 10,833 |
+| **tests/** | 112 | 30,128 |
+
+Biggest source files: `main.py` 10,833 · `career_simulator.py` 9,174 · `learning.py` 7,783 ·
+`scenarios/mant.py` 5,720 · `runner.py` 5,683.
+
+**Key architecture facts already established (this session):**
+- The career sim **REPLAYS real training snapshots** (`data/real_training_snapshots.json`, ~39MB)
+  for covered decks — `_support_training_gain` is called **0×/career** for account_b. Training-formula
+  code is the **synthetic fallback + tile calculator** only. (See `project_sim_replay_and_bot_learning`.)
+- Sim is ~99% synced to live on stat_sum (sim ~4085 vs real-career median 4111) **via replay**.
+- The bot loses long/epithet G1s because the optimizer chased rating (speed/wit 0.45–0.60) while the
+  **winning-profile** learning (`race_success_feedback.winning_stat_baseline`) was throttled
+  (cap 0.20, absent from self-learn) — fixed in commit `5fcb30f`.
+- Two-station setup: a VSC/auth station also commits here; its recent commits broke 7 tests in
+  `test_version_seed_freshness.py` (auth version persistence) — their domain.
+
+---
+
+## §Subsystem audits
+
+### Cross-cutting: orchestration & optimizer flow (audited directly, 2026-06-14)
+
+**End-to-end loop:**
+1. `career_bot/runner.py::CareerRunner` drives a **LIVE** career against the game client
+   (`start`/`_run`, max_steps 2500), writing `career_log_*.json` + real training/race snapshots.
+2. Post-run (`_schedule_post_run_outputs`, runner.py:707): runs `_run_hyperparameter_tuner`,
+   `_run_auto_learning_subprocess` (learning.py), and `_maybe_schedule_policy_optimizer`.
+3. `_maybe_schedule_policy_optimizer` (runner.py:1022): **every N=8 finished careers** spawns
+   `tools/optimize_deck_policy.py` as a subprocess → writes a winning policy to `deck_policies.json`.
+4. Next career's `_apply_cached_deck_policy` loads it. Loop closes.
+
+**TWO optimizers, DIFFERENT objectives, DIFFERENT candidate sources (key finding):**
+| | `tools/calibrate_deck.py` (manual `optimizer.bat`) | `tools/optimize_deck_policy.py` (auto, every 8 careers) |
+|---|---|---|
+| Objective | SS-rate / mean / win-rate + **epithet-loss veto** | **`clean_rate`** (lexicographic: clean careers → fewer losses → rating) |
+| Candidates | `sim_self_learning` proposals + random | own `PARAM_SPACE` uniform sample + Gaussian perturb (`_sample_candidate`/`_perturb_candidate`) |
+| Time | ~240s budget | candidates×sims (10×8), validation 32 |
+
+- The auto loop's `clean_rate` objective (`_objective_score`, optimize_deck_policy.py:170) is well-designed
+  (lexicographic, strict term scaling so a 1/N clean step always beats a loss delta beats rating).
+- **⚠ The two optimizers don't share a candidate generator** — `optimize_deck_policy.py` does NOT import
+  `sim_self_learning`, so improvements to one search space don't reach the other. This split is a
+  maintenance/coverage hazard (see problem AUD-1).
+
+### `runner.py` cogs (high level)
+- `CareerRunner.start/_run` — live career driver (turn loop, action dispatch).
+- `_maybe_schedule_policy_optimizer` (1022) — cadence-gated auto-optimizer spawn; Windows pid-reuse-safe
+  via log-terminal + age checks (good defensive code).
+- `_run_hyperparameter_tuner` (606), `_run_auto_learning_subprocess` (955) — post-run learning.
+- Race-continue machinery (1317–2308: `_race_continue_*`, `_try_continues_pre_race_end`,
+  `_resolve_race_end_with_retries`) — large live-game retry/recovery subsystem (carat/resource spend).
+- `_training_snapshot` (2800) — emits the real training snapshots the sim later replays.
+
+### Architecture map (full-stack)
+- **`main.py`** — FastAPI backend (442 defs, ~40 `/api/*` endpoints): auth/session/login, presets,
+  `/api/calibrate` trigger, decks/advice, learning_session, dailies, supports, team_bundle, admin.
+  This is the server the UI talks to; it also kicks off the runner + calibrate.
+- **`career_bot/runner.py`** — `CareerRunner`: drives LIVE careers via the game client; post-run
+  learning/optimizer orchestration; race-continue/retry machinery.
+- **`career_bot/career_simulator.py`** — the SIM (replays real snapshots; synthetic fallback + tile calc).
+- **`career_bot/scenarios/mant.py`** — `MantStrategy`: the per-turn decision policy (SHARED by live + sim).
+- **Learning/optimizer stack** — `learning.py` (career→preset aggregation), `sim_self_learning.py` +
+  `hyperparameter_tuner.py` (candidate proposals), `tools/calibrate_deck.py` (manual) +
+  `tools/optimize_deck_policy.py` (auto), `deck_policy_cache.py` (policy persistence).
+- **`uma_api/`** — game API client/auth.
+- **Race**: `race_sim.py` (physics) + `races.py`/`race_thresholds.py`/`race_success_feedback.py`/`postmortem_feedback.py`.
+- **Economy**: `items.py`, `skills.py`, `event_choice_learning.py`.
+
+**✅ Decision parity (foundational, verified):** both the sim (`career_simulator.py:2946` instantiates
+`MantStrategy`, calls `next_decision` at 9021/9033) and the live runner (`runner.py:370/390`) drive the
+**same** `MantStrategy.next_decision(state, preset)`. So a policy tuned in the sim IS what the live bot
+executes — sims can legitimately improve the bot. **⚠ Open risk to verify:** the sim builds `sim_state`
+vs the live `state` from the game payload — if their SHAPES diverge, the shared policy can still behave
+differently (decision-INPUT parity, separate from decision-CODE parity). Flag for batch-2 verification.
+
+_(agent reports appended below as batches complete)_
+
+---
+
+## §Problems ledger
+
+| # | Severity | File:line | Problem | Status |
+|---|---|---|---|---|
+| AUD-1 | HIGH | optimize_deck_policy.py:144 `PARAM_SPACE` | The **auto** optimizer (runs every 8 careers — the real long-term improvement engine) optimizes `clean_rate` (win races) but its search space omitted `race_success_bonus_cap`/`race_specific_demand_cap` — so it could only chase clean careers via raw speed/wit, the bias that loses balanced G1s. My 5fcb30f fix only reached the manual calibrate. | **FIXED** 2026-06-14 (added both to PARAM_SPACE) |
+| AUD-2 | MED | calibrate_deck.py vs optimize_deck_policy.py | Two optimizers with **separate** candidate generators (sim_self_learning vs own PARAM_SPACE) and **different objectives** (SS-rate+veto vs clean_rate). Improvements/levers must be added in BOTH; easy to forget (AUD-1 was exactly this). Consider unifying the search space. | Noted |
+| AUD-3 | LOW | mant.py:3743-3850 | **Dead duplicate** `_race_hard_stat_floor_bonus` — defined at 3743 (3-arg) AND 3851 (4-arg, `command=None`); caller (3032) passes 4 args so 3851 is active and 3743 (~108 lines) is unreachable dead code from an incomplete refactor. **VERIFIED.** | TODO remove |
+| AUD-4 | MED | sim_self_learning.py:36-37 + mant `_stamina_priority_bonus` (4748) | Stamina lacks a `_late` priority knob that speed/power/wit all have (only `stamina_priority_bonus_base` + `_deficit_boost`). So the optimizer can't raise stamina priority specifically in late game (when the long stamina G1s land); stamina relies only on deficit-based pressure. **VERIFIED (real coverage gap; partly mitigated by deficit + threshold + race-success levers).** | TODO |
+| AUD-5 | HIGH | calibrate_deck.py ~826 + ~1168 | Epithet-loss veto rejects candidates on **1-2 sim screening noise** (one unlucky race → auto-reject a good candidate); and `max_epithet_losses=2` in screening vs comfort requiring 0 can cache a policy that drops epithet G1s live. **CLAIMED — needs verification.** Matches the observed "no candidate saved" calibrate behavior. | To verify |
+| AUD-6 | MED | race_sim.py:96,107-109 | `hp_drain_scale=1.3` + aggregate skill model (per_skill_velocity 0.20) are PROVISIONAL fits to 51 fields, comment says "re-fit once per-phase skill procs land" — no re-validation marker. Affects every race time. **Known calibration debt (real, low-urgency).** | Noted |
+| AUD-7 | — | mant.py:4099 `_threshold_deficit_bonus` | Agent claimed it's an INERT stub → **REJECTED (FALSE):** it's a full impl (cache→scaled pressure→cap 0.32 at 200pt deficit), the strongest race-floor lever. | Rejected |
+| AUD-8 | — | race_sim.py:171-175 wit randomness | Agent claimed mod_max goes negative for low wit → **REJECTED (FALSE):** `math.log10(max(1.0, wit*0.1))` guard prevents negativity. | Rejected |
+| AUD-9 | MED | race_success_feedback.py:334 | `_race_effort_score` uses flat 120 SP/skill cost → biases `efficient_win_profile` toward low-skill runs (real skills cost 3-10 SP). **CLAIMED — needs verification.** | To verify |
+| AUD-10 | LOW | items.py (cupcake/buff double-path) | Multiple item-decision pathways can select the same item; `_merge_targets` dedups so it's cosmetic/debuggability, not a functional double-buy. **CLAIMED — low impact.** | Noted |
+
+**Verification scorecard (batch 1):** of agent "CRITICAL/HIGH" claims spot-checked, ~50% were real, ~50% hallucinated/overstated. Every claim below the verified ones is tagged "needs verification" and will NOT be treated as fact until checked against code.
+
+### Batch 2 findings
+| # | Severity | File:line | Problem | Status |
+|---|---|---|---|---|
+| AUD-11 | HIGH | main.py:1331-1390 `best_known_headless_auth_seed` | **VERIFIED — root cause of the 7 failing `test_version_seed_freshness` tests.** Candidate loop takes the FIRST non-placeholder app_ver/res_ver (cache is candidate #1), and the version check (1361-1390) only compares the seeded value to the *default* — never candidate-vs-candidate. So cache `1.22.1` wins over a fresher profile `1.23.0`. **FIX:** select the NEWEST version across all candidates (sort by `_version_tuple(app_ver)` desc, or track max), keeping app_ver+res_ver as a matched pair. **VSC/auth-station domain (their recent commits b2cfe2a..545301f caused it) — documented, not edited by me.** | Documented (VSC) |
+| AUD-12 | HIGH(sec) | main.py:8062-8063, 10625-10636, 7470/8615 | Plaintext Steam creds in reusable_auth_profiles.json; path traversal in `/assets/data/{file}` & `/races/{file}` (no `.resolve()`/bounds check); race conditions on `active_client`/`active_loop` globals (no lock). **Matches the prior security-isolation audit.** VSC/backend domain. | Documented |
+| AUD-13 | HIGH | runner.py:2056 | Continued-race result loss: if `_run_continued_race` succeeds but `_race_result_from_response` returns `{}`, `race_result = new_result or race_result` keeps the PREVIOUS (losing) result → learning records a win as a loss. **Affects LEARNING DATA (my domain) though code is in runner.** NEEDS VERIFICATION. | To verify |
+| AUD-14 | MED | runner.py:486, 2651, 4488 | Silent `except: pass` on crash-log write, race-attempt-ledger write, and pre-race state reload → blind operator + missing learning signal. Real but defensive (add logging). | To verify/fix |
+| AUD-15 | MED | career_simulator.py:407 `_load_json_data` | Silent fallback (`{}`/`[]`) on missing/corrupt data file → sim silently degrades to synthetic with no loud warning (only `fidelity_warnings`, "rarely read"). If `real_training_snapshots.json` is gone, the whole replay path silently disables. **My domain — add a loud warning / integrity check.** | To fix |
+| AUD-16 | MED | tools/extract_game_data.py, build_event_id_index.py | Data-import fragility: hardcoded gametora/wiki URLs, broad `except: pass` drops a card's events silently, unknown effect_id (117+) silently dropped (no "unknown effect type" warning) → truncated support data. | To verify |
+| AUD-17 | HIGH | tests/ coverage | No FastAPI endpoint integration tests; no race-prediction-vs-real-outcome validation test; no test of the replay-vs-formula decision or the optimizer candidate→winner flow. Top missing tests for the high-value paths. | Backlog |
+| AUD-18 | MED | career_simulator.py:4145 | Snapshot pool size `min(40, max(8, len(scored)//20))` → as few as 8 distinct snapshots/turn → overfit to local deck clusters; weak diversity for rare decks. | To verify |
+
+---
+
+## §Bottlenecks
+
+### BN-1 (THE big one): the default sim REPLAYS the bot's own tiles ×1.85 — it cannot represent SS
+**Grounded:** `_make_training_commands` (career_simulator.py:4282): if `sim_formula_training_gain` is
+False (DEFAULT), it calls `_make_real_training_commands` which replays a matched real snapshot's tile
+*structure* but **multiplies the stat gains by `_real_training_gain_scale()` ≈ 1.85** (4197/4202/4251).
+The code's own comment (4276-4281): replay *"structurally cannot represent the high-facility/stacked-
+rainbow tiles that good (manual) play uses to reach SS — which capped the optimizer at the bot's own
+mediocre envelope."* So **the optimizer searches inside the bot's historical tile distribution** — it
+can reorder/retime tiles but cannot discover the higher-gain tiles that manual SS play uses. This is
+why the sim sits at ~4085/S+ (matching the *bot*, not the deck's ~4,879 manual potential) and why
+calibrate candidates top out ~4,559. It's a calibration fudge (1.85) on a structurally-capped replay.
+
+**The escape hatch already exists:** `sim_formula_training_gain=True` switches to the mechanical
+formula path (`_support_training_gain` — the **uma.guide resolver I validated to the exact integer**:
+NTR+Matikane 100/42/10/-27, Shinko+KSB 38/20). Formula mode can represent ANY tile config (high
+facility + stacked rainbows) → can represent SS. It's default OFF pending career-level validation.
+
+> **This reframes the resolver work: it is NOT inert — it is the enabler for an SS-capable sim.**
+> The resolver is inert only in the DEFAULT (replay) mode; in formula mode it IS the training engine.
+
+_(other bottlenecks appended from agent reports)_
+
+---
+
+## §Sim→better-bot proposals
+
+> In-depth, data-backed. Each: claim → grounding → mechanism → expected impact → risk.
+
+### PROP-1 (highest leverage): run the OPTIMIZER in formula mode to break the replay cap
+**Claim:** The single biggest reason the bot can't be optimized to SS is BN-1 — the default sim
+*replays the bot's own historical tiles ×1.85*, so the optimizer searches inside the bot's mediocre
+tile distribution and structurally cannot discover the high-facility/stacked-rainbow tiles that manual
+SS play (~4,879 stat_sum) uses. `sim_formula_training_gain=True` switches to the mechanical formula
+(the uma.guide resolver, validated to the exact integer) which can represent ANY tile.
+
+**Grounding:**
+- `_make_training_commands` (career_simulator.py:4282) gates replay vs formula; comment 4276-4281 admits
+  replay "capped the optimizer at the bot's own mediocre envelope."
+- Resolver tile-accuracy: validated (NTR+Matikane 100/42/10/-27, Shinko+KSB 38/20; `test_uma_guide_training_resolver.py`).
+- **Measured (this audit):** formula vs replay career aggregate on the real deck with a weak preset =
+  2776 vs 2796 — i.e. formula mode is **career-consistent with replay** (not inflated), so flipping it
+  on doesn't desync the sim; it just removes the structural ceiling.
+
+**Mechanism:** (1) Career-validate formula mode against a *known policy's live careers* (run formula
+mode with the learned preset; confirm stat_sum tracks the real ~4111 — the weak-preset 2776≈2796 is a
+good first signal). (2) Then run `optimize_deck_policy.py`/`calibrate_deck.py` with
+`sim_formula_training_gain=True` so candidates are evaluated on the SS-capable sim. (3) The optimizer
+can now reward policies that build facilities + stacked rainbows + train them — which replay scored as
+impossible. Pair with the winning-profile levers (5fcb30f + AUD-1) so it targets *winning* builds.
+
+**Expected impact:** unlocks the optimizer's ability to find SS/epithet-winning policies at all — this
+is the difference between "optimize within mediocre" and "discover better-than-manual." Without it, no
+amount of lever-tuning escapes the ~4,085/S+ replay ceiling.
+
+**Risk:** formula mode is tile-accurate but its *career aggregate* under a strong policy is unproven vs
+live (you can't validate a policy live that the bot has never run). Mitigation: validate the *known*
+policy first; cross-check the formula career's per-turn tile gains against the matched real snapshots
+(should agree where they overlap); keep replay mode as the live-fidelity reference.
+
+### PROP-2: career-validate formula mode, then optimize-in-formula → validate-live (the safe rollout of PROP-1)
+**Claim:** PROP-1 (optimize in formula mode) is only safe if formula mode's *career aggregate* is trusted.
+The validation path is concrete and cheap.
+**Grounding:** resolver tile-accuracy is proven; replay≈formula at the career level for a weak policy
+(2776≈2796); the comment at career_simulator.py:4280 names the exact gate ("validate against the game
+table + manual career end-states"). Manual SS careers hit ~4,879 (memory `project_sim_calibrated_to_mediocre`).
+**Mechanism:** (a) Run formula mode with the *current learned preset*; confirm stat_sum tracks the real
+~4,111 (per-turn tile gains should agree with the matched real snapshots where they overlap — write a
+diff harness over `real_training_snapshots`). (b) Reconstruct one **manual** SS career's per-turn tile
+sequence and feed it through formula mode; confirm it reproduces ~4,879 (proves the formula CAN represent
+SS — the thing replay can't). (c) Only then flip `sim_formula_training_gain` default on and re-baseline
+the handful of tests that pin replay numbers. **Impact:** turns PROP-1 from "plausible" into "validated."
+**Risk:** if (b) under-shoots 4,879, the formula/energy/mood terms still have a gap → fix those *before*
+flipping (this is where the deferred energy/failure work would re-enter, but now with a clear target).
+
+### PROP-3: a manual-imitation prior — learn the user's winning DECISIONS, not just outcomes (directly: "beat my manual play")
+**Claim:** The sim↔live gap for the user's deck is **decision quality**, not training math (replay already
+matches live stats; the bot lands 4,111 vs manual 4,879 on the *same deck*). The fastest way to close it
+is to learn what the *user* does differently, turn by turn.
+**Grounding:** decision parity verified (live+sim share `MantStrategy`); manual careers exist
+(`uma_runtime/instances/account_b/manual_career_logs/`); an imitation scaffold already exists
+(`runner._rebuild_imitation_archive`, line 549) but is outcome-keyed, not decision-keyed.
+**Mechanism:** extract per-(turn, state-bucket) manual DECISIONS (which tile/race/skill/item) from the
+manual career logs; build an **imitation prior** that adds a score bonus in `MantStrategy._score_command`
+when the bot's choice matches the manual choice in a similar state — weighted by how much better the
+manual careers did. Expose the weight as a tunable so the optimizer balances imitation vs exploration.
+**Impact:** the optimizer is no longer searching blind — it's anchored to a known-better policy and only
+explores *around* it. This is the single most direct mechanism for "legit better than me": start from
+imitating the user, then let the sim find improvements the user didn't try. **Risk:** manual logs are
+sparse (few careers); state-bucketing must be coarse enough to generalize. Mitigation: bucket by
+(phase, facility-levels, top-deficit-stat); fall back to the existing policy when no manual analog exists.
+
+### PROP-4: unify the two optimizers' search space + objective (closes AUD-1/AUD-2 permanently)
+**Claim:** Two optimizers (`calibrate_deck.py` SS-rate+veto vs `optimize_deck_policy.py` clean_rate) with
+**separate** candidate generators caused AUD-1 (a lever added to one, missing from the other). They should
+share one search space and a single coherent objective.
+**Grounding:** AUD-1 (verified) — the winning-profile levers were absent from the auto loop's PARAM_SPACE
+for months; the clean_rate objective (optimize_deck_policy.py:194) is well-designed and should be canonical.
+**Mechanism:** extract one `PARAM_SPACE`/bounds module imported by both; adopt a single lexicographic
+objective = (clean_rate → SS-rate → mean rating) so it rewards *winning races first, then reaching SS*.
+**Impact:** every future lever reaches both paths automatically; the manual + auto loops converge on the
+same definition of "better." **Risk:** low (refactor + re-run both test suites); the objectives must be
+reconciled carefully (the SS-veto is stricter — keep it as a *gate* on top of the shared objective).
+
+### PROP-5: make race-floor pressure start earlier + give stamina a late knob (AUD-4)
+**Claim:** Long G1 losses need stamina/power built *before* the race, but the winning-profile demand only
+looks 8 turns ahead and stamina has no late-game priority lever.
+**Grounding:** real winning profiles need +44-48 stamina + +30-78 power for the long G1s (audit data);
+`upcoming_race_success_demand` lookahead=8 (race_success_feedback.py); stamina lacks a `_late` param (AUD-4).
+**Mechanism:** (a) scale the demand lookahead by the deficit size (a 200pt stamina gap for a t56 race needs
+~15 turns of lead, not 8); (b) add `stamina_priority_bonus_late` to mant + both search spaces. **Impact:**
+the bot builds the balanced stat line *in time* instead of being pressured too late. **Risk:** longer
+lookahead can over-pressure early; cap it and let the optimizer tune the new levers.
+
+### PROP-6: value race-winning SKILLS in the sim so the optimizer learns to buy them
+**Claim:** Medium/mile G1s are won by **more skills** (+1.3 to +2.2 vs losers), but the sim's skill-value
+model is parent-memory-calibrated to rating, not to *winning specific races*.
+**Grounding:** audit winning-vs-losing data (Takarazuka +1.3, Victoria +1.4, QE II +2.2 skills); skill
+buying flows through `calendar_race_prebuy_*` + `_buy_*_skill_for_race` (runner).
+**Mechanism:** derive per-race "skill demand" from the winning corpus (which skill *categories* — recovery/
+speed/accel — winners of each race carried) and feed it into the pre-race skill-buy scoring, so the bot
+buys race-relevant skills, and the optimizer can weight it. **Impact:** directly attacks the medium/mile
+losses that aren't pure stat gaps. **Risk:** skill data quality; start with skill *categories* not IDs.
+
+### PROP-7: Monte-Carlo robust scoring in the optimizer (don't ship brittle per-seed winners)
+**Claim:** The sim is largely deterministic per seed; live has RNG (training fails, mood dips, skill procs,
+race variance). A candidate that wins on seed K may be brittle.
+**Grounding:** `optimize_deck_policy` already runs 32 validation sims but scores by mean; the audit found
+the sim's stochastic surface (failures, rest mood, event tiebreak, race wit-band).
+**Mechanism:** score candidates by `mean − k·std` (or clean_rate at the 25th percentile) across seeds, so
+the saved policy is robust, not lucky. **Impact:** policies that hold up live, fewer "looked great in
+calibrate, lost live" surprises. **Risk:** needs enough seeds (cost); pairs naturally with PROP-1 (formula
+mode adds real per-tile variance to make multi-seed meaningful).
+
+### PROP-8: race-model recalibration against the 9,780-sample corpus (so the optimizer targets winnable builds)
+**Claim:** The binding constraint is *races* (epithet losses), so the race outcome model must be accurate;
+its key constants are provisional fits to only 51 fields.
+**Grounding:** AUD-6 — `hp_drain_scale=1.3`, `per_skill_velocity=0.20` fit to 51 fields, comment says
+"re-fit once per-phase skill procs land"; `real_race_snapshots.json` now has **9,780** result samples +
+51 fields. **Mechanism:** build a calibration harness that fits the physics constants to the full result
+corpus (predicted vs actual win/loss + finish rank), track fit-quality (win-match %, rank error) with a
+date stamp, and re-fit on a cadence. **Impact:** the optimizer's "will this build win race X" signal
+becomes trustworthy → it targets genuinely winnable builds instead of over/under-preparing. **Risk:**
+over-fitting to account_b's field; hold out a validation split.
+
+### Secondary / hygiene (still grounded)
+- **Unify + de-dupe** the dead `_race_hard_stat_floor_bonus` (AUD-3) and document the 3 race-pressure
+  levers (threshold-deficit 0.32 / race-success 0.45 / postmortem-demand 0.40) in one place — they
+  currently overlap with no single owner.
+- **Coverage self-check** (AUD-18): warn when the replay pool for a turn/deck is < ~15 snapshots (overfit
+  risk) so the operator knows the sim is extrapolating.
+- **Test the high-value paths** (AUD-17): replay-vs-formula decision, optimizer candidate→winner, and a
+  race-prediction-vs-real-outcome regression — none exist today.
+- **VSC-domain (flagged, not mine to fix):** AUD-11 version-freshness (the 7 red tests — exact fix
+  documented), AUD-12 security (plaintext creds / path traversal / global races), AUD-13 continued-race
+  result-loss.
+
+### Recommended execution order (by leverage)
+1. **PROP-2** (validate formula mode) → **PROP-1** (optimize in formula mode) — unlocks SS at all.
+2. **PROP-3** (manual-imitation prior) — the most direct "beat manual" mechanism.
+3. **PROP-8** (race-model recalibration) — makes the race signal the optimizer trusts accurate.
+4. **PROP-4** (unify optimizers) + **PROP-5/6** (race-floor timing + skills) — targeted win-rate gains.
+5. **PROP-7** (robust scoring) — lock in policies that survive live RNG.

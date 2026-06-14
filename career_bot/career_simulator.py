@@ -7387,6 +7387,137 @@ class CareerSimulator:
             "field_samples": len(fields),
         }
 
+    def _physics_aptitude_letter(self, role, default="A"):
+        grade = str((self._current_aptitudes() or {}).get(role) or "").upper()
+        return grade if grade in {"S", "A", "B", "C", "D", "E", "F", "G"} else default
+
+    def _physics_real_opponent(self, opponent, surface, band):
+        import career_bot.race_sim as race_sim
+        apt = opponent.get("aptitudes") or {}
+        return {
+            "id": "npc_%s" % (opponent.get("frame_order") or id(opponent)),
+            "stats": {k: int((opponent.get("stats") or {}).get(k, 0)) for k in race_sim.STAT_KEYS},
+            "style": STYLE_NUM_TO_KEY.get(int(opponent.get("running_style") or 0), "pace"),
+            "aptitudes": {
+                "distance": PHYSICS_APT_RANK_LETTER.get(int(apt.get(band, 7) or 7), "A"),
+                "surface": PHYSICS_APT_RANK_LETTER.get(int(apt.get(surface, 7) or 7), "A"),
+            },
+            "skill_count": int(opponent.get("skill_count") or 0),
+        }
+
+    def _physics_opponent_field(self, pid, turn, surface, band):
+        """Real opponent field for this race if we have one, else a synthetic field
+        calibrated by turn (strength/skills from real field_samples)."""
+        import career_bot.race_sim as race_sim
+        fields = self.race_fields_by_pid.get(int(pid or 0)) or []
+        real = [f for f in fields if f.get("opponents")]
+        if real:
+            chosen = real[self.rng.randrange(len(real))]
+            return [self._physics_real_opponent(o, surface, band) for o in (chosen.get("opponents") or [])]
+        # synthetic fallback
+        n = 8 if turn < 27 else (15 if turn < 50 else 17)
+        total = _physics_interp(PHYSICS_FIELD_SUM_BY_TURN, turn) * PHYSICS_SYNTH_STRENGTH
+        npc_skills = int(_physics_interp(PHYSICS_NPC_SKILLS_BY_TURN, turn))
+        styles = ["front", "pace", "late", "end"]
+        opponents = []
+        for i in range(n):
+            s = total * (0.90 + 0.20 * self.rng.random())
+            base = s / 5.0
+            stats = {k: base for k in race_sim.STAT_KEYS}
+            stats["speed"] *= PHYSICS_SYNTH_SPEED_CONC
+            stats["power"] *= (1.0 + (PHYSICS_SYNTH_SPEED_CONC - 1.0) * 0.5)
+            scale = s / sum(stats.values())
+            opponents.append({
+                "id": "synth%d" % i,
+                "stats": {k: int(v * scale) for k, v in stats.items()},
+                "style": styles[i % 4],
+                "aptitudes": {"distance": "A", "surface": "A"},
+                "skill_count": npc_skills,
+            })
+        return opponents
+
+    def _physics_opponent_times(self, pid, turn, surface, band, meters, params):
+        """Finish times for the opponent field, cached per race. Opponents are
+        'fixed reality' (real field_samples or a turn-calibrated synthetic field),
+        so we simulate them once and reuse across trials AND across careers in a
+        sweep — this is the key speedup vs re-running 18 horses every race."""
+        import career_bot.race_sim as race_sim
+        cache = getattr(self, "_physics_opp_cache", None)
+        if cache is None:
+            cache = self._physics_opp_cache = {}
+        has_real = bool(self.race_fields_by_pid.get(int(pid or 0)))
+        key = (int(pid or 0), int(meters), surface) if has_real else ("synth", turn // 6, int(meters), surface)
+        if key in cache:
+            return cache[key]
+        opponents = self._physics_opponent_field(pid, turn, surface, band)
+        if not opponents:
+            cache[key] = []
+            return []
+        orng = random.Random((hash(key) & 0x7fffffff) or 1)
+        times = []
+        for o in opponents:
+            out = race_sim.simulate_entrant(
+                stats=o["stats"], aptitudes=o.get("aptitudes"), style=o.get("style", "pace"),
+                distance_m=meters, surface=surface, rng=orng, params=params,
+                skill_count=int(o.get("skill_count") or 0),
+            )
+            # sort key: finished first (0), then lower time
+            times.append((0 if out["finished"] else 1, out["time"]))
+        times.sort()
+        cache[key] = times
+        return times
+
+    def _physics_race_outcome(self, pid, distance, terrain, grade, *, sample=True):
+        """Run the race over the course via career_bot/race_sim and resolve the
+        player's finish vs the opponent field. Returns the same dict shape as the
+        other race-outcome estimators ({won, model, win_probability, ...})."""
+        import career_bot.race_sim as race_sim
+        turn = int(self.state.get("turn") or 0)
+        meters = self._race_distance_meters(pid)
+        if not meters or meters <= 0:
+            meters = {"sprint": 1200, "mile": 1600, "medium": 2000, "long": 2800}.get(_distance_key(distance), 2000)
+        surface = "dirt" if str(terrain or "").lower().startswith("dirt") else "turf"
+        band = _distance_key(distance) or race_sim._distance_band(meters)
+        style = self._race_style()
+        if style not in race_sim.STYLE_SPEED_COEF:
+            style = "pace"
+        params = race_sim.RaceParams()
+        opp_times = self._physics_opponent_times(pid, turn, surface, band, meters, params)
+        if not opp_times:
+            return None
+        pstats = self._current_race_stats()  # RAW (raw-vs-raw validated)
+        apt = {"distance": self._physics_aptitude_letter(band), "surface": self._physics_aptitude_letter(surface)}
+        sk = int(self.skills_bought or 0)
+        rec = int(self._purchased_recovery_skill_count() or 0)
+        trials = 1 if sample else 5
+        wins = 0
+        ranks = []
+        for _ in range(trials):
+            out = race_sim.simulate_entrant(
+                stats=pstats, aptitudes=apt, style=style, distance_m=meters,
+                surface=surface, rng=self.rng, params=params,
+                skill_count=sk, recovery_skill_count=rec,
+            )
+            pkey = (0 if out["finished"] else 1, out["time"])
+            rank = 1 + sum(1 for ot in opp_times if ot < pkey)
+            ranks.append(rank)
+            if rank == 1:
+                wins += 1
+        win_probability = wins / float(trials)
+        if sample:
+            won = (ranks[0] == 1)
+        else:
+            won = None
+        ranks.sort()
+        return {
+            "won": won,
+            "model": "physics_engine",
+            "win_probability": round(win_probability, 4),
+            "finish_rank": ranks[len(ranks) // 2],
+            "field_size": len(opp_times) + 1,
+            "distance_m": int(meters),
+        }
+
     def _empirical_race_outcome(self, pid, race_name, distance, era, *, skill_count=None, sample=True):
         if not bool(self.preset.get("sim_use_real_race_snapshots", True)):
             return None

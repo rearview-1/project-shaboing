@@ -86,7 +86,7 @@ def _phase_for_section(section: int) -> int:
 class RaceParams:
     """Calibratable / situational knobs. Defaults are the neutral (Firm/Good, flat)
     case. Magnitudes here are the ONLY values not directly cited; calibrate from data."""
-    dt: float = 0.1                 # integration step (s)
+    dt: float = 0.2                 # integration step (s); 0.2 ~halves cost vs 0.1 with negligible rank change
     status_mod: float = 1.0         # race-hp StatusMod (Rushed 1.6 / PaceDown 0.6 / Downhill 0.4)
     ground_mod: float = 1.0         # race-hp GroundMod (Firm/Good 1.0; Soft 1.02; Heavy 1.02)
     # Global HP-drain calibration. NOT cited — fit to the 51 real full-field samples

@@ -71,13 +71,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Installing optional packet-sniffer dependency ^(mitmproxy, for run_sniffer.bat^)...
-"%PY%" -m pip install -r requirements-sniffer.txt
-if errorlevel 1 (
-  echo WARN: sniffer dependency install failed - this is OPTIONAL and does not
-  echo       affect normal operation. run_sniffer.bat will retry it on demand.
-)
-
 echo Installing Node dependencies...
 npm install
 if errorlevel 1 (

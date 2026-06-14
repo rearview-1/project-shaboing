@@ -397,6 +397,16 @@ _JSON_DATA_CACHE = {}
 _SIM_CALIBRATION_CACHE = {}
 
 
+# Data files whose absence/corruption silently degrades sim fidelity (e.g. a
+# missing real_training_snapshots.json disables the entire replay path and the
+# sim falls back to synthetic tiles with no loud signal). Warn on these.
+_CRITICAL_DATA_FILES = frozenset({
+    "real_training_snapshots.json", "real_race_snapshots.json",
+    "support_card_bonuses.json", "support_card_training_effects.json",
+    "training_facility_curves.json",
+})
+
+
 def _load_json_data(filename, default):
     path = Path(__file__).resolve().parents[1] / "data" / filename
     cache_key = str(path)
@@ -404,7 +414,17 @@ def _load_json_data(filename, default):
         return _JSON_DATA_CACHE[cache_key]
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except json.JSONDecodeError as exc:
+        # Corruption is never acceptable — warn loudly rather than silently
+        # degrade the sim (AUD-15). A corrupt critical file otherwise looks like
+        # a code regression in A/B runs.
+        print(f"[sweepy][WARN] corrupt data file data/{filename}: {exc}; "
+              f"using fallback default -- SIM FIDELITY DEGRADED", flush=True)
+        return default
+    except OSError:
+        if filename in _CRITICAL_DATA_FILES:
+            print(f"[sweepy][WARN] missing critical data file data/{filename}; "
+                  f"sim will silently degrade (e.g. real-snapshot replay disabled)", flush=True)
         return default
     _JSON_DATA_CACHE[cache_key] = data
     return data

@@ -41,3 +41,6 @@ __pycache__/
 /data/backups/game_data_updates/**
 tmp_*.json
 *.log
+
+# Code-audit raw agent reports (local intermediates)
+CODE_AUDIT_RAW_BATCH*.md

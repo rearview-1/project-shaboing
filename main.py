@@ -6176,6 +6176,28 @@ def is_api_error(exc, codes, endpoint=None):
                 return True
     return False
 
+def api_error_code(exc):
+    for attr in ("result_code", "response_code"):
+        try:
+            value = int(getattr(exc, attr, 0) or 0)
+        except (TypeError, ValueError):
+            value = 0
+        if value:
+            return value
+    match = re.search(r"api error\s+(\d+)", str(exc or ""), flags=re.IGNORECASE)
+    if match:
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            pass
+    match = re.search(r"\b(\d{3,4})\s+on\s+", str(exc or ""), flags=re.IGNORECASE)
+    if match:
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            pass
+    return 0
+
 def is_no_active_career_load_error(exc):
     return is_api_error(exc, (102, 201), "single_mode_free/load")
 
@@ -6377,6 +6399,29 @@ def start_proof_checks(req, preflight=None):
     warnings = []
     support_ids = clean_int_list(getattr(req, "support_card_ids", []) or [])
     allow_recover_tp = max(0, min(int(getattr(req, "allow_recover_tp", 0) or 0), TP_RECOVERY_BOTH))
+    card_id = safe_int(getattr(req, "card_id", 0))
+    friend_viewer_id = safe_int(getattr(req, "friend_viewer_id", 0))
+    friend_card_id = safe_int(getattr(req, "friend_card_id", 0))
+    parent_id_1 = safe_int(getattr(req, "parent_id_1", 0))
+    parent_id_2 = safe_int(getattr(req, "parent_id_2", 0))
+    rental_v = safe_int(getattr(req, "rental_viewer_id", 0))
+    rental_t = safe_int(getattr(req, "rental_trained_chara_id", 0))
+    deck_id = safe_int(getattr(req, "deck_id", 0))
+    scenario_id = safe_int(getattr(req, "scenario_id", 0))
+    if card_id <= 0:
+        errors.append("Trainee is required before starting a career")
+    if scenario_id <= 0:
+        errors.append("Career scenario is required before starting a career")
+    if deck_id <= 0:
+        errors.append("Deck slot is required before starting a career")
+    if friend_viewer_id <= 0 or friend_card_id <= 0:
+        errors.append("Friend support card is required before starting a career")
+    if parent_id_1 <= 0:
+        errors.append("Parent 1 is required before starting a career")
+    if bool(rental_v) != bool(rental_t):
+        errors.append("Borrowed guest parent is incomplete; both rental viewer id and trained chara id are required")
+    if parent_id_2 <= 0 and not (rental_v and rental_t):
+        errors.append("Parent 2 is required unless a borrowed guest parent is selected")
     if len(support_ids) != 5:
         errors.append(f"Deck must contain exactly 5 support cards; selected payload has {len(support_ids)}")
     if len(set(support_ids)) != len(support_ids):
@@ -6538,6 +6583,36 @@ def record_start_debug(req, preflight=None, error=None, proof=None, recovery=Non
     active_start_debug = start_debug_summary(req, preflight=preflight, error=error, proof=proof, recovery=recovery)
     return active_start_debug
 
+def write_start_error_snapshot(debug):
+    try:
+        root = dev_runtime_dir() / "error_snapshots" / "career_start"
+        root.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d_%H%M%S")
+        micros = int((time.time() % 1) * 1_000_000)
+        path = root / f"{stamp}_{micros:06d}_career_start.json"
+        payload = json.loads(redact_sensitive_error_text(json.dumps(debug or {}, ensure_ascii=False, default=str)))
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        latest = root / "latest_career_start.json"
+        latest.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        return str(path)
+    except Exception:
+        return ""
+
+def start_rejection_detail(code, proof=None):
+    code_text = str(code or "unknown")
+    errors = list((proof or {}).get("errors") or [])
+    warnings = list((proof or {}).get("warnings") or [])
+    if errors:
+        return f"Server rejected career start ({code_text}); local preflight now reports: " + "; ".join(errors)
+    detail = (
+        f"Server rejected career start ({code_text}). Fresh game data did not expose a local payload error, "
+        "so the selected deck/friend/parents may be stale or invalid on the server."
+    )
+    if warnings:
+        detail += " Warnings: " + "; ".join(warnings)
+    detail += " Check /api/debug/start or uma_runtime/error_snapshots/career_start/latest_career_start.json."
+    return detail
+
 def refresh_live_start_state():
     global active_dashboard_data
     if not active_client or not hasattr(active_client, "call"):
@@ -6693,7 +6768,7 @@ def start_career_from_request(req):
             difficulty_candidates=showtime_candidates,
         )
     except Exception as exc:
-        if is_api_error(exc, (1052,), "single_mode_free/start"):
+        if is_api_error(exc, (102, 205, 2511, 1052), "single_mode_free/start"):
             post_check = refresh_live_start_state()
             post_warnings = []
             if post_check.get("success") and not post_check.get("career_active"):
@@ -6702,20 +6777,20 @@ def start_career_from_request(req):
             if post_proof is not None and post_warnings:
                 post_proof.setdefault("warnings", []).extend(post_warnings)
             active_start_debug = start_debug_summary(req, preflight=post_check, error=exc, proof=post_proof, recovery=recovery_result)
-            detail = (
-                "Server rejected career start (1052). Live state was refreshed where possible; "
-                "check Bot View or /api/debug/start for the sanitized start payload. "
-                "If no active career is shown, the likely cause is an invalid deck/support/friend/parent/TP start state."
-            )
+            snapshot_path = write_start_error_snapshot(active_start_debug)
+            code = api_error_code(exc)
+            detail = start_rejection_detail(code, post_proof)
             if req.use_tp and current_tp < req.use_tp and allow_recover_tp:
                 detail = (
-                    "Server rejected career start (1052) while TP was still below the start cost. "
+                    f"Server rejected career start ({code or 'unknown'}) while TP was still below the start cost. "
                     "Check Bot View or /api/debug/start for the TP recovery attempt, selected resources, "
                     "and sanitized start payload."
                 )
             return {
                 "success": False,
                 "detail": detail,
+                "proof": post_proof,
+                "debug_snapshot": snapshot_path,
                 "account": (((post_check.get("dashboard") or {}).get("account") or {}) if post_check.get("success") else None),
             }
         record_start_debug(req, preflight=preflight, error=exc, proof=proof, recovery=recovery_result)

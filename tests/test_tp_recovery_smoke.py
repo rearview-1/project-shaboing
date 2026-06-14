@@ -1,5 +1,6 @@
 import unittest
 import time
+from unittest.mock import patch
 
 import main
 from uma_api.client import ApiCallError, UmaClient
@@ -154,6 +155,19 @@ class TpRecoverySmokeTests(unittest.TestCase):
 
         self.assertFalse(result["success"])
         self.assertIn("Not enough TP", result["detail"])
+        self.assertEqual(client.calls, [])
+
+    def test_start_preflight_blocks_missing_required_parent_before_api(self):
+        client = FakeCareerClient()
+        main.active_client = client
+        self.set_low_tp_start_state()
+        main.active_start_state["tp_info"]["current_tp"] = 30
+
+        result = main.start_career_from_request(make_start_request(parent_id_1=0, parent_id_2=0))
+
+        self.assertFalse(result["success"])
+        self.assertIn("Parent 1 is required", result["detail"])
+        self.assertIn("Parent 2 is required", result["detail"])
         self.assertEqual(client.calls, [])
 
     def test_start_allows_low_tp_with_carats_recovery_mode(self):
@@ -488,6 +502,33 @@ class TpRecoverySmokeTests(unittest.TestCase):
         self.assertIn("1052", result["detail"])
         self.assertIn("1052", main.active_start_debug["error"])
         self.assertEqual(main.active_start_debug["request"]["support_count"], 5)
+        self.assertTrue(any(call.get("card_id") == 100101 for call in client.calls))
+
+    def test_start_records_debug_when_server_rejects_102(self):
+        class RejectingStartClient(FakeCareerClient):
+            def call(self, endpoint, args=None):
+                self.calls.append({"endpoint": endpoint, "args": args})
+                return {"data": make_live_start_load_data()}
+
+            def load_career(self):
+                raise Exception("API error 102 on single_mode_free/load")
+
+            def start_career(self, **kwargs):
+                self.calls.append(kwargs)
+                raise Exception("API error 102 on single_mode_free/start")
+
+        client = RejectingStartClient()
+        main.active_client = client
+        self.set_low_tp_start_state()
+        main.active_start_state["tp_info"]["current_tp"] = 30
+
+        with patch.object(main, "write_start_error_snapshot", return_value="snapshot.json"):
+            result = main.start_career_from_request(make_start_request())
+
+        self.assertFalse(result["success"])
+        self.assertIn("102", result["detail"])
+        self.assertEqual(result["debug_snapshot"], "snapshot.json")
+        self.assertIn("102", main.active_start_debug["error"])
         self.assertTrue(any(call.get("card_id") == 100101 for call in client.calls))
 
     def test_start_preflight_proves_payload_without_starting_career(self):

@@ -3253,7 +3253,16 @@ class CareerSimulator:
                 # 5+15+10+15+10+10), but merging the unconditional +5 unique
                 # on Marvelous Sunday and Nice Nature produced 75%, which
                 # over-credited every race reward in the sim.
-                if key == "race_bonus":
+                # Same applies to other SITUATIONAL unique-effect stats. The
+                # in-game tile preview / training calculator only folds the
+                # always-on Friendship Training bonus (type 1) into the flat
+                # multipliers; `training_effectiveness` (type 8) and `race_bonus`
+                # (type 15) unique effects are conditional and must NOT inflate
+                # the flat values. Verified against real training-tile breakdowns:
+                # a guts tile with Ikuno Dictus (base train-eff 10, +5 unique)
+                # showed Training Eff x1.25 = base only, not x1.30. Merging these
+                # over-credited training gain and the deck Race Bonus.
+                if key in ("race_bonus", "training_effectiveness"):
                     continue
                 try:
                     value = float(ue.get("value") or 0)

@@ -109,6 +109,53 @@ def test_every_training_relevant_unique_is_acknowledged():
     assert acknowledged > 100, f"only {acknowledged} training-relevant unique grants acknowledged"
 
 
+def test_per_turn_item_addon_matches_tile():
+    """The per-turn _apply_training must apply megaphone+anklet as the additive
+    post-calc addon (final = R + floor(R*train_pct/100)), not a max() multiplier.
+    A base gain of 48 with 60% megaphone + 50% speed anklet must land at 100 —
+    the same as the validated NTR+Matikane tile."""
+    sim = _sim()
+    sim.state["turn"] = 1
+    sim.state["active_item_effects"] = [
+        {"kind": "megaphone", "train_pct": 60, "end_turn": 99},
+        {"kind": "ankle", "stat": "speed", "train_pct": 50, "hp_cost": 5, "end_turn": 99},
+    ]
+    # megaphone hits every facility; the speed anklet only its own facility
+    assert sim._active_training_addons("speed") == 110.0
+    assert sim._active_training_addons("power") == 60.0
+    sim.state["speed"] = 0
+    sim.state["skill_point"] = 0
+    sim.state["hp"] = 100
+    cmd = {
+        "_sim_primary_stat": "speed", "failure_rate": 0,
+        "params_inc_dec_info_array": [
+            {"target_type": 1, "value": 48},   # speed base R
+            {"target_type": 30, "value": 5},   # SP base
+        ],
+        "training_partner_array": [],
+    }
+    sim._apply_training(cmd)
+    assert sim.state["speed"] == 100      # 48 + floor(48*1.10)
+    assert sim.state["skill_point"] == 10  # 5 + floor(5*1.10)
+
+
+def test_mant_megaphone_is_20_40_60():
+    """MANT (scenario 4) megaphones are +20/40/60% (trackblazer), not the
+    standard +15/30/45%. Tier-3 megaphone item 8003 = the 60% trackblazer one."""
+    mant = _sim()
+    mant.state["turn"] = 1
+    mant._add_item(8003)
+    mant._use_item(8003)
+    pct = next(e["train_pct"] for e in mant.state["active_item_effects"] if e.get("kind") == "megaphone")
+    assert pct == 60
+    std = CareerSimulator(preset={"scenario_id": 1}, seed=1)
+    std.state["turn"] = 1
+    std._add_item(8003)
+    std._use_item(8003)
+    pct2 = next(e["train_pct"] for e in std.state["active_item_effects"] if e.get("kind") == "megaphone")
+    assert pct2 == 45
+
+
 def test_resolver_never_crashes_on_any_card():
     """Resolve every effect type for every card at every limit break — proves the
     full 539-card dataset is well-formed and the resolver is total."""

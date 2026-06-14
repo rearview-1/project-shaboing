@@ -5013,19 +5013,29 @@ class CareerSimulator:
             self.state["motivation"] = min(5, int(self.state.get("motivation") or 3) + MOOD_ITEM_GAINS[item_id])
         elif item_id in MEGAPHONE_ITEM_IDS:
             tier, duration = MEGAPHONE_ITEM_IDS[item_id]
-            multiplier = {1: 1.15, 2: 1.30, 3: 1.45}.get(int(tier), 1.20)
+            # Trackblazer/MANT megaphones are +20/40/60% training (decompiled
+            # uma.guide trackblazer calculator + the user's validated 60% tile);
+            # standard career megaphones are +15/30/45%. Stored as a POST-CALC
+            # addon % that stacks ADDITIVELY with anklets (not a max() multiplier).
+            if int(self.preset.get("scenario_id") or 0) == 4:
+                train_pct = {1: 20, 2: 40, 3: 60}.get(int(tier), 20)
+            else:
+                train_pct = {1: 15, 2: 30, 3: 45}.get(int(tier), 20)
             self.state.setdefault("active_item_effects", []).append({
                 "item_id": item_id,
-                "kind": "training_mult",
-                "multiplier": multiplier,
+                "kind": "megaphone",
+                "train_pct": train_pct,
                 "end_turn": turn + max(1, int(duration)) - 1,
             })
         elif item_id in ANKLE_WEIGHT_ITEMS:
+            # Ankle weights: +50% training on ONE facility (post-calc addon,
+            # additive with megaphones) + raised energy cost (kept as the flat
+            # hp_cost approximation until the energy model is de-fudged).
             self.state.setdefault("active_item_effects", []).append({
                 "item_id": item_id,
                 "kind": "ankle",
                 "stat": target_stat or ANKLE_WEIGHT_ITEMS[item_id],
-                "flat": 14,
+                "train_pct": 50,
                 "hp_cost": 5,
                 "end_turn": turn,
             })
@@ -5050,20 +5060,19 @@ class CareerSimulator:
                 effects.append(effect)
         self.state["active_item_effects"] = effects
 
-    def _active_training_multiplier(self):
-        mult = 1.0
+    def _active_training_addons(self, stat):
+        """uma.guide POST-CALC training addon % for a facility. Megaphones add
+        their % to EVERY facility; an ankle weight adds +50% to its own facility
+        only. They stack ADDITIVELY: final = R + floor(R * train_pct / 100),
+        matching _uma_tile_gain and the validated live tiles."""
+        train_pct = 0.0
         for effect in self.state.get("active_item_effects") or []:
-            if effect.get("kind") == "training_mult":
-                mult = max(mult, float(effect.get("multiplier") or 1.0))
-        return mult
-
-    def _active_training_flat_bonus(self, state_key):
-        stat = STATE_TO_STAT_KEY.get(state_key, state_key)
-        total = 0
-        for effect in self.state.get("active_item_effects") or []:
-            if effect.get("kind") == "ankle" and effect.get("stat") == stat:
-                total += int(effect.get("flat") or 0)
-        return total
+            kind = effect.get("kind")
+            if kind == "megaphone":
+                train_pct += float(effect.get("train_pct") or 0)
+            elif kind == "ankle" and effect.get("stat") == stat:
+                train_pct += float(effect.get("train_pct") or 0)
+        return train_pct
 
     def _active_training_extra_hp_cost(self):
         return sum(
@@ -6487,15 +6496,18 @@ class CareerSimulator:
         if fail:
             self.state["hp"] = max(0, self.state["hp"] - 10)
             return
-        # Apply stat gain
-        training_mult = self._active_training_multiplier()
+        # Apply stat gain. Megaphone/anklet items are a POST-CALC addon on the
+        # resolver's base gain R: final = R + floor(R * train_pct/100), where
+        # train_pct stacks ADDITIVELY (e.g. 60% mega + 50% anklet = 110%) —
+        # matching _uma_tile_gain and the validated live tiles. The addon applies
+        # to trained stats AND skill points (training-effectiveness boosts both).
+        train_pct = self._active_training_addons(stat_name)
         extra_hp_cost = self._active_training_extra_hp_cost()
         for item in cmd.get("params_inc_dec_info_array") or []:
             tt = item.get("target_type")
             v = item.get("value", 0)
             if tt in TARGET_TYPE_TO_STATE_KEY and v > 0:
-                state_key = TARGET_TYPE_TO_STATE_KEY[tt]
-                v = int(round(v * training_mult)) + self._active_training_flat_bonus(state_key)
+                v = int(v) + int(math.floor(int(v) * train_pct / 100.0))
             if tt == 1: self.state["speed"] = min(STAT_CAP, self.state["speed"] + v)
             elif tt == 2: self.state["stamina"] = min(STAT_CAP, self.state["stamina"] + v)
             elif tt == 3: self.state["power"] = min(STAT_CAP, self.state["power"] + v)
@@ -6503,8 +6515,10 @@ class CareerSimulator:
             elif tt == 5: self.state["wiz"] = min(STAT_CAP, self.state["wiz"] + v)
             elif tt == 10:  # energy/HP
                 self.state["hp"] = max(0, min(self.state["max_hp"], self.state["hp"] + v - extra_hp_cost))
-            elif tt == 30:  # skill point
+            elif tt == 30:  # skill point — training-eff items boost SP too
                 v = int(v or 0)
+                if v > 0:
+                    v = v + int(math.floor(v * train_pct / 100.0))
                 self.state["skill_point"] = max(0, int(self.state.get("skill_point") or 0) + v)
                 if v > 0:
                     self.sp_gain_sources["training"] += v

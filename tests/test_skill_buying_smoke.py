@@ -672,6 +672,47 @@ class SkillBuyingSmokeTests(unittest.TestCase):
         self.assertEqual(resolved["resolved_name"], "Wanted Skill")
         self.assertEqual(resolved["priority"], 0)
 
+    def test_resolve_skill_tip_skips_variant_missing_required_base_skill(self):
+        buyer = SkillBuyer(BASE_DIR)
+
+        resolved = buyer.resolve_skill_tip(
+            {"group_id": 20163, "rarity": 1, "level": 3},
+            owned_skill_ids=set(),
+            owned_groups=set(),
+            priority={},
+            blacklist=set(),
+            preset={},
+        )
+
+        self.assertEqual(resolved["resolved_skill_id"], 201631)
+        self.assertEqual(resolved["resolved_name"], "Sympathy")
+        self.assertNotIn(201632, resolved["candidate_skill_ids"])
+
+    def test_buy_batch_blocks_candidate_missing_required_base_skill(self):
+        buyer = SkillBuyer(BASE_DIR)
+        client = FakeSkillClient()
+        state = make_state(
+            turn=44,
+            skill_point=500,
+            skill_array=[],
+            skill_tips_array=[{"group_id": 20163, "rarity": 1, "level": 3}],
+        )
+        candidate = {
+            "skill_id": 201632,
+            "resolved_skill_id": 201632,
+            "group_id": 20163,
+            "name": "Connection",
+            "cost": 150,
+        }
+
+        next_state, bought = buyer._buy_batch(client, state, [candidate], 44, preset={})
+
+        self.assertIs(next_state, state)
+        self.assertEqual(bought, 0)
+        self.assertEqual(client.calls, [])
+        self.assertEqual(candidate["preflight_error"], "missing_required_base_skill")
+        self.assertEqual(candidate["missing_required_skill_ids"], [201631])
+
     def test_priority_skill_overrides_stale_blacklist(self):
         buyer = SkillBuyer(BASE_DIR)
         client = FakeSkillClient()

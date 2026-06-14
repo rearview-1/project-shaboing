@@ -329,6 +329,30 @@ RACE_WEIGHT_PROFILES = {
     "": {"speed": 1.00, "stamina": 0.80, "power": 0.80, "wit": 0.50, "guts": 0.40},
 }
 
+# --- Physics race engine (career_bot/race_sim.py) opponent-field model ---
+# Opponent field strength (median per-NPC stat-sum) and NPC skill-count vs career
+# turn, derived from data/real_race_snapshots.json field_samples. The synthetic
+# fallback (for races without a real field) is calibrated so it reproduces the
+# engine's behaviour on the 51 REAL fields: strength x1.3, speed-concentration
+# x1.5 -> 91% agreement, 83% vs 87% real-field win rate. See
+# [[project_race_physics_engine]]. NPC stat-sums/skills are RAW (raw-vs-raw fit
+# beats applying the +400 to everyone — memory reference_sim_audit mistakes table).
+PHYSICS_FIELD_SUM_BY_TURN = [(12, 414), (24, 414), (30, 639), (42, 932), (54, 1286), (66, 1494), (78, 2684)]
+PHYSICS_NPC_SKILLS_BY_TURN = [(12, 0), (30, 2), (42, 3), (54, 3.3), (66, 3.3), (78, 5.5)]
+PHYSICS_SYNTH_STRENGTH = 1.3
+PHYSICS_SYNTH_SPEED_CONC = 1.5
+PHYSICS_APT_RANK_LETTER = {8: "S", 7: "A", 6: "B", 5: "C", 4: "D", 3: "E", 2: "F", 1: "G"}
+
+def _physics_interp(points, t):
+    if t <= points[0][0]:
+        return points[0][1]
+    if t >= points[-1][0]:
+        return points[-1][1]
+    for (t0, v0), (t1, v1) in zip(points, points[1:]):
+        if t0 <= t <= t1:
+            return v0 + (v1 - v0) * (t - t0) / (t1 - t0)
+    return points[-1][1]
+
 # G1 calendar — loaded from the real RaceCatalog at simulator init,
 # not hardcoded. See `_load_g1_calendar()`. The constant below is a
 # fallback in case the catalog isn't available (test environments).
@@ -4544,6 +4568,17 @@ class CareerSimulator:
             if stat == "stamina" and turn <= 56 and current < 650:
                 pressure = max(pressure, 0.65)
 
+            # Deck-aware item substitution: a high-target stat backed by only
+            # one (or zero) support cards almost never rainbows, so the only way
+            # to reach its target is shop items. For those stats, buy items as
+            # aggressively as we do for the deck's rainbow stats (ceiling 0.94
+            # instead of 0.88) and lift their score, instead of throttling the
+            # one stat that most needs the help. Matches manual gold runs that
+            # pushed a low-support stat (e.g. power on a 1-power-card deck) to
+            # ~max via summer anklet + megaphone item usage.
+            low_support = self._deck_count_for_stat(stat) <= 1 and int(target or 0) >= 900
+            low_support_lift = 1.35 if low_support else 1.0
+
             app_id = TARGET_STAT_APP_IDS.get(stat)
             if (
                 app_id
@@ -4554,11 +4589,12 @@ class CareerSimulator:
                 boosts = self.state.get("facility_item_boosts") or {}
                 if int(boosts.get(stat) or 0) < 2:
                     cost = self._item_cost(app_id)
+                    power_ceiling = 0.94 if low_support else 0.88
                     if cost <= budget and (
                         (stat in {"speed", "wit"} and target >= 1100 and current < target * 0.94)
-                        or (stat == "power" and target >= 900 and current < target * 0.88)
+                        or (stat == "power" and target >= 900 and current < target * power_ceiling)
                     ):
-                        score = (3.0 + pressure * 5.0) * priority.get(stat, 0.5) * self._target_shop_item_seen_weight(app_id)
+                        score = (3.0 + pressure * 5.0) * priority.get(stat, 0.5) * low_support_lift * self._target_shop_item_seen_weight(app_id)
                         candidates.append((score, app_id, cost, stat))
 
             for item_id in TARGET_STAT_ITEM_IDS.get(stat, ()):
@@ -4570,13 +4606,17 @@ class CareerSimulator:
                 _, gain = STAT_ITEM_GAINS.get(item_id, (stat, 0))
                 if gain <= 0:
                     continue
-                score = ((gain / max(1.0, cost)) * 10.0 + pressure * 2.0) * priority.get(stat, 0.5)
+                score = ((gain / max(1.0, cost)) * 10.0 + pressure * 2.0) * priority.get(stat, 0.5) * low_support_lift
                 if stat == "stamina" and turn <= 56 and current < 650:
                     score += 3.25
                 elif stat == "power" and turn <= 56 and current < 650:
                     score += 0.65
                 elif stat in {"speed", "wit"} and turn >= 57 and target >= 1100 and current < target:
                     score += 2.75
+                elif low_support and target >= 1000 and current < target:
+                    # keep buying the low-support stat's items late, the way a
+                    # manual player leans on the summer item spike for it
+                    score += 2.0
                 score *= self._target_shop_item_seen_weight(item_id)
                 if item_id in {1201, 1205} and stat in {"speed", "wit"}:
                     score += 0.35
@@ -7362,6 +7402,17 @@ class CareerSimulator:
         grade = row.get("type") or grade
         terrain = row.get("terrain") or terrain
         distance = distance or _distance_key(row.get("distance"))
+        # Physics race engine (career_bot/race_sim.py): actually run the race over
+        # the course (HP depletion / last spurt / power-accel / guts / skill procs)
+        # against a real-or-synthetic opponent field, instead of the legacy
+        # weighted-stat-sum + result-corpus kernel + hardcoded win-probability
+        # floors. Validated vs live careers: predicts ~4.4 losses/career vs 5.2
+        # observed (old floors: 1.9) at 88% vs 86% win rate. See
+        # [[project_race_physics_engine]].
+        if bool(self.preset.get("sim_use_physics_race_engine", True)):
+            physics = self._physics_race_outcome(pid, distance, terrain, grade, sample=sample)
+            if physics is not None:
+                return physics
         estimate = self._estimate_race_from_results(
             pid,
             race_name,

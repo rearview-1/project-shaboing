@@ -63,7 +63,11 @@ class DailyTaskStatusTests(unittest.TestCase):
         status = summarize_daily_event_status(load_data)
 
         self.assertTrue(status["showtime"]["available"])
-        self.assertEqual([(row["difficulty_id"], row["difficulty"]) for row in status["showtime"]["difficulty_options"]], [(1003, 1), (1003, 2), (1003, 3)])
+        self.assertEqual(
+            [(row["difficulty_id"], row["difficulty"]) for row in status["showtime"]["difficulty_options"]],
+            [(1003, 1), (1003, 2), (1003, 3)],
+        )
+        self.assertEqual(status["showtime"]["difficulty_options"][2]["open_difficulty_index"], 3)
         self.assertEqual(status["showtime"]["missions_pending"], 2)
         self.assertEqual(status["showtime"]["missions_claimable"], 1)
         self.assertEqual(status["daily_race"]["unplayed_count"], 1)

@@ -41,6 +41,7 @@ from career_bot.daily_tasks import (
     normalize_action_steps,
     normalize_style_id,
     render_template_value,
+    showtime_difficulty_options,
     summarize_daily_event_status,
 )
 from career_bot.parent_memory import annotate_parents, write_parent_library_snapshot
@@ -6228,6 +6229,118 @@ def clean_int_list(values):
             ids.append(item)
     return ids
 
+def sanitize_showtime_start_fields(req, load_data=None):
+    """Normalize Fuji/Showtime start fields against fresh load/index data.
+
+    Difficulty selection is valid for a new career start, but event boost is a
+    separate consumable. Do not auto-enable boost just because a difficulty was
+    selected; doing that with zero boost items makes the server reject
+    single_mode_free/start with 102/205.
+    """
+
+    warnings = []
+    requested_difficulty_id = safe_int(getattr(req, "difficulty_id", 0))
+    requested_difficulty = safe_int(getattr(req, "difficulty", 0))
+    requested_boost = safe_int(getattr(req, "is_boost", 0))
+    requested_boost_event = safe_int(getattr(req, "boost_story_event_id", 0))
+    if requested_difficulty_id <= 0 and requested_difficulty <= 0:
+        if requested_boost or requested_boost_event:
+            setattr(req, "is_boost", 0)
+            setattr(req, "boost_story_event_id", 0)
+            warnings.append("Ignored Showtime boost because no Showtime difficulty is selected.")
+        return warnings
+
+    options = showtime_difficulty_options(load_data or {})
+    selected = next(
+        (
+            row for row in options
+            if safe_int(row.get("difficulty_id")) == requested_difficulty_id
+            and safe_int(row.get("difficulty")) == requested_difficulty
+        ),
+        None,
+    )
+    if not selected:
+        setattr(req, "difficulty_id", 0)
+        setattr(req, "difficulty", 0)
+        setattr(req, "is_boost", 0)
+        setattr(req, "boost_story_event_id", 0)
+        warnings.append(
+            f"Dropped stale Showtime selection {requested_difficulty_id}:{requested_difficulty}; "
+            "fresh game data does not list it as open."
+        )
+        return warnings
+
+    setattr(req, "difficulty_id", safe_int(selected.get("difficulty_id")))
+    setattr(req, "difficulty", safe_int(selected.get("difficulty")))
+    boost_items = safe_int(selected.get("item_num"))
+    if requested_boost and boost_items > 0:
+        setattr(req, "is_boost", 1)
+        setattr(req, "boost_story_event_id", requested_boost_event or safe_int((load_data or {}).get("story_event_id")))
+    else:
+        if requested_boost or requested_boost_event:
+            warnings.append(
+                "Showtime difficulty will be used without boost; no boost item is available from fresh game data."
+            )
+        setattr(req, "is_boost", 0)
+        setattr(req, "boost_story_event_id", 0)
+    return warnings
+
+def build_showtime_start_candidates(req, load_data=None):
+    """Build bounded alternate encodings for Showtime career start.
+
+    Live captures show the event row exposes one difficulty_id plus an
+    open_difficulty_index, while the server has rejected at least one obvious
+    selected level payload with 102/205. Keep the user's selected level first,
+    then try adjacent/open-index encodings before the client falls back to a
+    normal career start.
+    """
+
+    requested_difficulty_id = safe_int(getattr(req, "difficulty_id", 0))
+    requested_difficulty = safe_int(getattr(req, "difficulty", 0))
+    if requested_difficulty_id <= 0 or requested_difficulty <= 0:
+        return []
+    options = showtime_difficulty_options(load_data or {})
+    selected = next(
+        (
+            row for row in options
+            if safe_int(row.get("difficulty_id")) == requested_difficulty_id
+            and safe_int(row.get("difficulty")) == requested_difficulty
+        ),
+        None,
+    )
+    if not selected:
+        return []
+    open_index = max(requested_difficulty, safe_int(selected.get("open_difficulty_index")))
+    ordered_values = []
+
+    def add(value):
+        value = safe_int(value)
+        if value <= 0 or value > open_index or value in ordered_values:
+            return
+        ordered_values.append(value)
+
+    add(requested_difficulty)
+    add(requested_difficulty - 1)
+    add(requested_difficulty + 1)
+    add(open_index)
+    for value in range(open_index, 0, -1):
+        add(value)
+
+    is_boost = 1 if safe_int(getattr(req, "is_boost", 0)) > 0 else 0
+    boost_story_event_id = safe_int(getattr(req, "boost_story_event_id", 0)) if is_boost else 0
+    return [
+        {
+            "difficulty_id": requested_difficulty_id,
+            "difficulty": value,
+            "is_boost": is_boost,
+            "boost_story_event_id": boost_story_event_id,
+            "source": "selected" if value == requested_difficulty else "fallback",
+            "selected_difficulty": requested_difficulty,
+            "open_difficulty_index": open_index,
+        }
+        for value in ordered_values
+    ]
+
 def build_start_payload_preview(req, tp_info=None, current_money=None, succession_rank_point=None, allow_recover_tp=None):
     tp_info = tp_info if tp_info is not None else (apply_tp_timer_to_cached_state() or active_start_state.get("tp_info"))
     current_money = active_start_state.get("current_money", 0) if current_money is None else current_money
@@ -6338,6 +6451,7 @@ def start_proof_checks(req, preflight=None):
             warnings.append("Friend list was not loaded in dashboard data; friend support can only be verified by start")
 
     payload_preview = None
+    showtime_candidates = []
     if tp_info and "current_money" in active_start_state:
         payload_preview = build_start_payload_preview(
             req,
@@ -6346,12 +6460,14 @@ def start_proof_checks(req, preflight=None):
             succession_rank_point=selected_succession_rank_point(req),
             allow_recover_tp=allow_recover_tp,
         )
+        showtime_candidates = build_showtime_start_candidates(req, (preflight or {}).get("load_data") or {})
 
     return {
         "ok": not errors,
         "errors": errors,
         "warnings": warnings,
         "payload": payload_preview,
+        "showtime_candidates": showtime_candidates,
         "support_count": len(support_ids),
         "tp_current": current_tp,
         "tp_required": use_tp,
@@ -6468,7 +6584,14 @@ def start_career_from_request(req):
     if not req.friend_viewer_id or not req.friend_card_id:
         return {"success": False, "detail": "Friend support card is required"}
     preflight = refresh_live_start_state()
+    showtime_warnings = []
+    showtime_candidates = []
+    if preflight.get("success") and not preflight.get("career_active"):
+        showtime_warnings = sanitize_showtime_start_fields(req, preflight.get("load_data") or {})
+        showtime_candidates = build_showtime_start_candidates(req, preflight.get("load_data") or {})
     proof = start_proof_checks(req, preflight=preflight) if preflight.get("success") and not preflight.get("career_active") else None
+    if proof is not None and showtime_warnings:
+        proof.setdefault("warnings", []).extend(showtime_warnings)
     record_start_debug(req, preflight=preflight, proof=proof)
     if not preflight.get("success"):
         return {"success": False, "detail": f"Could not refresh live state before start: {preflight.get('detail')}"}
@@ -6536,11 +6659,14 @@ def start_career_from_request(req):
     if rental_v == 0 and rental_t == 0 and int(effective_parent_id_2 or 0) == 0:
         fallback_error = borrow_fallback_start_error(req, quota=quota)
         if fallback_error:
-            record_start_debug(req, preflight=preflight, proof=proof, recovery=recovery_result, error=fallback_error)
+            fallback_proof = start_proof_checks(req, preflight=preflight)
+            if showtime_warnings:
+                fallback_proof.setdefault("warnings", []).extend(showtime_warnings)
+            record_start_debug(req, preflight=preflight, proof=fallback_proof, recovery=recovery_result, error=fallback_error)
             return {
                 "success": False,
                 "detail": fallback_error,
-                "proof": start_proof_checks(req, preflight=preflight),
+                "proof": fallback_proof,
                 "account": ((preflight.get("dashboard") or {}).get("account") or {}),
             }
     try:
@@ -6563,12 +6689,18 @@ def start_career_from_request(req):
             difficulty=req.difficulty,
             is_boost=req.is_boost,
             boost_story_event_id=req.boost_story_event_id,
-            allow_recover_tp=start_allow_recover_tp
+            allow_recover_tp=start_allow_recover_tp,
+            difficulty_candidates=showtime_candidates,
         )
     except Exception as exc:
         if is_api_error(exc, (1052,), "single_mode_free/start"):
             post_check = refresh_live_start_state()
+            post_warnings = []
+            if post_check.get("success") and not post_check.get("career_active"):
+                post_warnings = sanitize_showtime_start_fields(req, post_check.get("load_data") or {})
             post_proof = start_proof_checks(req, preflight=post_check) if post_check.get("success") and not post_check.get("career_active") else proof
+            if post_proof is not None and post_warnings:
+                post_proof.setdefault("warnings", []).extend(post_warnings)
             active_start_debug = start_debug_summary(req, preflight=post_check, error=exc, proof=post_proof, recovery=recovery_result)
             detail = (
                 "Server rejected career start (1052). Live state was refreshed where possible; "
@@ -6636,12 +6768,17 @@ def preflight_career_run_request(req):
             "account": ((preflight.get("dashboard") or {}).get("account") or {}),
         }
 
+    showtime_warnings = sanitize_showtime_start_fields(req, preflight.get("load_data") or {})
     if not getattr(req, "friend_viewer_id", 0) or not getattr(req, "friend_card_id", 0):
         proof = {"ok": False, "errors": ["Friend support card is required"], "warnings": []}
+        if showtime_warnings:
+            proof.setdefault("warnings", []).extend(showtime_warnings)
         record_start_debug(req, preflight=preflight, proof=proof)
         return {"success": False, "detail": "Friend support card is required", "proof": proof}
 
     proof = start_proof_checks(req, preflight=preflight)
+    if showtime_warnings:
+        proof.setdefault("warnings", []).extend(showtime_warnings)
     record_start_debug(req, preflight=preflight, proof=proof)
     if proof.get("errors"):
         return {"success": False, "detail": "; ".join(proof["errors"]), "proof": proof}

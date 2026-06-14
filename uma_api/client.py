@@ -1312,7 +1312,8 @@ class UmaClient:
             and response_viewer_id != current_viewer_id
         )
 
-        if viewer_id_mismatch and rc == 1 and ep in safe_viewer_remap_endpoints:
+        start_endpoint = 'single_mode_free/start'
+        if viewer_id_mismatch and rc == 1 and (ep in safe_viewer_remap_endpoints or ep == start_endpoint):
             print(f"VIEWER ID UPDATED on {ep}: {current_viewer_id} -> {response_viewer_id}")
             self.viewer_id = response_viewer_id
             self.regen_sid()
@@ -1389,6 +1390,30 @@ class UmaClient:
         viewer_remap_retry_codes = {391, 394}
         if viewer_id_mismatch and ep in safe_viewer_remap_endpoints and rc in viewer_remap_retry_codes and retry_viewer_remap > 0:
             print(f"VIEWER ID MISMATCH on {rc} {ep}: {current_viewer_id} -> {response_viewer_id}; retrying with server-provided viewer_id")
+            self.viewer_id = response_viewer_id
+            self.regen_sid()
+            return self.call(
+                ep,
+                args,
+                retry_208=retry_208,
+                retry_205=retry_205,
+                quiet_result_codes=quiet_result_codes,
+                retry_http_403=retry_http_403,
+                retry_394=retry_394,
+                retry_viewer_remap=retry_viewer_remap - 1,
+            )
+        start_viewer_remap_retry_codes = {102, 205, 2511, 391, 394, 501}
+        if (
+            viewer_id_mismatch
+            and ep == start_endpoint
+            and rc in start_viewer_remap_retry_codes
+            and retry_viewer_remap > 0
+        ):
+            print(
+                f"VIEWER ID MISMATCH on {rc} {ep}: {current_viewer_id} -> {response_viewer_id}; "
+                "retrying start once with server-provided viewer_id",
+                flush=True,
+            )
             self.viewer_id = response_viewer_id
             self.regen_sid()
             return self.call(
@@ -1788,49 +1813,29 @@ class UmaClient:
             start_payload['allow_recover_tp'] = True
         return start_payload
 
+    @staticmethod
+    def _start_payload_has_showtime_boost(payload):
+        start_chara = (payload or {}).get('start_chara') or {}
+        selected = start_chara.get('selected_difficulty_info') or {}
+        try:
+            is_boost = int(selected.get('is_boost') or 0)
+        except (TypeError, ValueError):
+            is_boost = 0
+        try:
+            boost_story_event_id = int(start_chara.get('boost_story_event_id') or 0)
+        except (TypeError, ValueError):
+            boost_story_event_id = 0
+        return is_boost > 0 or boost_story_event_id > 0
+
     def start_career(self, card_id, support_card_ids, friend_viewer_id, friend_card_id,
                      parent_id_1, parent_id_2, scenario_id=4, deck_id=1, use_tp=30,
                      tp_info=None, current_money=0, succession_rank_point=0,
                      rental_viewer_id=0, rental_trained_chara_id=0,
                      difficulty_id=0, difficulty=0, is_boost=0,
-                     boost_story_event_id=0, allow_recover_tp=0):
-        start_payload = self.build_start_payload(
-            card_id=card_id,
-            support_card_ids=support_card_ids,
-            friend_viewer_id=friend_viewer_id,
-            friend_card_id=friend_card_id,
-            parent_id_1=parent_id_1,
-            parent_id_2=parent_id_2,
-            scenario_id=scenario_id,
-            deck_id=deck_id,
-            use_tp=use_tp,
-            tp_info=tp_info,
-            current_money=current_money,
-            succession_rank_point=succession_rank_point,
-            rental_viewer_id=rental_viewer_id,
-            rental_trained_chara_id=rental_trained_chara_id,
-            difficulty_id=difficulty_id,
-            difficulty=difficulty,
-            is_boost=is_boost,
-            boost_story_event_id=boost_story_event_id,
-            allow_recover_tp=allow_recover_tp,
-        )
-        try:
-            return self.call(
-                'single_mode_free/start',
-                start_payload,
-                retry_205=0,
-                quiet_result_codes={205},
-            )
-        except ApiCallError as exc:
-            code = int(getattr(exc, "result_code", 0) or getattr(exc, "response_code", 0) or 0)
-            if code != 205:
-                raise
-            # Some server builds are strict about optional start fields while
-            # others tolerate or expect the legacy all-block shape. The normal
-            # first attempt omits empty Showtime/boost/rental blocks; on 205,
-            # try the legacy shape once before surfacing the start failure.
-            fallback_payload = self.build_start_payload(
+                     boost_story_event_id=0, allow_recover_tp=0,
+                     difficulty_candidates=None):
+        def make_payload(diff_id, diff, boost, boost_event, *, include_empty_optional_blocks=False):
+            return self.build_start_payload(
                 card_id=card_id,
                 support_card_ids=support_card_ids,
                 friend_viewer_id=friend_viewer_id,
@@ -1845,16 +1850,96 @@ class UmaClient:
                 succession_rank_point=succession_rank_point,
                 rental_viewer_id=rental_viewer_id,
                 rental_trained_chara_id=rental_trained_chara_id,
-                difficulty_id=difficulty_id,
-                difficulty=difficulty,
-                is_boost=is_boost,
-                boost_story_event_id=boost_story_event_id,
+                difficulty_id=diff_id,
+                difficulty=diff,
+                is_boost=boost,
+                boost_story_event_id=boost_event,
                 allow_recover_tp=allow_recover_tp,
-                include_empty_optional_blocks=True,
+                include_empty_optional_blocks=include_empty_optional_blocks,
             )
-            if fallback_payload == start_payload:
-                raise
-            return self.call('single_mode_free/start', fallback_payload, quiet_result_codes={205})
+
+        attempts = []
+        seen = set()
+
+        def append_attempt(payload):
+            key = json.dumps(payload, sort_keys=True, default=str)
+            if key in seen:
+                return
+            seen.add(key)
+            attempts.append(payload)
+
+        candidate_rows = list(difficulty_candidates or [])
+        if candidate_rows:
+            for row in candidate_rows:
+                try:
+                    candidate_id = int((row or {}).get("difficulty_id") or 0)
+                    candidate_difficulty = int((row or {}).get("difficulty") or 0)
+                    candidate_boost = int((row or {}).get("is_boost") or 0)
+                    candidate_boost_event = int((row or {}).get("boost_story_event_id") or 0)
+                except (TypeError, ValueError):
+                    continue
+                append_attempt(make_payload(
+                    candidate_id,
+                    candidate_difficulty,
+                    candidate_boost,
+                    candidate_boost_event,
+                ))
+                if candidate_boost > 0 or candidate_boost_event > 0:
+                    append_attempt(make_payload(candidate_id, candidate_difficulty, 0, 0))
+
+        start_payload = make_payload(difficulty_id, difficulty, is_boost, boost_story_event_id)
+        append_attempt(start_payload)
+        if self._start_payload_has_showtime_boost(start_payload):
+            # Fuji/Showtime difficulty selection is independent from event boost
+            # item usage. Some accounts have the difficulty open but no boost
+            # item; sending is_boost=1 then makes start reject with 102/205.
+            append_attempt(make_payload(difficulty_id, difficulty, 0, 0))
+
+        fallback_payload = make_payload(
+            difficulty_id,
+            difficulty,
+            0 if self._start_payload_has_showtime_boost(start_payload) else is_boost,
+            0 if self._start_payload_has_showtime_boost(start_payload) else boost_story_event_id,
+            include_empty_optional_blocks=True,
+        )
+        append_attempt(fallback_payload)
+        if int(difficulty_id or 0) > 0 or int(difficulty or 0) > 0:
+            append_attempt(make_payload(0, 0, 0, 0))
+            append_attempt(make_payload(0, 0, 0, 0, include_empty_optional_blocks=True))
+
+        last_exc = None
+        for index, payload in enumerate(attempts):
+            try:
+                return self.call(
+                    'single_mode_free/start',
+                    payload,
+                    retry_205=0,
+                    quiet_result_codes={102, 205},
+                )
+            except ApiCallError as exc:
+                last_exc = exc
+                code = int(getattr(exc, "result_code", 0) or getattr(exc, "response_code", 0) or 0)
+                if code not in {102, 205} or index >= len(attempts) - 1:
+                    raise
+                if self._start_payload_has_showtime_boost(payload):
+                    print("single_mode_free/start rejected Showtime boost; retrying difficulty without boost item", flush=True)
+                elif (payload.get("start_chara") or {}).get("selected_difficulty_info", {}).get("difficulty_id"):
+                    selected = (payload.get("start_chara") or {}).get("selected_difficulty_info") or {}
+                    print(
+                        f"{code} on single_mode_free/start for Showtime "
+                        f"{selected.get('difficulty_id')}:{selected.get('difficulty')}; retrying alternate start payload",
+                        flush=True,
+                    )
+                elif int(difficulty_id or 0) > 0 or int(difficulty or 0) > 0:
+                    print(
+                        f"{code} on single_mode_free/start; all Showtime variants may be invalid, retrying normal career payload",
+                        flush=True,
+                    )
+                else:
+                    print(f"{code} on single_mode_free/start; retrying alternate start payload", flush=True)
+        if last_exc:
+            raise last_exc
+        raise RuntimeError("single_mode_free/start did not execute")
 
     def exec_command(self, command_type, command_id, current_turn, current_vital, command_group_id=0, select_id=0):
         return self.call('single_mode_free/exec_command', {

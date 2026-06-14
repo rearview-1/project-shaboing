@@ -92,6 +92,23 @@ def make_live_start_load_data(deck_ids=None):
     }
 
 
+def make_showtime_load_data(item_num=0, open_difficulty_index=4, story_event_id=1015):
+    data = make_live_start_load_data()
+    data.update({
+        "story_event_id": story_event_id,
+        "single_mode_difficulty_info_array": [
+            {
+                "difficulty_id": 1003,
+                "open_difficulty_index": open_difficulty_index,
+                "item_num": item_num,
+                "box_id": 4,
+                "box_item_num": 52,
+            }
+        ],
+    })
+    return data
+
+
 class TpRecoverySmokeTests(unittest.TestCase):
     def setUp(self):
         self.saved_state = {
@@ -603,6 +620,135 @@ class TpRecoverySmokeTests(unittest.TestCase):
         )
         self.assertEqual(start_chara["boost_story_event_id"], 1015)
 
+    def test_client_start_payload_keeps_showtime_difficulty_without_boost(self):
+        payload = UmaClient.build_start_payload(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+            difficulty_id=1003,
+            difficulty=2,
+            is_boost=0,
+            boost_story_event_id=0,
+        )
+
+        start_chara = payload["start_chara"]
+        self.assertEqual(
+            start_chara["selected_difficulty_info"],
+            {"difficulty_id": 1003, "difficulty": 2, "is_boost": 0},
+        )
+        self.assertNotIn("boost_story_event_id", start_chara)
+
+    def test_sanitize_showtime_keeps_difficulty_but_strips_unavailable_boost(self):
+        req = make_start_request(
+            difficulty_id=1003,
+            difficulty=2,
+            is_boost=1,
+            boost_story_event_id=1015,
+        )
+
+        warnings = main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=0))
+
+        self.assertEqual(req.difficulty_id, 1003)
+        self.assertEqual(req.difficulty, 2)
+        self.assertEqual(req.is_boost, 0)
+        self.assertEqual(req.boost_story_event_id, 0)
+        self.assertTrue(any("without boost" in warning for warning in warnings))
+
+    def test_showtime_start_candidates_include_selected_adjacent_and_open(self):
+        req = make_start_request(
+            difficulty_id=1003,
+            difficulty=2,
+            is_boost=0,
+            boost_story_event_id=0,
+        )
+        main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=0, open_difficulty_index=4))
+
+        candidates = main.build_showtime_start_candidates(
+            req,
+            make_showtime_load_data(item_num=0, open_difficulty_index=4),
+        )
+
+        self.assertEqual(
+            [(row["difficulty_id"], row["difficulty"], row["is_boost"]) for row in candidates],
+            [(1003, 2, 0), (1003, 1, 0), (1003, 3, 0), (1003, 4, 0)],
+        )
+
+    def test_sanitize_showtime_keeps_available_explicit_boost(self):
+        req = make_start_request(
+            difficulty_id=1003,
+            difficulty=4,
+            is_boost=1,
+            boost_story_event_id=0,
+        )
+
+        warnings = main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=2, story_event_id=1015))
+
+        self.assertEqual(warnings, [])
+        self.assertEqual(req.difficulty_id, 1003)
+        self.assertEqual(req.difficulty, 4)
+        self.assertEqual(req.is_boost, 1)
+        self.assertEqual(req.boost_story_event_id, 1015)
+
+    def test_sanitize_showtime_drops_stale_difficulty(self):
+        req = make_start_request(
+            difficulty_id=9999,
+            difficulty=2,
+            is_boost=1,
+            boost_story_event_id=1015,
+        )
+
+        warnings = main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=2))
+
+        self.assertEqual(req.difficulty_id, 0)
+        self.assertEqual(req.difficulty, 0)
+        self.assertEqual(req.is_boost, 0)
+        self.assertEqual(req.boost_story_event_id, 0)
+        self.assertTrue(any("Dropped stale Showtime" in warning for warning in warnings))
+
+    def test_client_start_102_retries_showtime_without_boost_item(self):
+        client = object.__new__(UmaClient)
+        calls = []
+
+        def fake_call(endpoint, payload, **kwargs):
+            calls.append((endpoint, payload, kwargs))
+            if len(calls) == 1:
+                raise ApiCallError(
+                    "API error 102 on single_mode_free/start",
+                    endpoint=endpoint,
+                    result_code=102,
+                    response_code=102,
+                )
+            return {"ok": True}
+
+        client.call = fake_call
+
+        result = client.start_career(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+            difficulty_id=1003,
+            difficulty=2,
+            is_boost=1,
+            boost_story_event_id=1015,
+        )
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(len(calls), 2)
+        first = calls[0][1]["start_chara"]
+        second = calls[1][1]["start_chara"]
+        self.assertEqual(first["selected_difficulty_info"], {"difficulty_id": 1003, "difficulty": 2, "is_boost": 1})
+        self.assertEqual(first["boost_story_event_id"], 1015)
+        self.assertEqual(second["selected_difficulty_info"], {"difficulty_id": 1003, "difficulty": 2, "is_boost": 0})
+        self.assertNotIn("boost_story_event_id", second)
+
     def test_client_start_205_retries_with_legacy_optional_blocks(self):
         client = object.__new__(UmaClient)
         calls = []
@@ -635,6 +781,54 @@ class TpRecoverySmokeTests(unittest.TestCase):
         self.assertNotIn("selected_difficulty_info", calls[0][1]["start_chara"])
         self.assertIn("selected_difficulty_info", calls[1][1]["start_chara"])
         self.assertIn("rental_succession_trained_chara", calls[1][1]["start_chara"])
+
+    def test_client_start_retries_showtime_candidate_levels_before_normal_fallback(self):
+        client = object.__new__(UmaClient)
+        calls = []
+
+        def fake_call(endpoint, payload, **kwargs):
+            calls.append((endpoint, payload, kwargs))
+            selected = (payload["start_chara"].get("selected_difficulty_info") or {})
+            if selected.get("difficulty_id") == 1003 and selected.get("difficulty") in {2, 1}:
+                raise ApiCallError(
+                    "API error 205 on single_mode_free/start",
+                    endpoint=endpoint,
+                    result_code=205,
+                    response_code=205,
+                )
+            return {"ok": True, "selected": selected}
+
+        client.call = fake_call
+
+        result = client.start_career(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+            difficulty_id=1003,
+            difficulty=2,
+            is_boost=0,
+            boost_story_event_id=0,
+            difficulty_candidates=[
+                {"difficulty_id": 1003, "difficulty": 2, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 1, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 3, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 4, "is_boost": 0, "boost_story_event_id": 0},
+            ],
+        )
+
+        self.assertEqual(result["selected"], {"difficulty_id": 1003, "difficulty": 3, "is_boost": 0})
+        self.assertEqual(
+            [
+                call[1]["start_chara"]["selected_difficulty_info"]["difficulty"]
+                for call in calls
+                if "selected_difficulty_info" in call[1]["start_chara"]
+            ],
+            [2, 1, 3],
+        )
 
     def test_client_recovery_item_payload_uses_flat_client_own_num(self):
         client = object.__new__(UmaClient)

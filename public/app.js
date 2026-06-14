@@ -2156,7 +2156,9 @@ const state = {
                 const current = state.selectedShowtimeDifficulty || els.showtimeDifficultySelect.value || '';
                 els.showtimeDifficultySelect.innerHTML = `<option value="">No Showtime difficulty</option>` + options.map(row => {
                     const value = showtimeSelectionValue(row);
-                    return `<option value="${escapeAttr(value)}">${escapeHtml(row.label || value)}</option>`;
+                    const boostItems = Number(row.item_num || 0);
+                    const label = `${row.label || value} - boost items ${Number.isFinite(boostItems) ? boostItems : 0}`;
+                    return `<option value="${escapeAttr(value)}">${escapeHtml(label)}</option>`;
                 }).join('');
                 const values = new Set(options.map(showtimeSelectionValue));
                 els.showtimeDifficultySelect.value = values.has(current) ? current : '';
@@ -4741,8 +4743,12 @@ const state = {
                 // metadata because the server has no in-career way to apply it.
                 difficulty_id: includeNewCareerOnlyOptions ? showtime.difficulty_id : 0,
                 difficulty: includeNewCareerOnlyOptions ? showtime.difficulty : 0,
-                is_boost: includeNewCareerOnlyOptions && showtime.difficulty_id ? 1 : 0,
-                boost_story_event_id: includeNewCareerOnlyOptions && showtime.difficulty_id ? Number((((state.dailyEvents || {}).showtime || {}).story_event_id) || 0) : 0,
+                // Difficulty selection and boost-item usage are separate server
+                // concepts. Auto-enabling boost with zero items rejects career
+                // start (102/205), so do not request boost unless the UI exposes
+                // an explicit consumable toggle later.
+                is_boost: 0,
+                boost_story_event_id: 0,
                 preset_name: selectedPresetName(),
                 max_steps: 2500,
                 ...tpRecoveryPayload,

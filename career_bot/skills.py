@@ -519,6 +519,35 @@ class SkillBuyer:
             return True
         return False
 
+    def _required_existing_skill_ids(self, skill_id):
+        try:
+            skill_id_int = int(skill_id or 0)
+        except (TypeError, ValueError):
+            return set()
+        record = self.skill_activation_data.get(skill_id_int)
+        if not isinstance(record, dict):
+            return set()
+        texts = [str(record.get("condition") or "")]
+        for group in record.get("condition_groups") or []:
+            if isinstance(group, dict):
+                texts.append(str(group.get("condition") or ""))
+        required = set()
+        for text in texts:
+            for match in re.finditer(r"is_exist_skill_id\s*==\s*(\d+)", text):
+                try:
+                    required.add(int(match.group(1)))
+                except (TypeError, ValueError):
+                    continue
+        return required
+
+    def _missing_purchase_prereqs(self, skill_id, owned_skill_ids):
+        required = self._required_existing_skill_ids(skill_id)
+        if not required:
+            return set()
+        owned = {int(sid or 0) for sid in owned_skill_ids or []}
+        owned |= set(self.known_bought_skill_ids)
+        return {sid for sid in required if sid not in owned}
+
     def reset_scoped_failures(self):
         # Intentionally preserves failed_this_turn and current_turn. _set_turn already
         # resets failed_this_turn when the turn actually changes; clearing here too
@@ -2341,7 +2370,11 @@ class SkillBuyer:
         failed = self._failed_for_turn()
         candidate_skill_ids = [
             sid for sid in self.group_to_skill_ids.get(group_id, [])
-            if sid not in owned_skill_ids and not self._is_skill_blocked_for_purchase(sid, failed)
+            if (
+                sid not in owned_skill_ids
+                and not self._is_skill_blocked_for_purchase(sid, failed)
+                and not self._missing_purchase_prereqs(sid, owned_skill_ids)
+            )
         ]
         
         row = {
@@ -2547,6 +2580,15 @@ class SkillBuyer:
                 continue
             if self._is_cross_career_disabled(skill_id):
                 item["preflight_error"] = "cross_career_disabled"
+                continue
+            missing_prereqs = self._missing_purchase_prereqs(skill_id, self._owned_skill_ids(chara))
+            if missing_prereqs:
+                item["preflight_error"] = "missing_required_base_skill"
+                item["missing_required_skill_ids"] = sorted(missing_prereqs)
+                item["missing_required_skill_names"] = [
+                    self.skill_names.get(sid, str(sid))
+                    for sid in sorted(missing_prereqs)
+                ]
                 continue
             if live_skill_id > 0 and int(skill_id) != live_skill_id:
                 item["preflight_error"] = "not_live_resolved_variant"

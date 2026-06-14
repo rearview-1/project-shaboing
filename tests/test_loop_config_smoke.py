@@ -877,6 +877,83 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(viewer_headers, ["162337796827", "3080576358491"])
         client.regen_sid.assert_called_once()
 
+    def test_single_mode_start_2511_retries_with_server_provided_viewer_id(self):
+        client = object.__new__(uma_client.UmaClient)
+        client.viewer_id = 209937075503
+        client.udid_str = "12345678-1234-1234-1234-1234567890ab"
+        client.auth_key_hex = ""
+        client.steam_id = "76561198371537804"
+        client.steam_ticket = "ticket"
+        client.device_id = "device-id"
+        client.device_name = "System Product Name"
+        client.graphics_device = "GPU"
+        client.ip_address = "127.0.0.1"
+        client.platform_os = "Windows"
+        client.locale = "JPN"
+        client.app_ver = "1.21.1"
+        client.res_ver = "10006300"
+        client.sid = bytes(16)
+        client.api_log = lambda *args, **kwargs: None
+        client.auth_bytes = lambda: b""
+        client.regen_sid = MagicMock()
+        client.common = lambda: {
+            "viewer_id": client.viewer_id,
+            "device": 4,
+            "device_id": client.device_id,
+            "device_name": client.device_name,
+            "graphics_device_name": client.graphics_device,
+            "ip_address": client.ip_address,
+            "platform_os_version": client.platform_os,
+            "carrier": "",
+            "keychain": 0,
+            "locale": client.locale,
+            "button_info": "",
+            "dmm_viewer_id": None,
+            "dmm_onetime_token": None,
+            "steam_id": client.steam_id,
+            "steam_session_ticket": client.steam_ticket,
+        }
+
+        viewer_headers = []
+
+        class FakeResponse:
+            status_code = 200
+            text = "packed"
+
+        class FakeSession:
+            def post(self, url, data=None, headers=None, timeout=None):
+                viewer_headers.append(str((headers or {}).get("ViewerID") or ""))
+                return FakeResponse()
+
+        client.session = FakeSession()
+        unpack_responses = [
+            {
+                "response_code": 2511,
+                "data_headers": {
+                    "viewer_id": 4665295244463,
+                    "result_code": 2511,
+                },
+            },
+            {
+                "response_code": 1,
+                "data_headers": {
+                    "viewer_id": 4665295244463,
+                    "result_code": 1,
+                },
+                "data": {},
+            },
+        ]
+
+        with patch.object(uma_client, "pack", return_value=b"body"), \
+             patch.object(uma_client, "get_raw_udid", return_value=b"udid"), \
+             patch.object(uma_client, "unpack", side_effect=unpack_responses):
+            result = uma_client.UmaClient.call(client, "single_mode_free/start", {"start_chara": {}}, retry_205=0)
+
+        self.assertEqual(result["response_code"], 1)
+        self.assertEqual(client.viewer_id, 4665295244463)
+        self.assertEqual(viewer_headers, ["209937075503", "4665295244463"])
+        client.regen_sid.assert_called_once()
+
     def test_single_mode_free_load_391_does_not_remap_viewer_id(self):
         client = object.__new__(uma_client.UmaClient)
         client.viewer_id = 162337796827

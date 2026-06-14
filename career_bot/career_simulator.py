@@ -48,6 +48,7 @@ from career_bot.items import (
     ENERGY_ITEMS,
     ITEM_NAMES,
     MEGAPHONE_TIERS,
+    NEVER_BUY_ITEMS,
     SERVER_ITEM_INVENTORY_CAP,
     SHOP_ITEM_COSTS,
     SUMMER_CAMP_TURNS,
@@ -156,6 +157,11 @@ ITEM_NAME_TO_ID = {name: int(item_id) for item_id, name in ITEM_NAMES.items()}
 ITEM_COST_BY_ID = {int(DISPLAY_TO_ID[name]): int(cost) for name, cost in SHOP_ITEM_COSTS.items() if name in DISPLAY_TO_ID}
 ENERGY_ITEM_IDS = {int(DISPLAY_TO_ID[name]): int(value) for name, value in ENERGY_ITEMS.items() if name in DISPLAY_TO_ID}
 MEGAPHONE_ITEM_IDS = {int(DISPLAY_TO_ID[name]): tuple(value) for name, value in MEGAPHONE_TIERS.items() if name in DISPLAY_TO_ID}
+# Items the live bot NEVER buys (items.py parity contract) — e.g. the 20%
+# Coaching Megaphone and Energy Drink MAX EX, which players see constantly but
+# always skip for the better tier. The sim's buy paths must honor this too.
+NEVER_BUY_IDS = {int(DISPLAY_TO_ID[name]) for name in NEVER_BUY_ITEMS if name in DISPLAY_TO_ID}
+RESET_WHISTLE_ID = int(DISPLAY_TO_ID.get("Reset Whistle") or 7001)
 # Multiplier applied to gain values from real-bot training snapshots.
 # Original calibration of 1.28 was matched to old-bot data when real runs
 # landed around A/A+. The bot has since improved substantially (real
@@ -5000,7 +5006,7 @@ class CareerSimulator:
         for _ in range(target):
             if mega_owned >= target:
                 break
-            cands = sorted(((MEGAPHONE_ITEM_IDS[i][0], i) for i in MEGAPHONE_ITEM_IDS if offered(i)), reverse=True)
+            cands = sorted(((MEGAPHONE_ITEM_IDS[i][0], i) for i in MEGAPHONE_ITEM_IDS if offered(i) and i not in NEVER_BUY_IDS), reverse=True)
             if not cands or not any(buy(iid) for _, iid in cands):
                 break
             mega_owned += 1
@@ -5047,7 +5053,7 @@ class CareerSimulator:
             item_id = 0
             for _attempt in range(20):
                 candidate = self._sample_item_id(counts)
-                if not candidate or self._skip_shop_item(candidate):
+                if not candidate or self._skip_shop_item(candidate) or int(candidate) in NEVER_BUY_IDS:
                     continue
                 if self._inventory_count(candidate) >= self._item_inventory_cap(candidate):
                     continue
@@ -8688,48 +8694,131 @@ class CareerSimulator:
             return "MaidenRace"
         return g
 
-    def _grant_post_race_items(self, grade, won):
-        """Grant post-race item rewards (megaphones / ankle weights / hammers /
-        recovery / stat items) using the REAL per-grade+result drop odds from
-        data/shop_refresh_pools.json `race` pool (hakuraku-aggregated, the
-        comprehensive shop/post-race odds dataset). This is the bot's MAJOR
-        training-item inflow in the real game (~26 races/career) that the sim
-        previously ignored entirely — the root cause of the broken item economy
-        (~1 megaphone/career). Expected-value model: accumulate fractional
-        expected copies per item and add a whole item when the accumulator
-        crosses 1.0 (deterministic, low-variance for the optimizer)."""
-        if not bool(self.preset.get("sim_post_race_item_rewards", True)):
-            return
+    def _offer_post_race_shop(self, grade, won):
+        """Model the post-race shop FAITHFULLY: the game OFFERS items for
+        PURCHASE (at coin prices) after a race — it does NOT free-grant them.
+
+        Drives off data/shop_refresh_pools.json `race` pool, using each item's
+        REAL appearance_rate_by_grade_result (how often it's offered for this
+        grade+result) and avg_price_by_grade_result (its coin cost). Each race we
+        roll a small (~3-slot) offer list, then BUY within mant_coin by a
+        priority that mirrors the live bot + the measured real per-career profile
+        (energy first; deck anklets; race-reward hammers/glow; affordable
+        megaphone tiers EXCLUDING the never-buy 20% Coaching; target-stat study
+        items; mood when low). Bought consumables are immediately used so they
+        have their real effect.
+
+        Replaces the old `_grant_post_race_items`, which minted items for FREE
+        (no coin cost) — that both inflated the economy (e.g. ~6 free megaphones/
+        career vs the real ~1) and ignored the coin sink. Returns items bought."""
+        if not bool(self.preset.get(
+            "sim_post_race_shop_enabled",
+            self.preset.get("sim_post_race_item_rewards", True),  # back-compat alias
+        )):
+            return 0
         pools = self._shop_refresh_pools()
         race_pool = (pools or {}).get("race") if isinstance(pools, dict) else None
         if not race_pool:
-            return
+            return 0
         grade_key = self._post_race_grade_key(grade)
-        want = f"{grade_key}_{'victory' if won else 'defeat'}"
-        reserve = self.state.setdefault("_post_race_item_reserve", {})
+        primary = f"{grade_key}_{'victory' if won else 'defeat'}"
+
+        def variant_value(by_gr):
+            v = by_gr.get(primary)
+            if v is None:
+                same = [float(x) for k, x in by_gr.items() if k.startswith(grade_key + "_") and x]
+                return (sum(same) / len(same)) if same else 0.0
+            try:
+                return float(v or 0.0)
+            except (TypeError, ValueError):
+                return 0.0
+
+        # Build the offer list: roll each item's real appearance rate; price is
+        # its real avg_price (fallback to the standard item cost).
+        offers = []
         for raw_id, row in race_pool.items():
             try:
                 item_id = int(raw_id)
             except (TypeError, ValueError):
                 continue
-            by_gr = (row or {}).get("expected_copies_by_grade_result") or {}
-            exp = by_gr.get(want)
-            if exp is None:
-                # Fall back to the average over the same grade's result variants
-                # (solid_showing / etsuko_*) so an unmodeled result still grants.
-                same = [float(v) for k, v in by_gr.items() if k.startswith(grade_key + "_")]
-                exp = (sum(same) / len(same)) if same else 0.0
-            try:
-                exp = float(exp or 0.0)
-            except (TypeError, ValueError):
-                exp = 0.0
-            if exp <= 0:
+            if item_id in NEVER_BUY_IDS or item_id == RESET_WHISTLE_ID:
+                continue  # never-buy, or no modeled effect (Reset Whistle)
+            rate = variant_value((row or {}).get("appearance_rate_by_grade_result") or {})
+            if rate <= 0 or self.rng.random() * 100.0 >= min(rate, 100.0):
                 continue
-            acc = float(reserve.get(item_id, 0.0)) + exp
-            whole = int(acc)
-            for _ in range(whole):
-                self._add_item(item_id)
-            reserve[item_id] = acc - whole
+            price = variant_value((row or {}).get("avg_price_by_grade_result") or {})
+            price = int(round(price)) if price > 0 else self._item_cost(item_id)
+            offers.append((rate, item_id, max(1, price)))
+        if not offers:
+            return 0
+        # Realistic post-race shop size: a couple of slots, most-likely first.
+        offers.sort(reverse=True)
+        slots = int(self.preset.get("sim_post_race_shop_slots", 2))
+        offers = offers[:slots]
+        price_of = {iid: pr for _r, iid, pr in offers}
+        offered_ids = set(price_of)
+        budget = min(int(self.state.get("mant_coin") or 0),
+                     int(self.preset.get("sim_post_race_shop_budget", 80)))
+        turn = int(self.state.get("turn") or 0)
+        bought = 0
+
+        def try_buy(iid):
+            nonlocal bought, budget
+            if iid not in offered_ids or iid in NEVER_BUY_IDS or self._skip_shop_item(iid):
+                return False
+            if self._inventory_count(iid) >= self._item_inventory_cap(iid):
+                return False
+            price = price_of.get(iid, self._item_cost(iid))
+            if price > budget or price > int(self.state.get("mant_coin") or 0):
+                return False
+            self.state["mant_coin"] = max(0, int(self.state.get("mant_coin") or 0) - price)
+            budget -= price
+            self._add_item(iid)
+            self.shop_items_bought += 1
+            bought += 1
+            if iid in STAT_ITEM_GAINS or iid in TRAINING_APP_ITEMS:
+                self._use_item(iid)  # stat-study items are consumed on purchase
+            elif iid in MOOD_ITEM_GAINS and int(self.state.get("motivation") or 3) < 5:
+                self._use_item(iid)
+            return True
+
+        # Priority order — mirrors the measured real per-career buy profile.
+        # 1) energy when HP is low (Vita is the #1 real buy)
+        if int(self.state.get("hp") or 0) < int(self.preset.get("sim_post_race_energy_buy_threshold", 60)):
+            for iid in sorted((i for i in ENERGY_ITEM_IDS if i in offered_ids),
+                              key=lambda i: ENERGY_ITEM_IDS[i], reverse=True):
+                if try_buy(iid):
+                    break
+        # 2) one deck-primary anklet (favor the deck's strongest-trained stat)
+        for iid, stat in sorted(ANKLE_WEIGHT_ITEMS.items(),
+                                key=lambda kv: self._deck_count_for_stat(kv[1]), reverse=True):
+            if iid in offered_ids and self._deck_count_for_stat(stat) >= 1 and try_buy(iid):
+                break
+        # 3) race-reward buff items (hammers / glow) — late-game only, where the
+        #    real profile shows hammer buys spike (camp/climax facility leveling)
+        if turn >= 49:
+            for iid in sorted((i for i in RACE_REWARD_BUFF_ITEMS if i in offered_ids),
+                              key=lambda i: RACE_REWARD_BUFF_ITEMS[i], reverse=True):
+                if try_buy(iid):
+                    break
+        # 4) best affordable megaphone tier (Coaching excluded), keeping only a
+        #    small reserve so the bot doesn't hoard megaphones every race
+        mega_reserve = int(self.preset.get("sim_megaphone_reserve", 2))
+        if sum(self._inventory_count(i) for i in MEGAPHONE_ITEM_IDS) < mega_reserve:
+            for _q, iid in sorted(((MEGAPHONE_ITEM_IDS[i][0], i) for i in MEGAPHONE_ITEM_IDS if i in offered_ids),
+                                  reverse=True):
+                if try_buy(iid):
+                    break
+        # 5) one target-stat study item (notepads / manuals / scrolls)
+        for iid in (i for i in STAT_ITEM_GAINS if i in offered_ids):
+            if try_buy(iid):
+                break
+        # 6) mood when motivation is low
+        if int(self.state.get("motivation") or 3) < 5:
+            for iid in (i for i in MOOD_ITEM_GAINS if i in offered_ids):
+                if try_buy(iid):
+                    break
+        return bought
 
     def _simulate_race(self, pid, race_name, distance, era, rival=False):
         """Simulate a race outcome using observed game data when available."""
@@ -8900,7 +8989,7 @@ class CareerSimulator:
             reward_multiplier=reward_multiplier,
         )
         self.state["fans"] = int(self.state.get("fans") or 0) + self._race_fan_reward(grade, won)
-        self._grant_post_race_items(grade, won)
+        self._offer_post_race_shop(grade, won)
         stat_allocations = {}
         if won:
             race_stat_gain = self._race_stat_total_gain(

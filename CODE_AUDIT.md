@@ -393,3 +393,38 @@ shipped this pass (commit c2c2a80). Remaining SS work tracked as the throughput-
 
 **DO NOT** "reach SS" by inflating gains or forcing a stat distribution — both are unfaithful and were
 shown to be rating-negative or fabricated. SS must come from the bot generating manual-level throughput.
+
+---
+
+## Item economy rework — free grant → coin-bounded post-race shop (2026-06-14)
+
+**Bug the user caught:** `_grant_post_race_items` treated the shop_refresh_pools.json
+`race` pool `expected_copies_by_grade_result` as FREE drops — minting ~6 Empowering
+Megaphones + ~41 total items/career with no coin cost (peaked at 8 items from one race).
+But every race-pool row also carries `avg_price_by_grade_result` + `appearance_rate` —
+these are post-race SHOP items you BUY with coins, not gifts (confirmed by real ground
+truth: items have buy_events; Coaching Megaphone shop_seen=1722 / bought=0).
+
+**Fix (commit pending, local):** deleted the free grant; added `_offer_post_race_shop`
+— rolls each item's real `appearance_rate_by_grade_result` into a ~2-slot offer at its
+real `avg_price`, then BUYS within `mant_coin` by a priority that mirrors the live bot +
+the measured real per-career profile (energy → deck anklet → late-game hammer → megaphone
+[reserve-capped] → target-stat study → mood). Imports `NEVER_BUY_ITEMS` from items.py and
+guards ALL THREE buy paths so the 20% Coaching Megaphone (8001) + Energy Drink MAX EX are
+never bought (real parity). Every bought consumable flows through the existing `_use_item`
+effects (no new effect wiring needed). Regression test: tests/test_sim_item_economy.py
+(Coaching never bought, coin never negative, post-race buys always cost coins, energy is
+acquired, megaphones don't stockpile).
+
+**Real per-career profile (639 careers, the faithful target):** Vita energy 3.9 buy/5.3 use
+(#1), each color Manual ~2.5, Cleat Hammers ~1.75, Speed Ankle ~1.6, Motivating Megaphone
+1.36, Empowering 0.88; stat-study is the dominant category; ~1,266 coin spent/career.
+
+**OPEN — coin-income calibration (flagged, NOT fudged):** the sim earns **~2,320 coin/career**
+vs real **~1,377** (real keeps a stable ~150-235 balance, ends ~111). Traced to the bot
+running **26 G1 races/career** (catalog type really is G1 — not a grading bug), each paying
+`_race_coin_reward` G1=95. The over-income makes the (now coin-bounded) buy paths over-buy
+~1.8× across the board (stat-study 43 vs ~20, energy 18 vs ~7, megaphone 5 vs ~2). This is
+a coin/race-calendar calibration, separate from the item-logic fix: needs verifying whether
+real careers run that many G1s and whether G1=95 is the cited MANT reward before changing
+anything. Do NOT mask it by throttling buys — the buys auto-correct once income is right.

@@ -32,6 +32,7 @@ test code changes by running with the same seed before and after.
 import csv
 import copy
 import json
+import math
 import os
 import random
 import re
@@ -42,6 +43,7 @@ from statistics import median
 from typing import Any
 
 from career_bot.items import (
+    BUY_CAPS,
     DISPLAY_TO_ID,
     ENERGY_ITEMS,
     ITEM_NAMES,
@@ -104,6 +106,13 @@ TRAINING_GAIN_BANDS = {
 # mood 3/Normal = 1.0; mood 2/Bad = 0.9; mood 1/Awful = 0.8).
 MOOD_MULTIPLIERS = {5: 1.2, 4: 1.1, 3: 1.0, 2: 0.9, 1: 0.8}
 MOOD_BASE_EFFECT = {5: 0.20, 4: 0.10, 3: 0.0, 2: -0.10, 1: -0.20}
+# Trackblazer (MANT, scenario_id=4) weakens mood's training effect to 2% PER LEVEL
+# (Great = +4%, Good +2%, Bad -2%, Awful -4%) vs the standard ~10%/level (Great +20%).
+# Source: uma.guide/trackblazer — "Mood only affects Stats by 2% per level" (verbatim).
+# Applying the standard table to a MANT career over-credited every Great-mood tile
+# ~13% (1.20 vs 1.04) and was a primary driver of the sim's ~5% stat over-production.
+MOOD_BASE_EFFECT_MANT = {5: 0.04, 4: 0.02, 3: 0.0, 2: -0.02, 1: -0.04}
+MANT_SCENARIO_ID = 4
 
 # HP cost per training, by stat. Wit recovers some HP. Calibrated lower
 # than initial guess — real bot rarely rests more than 3-4 times in
@@ -341,6 +350,9 @@ PHYSICS_FIELD_SUM_BY_TURN = [(12, 414), (24, 414), (30, 639), (42, 932), (54, 12
 PHYSICS_NPC_SKILLS_BY_TURN = [(12, 0), (30, 2), (42, 3), (54, 3.3), (66, 3.3), (78, 5.5)]
 PHYSICS_SYNTH_STRENGTH = 1.3
 PHYSICS_SYNTH_SPEED_CONC = 1.5
+# Margin->probability time-scale (s) for race PREDICTIONS only (actual outcomes are
+# rank-based). Larger = softer. Used for decision-making, not the win/loss itself.
+PHYSICS_WIN_TAU = 0.6
 PHYSICS_APT_RANK_LETTER = {8: "S", 7: "A", 6: "B", 5: "C", 4: "D", 3: "E", 2: "F", 1: "G"}
 # Opponent finish-time cache, shared across all careers in a process (opponent
 # fields are 'fixed reality', so each distinct field is simulated only once).
@@ -2624,6 +2636,10 @@ class CareerSimulator:
         self.selected_parents = self._resolve_selected_parents()
         self.legacy_effects = self._compute_legacy_effects()
         self.rng = random.Random(seed)
+        # Dedicated RNG for the physics race engine so its many per-section draws do
+        # NOT consume the main decision stream (training picks / events stay stable).
+        # Deterministic per career, derived from the same seed.
+        self._physics_rng = random.Random(((seed if seed is not None else 0) ^ 0x9E3779B9) & 0x7fffffff)
         # State
         self.state = self._initial_state()
         # Tracking
@@ -3662,6 +3678,14 @@ class CareerSimulator:
             partners = [self.rng.choice(self.sim_support_cards)]
         return partners
 
+    def _mood_base_effect(self, mood_value):
+        """Mood's per-level training-gain effect. Trackblazer (MANT) weakens it to
+        2%/level (Great +4%) vs the standard ~10%/level (uma.guide/trackblazer)."""
+        table = (MOOD_BASE_EFFECT_MANT
+                 if int(self.preset.get("scenario_id") or 0) == MANT_SCENARIO_ID
+                 else MOOD_BASE_EFFECT)
+        return table.get(int(mood_value), 0.0)
+
     def _support_training_gain(self, training_stat, gain_stat, partner_cards, is_rainbow, facility_level):
         facilities = (self.training_curves or {}).get("facilities") or {}
         base_curve = ((facilities.get(training_stat) or {}).get(str(facility_level)) or {})
@@ -3672,7 +3696,7 @@ class CareerSimulator:
         chara = self.chara_growth_data.get(str(self.trainee_card_id)) or {}
         growth = float((chara.get("growth_rates") or {}).get(gain_stat) or 0) / 100.0
         mood_value = int(self.state.get("motivation") or 3)
-        mood = MOOD_BASE_EFFECT.get(mood_value, 0.0)
+        mood = self._mood_base_effect(mood_value)
 
         stat_bonus = 0.0
         training_eff = 0.0
@@ -3731,7 +3755,7 @@ class CareerSimulator:
         ]
         bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects in active_effects)
         training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects in active_effects)
-        mood = MOOD_BASE_EFFECT.get(int(self.state.get("motivation") or 3), 0.0)
+        mood = self._mood_base_effect(int(self.state.get("motivation") or 3))
         value = (base + bonus) * (1.0 + max(0.0, mood)) * (1.0 + training_eff / 100.0)
         value *= 1.0 + min(0.25, len(partner_cards) * 0.035)
         if is_rainbow:
@@ -4337,10 +4361,18 @@ class CareerSimulator:
     def _inventory_count(self, item_id):
         return int((self.state.get("inventory") or {}).get(int(item_id), 0))
 
+    def _item_inventory_cap(self, item_id):
+        """Per-item buy cap. The real shop caps some items at 1 (Energy Drink MAX,
+        Rich Hand Cream, Pretty Mirror); the sim used a uniform 5 for everything,
+        which let it stockpile single-cap items and inflate item usage. Honour the
+        real BUY_CAPS, bounded by the global server inventory cap."""
+        name = ITEM_ID_TO_NAME.get(int(item_id), "")
+        return min(SERVER_ITEM_INVENTORY_CAP, int(BUY_CAPS.get(name, SERVER_ITEM_INVENTORY_CAP)))
+
     def _add_item(self, item_id, count=1):
         item_id = int(item_id)
         inventory = self.state.setdefault("inventory", {})
-        inventory[item_id] = min(SERVER_ITEM_INVENTORY_CAP, int(inventory.get(item_id, 0)) + int(count or 1))
+        inventory[item_id] = min(self._item_inventory_cap(item_id), int(inventory.get(item_id, 0)) + int(count or 1))
 
     def _consume_item(self, item_id, count=1):
         item_id = int(item_id)
@@ -4489,7 +4521,7 @@ class CareerSimulator:
         affordable = []
         for name in preferred:
             item_id = int(DISPLAY_TO_ID.get(name) or 0)
-            if not item_id or self._inventory_count(item_id) >= SERVER_ITEM_INVENTORY_CAP:
+            if not item_id or self._inventory_count(item_id) >= self._item_inventory_cap(item_id):
                 continue
             cost = self._item_cost(item_id)
             if cost <= budget:
@@ -4587,7 +4619,7 @@ class CareerSimulator:
                 app_id
                 and turn <= int(self.preset.get("sim_target_stat_app_latest_turn") or 70)
                 and self._deck_count_for_stat(stat) > 0
-                and self._inventory_count(app_id) < SERVER_ITEM_INVENTORY_CAP
+                and self._inventory_count(app_id) < self._item_inventory_cap(app_id)
             ):
                 boosts = self.state.get("facility_item_boosts") or {}
                 if int(boosts.get(stat) or 0) < 2:
@@ -4601,7 +4633,7 @@ class CareerSimulator:
                         candidates.append((score, app_id, cost, stat))
 
             for item_id in TARGET_STAT_ITEM_IDS.get(stat, ()):
-                if self._inventory_count(item_id) >= SERVER_ITEM_INVENTORY_CAP:
+                if self._inventory_count(item_id) >= self._item_inventory_cap(item_id):
                     continue
                 cost = self._item_cost(item_id)
                 if cost > budget:
@@ -4700,7 +4732,7 @@ class CareerSimulator:
                 candidate = self._sample_item_id(counts)
                 if not candidate or self._skip_shop_item(candidate):
                     continue
-                if self._inventory_count(candidate) >= SERVER_ITEM_INVENTORY_CAP:
+                if self._inventory_count(candidate) >= self._item_inventory_cap(candidate):
                     continue
                 cost = self._item_cost(candidate)
                 if cost <= int(self.state.get("mant_coin") or 0):
@@ -6968,9 +7000,19 @@ class CareerSimulator:
         calibration = getattr(self, "skill_rating_calibration", {}) or {}
         if calibration.get("enabled") and calibration.get("raw_scale_enabled"):
             effective_rating_score = int(round(int(raw_rating_score or 0) * float(calibration.get("raw_skill_rating_scale") or 1.0)))
-            rating_cap = self._sim_skill_rating_score_cap()
-            if rating_cap:
-                effective_rating_score = max(0, min(effective_rating_score, rating_cap - int(self.skill_rating_score or 0)))
+            # Per-skill summation (raw x raw_skill_rating_scale) already varies the
+            # score per build. The OLD code then clamped it to a running cap derived
+            # from the parent-RESIDUAL p95 (~4534), which made EVERY build saturate
+            # to the same skill_rating_score and flattened the optimizer's SS signal
+            # (mechanics audit, [[project_sim_calibrated_to_mediocre]]). Only honour a
+            # cap that the user EXPLICITLY set; otherwise let the per-skill sum stand.
+            preset_cap = self.preset.get("sim_skill_rating_score_cap")
+            if preset_cap is not None:
+                try:
+                    cap = max(0, int(preset_cap))
+                    effective_rating_score = max(0, min(effective_rating_score, cap - int(self.skill_rating_score or 0)))
+                except (TypeError, ValueError):
+                    pass
             return effective_rating_score
         empirical_before = self._empirical_skill_rating_for_count(self.skills_bought)
         empirical_after = self._empirical_skill_rating_for_count(self.skills_bought + 1)
@@ -7415,7 +7457,7 @@ class CareerSimulator:
         fields = self.race_fields_by_pid.get(int(pid or 0)) or []
         real = [f for f in fields if f.get("opponents")]
         if real:
-            chosen = real[self.rng.randrange(len(real))]
+            chosen = real[self._physics_rng.randrange(len(real))]
             return [self._physics_real_opponent(o, surface, band) for o in (chosen.get("opponents") or [])]
         # synthetic fallback
         n = 8 if turn < 27 else (15 if turn < 50 else 17)
@@ -7424,7 +7466,7 @@ class CareerSimulator:
         styles = ["front", "pace", "late", "end"]
         opponents = []
         for i in range(n):
-            s = total * (0.90 + 0.20 * self.rng.random())
+            s = total * (0.90 + 0.20 * self._physics_rng.random())
             base = s / 5.0
             stats = {k: base for k in race_sim.STAT_KEYS}
             stats["speed"] *= PHYSICS_SYNTH_SPEED_CONC
@@ -7500,41 +7542,68 @@ class CareerSimulator:
         opp_times = self._physics_opponent_times(pid, turn, surface, band, meters, params)
         if not opp_times:
             return None
-        pstats = self._current_race_stats()  # RAW (raw-vs-raw validated)
-        apt = {"distance": self._physics_aptitude_letter(band), "surface": self._physics_aptitude_letter(surface)}
-        sk = int(self.skills_bought or 0)
-        rec = int(self._purchased_recovery_skill_count() or 0)
-        trials = 1 if sample else 3
-        wins = 0
-        ranks = []
-        for _ in range(trials):
-            out = race_sim.simulate_entrant(
-                stats=pstats, aptitudes=apt, style=style, distance_m=meters,
-                surface=surface, rng=self.rng, params=params,
-                skill_count=sk, recovery_skill_count=rec,
-            )
-            pkey = (0 if out["finished"] else 1, out["time"])
-            rank = 1 + sum(1 for ot in opp_times if ot < pkey)
-            ranks.append(rank)
-            if rank == 1:
-                wins += 1
-        win_probability = wins / float(trials)
+        best_opp = opp_times[0]
         if sample:
-            won = (ranks[0] == 1)
+            # Actual race outcome: a fresh player run, resolved by finish rank vs
+            # the field — exactly the rank-based resolution validated against live
+            # careers (~4.0 losses/career). Cheap: 1 sim, ~36 races/career.
+            out = race_sim.simulate_entrant(
+                stats=self._current_race_stats(), style=style, distance_m=meters, surface=surface,
+                aptitudes={"distance": self._physics_aptitude_letter(band),
+                           "surface": self._physics_aptitude_letter(surface)},
+                rng=self._physics_rng, params=params,
+                skill_count=int(self.skills_bought or 0),
+                recovery_skill_count=int(self._purchased_recovery_skill_count() or 0),
+            )
+            ptime = (0 if out["finished"] else 1, out["time"])
+            rank = 1 + sum(1 for ot in opp_times if ot < ptime)
+            won = (rank == 1)
         else:
+            # Prediction (decision-making): reuse the per-turn cached player time
+            # and a smooth win probability from the margin to the strongest
+            # opponent — no extra physics runs.
+            ptime = self._physics_player_time(turn, meters, surface, band, style, params)
+            rank = 1 + sum(1 for ot in opp_times if ot < ptime)
             won = None
-        ranks.sort()
+        if ptime[0] > best_opp[0]:
+            win_probability = 0.02
+        else:
+            win_probability = 1.0 / (1.0 + math.exp(-(best_opp[1] - ptime[1]) / PHYSICS_WIN_TAU))
+            win_probability = max(0.02, min(0.99, win_probability))
         result = {
             "won": won,
             "model": "physics_engine",
             "win_probability": round(win_probability, 4),
-            "finish_rank": ranks[len(ranks) // 2],
+            "finish_rank": rank,
             "field_size": len(opp_times) + 1,
             "distance_m": int(meters),
         }
         if not sample:
             self._physics_pred_cache[(int(pid or 0), turn)] = result
         return result
+
+    def _physics_player_time(self, turn, meters, surface, band, style, params):
+        """Player finish time, cached per (turn, distance, surface, style) — the
+        player's stats don't change within a turn, so one sim serves all of that
+        turn's race predictions."""
+        import career_bot.race_sim as race_sim
+        cache = getattr(self, "_physics_player_time_cache", None)
+        if cache is None:
+            cache = self._physics_player_time_cache = {}
+        key = (turn, int(meters), surface, style)
+        if key in cache:
+            return cache[key]
+        out = race_sim.simulate_entrant(
+            stats=self._current_race_stats(),  # RAW (raw-vs-raw validated)
+            aptitudes={"distance": self._physics_aptitude_letter(band),
+                       "surface": self._physics_aptitude_letter(surface)},
+            style=style, distance_m=meters, surface=surface, rng=self._physics_rng, params=params,
+            skill_count=int(self.skills_bought or 0),
+            recovery_skill_count=int(self._purchased_recovery_skill_count() or 0),
+        )
+        ptime = (0 if out["finished"] else 1, out["time"])
+        cache[key] = ptime
+        return ptime
 
     def _empirical_race_outcome(self, pid, race_name, distance, era, *, skill_count=None, sample=True):
         if not bool(self.preset.get("sim_use_real_race_snapshots", True)):

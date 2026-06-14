@@ -65,6 +65,32 @@ def api_error_response_viewer_id(exc):
             return 0
     return 0
 
+def api_error_result_code(exc):
+    for attr in ("result_code", "response_code"):
+        try:
+            value = int(getattr(exc, attr, 0) or 0)
+        except (TypeError, ValueError):
+            value = 0
+        if value:
+            return value
+    match = re.search(r"api error\s+(\d+)", str(exc or ""), flags=re.IGNORECASE)
+    if match:
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+def api_error_endpoint(exc):
+    endpoint = str(getattr(exc, "endpoint", "") or "").strip()
+    if endpoint:
+        return endpoint
+    match = re.search(r"\bon\s+([a-z0-9_/-]+)", str(exc or ""), flags=re.IGNORECASE)
+    return match.group(1) if match else ""
+
+def is_terminal_start_session_auth_error(exc):
+    return api_error_endpoint(exc) == "tool/start_session" and api_error_result_code(exc) in {394, 501}
+
 BASE_URL = 'https://api.games.umamusume.com/umamusume/'
 DIR = str(Path(__file__).resolve().parent.parent)
 LAST_TICKET_GEN_RESULT = None
@@ -1563,7 +1589,11 @@ class UmaClient:
         for attempt in range(max_retries + 1):
             try:
                 self.regen_sid()
-                self.call('tool/start_session', {'attestation_type': 0, 'device_token': None})
+                self.call(
+                    'tool/start_session',
+                    {'attestation_type': 0, 'device_token': None},
+                    quiet_result_codes={394, 501},
+                )
                 res = self.call('load/index', {'adid': ''})
                 data = res.get('data', {})
                 self.refresh_cached_account_state(data)
@@ -1581,6 +1611,8 @@ class UmaClient:
                 return res
             except Exception as e:
                 err = str(e)
+                if is_terminal_start_session_auth_error(e):
+                    raise
                 if '709' in err and attempt < max_retries:
                     time.sleep(1)
                     continue

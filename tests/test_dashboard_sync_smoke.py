@@ -33,6 +33,7 @@ def make_load_data(parent_ids):
 
 class DashboardSyncSmokeTests(unittest.TestCase):
     def setUp(self):
+        main.reset_session_recovery_circuit()
         self.saved = {
             "active_account": main.active_account,
             "active_dashboard_data": main.active_dashboard_data,
@@ -43,6 +44,7 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         }
 
     def tearDown(self):
+        main.reset_session_recovery_circuit()
         main.active_account = self.saved["active_account"]
         main.active_dashboard_data = self.saved["active_dashboard_data"]
         main.active_start_state = self.saved["active_start_state"]
@@ -576,7 +578,7 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         self.assertIs(main.active_client, saved_active_client)
         self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9010)
 
-    def test_load_index_with_session_recovery_auto_refreshes_reusable_auth_after_501(self):
+    def test_load_index_with_session_recovery_prompts_reauth_after_tool_start_session_501(self):
         class FakeSession:
             def close(self):
                 return None
@@ -609,30 +611,24 @@ class DashboardSyncSmokeTests(unittest.TestCase):
                 raise Exception("API error 501 on tool/start_session")
 
         stale_client = FakeClient()
-        refreshed_client = object()
-
         saved_active_client = main.active_client
         main.active_client = stale_client
         try:
             with patch.object(
                 main,
                 "rebuild_reusable_auth_from_cached_ticket",
-                return_value=(
-                    {"steam_id": "steam-444", "viewer_id": 555},
-                    refreshed_client,
-                    {"data": make_load_data([9011])},
-                ),
             ) as rebuild, patch.object(main, "save_reusable_auth_profile", return_value=True) as save_profile:
-                result = main.load_index_with_session_recovery(stale_client)
+                with self.assertRaises(RuntimeError) as cm:
+                    main.load_index_with_session_recovery(stale_client)
         finally:
             main.active_client = saved_active_client
 
         self.assertEqual(stale_client.calls, 1)
         self.assertEqual(stale_client.logins, 1)
-        rebuild.assert_called_once()
-        save_profile.assert_called_once()
+        self.assertIn("Cached game auth was rejected", str(cm.exception))
+        rebuild.assert_not_called()
+        save_profile.assert_not_called()
         self.assertIs(main.active_client, saved_active_client)
-        self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9011)
 
 
 class LoginReadInfoToleranceTests(unittest.TestCase):

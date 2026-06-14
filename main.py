@@ -67,7 +67,7 @@ from career_bot.rating import rank_for_rating_score
 from career_bot.runner import CareerRunner, runtime_output_root
 from career_bot.skill_profiles import build_skill_priority_rows, normalize_distance as normalize_skill_distance, normalize_style as normalize_skill_style, sanitize_blacklist, split_skill_text
 from career_bot.team_trials_dataset import RANK_LABELS, deck_race_bonus_summary, load_team_trials_dataset
-from uma_api.client import UmaClient, api_error_response_viewer_id, read_client_version_cache
+from uma_api.client import UmaClient, api_error_response_viewer_id, is_terminal_start_session_auth_error, read_client_version_cache
 
 GLB_STEAM_APP_ID = "3224770"
 JP_STEAM_APP_ID = "3564400"
@@ -1626,6 +1626,19 @@ def restore_dev_session_cache():
             # Surface the actionable detail and bail instead of looping the
             # auth-refresh path that fed the observed retry storm.
             print(client_version_stale_detail(exc), flush=True)
+            active_client = None
+            active_account = None
+            active_dashboard_data = None
+            active_start_state = {}
+            active_start_debug = {}
+            active_parent_cards = {}
+            active_parent_rank_points = {}
+            active_selection = empty_selection()
+            return False
+        if is_terminal_start_session_auth_error(exc):
+            print(auth_refresh_required_detail(exc), flush=True)
+            clear_dev_session_cache()
+            print("dev session cache was rejected by the game server; cleared stale cached auth", flush=True)
             active_client = None
             active_account = None
             active_dashboard_data = None
@@ -6760,10 +6773,23 @@ def refresh_live_start_state():
     except Exception as exc:
         return {"success": False, "detail": redact_sensitive_error_text(exc)}
 
-def activate_authenticated_client_from_config(cfg, reason):
+def activate_authenticated_client_from_config(cfg, reason, expected_viewer_id=0):
     global active_client, active_dashboard_data
     cfg = dict(cfg or {})
     client, load_result = _authenticated_client_from_cfg(cfg, max_retries=1)
+    actual_viewer_id = safe_int(getattr(client, "viewer_id", 0))
+    expected_viewer_id = safe_int(expected_viewer_id)
+    if expected_viewer_id and actual_viewer_id != expected_viewer_id:
+        try:
+            session = getattr(client, "session", None)
+            if session is not None:
+                session.close()
+        except Exception:
+            pass
+        raise RuntimeError(
+            f"re-authenticated client is still bound to viewer {actual_viewer_id}, "
+            f"but the server requires viewer {expected_viewer_id}"
+        )
     old_client = active_client
     if old_client is not client:
         try:
@@ -6807,7 +6833,11 @@ def recover_start_session_after_viewer_mismatch(exc):
                         f"career start viewer mismatch recovered from dev cache viewer {expected_viewer_id}",
                         flush=True,
                     )
-                    return activate_authenticated_client_from_config(cfg, "start_viewer_mismatch_cache")
+                    return activate_authenticated_client_from_config(
+                        cfg,
+                        "start_viewer_mismatch_cache",
+                        expected_viewer_id=expected_viewer_id,
+                    )
         except Exception as cache_exc:
             errors.append(f"dev-cache recovery failed: {redact_sensitive_error_text(cache_exc)}")
 
@@ -6821,6 +6851,23 @@ def recover_start_session_after_viewer_mismatch(exc):
                 old_session.close()
         except Exception:
             pass
+        actual_viewer_id = safe_int(getattr(refreshed_client, "viewer_id", 0))
+        if expected_viewer_id and actual_viewer_id != expected_viewer_id:
+            try:
+                session = getattr(refreshed_client, "session", None)
+                if session is not None:
+                    session.close()
+            except Exception:
+                pass
+            return {
+                "success": False,
+                "needs_auth_refresh": True,
+                "detail": (
+                    f"Automatic auth refresh is still bound to viewer {actual_viewer_id}, "
+                    f"but career start requires viewer {expected_viewer_id}. "
+                    "Click REFRESH AUTH or log in again to re-authenticate the active game account."
+                ),
+            }
         active_client = refreshed_client
         sync_game_data_from_api_response("load/index", refreshed_res, source="start_viewer_mismatch_refresh")
         if hasattr(refreshed_client, "refresh_cached_account_state"):
@@ -6851,7 +6898,12 @@ def start_career_from_request(req):
         proof.setdefault("warnings", []).extend(showtime_warnings)
     record_start_debug(req, preflight=preflight, proof=proof)
     if not preflight.get("success"):
-        return {"success": False, "detail": f"Could not refresh live state before start: {preflight.get('detail')}"}
+        detail = f"Could not refresh live state before start: {preflight.get('detail')}"
+        return {
+            "success": False,
+            "detail": detail,
+            "needs_auth_refresh": "cached game auth was rejected" in detail.lower() or "api session/auth is stale" in detail.lower(),
+        }
     if preflight.get("career_active"):
         return {
             "success": False,
@@ -6966,6 +7018,26 @@ def start_career_from_request(req):
                     try:
                         result = execute_start(tp_info, current_money, showtime_candidates)
                     except Exception as retry_exc:
+                        if is_start_viewer_mismatch_error(retry_exc, active_client):
+                            detail = (
+                                "Session recovery did not repair the career-start viewer mismatch. "
+                                "Click REFRESH AUTH or log in again to re-authenticate the active game account."
+                            )
+                            active_start_debug = start_debug_summary(
+                                req,
+                                preflight=post_recovery,
+                                error=retry_exc,
+                                proof=proof,
+                                recovery={"tp": recovery_result, "session": session_recovery_result},
+                            )
+                            snapshot_path = write_start_error_snapshot(active_start_debug)
+                            return {
+                                "success": False,
+                                "detail": detail,
+                                "needs_auth_refresh": True,
+                                "debug_snapshot": snapshot_path,
+                                "account": (((post_recovery.get("dashboard") or {}).get("account") or {}) if post_recovery.get("success") else None),
+                            }
                         exc = retry_exc
                 else:
                     exc = RuntimeError(
@@ -6973,10 +7045,25 @@ def start_career_from_request(req):
                         + str(post_recovery.get("detail") or "unknown")
                     )
             else:
-                exc = RuntimeError(
-                    "start viewer mismatch recovery failed: "
-                    + str(session_recovery_result.get("detail") or "unknown")
+                detail = (
+                    str(session_recovery_result.get("detail") or "")
+                    or "Career-start session recovery failed. Click REFRESH AUTH or log in again."
                 )
+                active_start_debug = start_debug_summary(
+                    req,
+                    preflight=preflight,
+                    error=exc,
+                    proof=proof,
+                    recovery={"tp": recovery_result, "session": session_recovery_result},
+                )
+                snapshot_path = write_start_error_snapshot(active_start_debug)
+                return {
+                    "success": False,
+                    "detail": detail,
+                    "needs_auth_refresh": bool(session_recovery_result.get("needs_auth_refresh", True)),
+                    "debug_snapshot": snapshot_path,
+                    "account": ((preflight.get("dashboard") or {}).get("account") or {}),
+                }
         if "result" not in locals() and is_api_error(exc, (102, 205, 2511, 1052, 501), "single_mode_free/start"):
             post_check = refresh_live_start_state()
             post_warnings = []
@@ -7041,7 +7128,12 @@ def preflight_career_run_request(req):
     preflight = refresh_live_start_state()
     if not preflight.get("success"):
         record_start_debug(req, preflight=preflight)
-        return {"success": False, "detail": f"Could not refresh live state before proof: {preflight.get('detail')}"}
+        detail = f"Could not refresh live state before proof: {preflight.get('detail')}"
+        return {
+            "success": False,
+            "detail": detail,
+            "needs_auth_refresh": "cached game auth was rejected" in detail.lower() or "api session/auth is stale" in detail.lower(),
+        }
     if preflight.get("career_active"):
         proof = {
             "ok": True,
@@ -7216,6 +7308,15 @@ def is_recoverable_session_error(exc):
         )
     )
 
+def auth_refresh_required_detail(exc):
+    detail = redact_sensitive_error_text(exc)
+    return (
+        "Cached game auth was rejected by the server. "
+        "Click REFRESH AUTH or log in again to re-authenticate this account. "
+        "Sweepy will not keep retrying the rejected cached auth because it will keep returning 501/394. "
+        f"Original error: {detail}"
+    )
+
 # --- Stale-session recovery circuit-breaker -------------------------------
 # Every dashboard poll calls load_index_with_session_recovery. When the game
 # session is dead (e.g. tool/start_session 501 from an expired Steam ticket),
@@ -7230,6 +7331,11 @@ try:
     _SESSION_RECOVERY_COOLDOWN_S = max(5.0, float(os.environ.get("SWEEPY_SESSION_RECOVERY_COOLDOWN_S", "45") or 45))
 except (TypeError, ValueError):
     _SESSION_RECOVERY_COOLDOWN_S = 45.0
+
+
+def reset_session_recovery_circuit():
+    global _session_recovery_blocked_until
+    _session_recovery_blocked_until = 0.0
 
 
 def load_index_with_session_recovery(client, _retry_201=3):
@@ -7277,6 +7383,13 @@ def load_index_with_session_recovery(client, _retry_201=3):
                 _session_recovery_blocked_until = 0.0
                 return result
             except Exception as relog_exc:
+                if is_terminal_start_session_auth_error(relog_exc):
+                    _session_recovery_blocked_until = time.time() + _SESSION_RECOVERY_COOLDOWN_S
+                    print(
+                        "cached auth rejected during session recovery; user re-authentication required",
+                        flush=True,
+                    )
+                    raise RuntimeError(auth_refresh_required_detail(relog_exc)) from relog_exc
                 if is_recoverable_session_error(relog_exc):
                     cfg = client_dev_session_config(client) or getattr(client, "_sweepy_auth_config", None) or {}
                     try:

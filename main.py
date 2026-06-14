@@ -7036,8 +7036,24 @@ def is_recoverable_session_error(exc):
         )
     )
 
+# --- Stale-session recovery circuit-breaker -------------------------------
+# Every dashboard poll calls load_index_with_session_recovery. When the game
+# session is dead (e.g. tool/start_session 501 from an expired Steam ticket),
+# each poll would otherwise spawn a full re-login + auth-refresh, hammering
+# tool/start_session every few seconds (the observed 501 storm) while the
+# startup restore thread races the per-poll recoveries. This gate makes
+# recovery single-flight and backs off after a failure, so polls fast-fail
+# until the cooldown elapses instead of storming.
+_session_recovery_lock = threading.Lock()
+_session_recovery_blocked_until = 0.0
+try:
+    _SESSION_RECOVERY_COOLDOWN_S = max(5.0, float(os.environ.get("SWEEPY_SESSION_RECOVERY_COOLDOWN_S", "45") or 45))
+except (TypeError, ValueError):
+    _SESSION_RECOVERY_COOLDOWN_S = 45.0
+
+
 def load_index_with_session_recovery(client, _retry_201=3):
-    global active_client
+    global active_client, _session_recovery_blocked_until
     try:
         return client.call('load/index', {'adid': ''})
     except Exception as exc:
@@ -7066,29 +7082,50 @@ def load_index_with_session_recovery(client, _retry_201=3):
         )
         if not can_relogin:
             raise RuntimeError(session_stale_detail(exc)) from exc
-        print(f"load/index session stale ({exc}); restarting API session", flush=True)
+        now = time.time()
+        if now < _session_recovery_blocked_until:
+            raise RuntimeError(session_stale_detail(
+                f"{exc}; session recovery backing off "
+                f"({int(_session_recovery_blocked_until - now)}s left after a recent failed re-login)"
+            )) from exc
+        if not _session_recovery_lock.acquire(blocking=False):
+            raise RuntimeError(session_stale_detail(f"{exc}; session recovery already in progress")) from exc
         try:
-            return client.login(max_retries=3)
-        except Exception as relog_exc:
-            if is_recoverable_session_error(relog_exc):
-                cfg = client_dev_session_config(client) or getattr(client, "_sweepy_auth_config", None) or {}
-                try:
-                    refreshed_cfg, refreshed_client, refreshed_res = rebuild_reusable_auth_from_cached_ticket(cfg)
-                    if client is active_client:
-                        try:
-                            old_session = getattr(client, "session", None)
-                            if old_session is not None:
-                                old_session.close()
-                        except Exception:
-                            pass
-                        active_client = refreshed_client
-                    save_reusable_auth_profile(refreshed_cfg, "load_index_auto_refresh")
-                    persist_dev_session_cache("load_index_auto_refresh")
-                    print("load/index recovered after automatic reusable-auth refresh", flush=True)
-                    return refreshed_res
-                except Exception as refresh_exc:
-                    raise RuntimeError(session_stale_detail(f"{relog_exc}; automatic auth refresh failed: {refresh_exc}")) from relog_exc
-            raise
+            print(f"load/index session stale ({exc}); restarting API session", flush=True)
+            try:
+                result = client.login(max_retries=3)
+                _session_recovery_blocked_until = 0.0
+                return result
+            except Exception as relog_exc:
+                if is_recoverable_session_error(relog_exc):
+                    cfg = client_dev_session_config(client) or getattr(client, "_sweepy_auth_config", None) or {}
+                    try:
+                        refreshed_cfg, refreshed_client, refreshed_res = rebuild_reusable_auth_from_cached_ticket(cfg)
+                        if client is active_client:
+                            try:
+                                old_session = getattr(client, "session", None)
+                                if old_session is not None:
+                                    old_session.close()
+                            except Exception:
+                                pass
+                            active_client = refreshed_client
+                        save_reusable_auth_profile(refreshed_cfg, "load_index_auto_refresh")
+                        persist_dev_session_cache("load_index_auto_refresh")
+                        print("load/index recovered after automatic reusable-auth refresh", flush=True)
+                        _session_recovery_blocked_until = 0.0
+                        return refreshed_res
+                    except Exception as refresh_exc:
+                        _session_recovery_blocked_until = time.time() + _SESSION_RECOVERY_COOLDOWN_S
+                        print(
+                            f"automatic auth refresh failed ({refresh_exc}); backing off session "
+                            f"recovery for {int(_SESSION_RECOVERY_COOLDOWN_S)}s to stop the 501 retry storm",
+                            flush=True,
+                        )
+                        raise RuntimeError(session_stale_detail(f"{relog_exc}; automatic auth refresh failed: {refresh_exc}")) from relog_exc
+                _session_recovery_blocked_until = time.time() + _SESSION_RECOVERY_COOLDOWN_S
+                raise
+        finally:
+            _session_recovery_lock.release()
 
 
 def game_api_call_with_session_recovery(endpoint, payload=None, *, client=None, **call_kwargs):

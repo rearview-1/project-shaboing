@@ -156,6 +156,55 @@ facility + stacked rainbows) → can represent SS. It's default OFF pending care
 > **This reframes the resolver work: it is NOT inert — it is the enabler for an SS-capable sim.**
 > The resolver is inert only in the DEFAULT (replay) mode; in formula mode it IS the training engine.
 
+### BN-1 RESOLVED-IN-PRINCIPLE (deep dig 2026-06-14): formula mode is faithful; the gap is the ITEM ECONOMY
+**User's actual design intent (corrected):** the sim should generate its OWN original career from first
+principles (formula), NOT replay the bot's tiles. Replay was a wrong turn. So formula mode must be THE engine.
+
+**Deep instrumented findings (real deck, account_b):**
+1. A from-scratch formula career produces the RIGHT PROFILE (deck-driven: speed/wit/power high, guts/stamina
+   low — matches the real careers' shape) because tiles for stats with no rainbow card stay low-gain. The
+   facility model is FAITHFUL (`level_up_every_uses=4` == sim `picks//4`; `level_multipliers` all 1.0).
+2. But the MAGNITUDE was low: **stat_sum 3326-3446 vs real 4111** — and forcing the policy to diversify
+   barely helped (the profile is correctly deck-driven, not a policy bug).
+3. **Root cause MEASURED:** the formula career applied a megaphone/anklet boost on **3 of 45** training
+   turns (1 megaphone use) — real play (esp. summer camp) uses them heavily; the ×1.85 replay had that
+   baked in. Forcing realistic item usage:
+   - formula + 60% megaphone every train → **stat_sum 4133 ≈ real 4111** (PROP-2 career-validated!)
+   - formula + 110% mega+anklet every train → **4423**, toward manual SS 4879.
+**Conclusion:** the formula sim is faithful; the replay ×1.85 was compensating for a broken sim-side ITEM
+ECONOMY (the bot doesn't buy/use training megaphones). Fix the item economy → formula mode matches real →
+optimizer in formula mode can push to SS. **This is the concrete, data-proven path to the user's vision.**
+
+**Implementation plan (replaces/sharpens PROP-1/2):**
+- (a) Fix the sim's item-buy/use policy so it buys + applies summer megaphones + anklets on training turns
+  to realistic uptime (the 3346→4133 lever). Root-cause the under-buying in items.py first.
+- (b) Make `sim_formula_training_gain` the default (deprecate the replay path) once (a) lands and the
+  formula career reproduces ~4111 with the *real* item policy (not forced).
+- (c) Run the optimizer in formula mode → it finds the policy (rainbow timing, facility build, item timing)
+  that pushes 4133 → SS, which replay structurally could never represent.
+
+**Item-economy root cause (fully nailed, 2026-06-14):** over a full formula career the buy policy
+(`_maybe_buy_shop_items`:4964) acquires **1 megaphone, 0 anklets, 64 other items**. Two compounding
+causes: (1) it samples from `_observed_item_counts("bought_by_turn_bucket")` = **the bot's own purchase
+history** (circular — the mediocre bot under-bought megaphones, comment 4981-4985); (2) even the
+`sim_use_shop_refresh_pools=True` real-pool path didn't help (flip test: 3433 vs 3446) because buying is
+**volume-limited random sampling** (1-2 items/turn @ 42% from many types) — megaphones are rarely drawn.
+The USE logic (`_maybe_use_training_items`:5152) already applies a megaphone on strong/summer tiles IF
+owned — so the fix is purely **deliberate acquisition**: buy megaphones (tier by phase, max in summer)
++ the deck's primary-stat anklets for strong/summer training turns, budgeted by mant_coin. That alone
+should move the formula career 3446 → ~4111 with the *real* item policy (no forcing). THE SAME
+replay-the-mediocre-bot disease as BN-1, in the item economy. **Both must be flipped to real/formula for
+the from-scratch sim the user wants.**
+
+### Next concrete implementation (sharpened, data-proven)
+1. **Deliberate training-item acquisition** in `_maybe_buy_shop_items` (the 3446→~4111 lever) — verify it
+   reproduces real magnitude with the REAL (non-forced) policy.
+2. **Flip `sim_formula_training_gain` default on + deprecate the training-tile replay** once (1) lands and
+   formula+real-items ≈ 4111. (Keep events + race-opponent fields as game-side data — those aren't the
+   bot's behavior, so they're legitimate to keep.)
+3. **Run the optimizer in formula mode** (PROP-1) — now it can discover SS policies (4133→4423→4879).
+4. Then PROP-3 (manual-imitation prior) to anchor it to better-than-bot decisions.
+
 _(other bottlenecks appended from agent reports)_
 
 ---

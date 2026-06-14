@@ -226,10 +226,19 @@ class PublicAppStaticTests(unittest.TestCase):
         index_html = (PROJECT_ROOT / "public" / "index.html").read_text(encoding="utf-8")
 
         self.assertIn('data-cat="test"', index_html)
-        self.assertIn('<span class="rail-name">Test 13</span>', index_html)
+        self.assertIn('<span class="rail-name">Test 7</span>', index_html)
         self.assertIn('data-pane="test"', index_html)
-        self.assertIn("Test 13 tab is wired and selectable.", index_html)
-        self.assertIn("test:'TEST 13'", app_js)
+        self.assertIn("Test 7 tab is wired and selectable.", index_html)
+        self.assertIn("test:'TEST 7'", app_js)
+
+    def test_page_load_auto_applies_backend_update(self):
+        # Pre-login workaround: a page refresh pulls + applies the latest GitHub
+        # patch via /api/dev/update; the live-reload poller (/api/dev/version)
+        # reloads the page onto the new code once the backend restarts.
+        app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")
+        self.assertIn("autoApplyBackendUpdateOnLoad", app_js)
+        self.assertIn("'/api/dev/update'", app_js)
+        self.assertIn("/api/dev/version", app_js)
 
     def test_team_trials_searchable_screen_exists(self):
         app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")

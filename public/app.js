@@ -7045,7 +7045,7 @@ const state = {
             const label = document.getElementById('lib-current-label');
             if (label) {
                 const counts = retuned.lastCounts || {};
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 13'})[cat] || cat.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 7'})[cat] || cat.toUpperCase();
                 const n = counts[cat];
                 label.innerText = n != null ? `${name} · ${n}` : name;
             }
@@ -7074,7 +7074,7 @@ const state = {
             });
             const label = document.getElementById('lib-current-label');
             if (label && counts[retuned.currentPane] != null) {
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 13'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW', test:'TEST 7'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
                 label.innerText = `${name} · ${counts[retuned.currentPane]}`;
             }
         }
@@ -10099,6 +10099,24 @@ const state = {
                     }
                 }, 0);
             }
+
+            /* --- Auto-apply GitHub patch on page load --- */
+            // Workaround for users who can't click REFRESH BACKEND (e.g. they
+            // are at the login screen, where that button is hidden): a plain
+            // page refresh pulls + applies the latest GitHub patch. The backend
+            // only restarts when there is an actual update and no career runner
+            // is active (it defers otherwise), and the live-reload poller below
+            // then reloads the page onto the new code. No-ops on a non-git
+            // install (the git check just reports "not a repository").
+            (async function autoApplyBackendUpdateOnLoad() {
+                try {
+                    const res = await fetch('/api/dev/update', { method: 'POST', cache: 'no-store' });
+                    const data = await res.json().catch(() => null);
+                    if (data && data.success && data.status === 'updated') {
+                        console.log('[auto-update]', data.detail || 'GitHub patch applied; backend restarting…');
+                    }
+                } catch (e) { /* offline / endpoint missing — ignore; the poller still runs */ }
+            })();
 
             /* --- Live-reload poller --- */
             const LR_FILES = ['/styles.css', '/app.js', '/api/dev/version'];

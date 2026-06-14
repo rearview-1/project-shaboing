@@ -1024,11 +1024,18 @@ class CareerRunner:
 
         State lives in <runtime>/learning/policy_optimizer_state.json so the
         cadence survives restarts. Only one optimizer subprocess runs at a
-        time (previous pid is checked before spawning a new one). Disabled
-        by setting preset["auto_policy_optimizer_enabled"] = false.
+        time (previous pid is checked before spawning a new one).
+
+        DEFAULT-OFF (2026-06-14): the on-machine auto-optimizer is disabled by
+        default so a live user's bot is never retuned against the in-development
+        sim model (training-gain resolver / race-physics / item-economy rework
+        that is still being validated). This freezes shipped bots on their
+        proven learned policy. Re-enable per instance with
+        preset["auto_policy_optimizer_enabled"] = true once the new sim is
+        validated against manual SS careers.
         """
         preset_snapshot = preset_snapshot or {}
-        if str(preset_snapshot.get("auto_policy_optimizer_enabled", True)).strip().lower() in {"0", "false", "no", "off"}:
+        if str(preset_snapshot.get("auto_policy_optimizer_enabled", False)).strip().lower() not in {"1", "true", "yes", "on"}:
             return
         if str((report_snapshot or {}).get("status") or "") != "finished":
             return

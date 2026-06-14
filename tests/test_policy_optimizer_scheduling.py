@@ -42,7 +42,7 @@ class PolicyOptimizerSchedulingTests(unittest.TestCase):
         return json.loads(path.read_text(encoding="utf-8"))
 
     def test_counts_finished_careers_and_spawns_at_threshold(self):
-        preset = {"auto_policy_optimizer_every": 3}
+        preset = {"auto_policy_optimizer_enabled": True, "auto_policy_optimizer_every": 3}
         report = {"status": "finished"}
         for _ in range(2):
             self.runner._maybe_schedule_policy_optimizer(self.runtime_root, preset, report)
@@ -65,8 +65,18 @@ class PolicyOptimizerSchedulingTests(unittest.TestCase):
             self.runner._maybe_schedule_policy_optimizer(self.runtime_root, preset, report)
         self.assertEqual(self.spawned, [])
 
-    def test_non_finished_careers_do_not_count(self):
+    def test_disabled_by_default(self):
+        # Default-OFF (2026-06-14): without an explicit opt-in the on-machine
+        # auto-optimizer must NOT spawn, so shipped bots are never retuned
+        # against the in-development sim model.
         preset = {"auto_policy_optimizer_every": 2}
+        report = {"status": "finished"}
+        for _ in range(5):
+            self.runner._maybe_schedule_policy_optimizer(self.runtime_root, preset, report)
+        self.assertEqual(self.spawned, [])
+
+    def test_non_finished_careers_do_not_count(self):
+        preset = {"auto_policy_optimizer_enabled": True, "auto_policy_optimizer_every": 2}
         for _ in range(5):
             self.runner._maybe_schedule_policy_optimizer(self.runtime_root, preset, {"status": "stopped"})
         self.assertEqual(self.spawned, [])
@@ -74,7 +84,7 @@ class PolicyOptimizerSchedulingTests(unittest.TestCase):
     def test_root_runtime_does_not_spawn_invalid_instance_job(self):
         root_runtime = Path(self._tmp.name) / "uma_runtime"
         (root_runtime / "learning").mkdir(parents=True)
-        preset = {"auto_policy_optimizer_every": 2}
+        preset = {"auto_policy_optimizer_enabled": True, "auto_policy_optimizer_every": 2}
 
         for _ in range(3):
             self.runner._maybe_schedule_policy_optimizer(root_runtime, preset, {"status": "finished"})

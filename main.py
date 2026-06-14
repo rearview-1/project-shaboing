@@ -67,7 +67,7 @@ from career_bot.rating import rank_for_rating_score
 from career_bot.runner import CareerRunner, runtime_output_root
 from career_bot.skill_profiles import build_skill_priority_rows, normalize_distance as normalize_skill_distance, normalize_style as normalize_skill_style, sanitize_blacklist, split_skill_text
 from career_bot.team_trials_dataset import RANK_LABELS, deck_race_bonus_summary, load_team_trials_dataset
-from uma_api.client import UmaClient, read_client_version_cache
+from uma_api.client import UmaClient, api_error_response_viewer_id, read_client_version_cache
 
 GLB_STEAM_APP_ID = "3224770"
 JP_STEAM_APP_ID = "3564400"
@@ -601,6 +601,56 @@ def dev_session_cache_path():
 
 def reusable_auth_profiles_path():
     return dev_runtime_dir() / "reusable_auth_profiles.json"
+
+
+def cached_steam_ticket_for_username(username, steam_app_id=None):
+    target_username = str(username or "").strip().lower()
+    if not target_username:
+        return None
+    target_app_id = str(steam_app_id or APP_ID).strip() or APP_ID
+
+    def _from_cfg(cfg):
+        cfg = dict(cfg or {})
+        cfg_username = str(cfg.get("steam_username_seed") or cfg.get("username") or "").strip().lower()
+        if not cfg_username or cfg_username != target_username:
+            return None
+        cfg_app_id = str(cfg.get("steam_app_id") or APP_ID).strip() or APP_ID
+        if cfg_app_id != target_app_id:
+            return None
+        steam_id = str(cfg.get("steam_id") or "").strip()
+        ticket = str(cfg.get("steam_session_ticket") or cfg.get("steam_ticket") or "").strip()
+        if steam_id and ticket:
+            return steam_id, ticket
+        return None
+
+    for cfg in (
+        client_dev_session_config(active_client) if active_client else None,
+        pending_game_auth_config,
+    ):
+        hit = _from_cfg(cfg)
+        if hit:
+            return hit
+
+    try:
+        path = dev_session_cache_path()
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            hit = _from_cfg((payload or {}).get("client_config") or {})
+            if hit:
+                return hit
+    except Exception:
+        pass
+
+    try:
+        profiles = load_reusable_auth_profiles()
+        for profile in (profiles.get("profiles") or {}).values():
+            hit = _from_cfg(profile)
+            if hit:
+                return hit
+    except Exception:
+        pass
+    return None
 
 
 def dev_session_cache_enabled():
@@ -1358,7 +1408,11 @@ def refresh_reusable_auth_headlessly(req):
 
     has_form_creds = bool(req and req.username and req.password)
     steam_app_id = str(getattr(req, "steam_app_id", "") or APP_ID).strip() or APP_ID
-    if has_form_creds:
+    cached_ticket = cached_steam_ticket_for_username(getattr(req, "username", ""), steam_app_id)
+    if has_form_creds and cached_ticket:
+        sid, tkt = cached_ticket
+        print(f"Using cached Steam ticket for {sid}; skipping Steam helper", flush=True)
+    elif has_form_creds:
         sid, tkt = get_ticket(req.username, req.password, getattr(req, "code", ""), appid=steam_app_id)
     elif req and req.steam_id and req.steam_session_ticket:
         sid = str(req.steam_id or "").strip()
@@ -6220,6 +6274,25 @@ def api_error_code(exc):
             pass
     return 0
 
+def api_error_endpoint(exc):
+    endpoint = str(getattr(exc, "endpoint", "") or "").strip()
+    if endpoint:
+        return endpoint
+    match = re.search(r"\bon\s+([a-z0-9_/-]+)", str(exc or ""), flags=re.IGNORECASE)
+    return match.group(1) if match else ""
+
+def is_start_viewer_mismatch_error(exc, client=None):
+    endpoint = api_error_endpoint(exc)
+    if endpoint != "single_mode_free/start":
+        return False
+    response_viewer_id = api_error_response_viewer_id(exc)
+    client = client or active_client
+    try:
+        current_viewer_id = int(getattr(client, "viewer_id", 0) or 0)
+    except (TypeError, ValueError):
+        current_viewer_id = 0
+    return bool(response_viewer_id and current_viewer_id and response_viewer_id != current_viewer_id)
+
 def is_no_active_career_load_error(exc):
     return is_api_error(exc, (102, 201), "single_mode_free/load")
 
@@ -6687,6 +6760,80 @@ def refresh_live_start_state():
     except Exception as exc:
         return {"success": False, "detail": redact_sensitive_error_text(exc)}
 
+def activate_authenticated_client_from_config(cfg, reason):
+    global active_client, active_dashboard_data
+    cfg = dict(cfg or {})
+    client, load_result = _authenticated_client_from_cfg(cfg, max_retries=1)
+    old_client = active_client
+    if old_client is not client:
+        try:
+            old_session = getattr(old_client, "session", None)
+            if old_session is not None:
+                old_session.close()
+        except Exception:
+            pass
+    active_client = client
+    load_data = load_result.get("data", {})
+    sync_game_data_from_api_response("load/index", load_result, source=reason)
+    if hasattr(client, "refresh_cached_account_state"):
+        client.refresh_cached_account_state(load_data)
+    dashboard = build_dashboard_data(load_data, None, preserve_friends=True)
+    dashboard["selection"] = reconcile_active_selection()
+    dashboard["loop"] = loop_snapshot()
+    dashboard["success"] = True
+    active_dashboard_data = dashboard
+    resolved_cfg = client_dev_session_config(client) or cfg
+    client._sweepy_auth_config = dict(resolved_cfg)
+    save_reusable_auth_profile(resolved_cfg, reason)
+    persist_dev_session_cache(reason)
+    return {"success": True, "load_result": load_result, "dashboard": dashboard}
+
+def recover_start_session_after_viewer_mismatch(exc):
+    global active_client
+    if not active_client:
+        return {"success": False, "detail": "No active client to recover"}
+    expected_viewer_id = api_error_response_viewer_id(exc)
+    errors = []
+
+    if expected_viewer_id:
+        try:
+            path = dev_session_cache_path()
+            if path.exists():
+                with open(path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+                cfg = dict((payload or {}).get("client_config") or {})
+                if safe_int(cfg.get("viewer_id")) == expected_viewer_id and has_fresh_auth_config(cfg):
+                    print(
+                        f"career start viewer mismatch recovered from dev cache viewer {expected_viewer_id}",
+                        flush=True,
+                    )
+                    return activate_authenticated_client_from_config(cfg, "start_viewer_mismatch_cache")
+        except Exception as cache_exc:
+            errors.append(f"dev-cache recovery failed: {redact_sensitive_error_text(cache_exc)}")
+
+    cfg = client_dev_session_config(active_client) or getattr(active_client, "_sweepy_auth_config", None) or {}
+    try:
+        refreshed_cfg, refreshed_client, refreshed_res = rebuild_reusable_auth_from_cached_ticket(cfg)
+        old_client = active_client
+        try:
+            old_session = getattr(old_client, "session", None)
+            if old_session is not None:
+                old_session.close()
+        except Exception:
+            pass
+        active_client = refreshed_client
+        sync_game_data_from_api_response("load/index", refreshed_res, source="start_viewer_mismatch_refresh")
+        if hasattr(refreshed_client, "refresh_cached_account_state"):
+            refreshed_client.refresh_cached_account_state(refreshed_res.get("data", {}))
+        refreshed_client._sweepy_auth_config = dict(refreshed_cfg)
+        save_reusable_auth_profile(refreshed_cfg, "start_viewer_mismatch_refresh")
+        persist_dev_session_cache("start_viewer_mismatch_refresh")
+        print("career start viewer mismatch recovered after automatic reusable-auth refresh", flush=True)
+        return {"success": True, "load_result": refreshed_res}
+    except Exception as refresh_exc:
+        errors.append(f"automatic auth refresh failed: {redact_sensitive_error_text(refresh_exc)}")
+    return {"success": False, "detail": "; ".join(errors) or "start session recovery failed"}
+
 def start_career_from_request(req):
     global active_start_debug
     if not active_client:
@@ -6779,8 +6926,8 @@ def start_career_from_request(req):
                 "proof": fallback_proof,
                 "account": ((preflight.get("dashboard") or {}).get("account") or {}),
             }
-    try:
-        result = active_client.start_career(
+    def execute_start(current_tp_info, current_money_value, difficulty_candidate_rows):
+        return active_client.start_career(
             card_id=req.card_id,
             support_card_ids=req.support_card_ids,
             friend_viewer_id=req.friend_viewer_id,
@@ -6790,8 +6937,8 @@ def start_career_from_request(req):
             scenario_id=req.scenario_id,
             deck_id=req.deck_id,
             use_tp=req.use_tp,
-            tp_info=tp_info,
-            current_money=current_money,
+            tp_info=current_tp_info,
+            current_money=current_money_value,
             succession_rank_point=succession_rank_point,
             rental_viewer_id=rental_v,
             rental_trained_chara_id=rental_t,
@@ -6800,10 +6947,37 @@ def start_career_from_request(req):
             is_boost=req.is_boost,
             boost_story_event_id=req.boost_story_event_id,
             allow_recover_tp=start_allow_recover_tp,
-            difficulty_candidates=showtime_candidates,
+            difficulty_candidates=difficulty_candidate_rows,
         )
+
+    session_recovery_result = None
+    try:
+        result = execute_start(tp_info, current_money, showtime_candidates)
     except Exception as exc:
-        if is_api_error(exc, (102, 205, 2511, 1052), "single_mode_free/start"):
+        if is_start_viewer_mismatch_error(exc, active_client):
+            session_recovery_result = recover_start_session_after_viewer_mismatch(exc)
+            if session_recovery_result.get("success"):
+                post_recovery = refresh_live_start_state()
+                if post_recovery.get("success") and not post_recovery.get("career_active"):
+                    showtime_warnings = sanitize_showtime_start_fields(req, post_recovery.get("load_data") or {})
+                    showtime_candidates = build_showtime_start_candidates(req, post_recovery.get("load_data") or {})
+                    tp_info = apply_tp_timer_to_cached_state() or active_start_state.get("tp_info") or tp_info
+                    current_money = active_start_state.get("current_money", current_money)
+                    try:
+                        result = execute_start(tp_info, current_money, showtime_candidates)
+                    except Exception as retry_exc:
+                        exc = retry_exc
+                else:
+                    exc = RuntimeError(
+                        "start session recovery succeeded but live start state could not be refreshed: "
+                        + str(post_recovery.get("detail") or "unknown")
+                    )
+            else:
+                exc = RuntimeError(
+                    "start viewer mismatch recovery failed: "
+                    + str(session_recovery_result.get("detail") or "unknown")
+                )
+        if "result" not in locals() and is_api_error(exc, (102, 205, 2511, 1052, 501), "single_mode_free/start"):
             post_check = refresh_live_start_state()
             post_warnings = []
             if post_check.get("success") and not post_check.get("career_active"):
@@ -6811,10 +6985,15 @@ def start_career_from_request(req):
             post_proof = start_proof_checks(req, preflight=post_check) if post_check.get("success") and not post_check.get("career_active") else proof
             if post_proof is not None and post_warnings:
                 post_proof.setdefault("warnings", []).extend(post_warnings)
-            active_start_debug = start_debug_summary(req, preflight=post_check, error=exc, proof=post_proof, recovery=recovery_result)
+            recovery_debug = recovery_result
+            if session_recovery_result is not None:
+                recovery_debug = {"tp": recovery_result, "session": session_recovery_result}
+            active_start_debug = start_debug_summary(req, preflight=post_check, error=exc, proof=post_proof, recovery=recovery_debug)
             snapshot_path = write_start_error_snapshot(active_start_debug)
             code = api_error_code(exc)
             detail = start_rejection_detail(code, post_proof)
+            if session_recovery_result is not None and not session_recovery_result.get("success"):
+                detail = str(exc)
             if req.use_tp and current_tp < req.use_tp and allow_recover_tp:
                 detail = (
                     f"Server rejected career start ({code or 'unknown'}) while TP was still below the start cost. "
@@ -6828,8 +7007,9 @@ def start_career_from_request(req):
                 "debug_snapshot": snapshot_path,
                 "account": (((post_check.get("dashboard") or {}).get("account") or {}) if post_check.get("success") else None),
             }
-        record_start_debug(req, preflight=preflight, error=exc, proof=proof, recovery=recovery_result)
-        raise
+        if "result" not in locals():
+            record_start_debug(req, preflight=preflight, error=exc, proof=proof, recovery=recovery_result)
+            raise
     # Optimistic borrow-count decrement. The server increments single_mode_rental_succession_num
     # when a rental is consumed, but cached_load_data only refreshes via load/index — so without
     # this bump the UI would still display the pre-call count until the next iteration's
@@ -7653,10 +7833,14 @@ async def login(req: LoginRequest):
     try:
         has_form_creds = bool(req.username and req.password)
         steam_app_id = str(req.steam_app_id or APP_ID).strip() or APP_ID
+        cached_ticket = cached_steam_ticket_for_username(req.username, steam_app_id) if has_form_creds else None
         if req.steam_id and req.steam_session_ticket:
             sid = str(req.steam_id)
             tkt = str(req.steam_session_ticket)
             print('Using provided Steam ticket')
+        elif cached_ticket:
+            sid, tkt = cached_ticket
+            print(f"Using cached Steam ticket for {sid}; skipping Steam helper", flush=True)
         elif has_form_creds:
             sid, tkt = get_ticket(req.username, req.password, req.code, appid=steam_app_id)
         else:

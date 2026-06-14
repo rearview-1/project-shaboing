@@ -49,6 +49,22 @@ class ApiCallError(Exception):
         self.response_code = response_code
         self.req_id = req_id
 
+def api_error_response_viewer_id(exc):
+    body = getattr(exc, "response_body", None)
+    if isinstance(body, dict):
+        headers = body.get("data_headers") or {}
+        try:
+            return int(headers.get("viewer_id") or 0)
+        except (TypeError, ValueError):
+            return 0
+    match = re.search(r'"viewer_id"\s*:\s*(\d+)', str(exc or ""), flags=re.IGNORECASE)
+    if match:
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
 BASE_URL = 'https://api.games.umamusume.com/umamusume/'
 DIR = str(Path(__file__).resolve().parent.parent)
 LAST_TICKET_GEN_RESULT = None
@@ -1412,29 +1428,11 @@ class UmaClient:
         # excluded here; a session mismatch on those falls through to the
         # recoverable-session-error path (which does a full reusable-auth
         # refresh — the recovery that actually re-binds auth to the right viewer).
-        start_viewer_remap_retry_codes = {205, 391, 2511}
-        if (
-            viewer_id_mismatch
-            and ep == start_endpoint
-            and rc in start_viewer_remap_retry_codes
-            and retry_viewer_remap > 0
-        ):
+        if viewer_id_mismatch and ep == start_endpoint and rc != 1:
             print(
                 f"VIEWER ID MISMATCH on {rc} {ep}: {current_viewer_id} -> {response_viewer_id}; "
-                "retrying start once with server-provided viewer_id",
+                "not remapping a career-start request; full session recovery is required",
                 flush=True,
-            )
-            self.viewer_id = response_viewer_id
-            self.regen_sid()
-            return self.call(
-                ep,
-                args,
-                retry_208=retry_208,
-                retry_205=retry_205,
-                quiet_result_codes=quiet_result_codes,
-                retry_http_403=retry_http_403,
-                retry_394=retry_394,
-                retry_viewer_remap=retry_viewer_remap - 1,
             )
         if rc != 1:
             if rc == 205 and retry_205 > 0:
@@ -1837,6 +1835,14 @@ class UmaClient:
             boost_story_event_id = 0
         return is_boost > 0 or boost_story_event_id > 0
 
+    def _api_error_viewer_mismatch(self, exc):
+        response_viewer_id = api_error_response_viewer_id(exc)
+        try:
+            current_viewer_id = int(getattr(self, "viewer_id", 0) or 0)
+        except (TypeError, ValueError):
+            current_viewer_id = 0
+        return bool(response_viewer_id and current_viewer_id and response_viewer_id != current_viewer_id)
+
     def start_career(self, card_id, support_card_ids, friend_viewer_id, friend_card_id,
                      parent_id_1, parent_id_2, scenario_id=4, deck_id=1, use_tp=30,
                      tp_info=None, current_money=0, succession_rank_point=0,
@@ -1928,6 +1934,8 @@ class UmaClient:
                 )
             except ApiCallError as exc:
                 last_exc = exc
+                if self._api_error_viewer_mismatch(exc):
+                    raise
                 code = int(getattr(exc, "result_code", 0) or getattr(exc, "response_code", 0) or 0)
                 if code not in {102, 205} or index >= len(attempts) - 1:
                     raise

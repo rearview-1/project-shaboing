@@ -877,7 +877,7 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(viewer_headers, ["162337796827", "3080576358491"])
         client.regen_sid.assert_called_once()
 
-    def test_single_mode_start_2511_retries_with_server_provided_viewer_id(self):
+    def test_single_mode_start_2511_does_not_remap_viewer_id(self):
         client = object.__new__(uma_client.UmaClient)
         client.viewer_id = 209937075503
         client.udid_str = "12345678-1234-1234-1234-1234567890ab"
@@ -934,25 +934,17 @@ class LoopConfigSmokeTests(unittest.TestCase):
                     "result_code": 2511,
                 },
             },
-            {
-                "response_code": 1,
-                "data_headers": {
-                    "viewer_id": 4665295244463,
-                    "result_code": 1,
-                },
-                "data": {},
-            },
         ]
 
         with patch.object(uma_client, "pack", return_value=b"body"), \
              patch.object(uma_client, "get_raw_udid", return_value=b"udid"), \
              patch.object(uma_client, "unpack", side_effect=unpack_responses):
-            result = uma_client.UmaClient.call(client, "single_mode_free/start", {"start_chara": {}}, retry_205=0)
+            with self.assertRaises(uma_client.ApiCallError):
+                uma_client.UmaClient.call(client, "single_mode_free/start", {"start_chara": {}}, retry_205=0)
 
-        self.assertEqual(result["response_code"], 1)
-        self.assertEqual(client.viewer_id, 4665295244463)
-        self.assertEqual(viewer_headers, ["209937075503", "4665295244463"])
-        client.regen_sid.assert_called_once()
+        self.assertEqual(client.viewer_id, 209937075503)
+        self.assertEqual(viewer_headers, ["209937075503"])
+        client.regen_sid.assert_not_called()
 
     def test_single_mode_free_load_391_does_not_remap_viewer_id(self):
         client = object.__new__(uma_client.UmaClient)

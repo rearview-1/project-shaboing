@@ -164,6 +164,15 @@ PARAM_SPACE = [
     ("rainbow_take_bonus",              0.0, 2.0),
     ("junior_bond_build_weight",        0.0, 1.2),
     ("junior_bond_build_end_turn",      22, 36),
+    # Winning-profile levers (added 2026-06-14): weight "train toward the stat
+    # profile that historically WINS each upcoming race" (race_success) and away
+    # from what lost it (race_specific demand). The clean_rate objective rewards
+    # winning races, but without these in the search the AUTO optimizer could
+    # only chase it via raw speed/wit priorities — which over-build rating and
+    # lose the balanced power/stamina G1s. Mirrors the sim_self_learning fix
+    # (commit 5fcb30f), which only reached the manual calibrate path.
+    ("race_success_bonus_cap",          0.04, 0.45),
+    ("race_specific_demand_cap",        0.10, 0.40),
 ]
 
 

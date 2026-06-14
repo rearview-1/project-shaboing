@@ -7001,7 +7001,7 @@ def is_recoverable_session_error(exc):
         )
     )
 
-def load_index_with_session_recovery(client):
+def load_index_with_session_recovery(client, _retry_201=3):
     global active_client
     try:
         return client.call('load/index', {'adid': ''})
@@ -7012,6 +7012,18 @@ def load_index_with_session_recovery(client):
         # message rather than the raw API-error text.
         if is_client_version_stale_error(exc):
             raise RuntimeError(client_version_stale_detail(exc)) from exc
+        # 201 on load/index is a TRANSIENT server-state code (the account
+        # index isn't ready yet — typically right after a viewer-id remap).
+        # It is not a stale-session error, so the auth-refresh path can't
+        # help, and it clears on its own after a moment. Retry a few times
+        # with a short backoff before surfacing it.
+        if is_api_error(exc, (201,), "load/index") and _retry_201 > 0:
+            print(
+                f"201 on load/index (transient state); retrying in 1.5s ({_retry_201} left)",
+                flush=True,
+            )
+            time.sleep(1.5)
+            return load_index_with_session_recovery(client, _retry_201=_retry_201 - 1)
         if not is_recoverable_session_error(exc):
             raise
         can_relogin = hasattr(client, "login") and (

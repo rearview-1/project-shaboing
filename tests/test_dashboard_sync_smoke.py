@@ -474,6 +474,36 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         self.assertEqual(client.logins, 1)
         self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9004)
 
+    def test_load_index_with_session_recovery_retries_transient_201(self):
+        # 201 on load/index is a transient server-state code (clears after a
+        # moment). It must be retried and recovered, NOT surfaced as a failure
+        # or routed through the auth-refresh path (which can't help).
+        class FakeClient:
+            def __init__(self):
+                self.calls = 0
+                self.logins = 0
+
+            def call(self, endpoint, args=None):
+                self.calls += 1
+                if self.calls < 3:
+                    raise Exception('API error 201 on load/index: {"result_code":201}')
+                return {"data": make_load_data([9007])}
+
+            def has_captured_auth(self):
+                return True
+
+            def login(self, max_retries=3):
+                self.logins += 1
+                return {"data": make_load_data([0])}
+
+        client = FakeClient()
+        with patch.object(main.time, "sleep", return_value=None):
+            result = main.load_index_with_session_recovery(client)
+
+        self.assertEqual(client.calls, 3)  # two transient 201s, then success
+        self.assertEqual(client.logins, 0)  # NOT routed through re-login
+        self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9007)
+
     def test_load_index_with_session_recovery_explains_stale_auth_without_relogin(self):
         class FakeClient:
             def call(self, endpoint, args=None):

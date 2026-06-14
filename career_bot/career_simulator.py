@@ -4961,6 +4961,54 @@ class CareerSimulator:
                 self._use_item(item_id)
         return bought > 0
 
+    def _buy_training_items_from_pool(self, turn):
+        """Deliberately buy megaphones + the deck's primary-stat anklets when the
+        REAL scheduled shop pool (shop_refresh_pools.json) offers them, keeping a
+        small reserve so a megaphone is ~always available on training turns. This
+        is the data-grounded inflow (with post-race drops) that fixes the broken
+        item economy — real play buys these constantly. The USE logic
+        (_maybe_use_training_items) then applies them on strong/summer tiles."""
+        if not bool(self.preset.get("sim_use_shop_items", True)):
+            return
+        pools = self._shop_refresh_pools()
+        scheduled = (pools or {}).get("scheduled") if isinstance(pools, dict) else None
+        if not scheduled:
+            return
+        try:
+            from career_bot.shop_refresh import scheduled_refresh_turn_for, last_scheduled_refresh_turn
+            key = str(scheduled_refresh_turn_for(turn) or last_scheduled_refresh_turn(turn) or 12)
+        except Exception:
+            return
+
+        def offered(iid):
+            row = scheduled.get(str(iid)) or {}
+            return float((row.get("appearance_rate_by_turn") or {}).get(key) or 0) > 0
+
+        def buy(iid):
+            cost = self._item_cost(iid)
+            if cost <= int(self.state.get("mant_coin") or 0) and self._inventory_count(iid) < self._item_inventory_cap(iid):
+                self.state["mant_coin"] = max(0, int(self.state.get("mant_coin") or 0) - cost)
+                self._add_item(iid)
+                self.shop_items_bought += 1
+                return True
+            return False
+
+        # Keep ~2 megaphones in reserve (3 in summer, when training is heaviest);
+        # buy the best affordable tier offered this refresh window.
+        target = 3 if turn in SUMMER_CAMP_TURNS else 2
+        mega_owned = sum(self._inventory_count(i) for i in MEGAPHONE_ITEM_IDS)
+        for _ in range(target):
+            if mega_owned >= target:
+                break
+            cands = sorted(((MEGAPHONE_ITEM_IDS[i][0], i) for i in MEGAPHONE_ITEM_IDS if offered(i)), reverse=True)
+            if not cands or not any(buy(iid) for _, iid in cands):
+                break
+            mega_owned += 1
+        # Anklets for stats the deck actually trains (so they get used).
+        for iid, stat in ANKLE_WEIGHT_ITEMS.items():
+            if offered(iid) and self._inventory_count(iid) < 1 and self._deck_count_for_stat(stat) >= 1:
+                buy(iid)
+
     def _maybe_buy_shop_items(self):
         if not bool(self.preset.get("sim_use_shop_items", True)):
             return
@@ -4972,6 +5020,11 @@ class CareerSimulator:
             bought += 1
         if self._buy_target_stat_item_if_needed():
             bought += 1
+        # Deliberate training-item acquisition (megaphones + the deck's anklets)
+        # from the REAL scheduled shop pool — supplements post-race drops to give
+        # realistic megaphone uptime. The old random sampling never reliably
+        # stocked them (~1/career), which was the broken item economy.
+        self._buy_training_items_from_pool(turn)
         chance = float(self.preset.get("sim_shop_buy_chance") or 0.42)
         if turn in SUMMER_CAMP_TURNS:
             chance += 0.18
@@ -8622,6 +8675,62 @@ class CareerSimulator:
             },
         }
 
+    @staticmethod
+    def _post_race_grade_key(grade):
+        g = str(grade or "").strip().upper().replace("-", "").replace(" ", "")
+        if g in ("G1", "G2", "G3"):
+            return g
+        if g.startswith("PREOP") or g == "PREOPEN":
+            return "PreOP"
+        if g.startswith("OP") or g == "OPEN":
+            return "OP"
+        if "MAIDEN" in g:
+            return "MaidenRace"
+        return g
+
+    def _grant_post_race_items(self, grade, won):
+        """Grant post-race item rewards (megaphones / ankle weights / hammers /
+        recovery / stat items) using the REAL per-grade+result drop odds from
+        data/shop_refresh_pools.json `race` pool (hakuraku-aggregated, the
+        comprehensive shop/post-race odds dataset). This is the bot's MAJOR
+        training-item inflow in the real game (~26 races/career) that the sim
+        previously ignored entirely — the root cause of the broken item economy
+        (~1 megaphone/career). Expected-value model: accumulate fractional
+        expected copies per item and add a whole item when the accumulator
+        crosses 1.0 (deterministic, low-variance for the optimizer)."""
+        if not bool(self.preset.get("sim_post_race_item_rewards", True)):
+            return
+        pools = self._shop_refresh_pools()
+        race_pool = (pools or {}).get("race") if isinstance(pools, dict) else None
+        if not race_pool:
+            return
+        grade_key = self._post_race_grade_key(grade)
+        want = f"{grade_key}_{'victory' if won else 'defeat'}"
+        reserve = self.state.setdefault("_post_race_item_reserve", {})
+        for raw_id, row in race_pool.items():
+            try:
+                item_id = int(raw_id)
+            except (TypeError, ValueError):
+                continue
+            by_gr = (row or {}).get("expected_copies_by_grade_result") or {}
+            exp = by_gr.get(want)
+            if exp is None:
+                # Fall back to the average over the same grade's result variants
+                # (solid_showing / etsuko_*) so an unmodeled result still grants.
+                same = [float(v) for k, v in by_gr.items() if k.startswith(grade_key + "_")]
+                exp = (sum(same) / len(same)) if same else 0.0
+            try:
+                exp = float(exp or 0.0)
+            except (TypeError, ValueError):
+                exp = 0.0
+            if exp <= 0:
+                continue
+            acc = float(reserve.get(item_id, 0.0)) + exp
+            whole = int(acc)
+            for _ in range(whole):
+                self._add_item(item_id)
+            reserve[item_id] = acc - whole
+
     def _simulate_race(self, pid, race_name, distance, era, rival=False):
         """Simulate a race outcome using observed game data when available."""
         pre_race_stats = dict(self._current_race_stats())
@@ -8791,6 +8900,7 @@ class CareerSimulator:
             reward_multiplier=reward_multiplier,
         )
         self.state["fans"] = int(self.state.get("fans") or 0) + self._race_fan_reward(grade, won)
+        self._grant_post_race_items(grade, won)
         stat_allocations = {}
         if won:
             race_stat_gain = self._race_stat_total_gain(

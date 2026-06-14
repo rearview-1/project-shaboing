@@ -10100,22 +10100,36 @@ const state = {
                 }, 0);
             }
 
-            /* --- Auto-apply GitHub patch on page load --- */
-            // Workaround for users who can't click REFRESH BACKEND (e.g. they
-            // are at the login screen, where that button is hidden): a plain
-            // page refresh pulls + applies the latest GitHub patch. The backend
-            // only restarts when there is an actual update and no career runner
-            // is active (it defers otherwise), and the live-reload poller below
-            // then reloads the page onto the new code. No-ops on a non-git
-            // install (the git check just reports "not a repository").
-            (async function autoApplyBackendUpdateOnLoad() {
+            /* --- Restart backend on page refresh --- */
+            // So a user stuck at the login screen — who can't click REFRESH
+            // BACKEND (that button is hidden pre-login) — can just refresh the
+            // page to pull a pushed fix AND reset a wedged session. Every
+            // refresh fires /api/dev/reload (git pull + backend restart). A
+            // cooldown (localStorage) keeps this from looping against the
+            // live-reload poller's auto-reload after the backend comes back;
+            // /api/dev/reload itself refuses while a career runner is active, so
+            // this never interrupts a run. Skipped if storage is unavailable
+            // (can't guard the loop), when offline, or on a non-git install.
+            (async function autoRestartBackendOnLoad() {
+                const COOLDOWN_MS = 45000;
+                let store;
                 try {
-                    const res = await fetch('/api/dev/update', { method: 'POST', cache: 'no-store' });
+                    store = window.localStorage;
+                    store.setItem('__sweepy_probe__', '1');
+                    store.removeItem('__sweepy_probe__');
+                } catch (e) { return; }
+                const last = parseInt(store.getItem('sweepyLastAutoRestart') || '0', 10) || 0;
+                // A restart we just triggered makes the page auto-reload; the
+                // cooldown means that reload doesn't fire another restart.
+                if (Date.now() - last < COOLDOWN_MS) return;
+                try {
+                    const res = await fetch('/api/dev/reload', { method: 'POST', cache: 'no-store' });
                     const data = await res.json().catch(() => null);
-                    if (data && data.success && data.status === 'updated') {
-                        console.log('[auto-update]', data.detail || 'GitHub patch applied; backend restarting…');
+                    if (data && data.success) {
+                        store.setItem('sweepyLastAutoRestart', String(Date.now()));
+                        console.log('[auto-restart]', data.detail || 'backend restart queued on refresh');
                     }
-                } catch (e) { /* offline / endpoint missing — ignore; the poller still runs */ }
+                } catch (e) { /* offline / endpoint missing — ignore */ }
             })();
 
             /* --- Live-reload poller --- */

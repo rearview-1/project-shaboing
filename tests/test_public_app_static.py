@@ -231,14 +231,16 @@ class PublicAppStaticTests(unittest.TestCase):
         self.assertIn("Test 7 tab is wired and selectable.", index_html)
         self.assertIn("test:'TEST 7'", app_js)
 
-    def test_page_load_auto_applies_backend_update(self):
-        # Pre-login workaround: a page refresh pulls + applies the latest GitHub
-        # patch via /api/dev/update; the live-reload poller (/api/dev/version)
-        # reloads the page onto the new code once the backend restarts.
+    def test_page_load_restarts_backend_on_refresh(self):
+        # Pre-login fix delivery: every page refresh fires /api/dev/reload
+        # (git pull + backend restart) so a stuck-login user can refresh to get
+        # a pushed fix and reset the session. Guarded by a localStorage cooldown
+        # so it can't loop against the live-reload poller's auto-reload.
         app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")
-        self.assertIn("autoApplyBackendUpdateOnLoad", app_js)
-        self.assertIn("'/api/dev/update'", app_js)
-        self.assertIn("/api/dev/version", app_js)
+        self.assertIn("autoRestartBackendOnLoad", app_js)
+        self.assertIn("'/api/dev/reload'", app_js)
+        self.assertIn("sweepyLastAutoRestart", app_js)  # loop-prevention cooldown
+        self.assertIn("/api/dev/version", app_js)  # poller that reloads after restart
 
     def test_team_trials_searchable_screen_exists(self):
         app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")

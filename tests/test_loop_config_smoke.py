@@ -1025,6 +1025,83 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(viewer_headers, ["162337796827"])
         client.regen_sid.assert_not_called()
 
+    def test_single_mode_free_start_501_does_not_remap_viewer_id(self):
+        # Regression (2026-06-13): a viewer-id mismatch + 501 on
+        # single_mode_free/start must NOT remap viewer_id and retry. Doing so
+        # left auth_key/udid/ticket bound to the old account and produced a
+        # 501 stale-session LOOP on every career start. It must raise instead,
+        # so the recoverable-session-error path can do a full auth refresh.
+        client = object.__new__(uma_client.UmaClient)
+        client.viewer_id = 162337796827
+        client.udid_str = "12345678-1234-1234-1234-1234567890ab"
+        client.auth_key_hex = ""
+        client.steam_id = "76561199499333399"
+        client.steam_ticket = "ticket"
+        client.device_id = "device-id"
+        client.device_name = "System Product Name"
+        client.graphics_device = "GPU"
+        client.ip_address = "127.0.0.1"
+        client.platform_os = "Windows"
+        client.locale = "JPN"
+        client.app_ver = "1.21.1"
+        client.res_ver = "10006100"
+        client.sid = bytes(16)
+        client.api_log = lambda *args, **kwargs: None
+        client.auth_bytes = lambda: b""
+        client.regen_sid = MagicMock()
+        client.common = lambda: {
+            "viewer_id": client.viewer_id,
+            "device": 4,
+            "device_id": client.device_id,
+            "device_name": client.device_name,
+            "graphics_device_name": client.graphics_device,
+            "ip_address": client.ip_address,
+            "platform_os_version": client.platform_os,
+            "carrier": "",
+            "keychain": 0,
+            "locale": client.locale,
+            "button_info": "",
+            "dmm_viewer_id": None,
+            "dmm_onetime_token": None,
+            "steam_id": client.steam_id,
+            "steam_session_ticket": client.steam_ticket,
+        }
+
+        viewer_headers = []
+
+        class FakeResponse:
+            def __init__(self):
+                self.status_code = 200
+                self.text = "packed"
+
+        class FakeSession:
+            def post(self, url, data=None, headers=None, timeout=None):
+                viewer_headers.append(str((headers or {}).get("ViewerID") or ""))
+                return FakeResponse()
+
+        client.session = FakeSession()
+
+        unpack_responses = [
+            {
+                "response_code": 501,
+                "data_headers": {
+                    "viewer_id": 3080576358491,
+                    "result_code": 501,
+                },
+            },
+        ]
+
+        with patch.object(uma_client, "pack", return_value=b"body"), \
+             patch.object(uma_client, "get_raw_udid", return_value=b"udid"), \
+             patch.object(uma_client, "unpack", side_effect=unpack_responses):
+            with self.assertRaises(uma_client.ApiCallError):
+                uma_client.UmaClient.call(client, "single_mode_free/start", {})
+
+        # viewer_id untouched (no remap), one request only (no retry loop).
+        self.assertEqual(client.viewer_id, 162337796827)
+        self.assertEqual(viewer_headers, ["162337796827"])
+        client.regen_sid.assert_not_called()
+
     def test_race_end_391_does_not_remap_viewer_id(self):
         client = object.__new__(uma_client.UmaClient)
         client.viewer_id = 162337796827

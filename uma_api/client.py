@@ -1402,7 +1402,17 @@ class UmaClient:
                 retry_394=retry_394,
                 retry_viewer_remap=retry_viewer_remap - 1,
             )
-        start_viewer_remap_retry_codes = {102, 205, 2511, 391, 394, 501}
+        # single_mode_free/start may adopt a server-provided viewer_id, but ONLY
+        # for genuine "wrong viewer, use this one" codes — NOT for stale-session
+        # codes. Per the safe_viewer_remap_endpoints comment above, remapping
+        # viewer_id on a career endpoint without re-binding auth_key/udid/ticket
+        # turns the next start into a 501/394 stale-session LOOP. Observed
+        # 2026-06-13: a 102/501 on start triggered a remap-and-retry that then
+        # 501-looped until a full auth refresh recovered. So 102/394/501 are
+        # excluded here; a session mismatch on those falls through to the
+        # recoverable-session-error path (which does a full reusable-auth
+        # refresh — the recovery that actually re-binds auth to the right viewer).
+        start_viewer_remap_retry_codes = {205, 391, 2511}
         if (
             viewer_id_mismatch
             and ep == start_endpoint

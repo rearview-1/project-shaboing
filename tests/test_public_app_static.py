@@ -221,16 +221,6 @@ class PublicAppStaticTests(unittest.TestCase):
         self.assertIn("'card-borrow': (dashData && dashData.friends ? dashData.friends.length : null)", app_js)
         self.assertIn("#card-borrow-grid.friend-following-list", styles_css)
 
-    def test_library_test_tab_exists(self):
-        app_js = (PROJECT_ROOT / "public" / "app.js").read_text(encoding="utf-8")
-        index_html = (PROJECT_ROOT / "public" / "index.html").read_text(encoding="utf-8")
-
-        self.assertIn('data-cat="test"', index_html)
-        self.assertIn('<span class="rail-name">Test 7</span>', index_html)
-        self.assertIn('data-pane="test"', index_html)
-        self.assertIn("Test 7 tab is wired and selectable.", index_html)
-        self.assertIn("test:'TEST 7'", app_js)
-
     def test_page_load_restarts_backend_on_refresh(self):
         # Pre-login fix delivery: every page refresh fires /api/dev/reload
         # (git pull + backend restart) so a stuck-login user can refresh to get

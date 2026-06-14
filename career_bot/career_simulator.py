@@ -3688,12 +3688,13 @@ class CareerSimulator:
         return partners
 
     def _mood_base_effect(self, mood_value):
-        """Mood's per-level training-gain effect. Trackblazer (MANT) weakens it to
-        2%/level (Great +4%) vs the standard ~10%/level (uma.guide/trackblazer)."""
-        table = (MOOD_BASE_EFFECT_MANT
-                 if int(self.preset.get("scenario_id") or 0) == MANT_SCENARIO_ID
-                 else MOOD_BASE_EFFECT)
-        return table.get(int(mood_value), 0.0)
+        """Mood's per-level training-gain effect — STANDARD table for all scenarios
+        including Trackblazer/MANT. The MANT-aware uma.guide training simulator
+        applies standard great-mood (BaseMood 0.20 -> x1.32 with mood-effect cards),
+        NOT a 2%/level reduction. The earlier MANT-2%/level value was a misread of
+        uma.guide/trackblazer that only matched the career total by masking the
+        bogus rainbow_mult; with rainbow_mult removed, each term stands on its own."""
+        return MOOD_BASE_EFFECT.get(int(mood_value), 0.0)
 
     def _support_training_gain(self, training_stat, gain_stat, partner_cards, is_rainbow, facility_level):
         facilities = (self.training_curves or {}).get("facilities") or {}
@@ -3727,24 +3728,30 @@ class CareerSimulator:
                 matching_bonded += 1
                 friendship_eff += float(effects.get("friendship_bonus") or 0)
 
-        partner_mult = 1.0 + min(0.35, len(partner_cards) * 0.045)
-        mood_mult = 1.0 + mood + (mood_eff / 100.0 * max(0.0, mood))
+        # Term-for-term match to the uma.guide training-gain formula (verified
+        # against real tile breakdowns, e.g. Power 48 / Stamina 58):
+        #   gain = (base + statBonus) x Friendship x Mood x TrainingEff
+        #          x CharCount x Growth
+        # CharCount = 1 + 0.05*N (no cap, 0.05 not 0.045). Mood term is
+        #   1 + BaseMood*(1 + sum(moodEffect)/100). Friendship is additive across
+        #   matching bonded cards (1 + sum(friendship)/100), including type-1
+        #   friendship uniques (folded in _resolve_support_cards).
+        # REMOVED two terms that are NOT in the real formula and were
+        # over-crediting every tile (and were being masked by the now-reverted
+        # MANT-mood fudge):
+        #   - rainbow_mult (+0.12 per bonded card): the friendship multiplier IS
+        #     the rainbow/friendship-training benefit; a separate factor
+        #     double-counted it.
+        #   - random variance (0.92-1.10): real training gain is deterministic.
+        char_count_mult = 1.0 + 0.05 * len(partner_cards)
+        mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
         training_mult = 1.0 + training_eff / 100.0
         friendship_mult = 1.0 + (friendship_eff / 100.0 if is_rainbow else 0.0)
-        rainbow_mult = 1.0 + (0.12 * matching_bonded if is_rainbow else 0.0)
-        variance = self.rng.uniform(0.92, 1.10)
 
-        value = (base + stat_bonus) * (1.0 + growth) * mood_mult * training_mult
-        value *= friendship_mult * rainbow_mult * partner_mult * variance
-        # Mechanical model: gain = (facility base + card stat bonuses) x growth
-        # x mood x training-effectiveness x friendship x rainbow x partner.
-        # NO blanket fudge scale. The legacy 1.65 (and 2.35 before it) was a
-        # hand-tuned constant to make the SYNTHETIC path's career totals match
-        # the bot's mediocre output; it inflated every tile ~2x over the
-        # game's facility table (verified 2026-06-13 against the real base
-        # values, e.g. Speed L1 base 8). `sim_training_gain_scale` defaults
-        # to 1.0 so the formula reproduces the game table; it remains
-        # overridable only for explicit experiments.
+        value = (base + stat_bonus) * friendship_mult * mood_mult * training_mult
+        value *= char_count_mult * (1.0 + growth)
+        # `sim_training_gain_scale` defaults to 1.0 (no fudge); overridable only
+        # for explicit experiments.
         value *= float(self.preset.get("sim_training_gain_scale") or 1.0)
         return max(0, int(value))
 
@@ -3764,12 +3771,22 @@ class CareerSimulator:
         ]
         bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects in active_effects)
         training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects in active_effects)
+        mood_eff = sum(float(effects.get("mood_effect") or 0) for effects in active_effects)
+        friendship_eff = 0.0
+        for card, effects in zip(partner_cards, active_effects):
+            if card.get("type") == training_stat and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
+                friendship_eff += float(effects.get("friendship_bonus") or 0)
         mood = self._mood_base_effect(int(self.state.get("motivation") or 3))
-        value = (base + bonus) * (1.0 + max(0.0, mood)) * (1.0 + training_eff / 100.0)
-        value *= 1.0 + min(0.25, len(partner_cards) * 0.035)
-        if is_rainbow:
-            value *= 1.12
-        return max(1, int(round(value)))
+        # SP uses the SAME multiplicative formula as stat gain (friendship, mood,
+        # training-eff, char-count) but NO growth term — SP isn't a trained stat.
+        # Verified vs a real tile breakdown (guts tile SP=25 needs friendship). The
+        # old code applied neither friendship nor the mood-effect amplification and
+        # used a bogus flat x1.12 rainbow factor.
+        friendship_mult = 1.0 + (friendship_eff / 100.0 if is_rainbow else 0.0)
+        mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
+        char_count_mult = 1.0 + 0.05 * len(partner_cards)
+        value = (base + bonus) * friendship_mult * mood_mult * (1.0 + training_eff / 100.0) * char_count_mult
+        return max(1, int(value))
 
     def _support_energy_delta(self, training_stat, partner_cards, is_rainbow, facility_level):
         facilities = (self.training_curves or {}).get("facilities") or {}

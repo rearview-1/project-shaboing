@@ -347,3 +347,49 @@ over-fitting to account_b's field; hold out a validation split.
 3. **PROP-8** (race-model recalibration) — makes the race signal the optimizer trusts accurate.
 4. **PROP-4** (unify optimizers) + **PROP-5/6** (race-floor timing + skills) — targeted win-rate gains.
 5. **PROP-7** (robust scoring) — lock in policies that survive live RNG.
+
+---
+
+## SS Reachability — Grounded Diagnosis (2026-06-14, FORMULA mode)
+
+Established the from-scratch formula sim (`sim_formula_training_gain=True`) computes decisions via
+`MantStrategy` (verified: `_score_command` fires ~1821×/career; the gain *and* decision replay paths
+are both off). All numbers below are formula-mode careers on the real-account 6-speed deck.
+
+**1. The rating curve is strongly CONVEX (rating.py `stat_rating_score`).** +100 of a stat is worth
++270 rating at 400, +536 at 1000, **+748 at 1150**. Therefore a skewed build beats a balanced one at
+equal sum (9729 vs 8740 at sum 3915), and the SS-optimal shape is **the top 3-4 stats pushed as high
+as possible** (one stat caps at STAT_CAP=1200). Confirms the `project_ss_sim_tuning` convexity note.
+
+**2. The SS recipe (math + a real career, both agree).** SS = rating ≥ 17500.
+`estimate_rating_score`: speed 1200 + power 1200 + stamina 900 + wit 700 + guts 400 (=4400) + skill
+5800 → **18,071 = SS**. The peak real career in `real_training_snapshots` on a **6-speed deck** hit
+**4901**: speed 1161 / power 1114 / **guts 1200** / wit 829 / stamina 597 — i.e. 3-4 high stats, the
+convex shape. So SS is genuinely reachable on the production deck. NOT impossible.
+
+**3. The bot caps at S+ (~16,700), and the gap is THROUGHPUT, not allocation.**
+- A tuned cap-targeting policy reaches stat_sum ~4100, rating ~16,700 (best seed), 0/N SS — building
+  only speed+power high, guts/stamina/wit low.
+- **Forcing guts allocation FAILS the right way:** forcing guts tiles to win builds guts to ~900-1000
+  but *drops* total to 3094-3500 and rating to ~12,000. On a no-guts deck, guts training is low-value
+  (~10/train) vs rainbow speed (~50/train). Spending turns on guts sacrifices more than it adds. This
+  proves the bot is **total-stat-throughput limited** (~4100 points) — it can only afford to push 2
+  stats into the convex zone. The manual generated ~4900 points → could push 3-4.
+
+**4. Where the ~800-point throughput gap lives (manual 4901 vs bot formula career).**
+| driver | manual 4901 | bot formula | lever |
+|---|---|---|---|
+| rainbow-ready bonds (≥80) | 7-8 (all maxed) | 5 | junior_bond_build / near-rainbow targeting |
+| energy use | avg vital ~39 (grinds) | rests more (higher vital) | rest_threshold (with failure safety) |
+| wit (→ SP → skills) | 829 | ~630 | wit priority → more SP → +~700 skill rating |
+| item (megaphone) uptime | heavy | ~11/career, ~110-290 coin left unspent | shop reserve target ↑ within coin |
+
+**Per-tile gain is validated-exact (uma.guide resolver: 100/42/10/-27), so this is a policy/play-quality
+gap, NOT a gain-scale calibration problem.** The current strategy, even optimally tuned within the
+existing PARAM_SPACE, tops out at S+ — reaching SS requires *improving play-quality throughput*
+(faster full-bond-building, aggressive-but-safe energy, more wit/SP for skills, max item uptime), which
+is exactly the "beat manual" core. Item economy (post-race drops + shop buying from `shop_refresh_pools.json`)
+shipped this pass (commit c2c2a80). Remaining SS work tracked as the throughput-gap task.
+
+**DO NOT** "reach SS" by inflating gains or forcing a stat distribution — both are unfaithful and were
+shown to be rating-negative or fabricated. SS must come from the bot generating manual-level throughput.

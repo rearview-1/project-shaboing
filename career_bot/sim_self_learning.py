@@ -51,6 +51,12 @@ LEARNABLE_PARAMS = {
     "skill_point_drain_floor",
     # Rest / training caution
     "rest_threshold",
+    # Race-targeting weights — let the optimizer learn to TRAIN toward the stat
+    # profile that historically WINS each upcoming race (race_success) and away
+    # from what lost it (race_specific demand), instead of only chasing raw
+    # rating via speed/wit priorities (which kept losing the balanced G1s).
+    "race_success_bonus_cap",
+    "race_specific_demand_cap",
 }
 
 # Conservative bounds for values the sim is allowed to test/write.
@@ -74,6 +80,8 @@ LEARNABLE_PARAM_BOUNDS = {
     "calendar_race_prebuy_keep_sp": (0, 350),
     "skill_point_drain_floor": (0, 250),
     "rest_threshold": (20, 75),
+    "race_success_bonus_cap": (0.04, 0.45),
+    "race_specific_demand_cap": (0.10, 0.40),
 }
 
 INTEGER_PARAMS = {
@@ -442,6 +450,14 @@ def propose_race_reliability_adjustments(
     _append("calendar_race_prebuy_keep_sp", 100, max(0, keep_sp - 50), reason, lift)
     _append("stamina_priority_deficit_boost", 0.03, stamina_bonus + 0.04, reason, lift * 0.75)
     _append("power_priority_deficit_boost", 0.03, power_bonus + 0.04, reason, lift * 0.75)
+    # Lean harder on the LEARNED race profiles: train toward the stats that
+    # historically WIN these races (success cap) and away from what lost them
+    # (demand cap). Without this the optimizer only chased rating via speed/wit
+    # and kept losing the balanced power/stamina G1s despite high stat sums.
+    success_cap = _current_lhp_value(preset, "race_success_bonus_cap", 0.10)
+    demand_cap = _current_lhp_value(preset, "race_specific_demand_cap", 0.25)
+    _append("race_success_bonus_cap", 0.10, success_cap + 0.06, reason, lift * 0.9)
+    _append("race_specific_demand_cap", 0.25, demand_cap + 0.06, reason, lift * 0.8)
     return proposals
 
 

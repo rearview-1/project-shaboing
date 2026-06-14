@@ -102,7 +102,7 @@ TUNABLE_PARAMS = {
     # Per-race manual demand — kept for legacy compat; projection is dominant
     "race_specific_demand_cap":    {"floor": 0.10, "ceiling": 0.40, "step": 0.02, "default": 0.25},
     # Race success learning
-    "race_success_bonus_cap":      {"floor": 0.04, "ceiling": 0.20, "step": 0.02, "default": 0.10},
+    "race_success_bonus_cap":      {"floor": 0.04, "ceiling": 0.45, "step": 0.03, "default": 0.10},  # ceiling 0.20->0.45 so the winning-profile signal can compete with speed/wit priorities (0.45-0.60)
     # Checkpoint pressure base — projection supersedes; keep small
     "checkpoint_pressure_base":    {"floor": 0.04, "ceiling": 0.12, "step": 0.01, "default": 0.06},
     # Pre-race skill purchase per G1

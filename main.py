@@ -41,6 +41,8 @@ from career_bot.daily_tasks import (
     normalize_action_steps,
     normalize_style_id,
     render_template_value,
+    showtime_difficulty_code,
+    showtime_difficulty_level,
     showtime_difficulty_options,
     summarize_daily_event_status,
 )
@@ -6293,11 +6295,16 @@ def sanitize_showtime_start_fields(req, load_data=None):
         return warnings
 
     options = showtime_difficulty_options(load_data or {})
+    requested_level = showtime_difficulty_level(requested_difficulty)
+    requested_code = showtime_difficulty_code(requested_difficulty)
     selected = next(
         (
             row for row in options
             if safe_int(row.get("difficulty_id")) == requested_difficulty_id
-            and safe_int(row.get("difficulty")) == requested_difficulty
+            and (
+                safe_int(row.get("difficulty")) == requested_code
+                or safe_int(row.get("difficulty_level")) == requested_level
+            )
         ),
         None,
     )
@@ -6342,45 +6349,53 @@ def build_showtime_start_candidates(req, load_data=None):
     if requested_difficulty_id <= 0 or requested_difficulty <= 0:
         return []
     options = showtime_difficulty_options(load_data or {})
+    requested_level = showtime_difficulty_level(requested_difficulty)
+    requested_code = showtime_difficulty_code(requested_difficulty)
     selected = next(
         (
             row for row in options
             if safe_int(row.get("difficulty_id")) == requested_difficulty_id
-            and safe_int(row.get("difficulty")) == requested_difficulty
+            and (
+                safe_int(row.get("difficulty")) == requested_code
+                or safe_int(row.get("difficulty_level")) == requested_level
+            )
         ),
         None,
     )
     if not selected:
         return []
-    open_index = max(requested_difficulty, safe_int(selected.get("open_difficulty_index")))
-    ordered_values = []
+    selected_level = safe_int(selected.get("difficulty_level")) or requested_level
+    open_index = max(selected_level, safe_int(selected.get("open_difficulty_index")))
+    ordered_levels = []
 
-    def add(value):
-        value = safe_int(value)
-        if value <= 0 or value > open_index or value in ordered_values:
+    def add(level):
+        level = safe_int(level)
+        if level <= 0 or level > open_index or level in ordered_levels:
             return
-        ordered_values.append(value)
+        ordered_levels.append(level)
 
-    add(requested_difficulty)
-    add(requested_difficulty - 1)
-    add(requested_difficulty + 1)
+    add(selected_level)
+    add(selected_level - 1)
+    add(selected_level + 1)
     add(open_index)
-    for value in range(open_index, 0, -1):
-        add(value)
+    for level in range(open_index, 0, -1):
+        add(level)
 
     is_boost = 1 if safe_int(getattr(req, "is_boost", 0)) > 0 else 0
     boost_story_event_id = safe_int(getattr(req, "boost_story_event_id", 0)) if is_boost else 0
     return [
         {
             "difficulty_id": requested_difficulty_id,
-            "difficulty": value,
+            "difficulty": showtime_difficulty_code(level),
+            "difficulty_level": level,
             "is_boost": is_boost,
             "boost_story_event_id": boost_story_event_id,
-            "source": "selected" if value == requested_difficulty else "fallback",
-            "selected_difficulty": requested_difficulty,
+            "source": "selected" if level == selected_level else "fallback",
+            "selected_difficulty": showtime_difficulty_code(selected_level),
+            "selected_difficulty_level": selected_level,
             "open_difficulty_index": open_index,
         }
-        for value in ordered_values
+        for level in ordered_levels
     ]
 
 def build_start_payload_preview(req, tp_info=None, current_money=None, succession_rank_point=None, allow_recover_tp=None):

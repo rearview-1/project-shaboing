@@ -281,6 +281,33 @@ def _difficulty_label(index: int) -> str:
     return labels.get(index, f"Difficulty {index}")
 
 
+def showtime_difficulty_code(level: Any) -> int:
+    """Return the server's career-start difficulty code for a Showtime level.
+
+    Live GLB capture on 2026-06-14:
+    selected_difficulty_info={"difficulty_id":1003,"difficulty":401}
+    for open_difficulty_index=4. The game does not send the visible level
+    number directly; it sends level * 100 + 1.
+    """
+
+    level_int = _safe_int(level)
+    if level_int <= 0:
+        return 0
+    # Already encoded. Keep raw captures stable if they are fed back in.
+    if level_int >= 100:
+        return level_int
+    return level_int * 100 + 1
+
+
+def showtime_difficulty_level(value: Any) -> int:
+    value_int = _safe_int(value)
+    if value_int <= 0:
+        return 0
+    if value_int >= 100:
+        return value_int // 100
+    return value_int
+
+
 def showtime_difficulty_options(load_data: dict[str, Any]) -> list[dict[str, Any]]:
     options: list[dict[str, Any]] = []
     for raw in _as_list(load_data.get("single_mode_difficulty_info_array")):
@@ -289,12 +316,14 @@ def showtime_difficulty_options(load_data: dict[str, Any]) -> list[dict[str, Any
         open_index = max(0, _safe_int(row.get("open_difficulty_index")))
         if difficulty_id <= 0 or open_index <= 0:
             continue
-        for difficulty in range(1, open_index + 1):
+        for level in range(1, open_index + 1):
+            difficulty = showtime_difficulty_code(level)
             options.append(
                 {
                     "difficulty_id": difficulty_id,
                     "difficulty": difficulty,
-                    "label": f"{_difficulty_label(difficulty)} (ID {difficulty_id})",
+                    "difficulty_level": level,
+                    "label": f"{_difficulty_label(level)} (ID {difficulty_id})",
                     "box_id": _safe_int(row.get("box_id")),
                     "item_num": _safe_int(row.get("item_num")),
                     "box_item_num": _safe_int(row.get("box_item_num")),

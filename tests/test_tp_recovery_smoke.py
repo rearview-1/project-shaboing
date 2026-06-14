@@ -694,7 +694,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
         warnings = main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=0))
 
         self.assertEqual(req.difficulty_id, 1003)
-        self.assertEqual(req.difficulty, 2)
+        self.assertEqual(req.difficulty, 201)
         self.assertEqual(req.is_boost, 0)
         self.assertEqual(req.boost_story_event_id, 0)
         self.assertTrue(any("without boost" in warning for warning in warnings))
@@ -715,8 +715,9 @@ class TpRecoverySmokeTests(unittest.TestCase):
 
         self.assertEqual(
             [(row["difficulty_id"], row["difficulty"], row["is_boost"]) for row in candidates],
-            [(1003, 2, 0), (1003, 1, 0), (1003, 3, 0), (1003, 4, 0)],
+            [(1003, 201, 0), (1003, 101, 0), (1003, 301, 0), (1003, 401, 0)],
         )
+        self.assertEqual([row["difficulty_level"] for row in candidates], [2, 1, 3, 4])
 
     def test_sanitize_showtime_keeps_available_explicit_boost(self):
         req = make_start_request(
@@ -730,7 +731,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
 
         self.assertEqual(warnings, [])
         self.assertEqual(req.difficulty_id, 1003)
-        self.assertEqual(req.difficulty, 4)
+        self.assertEqual(req.difficulty, 401)
         self.assertEqual(req.is_boost, 1)
         self.assertEqual(req.boost_story_event_id, 1015)
 

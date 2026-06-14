@@ -65,7 +65,11 @@ class DailyTaskStatusTests(unittest.TestCase):
         self.assertTrue(status["showtime"]["available"])
         self.assertEqual(
             [(row["difficulty_id"], row["difficulty"]) for row in status["showtime"]["difficulty_options"]],
-            [(1003, 1), (1003, 2), (1003, 3)],
+            [(1003, 101), (1003, 201), (1003, 301)],
+        )
+        self.assertEqual(
+            [row["difficulty_level"] for row in status["showtime"]["difficulty_options"]],
+            [1, 2, 3],
         )
         self.assertEqual(status["showtime"]["difficulty_options"][2]["open_difficulty_index"], 3)
         self.assertEqual(status["showtime"]["missions_pending"], 2)

@@ -3244,6 +3244,10 @@ class CareerSimulator:
                 key = str(ue.get("key") or "").strip()
                 if not key:
                     continue
+                try:
+                    value = float(ue.get("value") or 0)
+                except (TypeError, ValueError):
+                    value = 0.0
                 # `race_bonus` unique effects are NOT part of the flat,
                 # always-on deck Race Bonus. The in-game displayed Race
                 # Bonus (which scales race stat+SP rewards) is the LB-table
@@ -3253,21 +3257,23 @@ class CareerSimulator:
                 # 5+15+10+15+10+10), but merging the unconditional +5 unique
                 # on Marvelous Sunday and Nice Nature produced 75%, which
                 # over-credited every race reward in the sim.
-                # Same applies to other SITUATIONAL unique-effect stats. The
-                # in-game tile preview / training calculator only folds the
-                # always-on Friendship Training bonus (type 1) into the flat
-                # multipliers; `training_effectiveness` (type 8) and `race_bonus`
-                # (type 15) unique effects are conditional and must NOT inflate
-                # the flat values. Verified against real training-tile breakdowns:
-                # a guts tile with Ikuno Dictus (base train-eff 10, +5 unique)
-                # showed Training Eff x1.25 = base only, not x1.30. Merging these
-                # over-credited training gain and the deck Race Bonus.
+                # Same applies to other SITUATIONAL unique-effect stats:
+                # `training_effectiveness` (type 8) and `race_bonus` (type 15)
+                # unique effects must NOT inflate the flat values. Verified vs
+                # real tile breakdowns: a guts tile with Ikuno Dictus (base
+                # train-eff 10, +5 unique) showed Training Eff x1.25 = base only.
                 if key in ("race_bonus", "training_effectiveness"):
                     continue
-                try:
-                    value = float(ue.get("value") or 0)
-                except (TypeError, ValueError):
-                    value = 0.0
+                # The type-1 `friendship_bonus` unique is a Friendship-Training
+                # EFFECTIVENESS boost, NOT a flat +friendship. Friendship stacks
+                # MULTIPLICATIVELY across cards (game8); this unique multiplies the
+                # card's own friendship contribution: contribution = 1 + (base_f/100)
+                # x (1 + unique/100). Stored separately; applied in the training
+                # gain. Folding it as flat +friendship overcredited (Power 1.74 /
+                # Guts 2.37 vs real 1.65 / 2.23); this model matches (1.66 / 2.25).
+                if key == "friendship_bonus":
+                    effects["friendship_unique"] = float(effects.get("friendship_unique") or 0) + value
+                    continue
                 if value == 0:
                     continue
                 # Additive merge — unique effects stack on top of LB effects
@@ -3711,8 +3717,11 @@ class CareerSimulator:
         stat_bonus = 0.0
         training_eff = 0.0
         mood_eff = 0.0
-        friendship_eff = 0.0
-        matching_bonded = 0
+        # Friendship bonus stacks MULTIPLICATIVELY across matching bonded cards
+        # (game8: "friendship bonus is multiplicative with itself, contrary to
+        # other effects which are additive"). Each card's contribution is
+        # 1 + (base_friendship/100) x (1 + friendship_effectiveness_unique/100).
+        friendship_mult = 1.0
         for card in partner_cards:
             effects = self._effective_card_effects(
                 card,
@@ -3725,28 +3734,23 @@ class CareerSimulator:
             training_eff += float(effects.get("training_effectiveness") or 0)
             mood_eff += float(effects.get("mood_effect") or 0)
             if card.get("type") == training_stat and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
-                matching_bonded += 1
-                friendship_eff += float(effects.get("friendship_bonus") or 0)
+                base_f = float(effects.get("friendship_bonus") or 0)
+                fe_uniq = float(effects.get("friendship_unique") or 0)
+                friendship_mult *= 1.0 + (base_f / 100.0) * (1.0 + fe_uniq / 100.0)
 
         # Term-for-term match to the uma.guide training-gain formula (verified
         # against real tile breakdowns, e.g. Power 48 / Stamina 58):
         #   gain = (base + statBonus) x Friendship x Mood x TrainingEff
         #          x CharCount x Growth
-        # CharCount = 1 + 0.05*N (no cap, 0.05 not 0.045). Mood term is
-        #   1 + BaseMood*(1 + sum(moodEffect)/100). Friendship is additive across
-        #   matching bonded cards (1 + sum(friendship)/100), including type-1
-        #   friendship uniques (folded in _resolve_support_cards).
+        # CharCount = 1 + 0.05*N (no cap). Mood = 1 + BaseMood*(1 + ΣmoodEffect/100).
+        # Friendship is the MULTIPLICATIVE product computed in the loop above.
         # REMOVED two terms that are NOT in the real formula and were
-        # over-crediting every tile (and were being masked by the now-reverted
-        # MANT-mood fudge):
-        #   - rainbow_mult (+0.12 per bonded card): the friendship multiplier IS
-        #     the rainbow/friendship-training benefit; a separate factor
-        #     double-counted it.
-        #   - random variance (0.92-1.10): real training gain is deterministic.
+        # over-crediting every tile (and were masked by the now-reverted
+        # MANT-mood fudge): rainbow_mult (+0.12/bonded — double-counted the
+        # friendship multiplier) and random variance (gain is deterministic).
         char_count_mult = 1.0 + 0.05 * len(partner_cards)
         mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
         training_mult = 1.0 + training_eff / 100.0
-        friendship_mult = 1.0 + (friendship_eff / 100.0 if is_rainbow else 0.0)
 
         value = (base + stat_bonus) * friendship_mult * mood_mult * training_mult
         value *= char_count_mult * (1.0 + growth)
@@ -3772,17 +3776,16 @@ class CareerSimulator:
         bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects in active_effects)
         training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects in active_effects)
         mood_eff = sum(float(effects.get("mood_effect") or 0) for effects in active_effects)
-        friendship_eff = 0.0
+        # SP uses the SAME formula as stat gain (multiplicative friendship, mood,
+        # training-eff, char-count) but NO growth term — SP isn't a trained stat.
+        # Verified vs a real tile breakdown (guts tile SP=25 needs friendship).
+        friendship_mult = 1.0
         for card, effects in zip(partner_cards, active_effects):
             if card.get("type") == training_stat and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
-                friendship_eff += float(effects.get("friendship_bonus") or 0)
+                base_f = float(effects.get("friendship_bonus") or 0)
+                fe_uniq = float(effects.get("friendship_unique") or 0)
+                friendship_mult *= 1.0 + (base_f / 100.0) * (1.0 + fe_uniq / 100.0)
         mood = self._mood_base_effect(int(self.state.get("motivation") or 3))
-        # SP uses the SAME multiplicative formula as stat gain (friendship, mood,
-        # training-eff, char-count) but NO growth term — SP isn't a trained stat.
-        # Verified vs a real tile breakdown (guts tile SP=25 needs friendship). The
-        # old code applied neither friendship nor the mood-effect amplification and
-        # used a bogus flat x1.12 rainbow factor.
-        friendship_mult = 1.0 + (friendship_eff / 100.0 if is_rainbow else 0.0)
         mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
         char_count_mult = 1.0 + 0.05 * len(partner_cards)
         value = (base + bonus) * friendship_mult * mood_mult * (1.0 + training_eff / 100.0) * char_count_mult

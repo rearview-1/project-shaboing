@@ -44,6 +44,13 @@ from career_bot.daily_tasks import (
     showtime_difficulty_options,
     summarize_daily_event_status,
 )
+from career_bot.api_discovery import (
+    ApiDiscoverySession,
+    compare_captures,
+    list_capture_summaries,
+    load_capture_entries,
+    write_contract,
+)
 from career_bot.parent_memory import annotate_parents, write_parent_library_snapshot
 from career_bot.profile_dataset import (
     extract_profile_records_from_response,
@@ -292,6 +299,7 @@ active_selection = {
     "trainee": None,
     "veterans": []
 }
+active_api_discovery_session = None
 loop_lock = threading.Lock()
 state_sync_lock = threading.RLock()
 loop_thread = None
@@ -4399,6 +4407,18 @@ class ProfileDatasetProbeRequest(BaseModel):
     include_friend_index: bool = True
     max_viewer_ids: int = 5
 
+
+class ApiDiscoveryCaptureRequest(BaseModel):
+    label: str = ""
+    note: str = ""
+    endpoints: list[str] = []
+
+
+class ApiDiscoveryProbeRequest(BaseModel):
+    label: str = "probe"
+    endpoints: list[str] = []
+    note: str = ""
+
 @app.get("/api/settings/turn-delay")
 async def get_turn_delay_settings():
     return get_turn_delay()
@@ -8348,6 +8368,185 @@ def recent_api_trace_entries(endpoint="", req_id="", limit=20, recent_files=3):
             break
     entries.reverse()
     return {"files": scanned, "entries": entries}
+
+
+def _api_discovery_status_payload():
+    active = active_api_discovery_session.status() if active_api_discovery_session else None
+    return {
+        "success": True,
+        "active": bool(active_api_discovery_session),
+        "session": active,
+        "captures": list_capture_summaries(dev_runtime_dir())[:20],
+    }
+
+
+def _clear_api_discovery_hook():
+    global active_api_discovery_session
+    if active_client is not None:
+        try:
+            active_client.on_api_log = None
+        except Exception:
+            pass
+    active_api_discovery_session = None
+
+
+def _install_api_discovery_session(session):
+    global active_api_discovery_session
+    active_api_discovery_session = session
+    if active_client is not None:
+        active_client.on_api_log = session.on_api_log
+
+
+SAFE_API_DISCOVERY_PROBES = {
+    "load/index",
+    "pre_single_mode/index",
+    "friend/index",
+    "single_mode_free/load",
+}
+
+
+def _api_discovery_probe_endpoint(endpoint):
+    endpoint = str(endpoint or "").strip()
+    if endpoint == "load/index":
+        return game_api_call_with_session_recovery("load/index", {"adid": ""})
+    if endpoint == "pre_single_mode/index":
+        return active_client.pre_single_mode([])
+    if endpoint == "friend/index":
+        return active_client.friend_index()
+    if endpoint == "single_mode_free/load":
+        return active_client.load_career()
+    raise ValueError(f"Unsupported discovery probe endpoint: {endpoint}")
+
+
+@app.post("/api/api_discovery/start")
+async def api_discovery_start(req: ApiDiscoveryCaptureRequest):
+    global active_api_discovery_session
+    if not active_client:
+        return {"success": False, "detail": "Not logged in"}
+    if active_api_discovery_session:
+        return {
+            "success": False,
+            "detail": "API discovery capture is already active. Stop it before starting another.",
+            "status": _api_discovery_status_payload(),
+        }
+    label = req.label or f"capture_{int(time.time())}"
+    session = ApiDiscoverySession(
+        dev_runtime_dir(),
+        label,
+        note=req.note,
+        endpoints=[str(ep).strip() for ep in (req.endpoints or []) if str(ep).strip()],
+    )
+    _install_api_discovery_session(session)
+    return {"success": True, "session": session.status()}
+
+
+@app.post("/api/api_discovery/stop")
+async def api_discovery_stop():
+    global active_api_discovery_session
+    if not active_api_discovery_session:
+        return {"success": False, "detail": "No API discovery capture is active"}
+    session = active_api_discovery_session
+    try:
+        result = session.stop()
+        return {"success": True, **result}
+    finally:
+        _clear_api_discovery_hook()
+
+
+@app.get("/api/api_discovery/status")
+async def api_discovery_status():
+    return _api_discovery_status_payload()
+
+
+@app.get("/api/api_discovery/captures")
+async def api_discovery_captures():
+    return {"success": True, "captures": list_capture_summaries(dev_runtime_dir())}
+
+
+@app.get("/api/api_discovery/captures/{label}")
+async def api_discovery_capture(label: str):
+    entries = load_capture_entries(dev_runtime_dir(), label)
+    if not entries:
+        return {"success": False, "detail": f"No capture entries found for {label}"}
+    contract = write_contract(dev_runtime_dir(), label, entries)
+    return {
+        "success": True,
+        "label": label,
+        "entry_count": len(entries),
+        "entries": entries[-200:],
+        "contract": contract,
+    }
+
+
+@app.get("/api/api_discovery/diff")
+async def api_discovery_diff(left: str, right: str, endpoint: str = "", direction: str = "REQ"):
+    result = compare_captures(
+        dev_runtime_dir(),
+        left,
+        right,
+        endpoint=str(endpoint or "").strip(),
+        direction=str(direction or "REQ").strip() or "REQ",
+    )
+    return {"success": True, **result}
+
+
+@app.post("/api/api_discovery/probe")
+async def api_discovery_probe(req: ApiDiscoveryProbeRequest):
+    global active_api_discovery_session
+    if not active_client:
+        return {"success": False, "detail": "Not logged in"}
+    if runner_is_active():
+        return {"success": False, "detail": "Stop the career runner before probing API contracts"}
+
+    requested = [str(ep).strip() for ep in (req.endpoints or []) if str(ep).strip()]
+    endpoints = requested or ["load/index", "pre_single_mode/index", "friend/index"]
+    unsupported = [ep for ep in endpoints if ep not in SAFE_API_DISCOVERY_PROBES]
+    if unsupported:
+        return {
+            "success": False,
+            "detail": "Unsupported probe endpoint(s); use a labeled capture for mutating endpoints.",
+            "unsupported": unsupported,
+            "allowed": sorted(SAFE_API_DISCOVERY_PROBES),
+        }
+
+    started_here = False
+    if not active_api_discovery_session:
+        session = ApiDiscoverySession(
+            dev_runtime_dir(),
+            req.label or f"probe_{int(time.time())}",
+            note=req.note or "safe endpoint probe",
+            endpoints=endpoints,
+        )
+        _install_api_discovery_session(session)
+        started_here = True
+
+    operations = []
+    try:
+        for endpoint in endpoints:
+            try:
+                result = _api_discovery_probe_endpoint(endpoint)
+                data = (result or {}).get("data") if isinstance(result, dict) else {}
+                operations.append({
+                    "endpoint": endpoint,
+                    "success": True,
+                    "data_keys": sorted(list((data or {}).keys()))[:80] if isinstance(data, dict) else [],
+                })
+            except Exception as exc:
+                operations.append({"endpoint": endpoint, "success": False, "detail": str(exc)})
+    finally:
+        if started_here and active_api_discovery_session:
+            session = active_api_discovery_session
+            stopped = session.stop()
+            _clear_api_discovery_hook()
+        else:
+            stopped = None
+
+    return {
+        "success": True,
+        "operations": operations,
+        "capture": stopped,
+        "status": _api_discovery_status_payload(),
+    }
 
 def profile_dataset_runtime_dir(instance_name=""):
     name = slugify(instance_name or "")

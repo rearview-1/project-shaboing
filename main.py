@@ -6306,6 +6306,23 @@ def is_start_viewer_mismatch_error(exc, client=None):
         current_viewer_id = 0
     return bool(response_viewer_id and current_viewer_id and response_viewer_id != current_viewer_id)
 
+def is_start_payload_rejection_error(exc):
+    return api_error_endpoint(exc) == "single_mode_free/start" and api_error_code(exc) in {102, 205, 2511, 1052}
+
+def request_has_showtime_selection(req):
+    return safe_int(getattr(req, "difficulty_id", 0)) > 0 or safe_int(getattr(req, "difficulty", 0)) > 0
+
+def showtime_option_matches_request(row, requested_difficulty):
+    requested = safe_int(requested_difficulty)
+    if requested <= 0:
+        return False
+    row_difficulty = safe_int((row or {}).get("difficulty"))
+    row_level = safe_int((row or {}).get("difficulty_level"))
+    open_index = safe_int((row or {}).get("open_difficulty_index"))
+    if requested >= 100 and row_difficulty == requested:
+        return True
+    return row_level > 0 and row_level == showtime_difficulty_level(requested, open_index)
+
 def is_no_active_career_load_error(exc):
     return is_api_error(exc, (102, 201), "single_mode_free/load")
 
@@ -6381,16 +6398,11 @@ def sanitize_showtime_start_fields(req, load_data=None):
         return warnings
 
     options = showtime_difficulty_options(load_data or {})
-    requested_level = showtime_difficulty_level(requested_difficulty)
-    requested_code = showtime_difficulty_code(requested_difficulty)
     selected = next(
         (
             row for row in options
             if safe_int(row.get("difficulty_id")) == requested_difficulty_id
-            and (
-                safe_int(row.get("difficulty")) == requested_code
-                or safe_int(row.get("difficulty_level")) == requested_level
-            )
+            and showtime_option_matches_request(row, requested_difficulty)
         ),
         None,
     )
@@ -6435,22 +6447,20 @@ def build_showtime_start_candidates(req, load_data=None):
     if requested_difficulty_id <= 0 or requested_difficulty <= 0:
         return []
     options = showtime_difficulty_options(load_data or {})
-    requested_level = showtime_difficulty_level(requested_difficulty)
-    requested_code = showtime_difficulty_code(requested_difficulty)
     selected = next(
         (
             row for row in options
             if safe_int(row.get("difficulty_id")) == requested_difficulty_id
-            and (
-                safe_int(row.get("difficulty")) == requested_code
-                or safe_int(row.get("difficulty_level")) == requested_level
-            )
+            and showtime_option_matches_request(row, requested_difficulty)
         ),
         None,
     )
     if not selected:
         return []
-    selected_level = safe_int(selected.get("difficulty_level")) or requested_level
+    selected_level = safe_int(selected.get("difficulty_level")) or showtime_difficulty_level(
+        requested_difficulty,
+        safe_int(selected.get("open_difficulty_index")),
+    )
     open_index = max(selected_level, safe_int(selected.get("open_difficulty_index")))
     ordered_levels = []
 
@@ -6472,12 +6482,12 @@ def build_showtime_start_candidates(req, load_data=None):
     return [
         {
             "difficulty_id": requested_difficulty_id,
-            "difficulty": showtime_difficulty_code(level),
+            "difficulty": showtime_difficulty_code(level, open_index),
             "difficulty_level": level,
             "is_boost": is_boost,
             "boost_story_event_id": boost_story_event_id,
             "source": "selected" if level == selected_level else "fallback",
-            "selected_difficulty": showtime_difficulty_code(selected_level),
+            "selected_difficulty": showtime_difficulty_code(selected_level, open_index),
             "selected_difficulty_level": selected_level,
             "open_difficulty_index": open_index,
         }
@@ -7006,7 +7016,37 @@ def start_career_from_request(req):
     try:
         result = execute_start(tp_info, current_money, showtime_candidates)
     except Exception as exc:
-        if is_start_viewer_mismatch_error(exc, active_client):
+        showtime_payload_rejected = request_has_showtime_selection(req) and is_start_payload_rejection_error(exc)
+        if is_start_viewer_mismatch_error(exc, active_client) and showtime_payload_rejected:
+            try:
+                current_viewer_id = int(getattr(active_client, "viewer_id", 0) or 0)
+            except (TypeError, ValueError):
+                current_viewer_id = 0
+            response_viewer_id = api_error_response_viewer_id(exc)
+            detail = (
+                "Career start was rejected with a viewer/account mismatch while starting Showtime. "
+                f"Sweepy is authenticated as viewer {current_viewer_id or 'unknown'}, "
+                f"but the server response was for viewer {response_viewer_id or 'unknown'}. "
+                "Click REFRESH AUTH or log in again on this instance; retrying start/session recovery "
+                "will keep failing until the active account cache is rebound."
+            )
+            active_start_debug = start_debug_summary(
+                req,
+                preflight=preflight,
+                error=exc,
+                proof=proof,
+                recovery=recovery_result,
+            )
+            snapshot_path = write_start_error_snapshot(active_start_debug)
+            return {
+                "success": False,
+                "detail": detail,
+                "needs_auth_refresh": True,
+                "proof": proof,
+                "debug_snapshot": snapshot_path,
+                "account": ((preflight.get("dashboard") or {}).get("account") or {}),
+            }
+        if is_start_viewer_mismatch_error(exc, active_client) and not showtime_payload_rejected:
             session_recovery_result = recover_start_session_after_viewer_mismatch(exc)
             if session_recovery_result.get("success"):
                 post_recovery = refresh_live_start_state()
@@ -7332,16 +7372,35 @@ try:
 except (TypeError, ValueError):
     _SESSION_RECOVERY_COOLDOWN_S = 45.0
 
+_load_index_201_blocked_until = 0.0
+try:
+    _LOAD_INDEX_201_COOLDOWN_S = max(3.0, float(os.environ.get("SWEEPY_LOAD_INDEX_201_COOLDOWN_S", "8") or 8))
+except (TypeError, ValueError):
+    _LOAD_INDEX_201_COOLDOWN_S = 8.0
+
 
 def reset_session_recovery_circuit():
-    global _session_recovery_blocked_until
+    global _session_recovery_blocked_until, _load_index_201_blocked_until
     _session_recovery_blocked_until = 0.0
+    _load_index_201_blocked_until = 0.0
+
+
+def _call_load_index_quiet_201(client):
+    if accepts_kwarg(client.call, "quiet_result_codes"):
+        return client.call('load/index', {'adid': ''}, quiet_result_codes={201})
+    return client.call('load/index', {'adid': ''})
 
 
 def load_index_with_session_recovery(client, _retry_201=3):
-    global active_client, _session_recovery_blocked_until
+    global active_client, _session_recovery_blocked_until, _load_index_201_blocked_until
+    now = time.time()
+    if now < _load_index_201_blocked_until:
+        raise RuntimeError(
+            "load/index is temporarily returning 201 while the server state settles; "
+            f"retry after {int(_load_index_201_blocked_until - now)}s"
+        )
     try:
-        return client.call('load/index', {'adid': ''})
+        return _call_load_index_quiet_201(client)
     except Exception as exc:
         # Client-version-stale: raise immediately with the actionable
         # detail. is_recoverable_session_error already returns False
@@ -7354,13 +7413,20 @@ def load_index_with_session_recovery(client, _retry_201=3):
         # It is not a stale-session error, so the auth-refresh path can't
         # help, and it clears on its own after a moment. Retry a few times
         # with a short backoff before surfacing it.
-        if is_api_error(exc, (201,), "load/index") and _retry_201 > 0:
-            print(
-                f"201 on load/index (transient state); retrying in 1.5s ({_retry_201} left)",
-                flush=True,
-            )
-            time.sleep(1.5)
-            return load_index_with_session_recovery(client, _retry_201=_retry_201 - 1)
+        if is_api_error(exc, (201,), "load/index"):
+            if _retry_201 > 0:
+                if _retry_201 == 3:
+                    print(
+                        "load/index returned transient 201; retrying quietly while server state settles",
+                        flush=True,
+                    )
+                time.sleep(1.5)
+                return load_index_with_session_recovery(client, _retry_201=_retry_201 - 1)
+            _load_index_201_blocked_until = time.time() + _LOAD_INDEX_201_COOLDOWN_S
+            raise RuntimeError(
+                "load/index is still returning transient 201 after retries; "
+                f"backing off for {int(_LOAD_INDEX_201_COOLDOWN_S)}s"
+            ) from exc
         if not is_recoverable_session_error(exc):
             raise
         can_relogin = hasattr(client, "login") and (

@@ -1908,6 +1908,13 @@ class UmaClient:
 
         attempts = []
         seen = set()
+        showtime_selected = (
+            bool(difficulty_candidates)
+            or int(difficulty_id or 0) > 0
+            or int(difficulty or 0) > 0
+            or int(is_boost or 0) > 0
+            or int(boost_story_event_id or 0) > 0
+        )
 
         def append_attempt(payload):
             key = json.dumps(payload, sort_keys=True, default=str)
@@ -1931,17 +1938,36 @@ class UmaClient:
                     candidate_difficulty,
                     candidate_boost,
                     candidate_boost_event,
+                    include_empty_optional_blocks=showtime_selected,
                 ))
                 if candidate_boost > 0 or candidate_boost_event > 0:
-                    append_attempt(make_payload(candidate_id, candidate_difficulty, 0, 0))
+                    append_attempt(make_payload(
+                        candidate_id,
+                        candidate_difficulty,
+                        0,
+                        0,
+                        include_empty_optional_blocks=showtime_selected,
+                    ))
 
-        start_payload = make_payload(difficulty_id, difficulty, is_boost, boost_story_event_id)
+        start_payload = make_payload(
+            difficulty_id,
+            difficulty,
+            is_boost,
+            boost_story_event_id,
+            include_empty_optional_blocks=showtime_selected,
+        )
         append_attempt(start_payload)
         if self._start_payload_has_showtime_boost(start_payload):
             # Fuji/Showtime difficulty selection is independent from event boost
             # item usage. Some accounts have the difficulty open but no boost
             # item; sending is_boost=1 then makes start reject with 102/205.
-            append_attempt(make_payload(difficulty_id, difficulty, 0, 0))
+            append_attempt(make_payload(
+                difficulty_id,
+                difficulty,
+                0,
+                0,
+                include_empty_optional_blocks=showtime_selected,
+            ))
 
         fallback_payload = make_payload(
             difficulty_id,
@@ -1951,8 +1977,11 @@ class UmaClient:
             include_empty_optional_blocks=True,
         )
         append_attempt(fallback_payload)
-        if int(difficulty_id or 0) > 0 or int(difficulty or 0) > 0:
-            append_attempt(make_payload(0, 0, 0, 0))
+        allow_showtime_normal_fallback = str(
+            os.environ.get("SWEEPY_SHOWTIME_NORMAL_FALLBACK", "")
+        ).strip().lower() in {"1", "true", "yes", "on"}
+        if allow_showtime_normal_fallback and (int(difficulty_id or 0) > 0 or int(difficulty or 0) > 0):
+            append_attempt(make_payload(0, 0, 0, 0, include_empty_optional_blocks=True))
             append_attempt(make_payload(0, 0, 0, 0, include_empty_optional_blocks=True))
 
         last_exc = None
@@ -1962,14 +1991,15 @@ class UmaClient:
                     'single_mode_free/start',
                     payload,
                     retry_205=0,
-                    quiet_result_codes={102, 205},
+                    quiet_result_codes={102, 205, 2511},
                 )
             except ApiCallError as exc:
                 last_exc = exc
-                if self._api_error_viewer_mismatch(exc):
-                    raise
                 code = int(getattr(exc, "result_code", 0) or getattr(exc, "response_code", 0) or 0)
-                if code not in {102, 205} or index >= len(attempts) - 1:
+                if self._api_error_viewer_mismatch(exc) and code not in {102, 205, 2511, 1052}:
+                    raise
+                retryable_start_codes = {102, 205, 2511}
+                if code not in retryable_start_codes or index >= len(attempts) - 1:
                     raise
                 if self._start_payload_has_showtime_boost(payload):
                     print("single_mode_free/start rejected Showtime boost; retrying difficulty without boost item", flush=True)

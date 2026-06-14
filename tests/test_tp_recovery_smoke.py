@@ -531,6 +531,51 @@ class TpRecoverySmokeTests(unittest.TestCase):
         self.assertIn("102", main.active_start_debug["error"])
         self.assertTrue(any(call.get("card_id") == 100101 for call in client.calls))
 
+    def test_showtime_start_viewer_mismatch_prompts_reauth_without_recovery(self):
+        class MismatchedShowtimeClient(FakeCareerClient):
+            viewer_id = 209937075503
+
+            def call(self, endpoint, args=None):
+                self.calls.append({"endpoint": endpoint, "args": args})
+                return {"data": make_showtime_load_data(item_num=0, open_difficulty_index=4)}
+
+            def load_career(self):
+                raise Exception("API error 102 on single_mode_free/load")
+
+            def start_career(self, **kwargs):
+                self.calls.append(kwargs)
+                raise ApiCallError(
+                    "API error 102 on single_mode_free/start",
+                    endpoint="single_mode_free/start",
+                    result_code=102,
+                    response_code=102,
+                    response_body={
+                        "endpoint": "single_mode_free/start",
+                        "response_code": 102,
+                        "result_code": 102,
+                        "data_headers": {"viewer_id": 4665295244463},
+                    },
+                )
+
+        client = MismatchedShowtimeClient()
+        main.active_client = client
+        self.set_low_tp_start_state()
+        main.active_start_state["tp_info"]["current_tp"] = 30
+
+        with patch.object(main, "write_start_error_snapshot", return_value="snapshot.json"), patch.object(
+            main,
+            "recover_start_session_after_viewer_mismatch",
+            side_effect=AssertionError("showtime payload mismatch must not run session recovery"),
+        ) as recover:
+            result = main.start_career_from_request(make_start_request(difficulty_id=1003, difficulty=1))
+
+        self.assertFalse(result["success"])
+        self.assertTrue(result["needs_auth_refresh"])
+        self.assertEqual(result["debug_snapshot"], "snapshot.json")
+        self.assertIn("viewer/account mismatch", result["detail"])
+        self.assertIn("4665295244463", result["detail"])
+        recover.assert_not_called()
+
     def test_start_preflight_proves_payload_without_starting_career(self):
         class ProofClient(FakeCareerClient):
             def call(self, endpoint, args=None):
@@ -694,7 +739,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
         warnings = main.sanitize_showtime_start_fields(req, make_showtime_load_data(item_num=0))
 
         self.assertEqual(req.difficulty_id, 1003)
-        self.assertEqual(req.difficulty, 201)
+        self.assertEqual(req.difficulty, 402)
         self.assertEqual(req.is_boost, 0)
         self.assertEqual(req.boost_story_event_id, 0)
         self.assertTrue(any("without boost" in warning for warning in warnings))
@@ -715,7 +760,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
 
         self.assertEqual(
             [(row["difficulty_id"], row["difficulty"], row["is_boost"]) for row in candidates],
-            [(1003, 201, 0), (1003, 101, 0), (1003, 301, 0), (1003, 401, 0)],
+            [(1003, 402, 0), (1003, 401, 0), (1003, 403, 0), (1003, 404, 0)],
         )
         self.assertEqual([row["difficulty_level"] for row in candidates], [2, 1, 3, 4])
 
@@ -731,7 +776,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
 
         self.assertEqual(warnings, [])
         self.assertEqual(req.difficulty_id, 1003)
-        self.assertEqual(req.difficulty, 401)
+        self.assertEqual(req.difficulty, 404)
         self.assertEqual(req.is_boost, 1)
         self.assertEqual(req.boost_story_event_id, 1015)
 
@@ -788,8 +833,10 @@ class TpRecoverySmokeTests(unittest.TestCase):
         second = calls[1][1]["start_chara"]
         self.assertEqual(first["selected_difficulty_info"], {"difficulty_id": 1003, "difficulty": 2, "is_boost": 1})
         self.assertEqual(first["boost_story_event_id"], 1015)
+        self.assertEqual(first["rental_succession_trained_chara"]["viewer_id"], 0)
         self.assertEqual(second["selected_difficulty_info"], {"difficulty_id": 1003, "difficulty": 2, "is_boost": 0})
-        self.assertNotIn("boost_story_event_id", second)
+        self.assertEqual(second["boost_story_event_id"], 0)
+        self.assertEqual(second["rental_succession_trained_chara"]["trained_chara_id"], 0)
 
     def test_client_start_205_retries_with_legacy_optional_blocks(self):
         client = object.__new__(UmaClient)
@@ -831,7 +878,7 @@ class TpRecoverySmokeTests(unittest.TestCase):
         def fake_call(endpoint, payload, **kwargs):
             calls.append((endpoint, payload, kwargs))
             selected = (payload["start_chara"].get("selected_difficulty_info") or {})
-            if selected.get("difficulty_id") == 1003 and selected.get("difficulty") in {2, 1}:
+            if selected.get("difficulty_id") == 1003 and selected.get("difficulty") in {402, 401}:
                 raise ApiCallError(
                     "API error 205 on single_mode_free/start",
                     endpoint=endpoint,
@@ -855,21 +902,102 @@ class TpRecoverySmokeTests(unittest.TestCase):
             is_boost=0,
             boost_story_event_id=0,
             difficulty_candidates=[
-                {"difficulty_id": 1003, "difficulty": 2, "is_boost": 0, "boost_story_event_id": 0},
-                {"difficulty_id": 1003, "difficulty": 1, "is_boost": 0, "boost_story_event_id": 0},
-                {"difficulty_id": 1003, "difficulty": 3, "is_boost": 0, "boost_story_event_id": 0},
-                {"difficulty_id": 1003, "difficulty": 4, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 402, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 401, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 403, "is_boost": 0, "boost_story_event_id": 0},
+                {"difficulty_id": 1003, "difficulty": 404, "is_boost": 0, "boost_story_event_id": 0},
             ],
         )
 
-        self.assertEqual(result["selected"], {"difficulty_id": 1003, "difficulty": 3, "is_boost": 0})
+        self.assertEqual(result["selected"], {"difficulty_id": 1003, "difficulty": 403, "is_boost": 0})
         self.assertEqual(
             [
                 call[1]["start_chara"]["selected_difficulty_info"]["difficulty"]
                 for call in calls
                 if "selected_difficulty_info" in call[1]["start_chara"]
             ],
-            [2, 1, 3],
+            [402, 401, 403],
+        )
+
+    def test_client_start_showtime_does_not_fall_back_to_normal_by_default(self):
+        client = object.__new__(UmaClient)
+        calls = []
+
+        def fake_call(endpoint, payload, **kwargs):
+            calls.append((endpoint, payload, kwargs))
+            raise ApiCallError(
+                "API error 205 on single_mode_free/start",
+                endpoint=endpoint,
+                result_code=205,
+                response_code=205,
+            )
+
+        client.call = fake_call
+
+        with self.assertRaises(ApiCallError):
+            client.start_career(
+                card_id=100101,
+                support_card_ids=[30101, 30102, 30103, 30104, 30107],
+                friend_viewer_id=123456789,
+                friend_card_id=30106,
+                parent_id_1=9001,
+                parent_id_2=9002,
+                tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+                difficulty_id=1003,
+                difficulty=401,
+                is_boost=0,
+                boost_story_event_id=0,
+                difficulty_candidates=[
+                    {"difficulty_id": 1003, "difficulty": 401, "is_boost": 0, "boost_story_event_id": 0},
+                    {"difficulty_id": 1003, "difficulty": 402, "is_boost": 0, "boost_story_event_id": 0},
+                ],
+            )
+
+        self.assertTrue(calls)
+        self.assertTrue(all("selected_difficulty_info" in call[1]["start_chara"] for call in calls))
+        self.assertFalse(
+            any(
+                call[1]["start_chara"]["selected_difficulty_info"].get("difficulty_id") == 0
+                for call in calls
+            )
+        )
+
+    def test_client_start_showtime_uses_captured_optional_blocks(self):
+        client = object.__new__(UmaClient)
+        captured = {}
+
+        def fake_call(endpoint, payload, **kwargs):
+            captured["payload"] = payload
+            return {"ok": True}
+
+        client.call = fake_call
+
+        result = client.start_career(
+            card_id=100101,
+            support_card_ids=[30101, 30102, 30103, 30104, 30107],
+            friend_viewer_id=123456789,
+            friend_card_id=30106,
+            parent_id_1=9001,
+            parent_id_2=9002,
+            tp_info={"current_tp": 30, "max_tp": 100, "max_recovery_time": 0},
+            difficulty_id=1003,
+            difficulty=401,
+            is_boost=0,
+            boost_story_event_id=0,
+        )
+
+        self.assertEqual(result, {"ok": True})
+        start_chara = captured["payload"]["start_chara"]
+        self.assertEqual(start_chara["selected_difficulty_info"], {"difficulty_id": 1003, "difficulty": 401, "is_boost": 0})
+        self.assertEqual(start_chara["boost_story_event_id"], 0)
+        self.assertEqual(
+            start_chara["rental_succession_trained_chara"],
+            {
+                "viewer_id": 0,
+                "trained_chara_id": 0,
+                "is_circle_member": False,
+                "is_event_rental": False,
+            },
         )
 
     def test_client_recovery_item_payload_uses_flat_client_own_num(self):

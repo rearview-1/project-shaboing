@@ -506,6 +506,30 @@ class DashboardSyncSmokeTests(unittest.TestCase):
         self.assertEqual(client.logins, 0)  # NOT routed through re-login
         self.assertEqual(result["data"]["trained_chara"][0]["trained_chara_id"], 9007)
 
+    def test_load_index_with_session_recovery_backs_off_after_persistent_201(self):
+        class FakeClient:
+            def __init__(self):
+                self.calls = 0
+
+            def call(self, endpoint, args=None, quiet_result_codes=None):
+                self.calls += 1
+                self.quiet_result_codes = quiet_result_codes
+                raise Exception('API error 201 on load/index: {"result_code":201}')
+
+        client = FakeClient()
+        with patch.object(main.time, "sleep", return_value=None):
+            with self.assertRaises(RuntimeError) as cm:
+                main.load_index_with_session_recovery(client)
+
+        self.assertEqual(client.calls, 4)
+        self.assertEqual(client.quiet_result_codes, {201})
+        self.assertIn("backing off", str(cm.exception))
+
+        with self.assertRaises(RuntimeError) as cm2:
+            main.load_index_with_session_recovery(client)
+        self.assertEqual(client.calls, 4)
+        self.assertIn("temporarily returning 201", str(cm2.exception))
+
     def test_load_index_with_session_recovery_explains_stale_auth_without_relogin(self):
         class FakeClient:
             def call(self, endpoint, args=None):

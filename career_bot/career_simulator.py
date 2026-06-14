@@ -410,6 +410,156 @@ def _load_json_data(filename, default):
     return data
 
 
+# ---------------------------------------------------------------------------
+# uma.guide training-effect resolver — a FAITHFUL port of the uma.guide
+# training-simulator's own JS (functions cd / El / $h / Rl / G7 / pt), decompiled
+# from https://uma.guide/assets/app.*.js. This is the authoritative way to
+# resolve EVERY support card's per-tile training effects, including ALL unique
+# effects, so the sim matches the calculator term-for-term (validated to the
+# exact integer: NTR 30086 + Matikane 30078 = 100/42/10/-27; Shinko+KSB = 38/20).
+#
+# Why this exists: the hand-modeled `unique_effects` in support_card_bonuses.json
+# was incomplete/wrong for many cards (it FOLDED friendship-effectiveness uniques
+# into the base friendship for some cards, double-counted others, and missed
+# fan-scaled / type1 uniques). Driving the training gain from uma.guide's clean
+# base CURVES + uniqueEffect via this resolver fixes the whole class of bugs at
+# once. Data: data/support_card_training_effects.json (per card: curves `c`
+# keyed by effectType -> 11 level markers; uniqueEffect `u`; rarity `r`; type `t`).
+# ---------------------------------------------------------------------------
+_UMA_TRAIN_LEVELS = (1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)
+_UMA_EL_TABLE = {"SSR": (30, 35, 40, 45, 50), "SR": (25, 30, 35, 40, 45), "R": (20, 25, 30, 35, 40)}
+# uma.guide effectType number -> the sim's effect-key name (training-relevant only)
+_UMA_EFFECT_KEYS = {
+    1: "friendship_bonus", 2: "mood_effect", 3: "speed_bonus", 4: "stamina_bonus",
+    5: "power_bonus", 6: "guts_bonus", 7: "wit_bonus", 8: "training_effectiveness",
+    28: "energy_cost_reduction", 30: "skill_pt_bonus",
+}
+_UMA_FX_FRIENDSHIP, _UMA_FX_TE, _UMA_FX_SPECIALTY, _UMA_FX_FAILURE = 1, 8, 19, 27
+# types routed through Rl() (scaled / complex uniques)
+_UMA_RL_TYPES = frozenset({102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116})
+
+
+def _uma_el_level(lb, rarity):
+    """El(): the card's actual LEVEL for a given limit break + rarity."""
+    table = _UMA_EL_TABLE.get(str(rarity or "SSR").upper(), _UMA_EL_TABLE["SSR"])
+    return table[max(0, min(4, int(lb or 0)))]
+
+
+def _uma_curve_value(markers, level):
+    """cd(): piecewise-linear interpolation over the 11 level markers
+    (-1 means 'no marker at this level'). Returns -1 if the effect is absent."""
+    n = s = r = o = -1
+    for idx, lvl in enumerate(_UMA_TRAIN_LEVELS):
+        k = markers[idx]
+        if k is not None and k != -1:
+            if lvl <= level:
+                n, s = lvl, k
+            elif r == -1:
+                r, o = lvl, k
+                break
+    if s == -1:
+        return -1
+    if r == -1 or o == -1 or n == level:
+        return s
+    diff = o - s
+    if diff == 0:
+        return s
+    return s + math.floor((level - n) * diff / (r - n))
+
+
+def _uma_rl(unique, t):
+    """Rl(): scaled / complex unique types 102-116."""
+    n = int(unique.get("type0") or 0)
+
+    def v(key):
+        return float(unique.get(key) or 0)
+
+    v0 = int(v("value0"))
+    if n in (102, 103, 104):
+        return v("value01") if t == _UMA_FX_TE else 0
+    if n == 105:
+        return 0
+    if n == 106:
+        return v("value02") * v("value0") if t == _UMA_FX_FRIENDSHIP else 0
+    if n == 107:
+        return v("value03") if t == v0 else 0
+    if n == 108:
+        return v("value04") if t == v0 else 0
+    if n == 109:
+        return 20 if t == v0 else 0
+    if n in (110, 111):
+        return 25 if t == v0 else 0
+    if n == 112:
+        return v("value0") if t == _UMA_FX_FAILURE else 0
+    if n == 113:
+        return v("value01") if t == v0 else 0
+    if n == 114:
+        return v("value02") if t == v0 else 0
+    if n == 115:
+        return v("value01") if t == v0 else 0
+    if n == 116:
+        return v("value02") * v("value03") if t == int(v("value01")) else 0
+    return 0
+
+
+def _uma_unique_grant(unique, t, level, matching):
+    """$h(): the UNIQUE effect's contribution to effectType `t`. Covers the
+    type-101 specials, the Rl()-routed scaled types, the direct (type0==t) case,
+    and the type1 secondary-unique fallback. `matching` gates the one type-102
+    unique that only applies to off-type training."""
+    if not unique:
+        return 0
+    if level < int(unique.get("level") or 0):
+        return 0
+    ty = int(unique.get("type0") or 0)
+
+    def v(key):
+        return float(unique.get(key) or 0)
+
+    if ty == 101:
+        if t == int(v("value01")):
+            return v("value02")
+        if t == int(v("value03")) and v("value04"):
+            return v("value04")
+        return 0
+    if ty in _UMA_RL_TYPES:
+        if ty == 102 and matching:
+            return 0
+        return _uma_rl(unique, t)
+    if t == ty:
+        return v("value0")
+    if t == int(unique.get("type1") or 0):
+        return v("value1")
+    return 0
+
+
+def _uma_g7(t, base, unique_grant):
+    """G7(): friendship & specialty-priority uniques are EFFECTIVENESS boosts
+    (multiplicative on the base), every other effect stacks additively."""
+    if base == -1:
+        return unique_grant if unique_grant > 0 else 0
+    if unique_grant == 0:
+        return base
+    if t in (_UMA_FX_SPECIALTY, _UMA_FX_FRIENDSHIP):
+        combined = (100 + base) * (1 + unique_grant / 100.0) - 100
+        # JS Math.round (half-up); friendship/specialty values are >= 0 here
+        return math.floor(combined * 100 + 0.5) / 100.0
+    return base + unique_grant
+
+
+def _uma_card_effect(record, t, level, matching):
+    """pt(): combine the base curve (cd) with the unique ($h) via G7 for a
+    single effectType. Returns the fully-resolved value (0 if absent)."""
+    curves = record.get("c") or {}
+    markers = curves.get(str(t))
+    unique = record.get("u") or {}
+    if not markers:
+        grant = _uma_unique_grant(unique, t, level, matching)
+        return grant if grant > 0 else 0
+    base = _uma_curve_value(markers, level)
+    return _uma_g7(t, base, _uma_unique_grant(unique, t, level, matching))
+
+
 def _load_event_effect_templates(project_root):
     """Load local event effect templates.
 
@@ -2442,6 +2592,9 @@ class CareerSimulator:
             {"type": "Wit",   "name": "Nice Nature"},
         ]
         self.support_bonus_data = _load_json_data("support_card_bonuses.json", {})
+        # Authoritative per-card training-effect data (uma.guide base curves +
+        # uniqueEffect) used by the uma.guide-faithful training-gain resolver.
+        self.support_train_data = _load_json_data("support_card_training_effects.json", {})
         self.chara_growth_data = _load_json_data("chara_growth_rates.json", {})
         self.training_curves = _load_json_data("training_facility_curves.json", {})
         self.race_demands = _load_json_data("race_distance_demands.json", {}).get("entries", {})
@@ -3702,6 +3855,38 @@ class CareerSimulator:
         bogus rainbow_mult; with rainbow_mult removed, each term stands on its own."""
         return MOOD_BASE_EFFECT.get(int(mood_value), 0.0)
 
+    def _training_card_effects(self, card, training_stat):
+        """uma.guide-faithful per-tile training effects for ONE support card.
+
+        Returns ``(effects, matching)`` where ``effects`` resolves every
+        training-relevant effectType via the decompiled uma.guide logic
+        (base curve + uniqueEffect, combined by G7). Crucially ``friendship_bonus``
+        is ALREADY the combined value — base friendship folded with its
+        effectiveness unique as (1+f/100)(1+u/100) — so callers just stack
+        (1 + friendship_bonus/100) multiplicatively, no separate unique term.
+        This is the single source of truth that makes EVERY card's uniques
+        (friendship-effectiveness, fan-scaled training-eff, type1 secondary,
+        deck/skill-scaled, etc.) get acknowledged. ``matching`` follows
+        uma.guide pd(): true for the card's own training type or for
+        match-all (pal/group, supportCardType 3).
+        """
+        support_id = int(card.get("support_card_id") or 0)
+        record = self.support_train_data.get(str(support_id))
+        if not record:
+            # Fallback for a card missing from the uma.guide data: use the
+            # legacy effect dict but still hand back a COMBINED friendship value
+            # so the caller's fold is uniform.
+            effects = dict(self._effective_card_effects(card, training_stat=training_stat))
+            bf = float(effects.get("friendship_bonus") or 0)
+            fu = float(effects.get("friendship_unique") or 0)
+            if fu:
+                effects["friendship_bonus"] = math.floor(((100 + bf) * (1 + fu / 100.0) - 100) * 100 + 0.5) / 100.0
+            return effects, (card.get("type") == training_stat)
+        level = _uma_el_level(int(card.get("lb") or 0), record.get("r") or card.get("rarity"))
+        matching = (int(record.get("t") or 0) == 3) or (card.get("type") == training_stat)
+        effects = {key: _uma_card_effect(record, fx, level, matching) for fx, key in _UMA_EFFECT_KEYS.items()}
+        return effects, matching
+
     def _support_training_gain(self, training_stat, gain_stat, partner_cards, is_rainbow, facility_level):
         facilities = (self.training_curves or {}).get("facilities") or {}
         base_curve = ((facilities.get(training_stat) or {}).get(str(facility_level)) or {})
@@ -3717,37 +3902,29 @@ class CareerSimulator:
         stat_bonus = 0.0
         training_eff = 0.0
         mood_eff = 0.0
-        # Friendship bonus stacks MULTIPLICATIVELY across matching bonded cards
-        # (game8: "friendship bonus is multiplicative with itself, contrary to
-        # other effects which are additive"). Each card's contribution is
-        # 1 + (base_friendship/100) x (1 + friendship_effectiveness_unique/100).
+        # Friendship stacks MULTIPLICATIVELY across matching bonded cards. Each
+        # card's contribution is (1 + friendship_bonus/100) where friendship_bonus
+        # is ALREADY combined with its effectiveness unique via uma.guide's G7
+        # ((1+f/100)(1+u/100), e.g. Shinko Windy base25 + 10% unique = 37.5).
+        # All per-card effects (incl. ALL uniques: fan-scaled TE, type1, etc.)
+        # come from _training_card_effects, the decompiled uma.guide resolver.
         friendship_mult = 1.0
         for card in partner_cards:
-            effects = self._effective_card_effects(
-                card,
-                training_stat=training_stat,
-                partner_cards=partner_cards,
-                is_rainbow=is_rainbow,
-                facility_level=facility_level,
-            )
+            effects, matching = self._training_card_effects(card, training_stat)
             stat_bonus += float(effects.get(f"{gain_stat}_bonus") or 0)
             training_eff += float(effects.get("training_effectiveness") or 0)
             mood_eff += float(effects.get("mood_effect") or 0)
-            if card.get("type") == training_stat and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
-                base_f = float(effects.get("friendship_bonus") or 0)
-                fe_uniq = float(effects.get("friendship_unique") or 0)
-                friendship_mult *= 1.0 + (base_f / 100.0) * (1.0 + fe_uniq / 100.0)
+            if matching and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
+                f_combined = float(effects.get("friendship_bonus") or 0)
+                if f_combined > 0:
+                    friendship_mult *= 1.0 + f_combined / 100.0
 
-        # Term-for-term match to the uma.guide training-gain formula (verified
-        # against real tile breakdowns, e.g. Power 48 / Stamina 58):
+        # Term-for-term match to the uma.guide training-gain formula (the pre-item
+        # value R; megaphone/anklet are a separate post-calc step the career loop
+        # models via shop items). Validated to the exact integer against the live
+        # calculator (NTR+Matikane speed click; Shinko+KSB 38/20).
         #   gain = (base + statBonus) x Friendship x Mood x TrainingEff
         #          x CharCount x Growth
-        # CharCount = 1 + 0.05*N (no cap). Mood = 1 + BaseMood*(1 + ΣmoodEffect/100).
-        # Friendship is the MULTIPLICATIVE product computed in the loop above.
-        # REMOVED two terms that are NOT in the real formula and were
-        # over-crediting every tile (and were masked by the now-reverted
-        # MANT-mood fudge): rainbow_mult (+0.12/bonded — double-counted the
-        # friendship multiplier) and random variance (gain is deterministic).
         char_count_mult = 1.0 + 0.05 * len(partner_cards)
         mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
         training_mult = 1.0 + training_eff / 100.0
@@ -3763,28 +3940,19 @@ class CareerSimulator:
         facilities = (self.training_curves or {}).get("facilities") or {}
         base_curve = ((facilities.get(training_stat) or {}).get(str(facility_level)) or {})
         base = float(base_curve.get("skill_pt") or 0)
-        active_effects = [
-            self._effective_card_effects(
-                card,
-                training_stat=training_stat,
-                partner_cards=partner_cards,
-                is_rainbow=is_rainbow,
-                facility_level=facility_level,
-            )
-            for card in partner_cards
-        ]
-        bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects in active_effects)
-        training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects in active_effects)
-        mood_eff = sum(float(effects.get("mood_effect") or 0) for effects in active_effects)
+        resolved = [self._training_card_effects(card, training_stat) for card in partner_cards]
+        bonus = sum(float(effects.get("skill_pt_bonus") or 0) for effects, _ in resolved)
+        training_eff = sum(float(effects.get("training_effectiveness") or 0) for effects, _ in resolved)
+        mood_eff = sum(float(effects.get("mood_effect") or 0) for effects, _ in resolved)
         # SP uses the SAME formula as stat gain (multiplicative friendship, mood,
         # training-eff, char-count) but NO growth term — SP isn't a trained stat.
-        # Verified vs a real tile breakdown (guts tile SP=25 needs friendship).
+        # friendship_bonus is already the G7-combined value; stack (1+f/100).
         friendship_mult = 1.0
-        for card, effects in zip(partner_cards, active_effects):
-            if card.get("type") == training_stat and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
-                base_f = float(effects.get("friendship_bonus") or 0)
-                fe_uniq = float(effects.get("friendship_unique") or 0)
-                friendship_mult *= 1.0 + (base_f / 100.0) * (1.0 + fe_uniq / 100.0)
+        for card, (effects, matching) in zip(partner_cards, resolved):
+            if matching and int(self.state["bonds"].get(int(card["partner_id"]), 0)) >= 80:
+                f_combined = float(effects.get("friendship_bonus") or 0)
+                if f_combined > 0:
+                    friendship_mult *= 1.0 + f_combined / 100.0
         mood = self._mood_base_effect(int(self.state.get("motivation") or 3))
         mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
         char_count_mult = 1.0 + 0.05 * len(partner_cards)
@@ -3797,17 +3965,12 @@ class CareerSimulator:
         if "energy" not in base_curve:
             return -HP_COSTS.get(training_stat, 10)
         energy = float(base_curve.get("energy") or 0)
-        active_effects = [
-            self._effective_card_effects(
-                card,
-                training_stat=training_stat,
-                partner_cards=partner_cards,
-                is_rainbow=is_rainbow,
-                facility_level=facility_level,
-            )
+        # Energy-cost-reduction is sourced from the uma.guide resolver (handles
+        # all uniques); wit-friendship-recovery is a separate legacy effect.
+        reduction = sum(
+            float(self._training_card_effects(card, training_stat)[0].get("energy_cost_reduction") or 0)
             for card in partner_cards
-        ]
-        reduction = sum(float(effects.get("energy_cost_reduction") or 0) for effects in active_effects)
+        )
         if energy < 0:
             # The simulator does not execute shop recovery items, so raw
             # game-side energy costs would force unrealistic rest spam.
@@ -3815,9 +3978,61 @@ class CareerSimulator:
             if reduction > 0:
                 energy *= max(0.65, 1.0 - reduction / 100.0)
         if training_stat == "wit" and is_rainbow:
-            recovery = sum(float(effects.get("wit_friendship_recovery") or 0) for effects in active_effects)
+            recovery = sum(
+                float(self._effective_card_effects(card, training_stat=training_stat).get("wit_friendship_recovery") or 0)
+                for card in partner_cards
+            )
             energy += recovery
         return int(round(energy))
+
+    def _uma_tile_gain(self, deck, training_stat, *, facility_level=5, mood=0.2,
+                       growth=None, item_train_pct=0, item_energy_pct=0, npc=0, bonded=True):
+        """Faithful, self-contained port of uma.guide's training-tile calculator
+        (ML), INCLUDING the megaphone/anklet post-calc addon. This is the
+        authoritative reference the regression test pins against; it reproduces
+        the live uma.guide panel to the exact integer. `deck` is a list of
+        (support_card_id, lb); `growth`/`mood`/items mirror the panel inputs."""
+        growth = growth or {}
+        facilities = (self.training_curves or {}).get("facilities") or {}
+        base = (facilities.get(training_stat) or {}).get(str(facility_level)) or {}
+        friendship = 1.0
+        mood_eff = train_eff = energy_red = 0.0
+        bonuses = {"speed": 0.0, "stamina": 0.0, "power": 0.0, "guts": 0.0, "wit": 0.0, "sp": 0.0}
+        stat_fx = {"speed": 3, "stamina": 4, "power": 5, "guts": 6, "wit": 7, "sp": 30}
+        for support_id, lb in deck:
+            record = self.support_train_data.get(str(support_id))
+            if not record:
+                continue
+            level = _uma_el_level(lb, record.get("r"))
+            ctype = _normalize_support_type((self.support_bonus_data.get(str(support_id)) or {}).get("type"))
+            matching = (int(record.get("t") or 0) == 3) or (ctype == training_stat)
+            for stat, fx in stat_fx.items():
+                bonuses[stat] += _uma_card_effect(record, fx, level, matching)
+            mood_eff += _uma_card_effect(record, 2, level, matching)
+            train_eff += _uma_card_effect(record, 8, level, matching)
+            energy_red += _uma_card_effect(record, 28, level, matching)
+            if matching and bonded:
+                friend_val = _uma_card_effect(record, 1, level, matching)
+                if friend_val > 0:
+                    friendship *= 1.0 + friend_val / 100.0
+        count = len(deck) + int(npc)
+        mood_mult = 1.0 + mood * (1.0 + mood_eff / 100.0)
+        train_mult = 1.0 + train_eff / 100.0
+        count_mult = 1.0 + 0.05 * count
+        out = {}
+        for stat in ("speed", "stamina", "power", "guts", "wit", "sp"):
+            base_key = "skill_pt" if stat == "sp" else stat
+            base_val = float(base.get(base_key) or 0)
+            if base_val == 0:
+                out[stat] = 0
+                continue
+            growth_mult = 1.0 if stat == "sp" else (1.0 + float(growth.get(stat, 0)) / 100.0)
+            pre = math.floor((base_val + bonuses[stat]) * friendship * mood_mult * train_mult * count_mult * growth_mult)
+            out[stat] = pre + math.floor(pre * item_train_pct / 100.0)
+        energy = float(base.get("energy") or 0)
+        w = energy * (1.0 - energy_red / 100.0) if energy < 0 else energy
+        out["energy"] = math.floor(w - math.floor(abs(w) * item_energy_pct / 100.0)) if w < 0 else int(w)
+        return out
 
     def _real_snapshot_commands_by_stat(self, snapshot):
         cache = getattr(self, "_snapshot_commands_cache", None)

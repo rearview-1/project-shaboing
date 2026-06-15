@@ -428,3 +428,73 @@ running **26 G1 races/career** (catalog type really is G1 — not a grading bug)
 a coin/race-calendar calibration, separate from the item-logic fix: needs verifying whether
 real careers run that many G1s and whether G1=95 is the cited MANT reward before changing
 anything. Do NOT mask it by throttling buys — the buys auto-correct once income is right.
+
+---
+
+## Authoritative Trackblazer item table + sim modeling (2026-06-14)
+
+Source: Game8 "List of All Trackblazer Items" (verified against real-capture
+effect_type codes: 11=multi-turn train%, 12=anklet energy, 14=race-reward).
+The user flagged that items were mis-modeled / Reset Whistle wrongly excluded.
+Every item is now ACCOUNTED FOR in career_simulator.py with its real effect:
+
+| Item (id) | Real effect | Sim modeling |
+|---|---|---|
+| Notepad/Manual/Scroll (1001-1205) | +3/+7/+15 stat | STAT_ITEM_GAINS (exact) |
+| Vita 20/40/65 (2001-2003) | +20/40/65 energy | ENERGY_ITEM_IDS (exact) |
+| Royal Kale Juice (2101) | +100 energy, -1 mood | energy + mood-1 (fixed) |
+| Energy Drink MAX (2201) | +4 max energy, +5 restore | max+restore (fixed; was +30) |
+| Plain/Berry Cupcake (2301/2302) | mood +1/+2 | MOOD_ITEM_GAINS |
+| Megaphones (8001-8003) | +20/40/60% train (4/3/2 turns) | megaphone addon (exact); 8001 NEVER_BUY |
+| Ankle Weights (9001-9004) | +50% train, +20% energy | ankle addon (exact) |
+| Training Application (5001-5005) | facility level +1 | TRAINING_APP_ITEMS facility boost |
+| **Grilled Carrots (3101)** | **all supports bond +5** | BOND_ITEM_GAINS all+5 (was mood) |
+| **Yummy Cat Food (3001)** | **director bond +5** | BOND_ITEM_GAINS director+5 (was mood) |
+| **Cleat Hammer A/M (11001/11002)** | race stat **+20%/+35%** | RACE_REWARD_BUFF 1.20/1.35 (was 1.12/1.25) |
+| **Glow Sticks (11003)** | **race FAN +50%** | _race_fan_reward ×1.50 (was stat ×1.08) |
+| Good-Luck Charm (10001) | training failure 0% this turn | good_luck effect |
+| **Reset Whistle (7001)** | **rearrange training partners** | one-turn train-% uplift (re-roll proxy, tunable) — was EXCLUDED |
+| Pretty Mirror/Scholar's Hat/Tips/Binoculars | **skill hints** (Charming/Fast Learner/…) | SKILL_HINT_ITEMS map — effect wiring is a FLAGGED follow-up (was mis-modeled as mood) |
+| Cures: Practice Drills DVD/Pocket Planner/Smart Scale/Rich Hand Cream/Aroma Diffuser/Fluffy Pillow/Miracle Cure | cure a bad status | NO-OP — sim has no bad-status model; FLAGGED follow-up |
+
+**Two remaining sub-models (flagged, not fudged):** (1) skill-hint items → wire each
+named skill's SP-cost discount / acquisition into the skill-purchase path; (2) a
+bad-status model (Night Owl/Slacker/etc. occur, reduce training, cured by the
+matching item) so the 7 cure items become meaningful. Both need their own data
+(skill IDs/values; real bad-status occurrence rate from captures) before modeling.
+
+**Reset Whistle** is now bought (tier-1, like the live bot) and used on strong
+training turns; its re-roll is modeled as a bounded, preset-tunable one-turn
+training uplift (sim_reset_whistle_train_pct) pending a full per-tile partner
+re-roll. **Calibration note:** Grilled Carrots is offered (~46%) but under-bought
+on this deck due to early-career coin scarcity (bonding useful early when coin is
+low); ties into the coin-income flag above.
+
+---
+
+## Placement-based coin + win-rate finding (2026-06-14, user-directed)
+
+**Coin reward is by FINISHING PLACEMENT, not win/lose.** User: ~100 (1st), ~55
+(2nd), ~30 (3rd), tapering below. The old `_race_coin_reward(grade, won)` used
+grade x0.45 for any non-win — flattening 2nd and 5th to the same ~43 coin and
+over-paying losses. Fixed: takes `finish_rank` (the sim already computes it via
+`_sim_loss_finish_rank`) and pays {1:100, 2:55, 3:30, 4:18, 5:10, 6+:5} (+20 rival
+win). This is why a live bot that LOSES races earns less coin than an all-wins sim.
+
+**Residual coin gap is now the WIN RATE, not the coin formula.** With placement
+coin, sim income is still ~2,122/career (real ~1,377) because the sim bot WINS
+~69% of races (18-23 of ~29). To match real ~1,377 the bot should win ~10/career,
+i.e. lose far more. The sim's win probability is optimistic for mediocre statlines
+(it wins most G1s with A+ stats) — a RACE-MODEL calibration (see race physics
+engine), separate from the coin formula. Flagged, not fudged.
+
+## STOP reporting stat_sum — report the STATLINE + rating/rank (user-directed)
+
+stat_sum is misleading because the rating curve is convex: 4,000 sum as 800x5 vs
+1000x4+0 give very different ranks. Always report the per-stat line
+(speed/stamina/power/guts/wit) + rating + rank. Reporting this way immediately
+exposed that the BUG-FREE item economy yields A+/A (sp~900/st~580/pw~730/gu~390/
+wt~650, ~12-13k) — NOT the S+ the buggy free-megaphone+fake-mood economy faked.
+No statline is in the 1100-1200 rank-earning zone. The honest corrected sim is
+weaker than the buggy one; reaching real-bot S+ (let alone SS) must come from
+legitimate item/training value (megaphone uptime, bond rainbows), not the bugs.

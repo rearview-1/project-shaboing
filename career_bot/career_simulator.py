@@ -162,6 +162,8 @@ MEGAPHONE_ITEM_IDS = {int(DISPLAY_TO_ID[name]): tuple(value) for name, value in 
 # always skip for the better tier. The sim's buy paths must honor this too.
 NEVER_BUY_IDS = {int(DISPLAY_TO_ID[name]) for name in NEVER_BUY_ITEMS if name in DISPLAY_TO_ID}
 RESET_WHISTLE_ID = int(DISPLAY_TO_ID.get("Reset Whistle") or 7001)
+ENERGY_DRINK_MAX_ID = int(DISPLAY_TO_ID.get("Energy Drink MAX") or 2201)
+ROYAL_KALE_JUICE_ID = int(DISPLAY_TO_ID.get("Royal Kale Juice") or 2101)
 # Multiplier applied to gain values from real-bot training snapshots.
 # Original calibration of 1.28 was matched to old-bot data when real runs
 # landed around A/A+. The bot has since improved substantially (real
@@ -278,10 +280,32 @@ ANKLE_WEIGHT_ITEMS = {
     9003: "power",
     9004: "guts",
 }
+# Mood/motivation items ONLY (authoritative Game8 Trackblazer item list).
+# Cupcakes are the only true mood items; Cat Food / Grilled Carrots are BOND
+# items and Pretty Mirror / Scholar's Hat are SKILL-HINT items (moved below) —
+# they were previously mis-modeled here as mood.
 MOOD_ITEM_GAINS = {
-    2301: 1, 2302: 2, 3001: 1, 3101: 2, 4001: 1, 4004: 1,
+    2301: 1,  # Plain Cupcake: Mood +1
+    2302: 2,  # Berry Sweet Cupcake: Mood +2
 }
-RACE_REWARD_BUFF_ITEMS = {11001: 1.12, 11002: 1.25, 11003: 1.08}
+# Bond/friendship items: (scope, amount). Grilled Carrots raises ALL support
+# friendship gauges +5; Cat Food raises the scenario director (Akikawa) +5.
+BOND_ITEM_GAINS = {
+    3101: ("all", 5),       # Grilled Carrots: all supports' Friendship +5
+    3001: ("director", 5),  # Yummy Cat Food: Director Akikawa's bond +5
+}
+# Skill-hint items: each grants a hint for a specific skill (reduces its SP cost
+# / yields the skill). Modeled as a skill-point credit proxy for the hint value.
+SKILL_HINT_ITEMS = {
+    4001: "Charming",         # Pretty Mirror
+    4004: "Fast Learner",     # Scholar's Hat
+    4003: "Practice Perfect",  # Tips for Efficient Training
+    4002: "Hot Topic",        # Reporter's Binoculars (in NEVER_BUY, but modeled)
+}
+# Cleat Hammers boost a race's STAT reward (Artisan +20%, Master +35% — Game8).
+RACE_REWARD_BUFF_ITEMS = {11001: 1.20, 11002: 1.35}
+GLOW_STICK_ID = 11003          # Glow Sticks: race FAN gain +50% (not stat)
+GLOW_STICK_FAN_MULT = 1.50
 LEGACY_NODES = ("self", "p1", "p2")
 LEGACY_BLUE_STAT_BONUS = {1: 5, 2: 12, 3: 21}
 LEGACY_STAT_NAME_TO_STATE_KEY = {
@@ -4747,9 +4771,12 @@ class CareerSimulator:
         return int(ITEM_COST_BY_ID.get(item_id) or SHOP_ITEM_COSTS.get(ITEM_ID_TO_NAME.get(item_id, ""), 50) or 50)
 
     def _skip_shop_item(self, item_id):
-        # The simulator has no ailments/manual bad-condition model. Buying
-        # cures or Practice DVD would fake value that cannot be used.
-        return int(item_id) in {4002, 4003, 4101, 4102, 4103, 4104, 4105, 4106, 4201, 2202}
+        # The simulator has no ailments/manual bad-condition model, so cures
+        # (4101-4106, 4201) fake value that cannot be used. Skill-hint items
+        # (Pretty Mirror 4001, Scholar's Hat 4004, plus NEVER_BUY 4002/4003)
+        # grant a skill hint whose SP-discount wiring is a flagged follow-up;
+        # skip them until modeled so coins aren't wasted on a no-op.
+        return int(item_id) in {4001, 4002, 4003, 4004, 4101, 4102, 4103, 4104, 4105, 4106, 4201, 2202}
 
     def _mant_cfg(self):
         cfg = dict((self.preset or {}).get("mant_config") or {})
@@ -5014,6 +5041,17 @@ class CareerSimulator:
         for iid, stat in ANKLE_WEIGHT_ITEMS.items():
             if offered(iid) and self._inventory_count(iid) < 1 and self._deck_count_for_stat(stat) >= 1:
                 buy(iid)
+        # Bond items: only worth buying while bonding still helps (some partner
+        # below the rainbow threshold). Grilled Carrots (all supports +5) is the
+        # high-value buy; consumed on purchase. Stop once partners are maxed so
+        # the cheap items aren't spammed every refresh.
+        bonds = self.state.get("bonds") or {}
+        if any(int(v or 0) < 80 for v in bonds.values()):
+            if offered(3101) and buy(3101):  # Grilled Carrots (all +5)
+                self._use_item(3101)
+        # Reset Whistle: keep a small reserve to spend on strong training turns.
+        if offered(RESET_WHISTLE_ID) and self._inventory_count(RESET_WHISTLE_ID) < int(self.preset.get("sim_reset_whistle_reserve", 2)):
+            buy(RESET_WHISTLE_ID)
 
     def _maybe_buy_shop_items(self):
         if not bool(self.preset.get("sim_use_shop_items", True)):
@@ -5069,6 +5107,8 @@ class CareerSimulator:
             bought += 1
             if item_id in STAT_ITEM_GAINS or item_id in TRAINING_APP_ITEMS:
                 self._use_item(item_id)
+            elif item_id in BOND_ITEM_GAINS:
+                self._use_item(item_id)
             elif item_id in MOOD_ITEM_GAINS and int(self.state.get("motivation") or 3) < 5:
                 self._use_item(item_id)
         return bought
@@ -5086,10 +5126,43 @@ class CareerSimulator:
             stat = TRAINING_APP_ITEMS[item_id]
             boosts = self.state.setdefault("facility_item_boosts", {s: 0 for s in STAT_KEYS})
             boosts[stat] = min(2, int(boosts.get(stat, 0)) + 1)
+        elif item_id == ENERGY_DRINK_MAX_ID:
+            # Energy Drink MAX: +4 MAX energy and restore +5 (Game8), not a flat
+            # +30 restore. (Energy Drink MAX EX = +8 max, is NEVER_BUY.)
+            self.state["max_hp"] = int(self.state.get("max_hp") or 100) + 4
+            self.state["hp"] = min(int(self.state["max_hp"]), int(self.state.get("hp") or 0) + 5)
         elif item_id in ENERGY_ITEM_IDS:
             self.state["hp"] = min(int(self.state.get("max_hp") or 100), int(self.state.get("hp") or 0) + ENERGY_ITEM_IDS[item_id])
+            if item_id == ROYAL_KALE_JUICE_ID:
+                # Royal Kale Juice restores +100 energy but costs 1 Mood (Game8).
+                self.state["motivation"] = max(1, int(self.state.get("motivation") or 3) - 1)
         elif item_id in MOOD_ITEM_GAINS:
             self.state["motivation"] = min(5, int(self.state.get("motivation") or 3) + MOOD_ITEM_GAINS[item_id])
+        elif item_id in BOND_ITEM_GAINS:
+            # Friendship items (Grilled Carrots = all supports +5; Cat Food =
+            # director +5). Higher bond -> more rainbow training (Game8 effects).
+            scope, amount = BOND_ITEM_GAINS[item_id]
+            bonds = self.state.setdefault("bonds", {})
+            if scope == "all":
+                for pid in list(bonds.keys()):
+                    bonds[pid] = min(100, int(bonds.get(pid) or 0) + amount)
+            else:  # "director" -> approximate as the single lowest-bond partner
+                if bonds:
+                    pid = min(bonds, key=lambda k: bonds.get(k, 0))
+                    bonds[pid] = min(100, int(bonds.get(pid) or 0) + amount)
+        elif item_id == RESET_WHISTLE_ID:
+            # Reset Whistle rearranges the partners appearing in training so the
+            # turn it's used can stack a stronger rainbow. Modeled as a bounded
+            # one-turn training-effectiveness uplift on every facility (the
+            # average benefit of re-aligning a partner onto the chosen tile).
+            # Magnitude is preset-tunable; a full per-tile partner re-roll model
+            # is a flagged follow-up.
+            self.state.setdefault("active_item_effects", []).append({
+                "item_id": item_id,
+                "kind": "reset_whistle",
+                "train_pct": float(self.preset.get("sim_reset_whistle_train_pct", 15)),
+                "end_turn": turn,
+            })
         elif item_id in MEGAPHONE_ITEM_IDS:
             tier, duration = MEGAPHONE_ITEM_IDS[item_id]
             # Trackblazer/MANT megaphones are +20/40/60% training (decompiled
@@ -5147,7 +5220,7 @@ class CareerSimulator:
         train_pct = 0.0
         for effect in self.state.get("active_item_effects") or []:
             kind = effect.get("kind")
-            if kind == "megaphone":
+            if kind in ("megaphone", "reset_whistle"):
                 train_pct += float(effect.get("train_pct") or 0)
             elif kind == "ankle" and effect.get("stat") == stat:
                 train_pct += float(effect.get("train_pct") or 0)
@@ -5236,6 +5309,11 @@ class CareerSimulator:
             item_id = next((iid for iid, s in ANKLE_WEIGHT_ITEMS.items() if s == stat and self._inventory_count(iid) > 0), 0)
             if item_id:
                 self._use_item(item_id, target_stat=stat)
+        # Reset Whistle on a strong tile: rearrange partners to stack the rainbow
+        # (consumed once per turn; stacks with the megaphone addon).
+        if strong_tile and self._inventory_count(RESET_WHISTLE_ID) > 0:
+            if not any(e.get("kind") == "reset_whistle" for e in self.state.get("active_item_effects") or []):
+                self._use_item(RESET_WHISTLE_ID)
         if int(cmd.get("failure_rate") or 0) >= 9 and self._inventory_count(10001) > 0:
             self._use_item(10001)
 
@@ -5716,13 +5794,13 @@ class CareerSimulator:
         if not bool(self.preset.get("sim_use_shop_items", True)):
             return 1.0
         grade = str(grade or "").upper()
+        # Cleat Hammers boost a race's STAT reward (Master 11002 > Artisan 11001).
+        # Glow Sticks (11003) are fan-only and handled in _race_fan_reward.
         priority = []
         if grade == "G1" or int(self.state.get("turn") or 0) >= 60:
-            priority = [11002, 11001, 11003]
-        elif rival:
-            priority = [11001, 11003]
+            priority = [11002, 11001]
         else:
-            priority = [11003]
+            priority = [11001]
         for item_id in priority:
             if self._inventory_count(item_id) > 0 and self._consume_item(item_id):
                 self.shop_items_used += 1
@@ -5777,14 +5855,20 @@ class CareerSimulator:
         self.events_fired.append(record)
         return record
 
-    def _race_coin_reward(self, grade, won, rival=False, reward_multiplier=1.0):
-        grade = str(grade or "").upper()
-        base = {"G1": 95, "G2": 75, "G3": 60, "OP": 45, "PRE-OP": 35}.get(grade, 50)
-        if not won:
-            base = int(round(base * 0.45))
-        if rival:
-            base += 30 if won else 15
-        return max(0, int(round(base * max(0.8, float(reward_multiplier or 1.0)))))
+    def _race_coin_reward(self, grade, won, rival=False, reward_multiplier=1.0, finish_rank=None):
+        # MANT coin reward is driven by FINISHING PLACEMENT (user-confirmed:
+        # ~100 for a win, ~55 for 2nd, ~30 for 3rd, tapering below). This is why
+        # a live career bot — which LOSES some races and finishes 2nd/3rd/lower —
+        # earns less coin than an all-wins sim. The old grade x0.45 loss model
+        # flattened every non-win to ~43 coin, badly over-paying low placements
+        # and inflating sim coin income (~2320 vs real ~1377).
+        if finish_rank is None:
+            finish_rank = 1 if won else 2
+        rank = int(finish_rank or (1 if won else 2))
+        base = {1: 100, 2: 55, 3: 30, 4: 18, 5: 10}.get(rank, 5)  # 6th+ -> 5
+        if rival and rank == 1:
+            base += 20  # rival-race win bonus
+        return max(0, base)
 
     def _race_fan_reward(self, grade, won):
         grade = str(grade or "").upper()
@@ -5795,7 +5879,14 @@ class CareerSimulator:
             float(self._effective_card_effects(card).get("fan_bonus") or 0)
             for card in (self.sim_support_cards or [])
         )
-        return int(round(base * (1.0 + deck_fan_bonus / 100.0)))
+        fan = base * (1.0 + deck_fan_bonus / 100.0)
+        # Glow Sticks: race fan gain +50% (Game8). Consumed when racing, won or
+        # not, since fans accrue from participation. Boosts the year-end fan
+        # gates that drive unique-skill level.
+        if bool(self.preset.get("sim_use_shop_items", True)) and self._inventory_count(GLOW_STICK_ID) > 0 and self._consume_item(GLOW_STICK_ID):
+            self.shop_items_used += 1
+            fan *= GLOW_STICK_FAN_MULT
+        return int(round(fan))
 
     def _race_stat_distribution(self, era):
         calibration = getattr(self, "race_stat_gain_calibration", {}) or {}
@@ -8741,8 +8832,8 @@ class CareerSimulator:
                 item_id = int(raw_id)
             except (TypeError, ValueError):
                 continue
-            if item_id in NEVER_BUY_IDS or item_id == RESET_WHISTLE_ID:
-                continue  # never-buy, or no modeled effect (Reset Whistle)
+            if item_id in NEVER_BUY_IDS:
+                continue  # live-bot never-buy contract (e.g. 20% Coaching megaphone)
             rate = variant_value((row or {}).get("appearance_rate_by_grade_result") or {})
             if rate <= 0 or self.rng.random() * 100.0 >= min(rate, 100.0):
                 continue
@@ -8778,42 +8869,59 @@ class CareerSimulator:
             bought += 1
             if iid in STAT_ITEM_GAINS or iid in TRAINING_APP_ITEMS:
                 self._use_item(iid)  # stat-study items are consumed on purchase
+            elif iid in BOND_ITEM_GAINS:
+                self._use_item(iid)  # friendship items applied immediately
             elif iid in MOOD_ITEM_GAINS and int(self.state.get("motivation") or 3) < 5:
                 self._use_item(iid)
+            # Reset Whistle / Glow Sticks / hammers are SAVED and consumed later
+            # (whistle on a training turn, glow + hammers at a race).
             return True
 
-        # Priority order — mirrors the measured real per-career buy profile.
+        # Priority order — mirrors the measured real per-career buy profile
+        # (energy + stat-study dominate; hammers, anklets, whistle, glow, megaphone,
+        # bond, mood follow). Buys at most one item per tier within the budget.
         # 1) energy when HP is low (Vita is the #1 real buy)
         if int(self.state.get("hp") or 0) < int(self.preset.get("sim_post_race_energy_buy_threshold", 60)):
             for iid in sorted((i for i in ENERGY_ITEM_IDS if i in offered_ids),
                               key=lambda i: ENERGY_ITEM_IDS[i], reverse=True):
                 if try_buy(iid):
                     break
-        # 2) one deck-primary anklet (favor the deck's strongest-trained stat)
-        for iid, stat in sorted(ANKLE_WEIGHT_ITEMS.items(),
-                                key=lambda kv: self._deck_count_for_stat(kv[1]), reverse=True):
-            if iid in offered_ids and self._deck_count_for_stat(stat) >= 1 and try_buy(iid):
+        # 2) target-stat study item (notepads/manuals/scrolls) — the dominant
+        #    real category; prefer the highest-value tier (scroll>manual>notepad)
+        for iid in sorted((i for i in STAT_ITEM_GAINS if i in offered_ids),
+                          key=lambda i: STAT_ITEM_GAINS[i][1], reverse=True):
+            if try_buy(iid):
                 break
-        # 3) race-reward buff items (hammers / glow) — late-game only, where the
-        #    real profile shows hammer buys spike (camp/climax facility leveling)
+        # 3) Cleat Hammers (race stat reward) — late-game, where real buys spike
         if turn >= 49:
             for iid in sorted((i for i in RACE_REWARD_BUFF_ITEMS if i in offered_ids),
                               key=lambda i: RACE_REWARD_BUFF_ITEMS[i], reverse=True):
                 if try_buy(iid):
                     break
-        # 4) best affordable megaphone tier (Coaching excluded), keeping only a
-        #    small reserve so the bot doesn't hoard megaphones every race
+        # 4) one deck-primary anklet (favor the deck's strongest-trained stat)
+        for iid, stat in sorted(ANKLE_WEIGHT_ITEMS.items(),
+                                key=lambda kv: self._deck_count_for_stat(kv[1]), reverse=True):
+            if iid in offered_ids and self._deck_count_for_stat(stat) >= 1 and try_buy(iid):
+                break
+        # 5) Reset Whistle (rearrange partners) — keep a small reserve to spend on
+        #    strong training turns
+        if self._inventory_count(RESET_WHISTLE_ID) < int(self.preset.get("sim_reset_whistle_reserve", 2)):
+            try_buy(RESET_WHISTLE_ID)
+        # 6) Glow Sticks (race fan +50%) — saved for the next race
+        if self._inventory_count(GLOW_STICK_ID) < 1:
+            try_buy(GLOW_STICK_ID)
+        # 7) best affordable megaphone tier (Coaching excluded), small reserve only
         mega_reserve = int(self.preset.get("sim_megaphone_reserve", 2))
         if sum(self._inventory_count(i) for i in MEGAPHONE_ITEM_IDS) < mega_reserve:
             for _q, iid in sorted(((MEGAPHONE_ITEM_IDS[i][0], i) for i in MEGAPHONE_ITEM_IDS if i in offered_ids),
                                   reverse=True):
                 if try_buy(iid):
                     break
-        # 5) one target-stat study item (notepads / manuals / scrolls)
-        for iid in (i for i in STAT_ITEM_GAINS if i in offered_ids):
+        # 8) bond items (Grilled Carrots all +5 / Cat Food director +5) -> rainbows
+        for iid in (i for i in BOND_ITEM_GAINS if i in offered_ids):
             if try_buy(iid):
                 break
-        # 6) mood when motivation is low
+        # 9) mood when motivation is low
         if int(self.state.get("motivation") or 3) < 5:
             for iid in (i for i in MOOD_ITEM_GAINS if i in offered_ids):
                 if try_buy(iid):
@@ -8987,6 +9095,7 @@ class CareerSimulator:
             won,
             rival=rival,
             reward_multiplier=reward_multiplier,
+            finish_rank=finish_rank,
         )
         self.state["fans"] = int(self.state.get("fans") or 0) + self._race_fan_reward(grade, won)
         self._offer_post_race_shop(grade, won)

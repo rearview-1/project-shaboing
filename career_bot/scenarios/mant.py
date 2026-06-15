@@ -1037,6 +1037,72 @@ class MantStrategy(ScenarioStrategy):
         self._cached_imitation_match = {"score": match_score, "detail": detail}
         return prior
 
+    def _apply_lookahead_value(self, scored, data, chara, preset, turn):
+        """Phase-1 decision-engine upgrade: a deterministic MULTI-TURN lookahead
+        value added to the greedy per-turn score.
+
+        The greedy heuristic is myopic — it scores a tile by its immediate output.
+        This adds a value that looks PAST the current turn, with bounded, tunable
+        terms (so a bad weight can't dominate; greedy fallback preserved):
+          - convex: the tile's marginal RATING gain (the rank score is convex in
+            each stat, so a point at 1100 is worth ~3x one at 400).
+          - bond:   bond->rainbow proximity. Training a partner who is below bond
+            80 advances them toward the rainbow threshold; once they cross 80,
+            EVERY future tile with them gets the rainbow multiplier. Greedy can't
+            see this multi-turn payoff; here it's valued, scaled by turns left.
+
+        Preset-gated (`lookahead_enabled`, default OFF => live unchanged). Weights
+        read via _tuned_value so the existing optimizer tunes them. This is the
+        first increment of the value-function engine (later phases swap the
+        hand-coded terms for a learned numpy value-regressor on the calibrated
+        formula sim)."""
+        lhp = (preset or {}).get("learned_hyperparameters") or {}
+        enabled = (
+            bool((preset or {}).get("lookahead_enabled", False))
+            or "lookahead_convex_weight" in lhp
+            or "lookahead_bond_weight" in lhp
+        )
+        if not enabled:
+            return scored
+        w_convex = float(_tuned_value(preset, "lookahead_convex_weight", 0.0))
+        w_bond = float(_tuned_value(preset, "lookahead_bond_weight", 0.0))
+        if not (w_convex or w_bond):
+            return scored
+        bonds = self._bond_map(chara)
+        turns_left_frac = max(0.0, (72 - turn)) / 72.0
+        out = []
+        for score, cmd in scored:
+            if score <= 0:
+                out.append((score, cmd))
+                continue
+            bonus = 0.0
+            if w_convex:
+                dr = 0.0
+                for item in cmd.get("params_inc_dec_info_array") or []:
+                    tgt = STAT_TARGETS.get(item.get("target_type"))
+                    if tgt is None or tgt >= 5:
+                        continue
+                    g = float(item.get("value") or 0)
+                    if g <= 0:
+                        continue
+                    cur = float(self._current_stat(chara, tgt) or 0.0)
+                    dr += stat_rating_score(cur + g) - stat_rating_score(cur)
+                bonus += w_convex * min(2.0, dr / 200.0)
+            if w_bond and turns_left_frac > 0:
+                prox = 0.0
+                for pid in (cmd.get("training_partner_array") or []):
+                    if pid not in DECK_PARTNERS:
+                        continue
+                    b = bonds.get(pid, 0)
+                    if 50 <= b < 80:
+                        # closer to 80 + more career left => higher future rainbow value
+                        prox += ((b - 50) / 30.0) * turns_left_frac
+                bonus += w_bond * min(1.5, prox)
+            if bonus:
+                cmd["_lookahead_value"] = round(bonus, 4)
+            out.append((score + bonus, cmd))
+        return out
+
     def _apply_imitation_prior(self, scored, preset, turn):
         """Add a small score bonus to commands matching the imitation prior's choice.
 
@@ -1404,6 +1470,7 @@ class MantStrategy(ScenarioStrategy):
         scored = self._apply_visible_tile_quality_guard(scored, chara, preset, turn)
         scored, bond_equity_state = self._apply_bond_equity_gate(scored, chara, preset, turn)
         scored, imitation_state = self._apply_imitation_prior(scored, preset, turn)
+        scored = self._apply_lookahead_value(scored, data, chara, preset, turn)
         sorted_scored = sorted(scored, key=lambda row: row[0], reverse=True)
         second_best_score = sorted_scored[1][0] if len(sorted_scored) > 1 else (sorted_scored[0][0] if sorted_scored else 0.0)
         for rank, (score, cmd) in enumerate(sorted_scored, start=1):

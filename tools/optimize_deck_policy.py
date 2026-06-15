@@ -147,6 +147,11 @@ PARAM_SPACE = [
     # bot drives the top stats into the high-value zone — the key lever for SS.
     # Probe: w~0.05 lifted mean rating ~14.2k->15.4k and produced SS careers.
     ("rating_gradient_weight",          0.0, 0.12),
+    # Phase-1 lookahead engine (multi-turn value): convex marginal-rating + the
+    # bond->rainbow proximity payoff the greedy heuristic can't see. Off unless
+    # the optimizer sets these (career_bot/scenarios/mant.py _apply_lookahead_value).
+    ("lookahead_convex_weight",         0.0, 0.10),
+    ("lookahead_bond_weight",           0.0, 0.80),
     ("speed_priority_bonus_mid",        0.16, 0.45),
     ("speed_priority_bonus_late",       0.22, 0.60),
     ("speed_floor_target",              900, 1200),

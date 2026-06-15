@@ -142,6 +142,11 @@ def _base_preset(preset_path: Path | None = None) -> dict:
 # The optimizer now focuses its samples on the priority bonuses and
 # race-prebuy skill counts — the dimensions that DO move the result.
 PARAM_SPACE = [
+    # Rating-gradient (convex-aware) tile scoring weight (added 2026-06-15).
+    # Scores each tile by marginal RATING gain (convex per-stat curve) so the
+    # bot drives the top stats into the high-value zone — the key lever for SS.
+    # Probe: w~0.05 lifted mean rating ~14.2k->15.4k and produced SS careers.
+    ("rating_gradient_weight",          0.0, 0.12),
     ("speed_priority_bonus_mid",        0.16, 0.45),
     ("speed_priority_bonus_late",       0.22, 0.60),
     ("speed_floor_target",              900, 1200),

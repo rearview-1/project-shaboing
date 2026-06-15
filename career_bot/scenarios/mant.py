@@ -14,6 +14,7 @@ from career_bot.projection import (
 )
 from career_bot.postmortem_feedback import upcoming_race_stat_demand
 from career_bot.presets import resolve_expect_attribute
+from career_bot.rating import stat_rating_score
 from career_bot.race_success_feedback import upcoming_race_success_demand
 from career_bot.race_thresholds import (
     aggregate_stat_deficit,
@@ -3154,6 +3155,35 @@ class MantStrategy(ScenarioStrategy):
             score += learned_bonus
         if spark_goal_mult != 1.0:
             score *= spark_goal_mult
+
+        # Rating-gradient (convex-aware) tile bonus. The in-game rank score is
+        # CONVEX in each stat (a point at 1100 is worth ~3x a point at 400), but
+        # the per-stat scoring above is ~linear, so the bot spreads training by
+        # raw gain instead of driving stats into the high-value zone. This term
+        # scores a tile by its MARGINAL rating contribution (stat_rating_score
+        # delta over the tile's stat gains at the current statline), so the bot
+        # dynamically pushes the top 3-4 stats toward the cap and naturally
+        # stops once a stat caps (delta -> 0) — the convex-optimal multi-high-
+        # stat build that earns rank. It is NOT a predestined target: the best
+        # stat to train emerges from the rating math + current state + deck.
+        # Tunable via `rating_gradient_weight`; DEFAULT 0.0 (live unaffected),
+        # enabled in the sim/optimizer for SS policies.
+        rating_gradient_weight = float(_tuned_value(preset, "rating_gradient_weight", 0.0))
+        if rating_gradient_weight > 0.0 and score > 0.0:
+            delta_rating = 0.0
+            for item in command.get("params_inc_dec_info_array") or []:
+                tgt = STAT_TARGETS.get(item.get("target_type"))
+                if tgt is None or tgt >= 5:
+                    continue
+                val = float(item.get("value") or 0)
+                if val <= 0:
+                    continue
+                cur = float(self._current_stat(chara, tgt) or 0.0)
+                delta_rating += stat_rating_score(cur + val) - stat_rating_score(cur)
+            if delta_rating:
+                grad = rating_gradient_weight * delta_rating
+                command["_rating_gradient_bonus"] = round(grad, 4)
+                score += grad
 
         return score
 

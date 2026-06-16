@@ -152,6 +152,14 @@ PARAM_SPACE = [
     # the optimizer sets these (career_bot/scenarios/mant.py _apply_lookahead_value).
     ("lookahead_convex_weight",         0.0, 0.10),
     ("lookahead_bond_weight",           0.0, 0.80),
+    # Cap-waste diversification (added 2026-06-15): penalize a tile by the
+    # fraction of its gain clamped above the true 1200 cap, so the bot moves
+    # off a maxed stat onto one with headroom instead of burning the turn.
+    ("cap_waste_weight",                0.0, 1.0),
+    # NOTE: race_effort_weight (mant.py) tested 2026-06-16 and is a DUD — shifting
+    # the build wit->power did NOT win more races (losses are throughput-bound, not
+    # allocation-bound) and lowered rating. Left default-off in the strategy, kept
+    # OUT of the search space so the optimizer doesn't waste samples on it.
     ("speed_priority_bonus_mid",        0.16, 0.45),
     ("speed_priority_bonus_late",       0.22, 0.60),
     ("speed_floor_target",              900, 1200),

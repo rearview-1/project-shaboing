@@ -458,6 +458,33 @@ _JUNIOR_BOND_BUILD_WEIGHT_DEFAULT = 0.0
 _JUNIOR_BOND_BUILD_END_TURN_DEFAULT = 30
 
 
+# Per-distance race stat weights (mirror of career_simulator.RACE_WEIGHT_PROFILES;
+# duplicated here to avoid a circular import — career_simulator imports this module).
+# Used to value training by RACE-WINNING contribution, not just rainbow gain.
+_RACE_WEIGHT_PROFILES = {
+    "sprint": {"speed": 1.25, "power": 1.00, "wit": 0.55, "stamina": 0.42, "guts": 0.35},
+    "mile": {"speed": 1.15, "power": 0.92, "wit": 0.62, "stamina": 0.62, "guts": 0.38},
+    "medium": {"speed": 1.05, "stamina": 0.90, "power": 0.86, "wit": 0.55, "guts": 0.45},
+    "long": {"stamina": 1.25, "speed": 0.95, "power": 0.76, "guts": 0.58, "wit": 0.48},
+    "": {"speed": 1.00, "stamina": 0.80, "power": 0.80, "wit": 0.50, "guts": 0.40},
+}
+# Stat index order matching STAT_TARGETS values 0-4.
+_RACE_EFFORT_STAT_ORDER = ["speed", "stamina", "power", "guts", "wit"]
+
+# Manual build-curve anchors extracted from the user's COMPLETE Satono Diamond
+# MANT career (card106701, scenario 4, sum 4518: sp1099 st723 pw1100 gu585
+# wt1011) — the reference for "how the user solved the power/stamina hurdle."
+# Per-turn [speed, stamina, power, guts, wit] anchors; the bot imitates this
+# balanced, power-early build instead of the greedy speed/wit-rainbow pile.
+# Interpolated linearly between anchors by _manual_build_target(turn).
+_MANUAL_BUILD_CURVE = {
+    24: [342, 252, 340, 200, 343],
+    48: [543, 436, 613, 336, 729],
+    72: [863, 613, 936, 450, 916],
+    78: [1099, 723, 1100, 585, 1011],
+}
+
+
 STAT_TARGETS = {
     1: 0,
     2: 1,
@@ -1094,10 +1121,18 @@ class MantStrategy(ScenarioStrategy):
                     if pid not in DECK_PARTNERS:
                         continue
                     b = bonds.get(pid, 0)
-                    if 50 <= b < 80:
-                        # closer to 80 + more career left => higher future rainbow value
-                        prox += ((b - 50) / 30.0) * turns_left_frac
-                bonus += w_bond * min(1.5, prox)
+                    if b < 80:
+                        # Advancing ANY sub-80 partner toward the rainbow
+                        # threshold unlocks the rainbow multiplier on every
+                        # future tile with them. The diagnostic showed junior
+                        # rainbow uptime ~21-29% (bonds start ~20, need ~9
+                        # trainings to reach 80), so the old 50<=b<80 gate
+                        # missed the whole junior bond-build window where the
+                        # payoff is largest. Value = base credit for any
+                        # unbonded deck partner + a ramp as they near 80
+                        # (sooner payoff), all scaled by career remaining.
+                        prox += (0.4 + 0.6 * (b / 80.0)) * turns_left_frac
+                bonus += w_bond * min(2.5, prox)
             if bonus:
                 cmd["_lookahead_value"] = round(bonus, 4)
             out.append((score + bonus, cmd))
@@ -3252,7 +3287,146 @@ class MantStrategy(ScenarioStrategy):
                 command["_rating_gradient_bonus"] = round(grad, 4)
                 score += grad
 
+        # Cap-waste penalty (diversification). Any tile gain that pushes a stat
+        # past the TRUE 1200 game cap is clamped to 0 by the sim — training a
+        # near-capped stat wastes the whole turn. The projection-based overcap
+        # multiplier above is soft (floors at 0.35x) and fires on PROJECTED
+        # overshoot, so it does not stop the bot from picking a tile whose main
+        # stat is already at the wall. This term penalizes a tile by the fraction
+        # of its gain thrown away above the hard cap, so the bot diversifies onto
+        # a stat with headroom. Keyed to the real game cap (stat_hard_cap=1200),
+        # NOT a predestined distribution — see [[feedback_no_predestined_stats]].
+        # Tunable via `cap_waste_weight`; DEFAULT 0.0 (live unaffected).
+        cap_waste_weight = float(_tuned_value(preset, "cap_waste_weight", 0.0))
+        if cap_waste_weight > 0.0 and score > 0.0:
+            hard_cap = float(_tuned_value(preset, "stat_hard_cap", 1200.0))
+            total_gain = 0.0
+            wasted_gain = 0.0
+            for item in command.get("params_inc_dec_info_array") or []:
+                tgt = STAT_TARGETS.get(item.get("target_type"))
+                if tgt is None or tgt >= 5:
+                    continue
+                val = float(item.get("value") or 0)
+                if val <= 0:
+                    continue
+                cur = float(self._current_stat(chara, tgt) or 0.0)
+                total_gain += val
+                wasted_gain += max(0.0, (cur + val) - hard_cap)
+            if total_gain > 0.0 and wasted_gain > 0.0:
+                waste_frac = min(1.0, wasted_gain / total_gain)
+                penalty = cap_waste_weight * waste_frac * score
+                command["_cap_waste_penalty"] = round(-penalty, 4)
+                score -= penalty
+
+        # Race-effort gradient. Winning races is 62% of the MANT stat card, and
+        # the scenario's G1 mix (mile/medium-heavy) is won by speed/power/stamina
+        # — but a wit-rainbow deck makes the greedy bot pour into wit (high gain,
+        # low race value) and starve power (what mile/sprint races need). This
+        # rewards a tile by its PRIMARY stat's race-winning weight, FLAT (not x
+        # gain — gain-scaling would re-inherit the rainbow advantage that causes
+        # the misallocation). Lets the bot value training-for-race-wins; the
+        # optimizer tunes `race_effort_weight` (DEFAULT 0.0, live untouched).
+        race_effort_weight = float(_tuned_value(preset, "race_effort_weight", 0.0))
+        if race_effort_weight > 0.0 and score > 0.0:
+            weights = self._race_effort_stat_weights()
+            if weights:
+                best = max(
+                    (command.get("params_inc_dec_info_array") or []),
+                    key=lambda it: float(it.get("value") or 0),
+                    default=None,
+                )
+                pidx = STAT_TARGETS.get((best or {}).get("target_type")) if best else None
+                if pidx is not None and pidx < 5:
+                    bonus = race_effort_weight * float(weights[pidx])
+                    command["_race_effort_bonus"] = round(bonus, 4)
+                    score += bonus
+
+        # Manual build-curve imitation (the user's "reference my manual careers").
+        # The user's complete Satono career built a BALANCED, power-early build
+        # (power=speed from T24, stamina/guts trained ~24 turns) and won races ->
+        # race rewards compounded to sum 4518; the greedy bot piles speed/wit
+        # rainbow rating, starves power/stamina/guts, loses mile/long races. This
+        # pulls the bot toward the user's per-turn stat trajectory by boosting a
+        # tile whose PRIMARY stat is below the manual target (deficit-scaled),
+        # strong enough to overcome the rainbow gain gap that the small priority
+        # weights could not. Tunable `imitation_build_weight` (DEFAULT 0.0).
+        imitation_build_weight = float(_tuned_value(preset, "imitation_build_weight", 0.0))
+        if imitation_build_weight > 0.0 and score > 0.0:
+            best = max(
+                (command.get("params_inc_dec_info_array") or []),
+                key=lambda it: float(it.get("value") or 0),
+                default=None,
+            )
+            pidx = STAT_TARGETS.get((best or {}).get("target_type")) if best else None
+            if pidx is not None and pidx < 5:
+                targets = self._manual_build_target(turn)
+                cur = float(self._current_stat(chara, pidx) or 0.0)
+                tgt = float(targets[pidx]) if pidx < len(targets) else 0.0
+                if tgt > 0.0 and cur < tgt:
+                    deficit_frac = (tgt - cur) / tgt
+                    bonus = imitation_build_weight * deficit_frac
+                    command["_imitation_build_bonus"] = round(bonus, 4)
+                    score += bonus
+
         return score
+
+    def _manual_build_target(self, turn):
+        """Interpolated [speed,stamina,power,guts,wit] target for `turn` from the
+        user's manual build curve (_MANUAL_BUILD_CURVE). Returns the per-stat
+        value the user's reference career had reached by this turn, so the bot
+        can imitate the balanced power-early build."""
+        try:
+            turn = int(turn or 0)
+        except (TypeError, ValueError):
+            turn = 0
+        anchors = sorted(_MANUAL_BUILD_CURVE.items())
+        if turn <= anchors[0][0]:
+            lo = hi = anchors[0]
+        elif turn >= anchors[-1][0]:
+            lo = hi = anchors[-1]
+        else:
+            lo = anchors[0]
+            hi = anchors[-1]
+            for i in range(1, len(anchors)):
+                if turn <= anchors[i][0]:
+                    lo, hi = anchors[i - 1], anchors[i]
+                    break
+        if lo[0] == hi[0]:
+            return list(hi[1])
+        frac = (turn - lo[0]) / float(hi[0] - lo[0])
+        return [lo[1][j] + frac * (hi[1][j] - lo[1][j]) for j in range(5)]
+
+    def _race_effort_stat_weights(self):
+        """Per-stat-index [speed,stamina,power,guts,wit] vector of how much each
+        stat WINS races across this scenario's G1 calendar (distance-weighted,
+        normalized to sum 1). MANT is mile/medium-heavy, so this favors
+        speed/power/stamina over wit — the correction for a deck that rainbows
+        wit (high gain, low race value) and starves power (the stat mile/sprint
+        races actually need). Cached per strategy instance."""
+        cached = getattr(self, "_race_effort_weights_cache", None)
+        if cached is not None:
+            return cached
+        agg = {k: 0.0 for k in _RACE_EFFORT_STAT_ORDER}
+        distances = []
+        try:
+            catalog = self.race_planner.catalog if self.race_planner else None
+            for race in (getattr(catalog, "by_id", {}) or {}).values():
+                if str(race.get("type") or "").upper() != "G1":
+                    continue
+                turn = int(race.get("turn") or 0)
+                if not (12 <= turn <= 72):
+                    continue
+                distances.append(str(race.get("distance") or "").lower() or "medium")
+        except Exception:
+            distances = []
+        for dist in distances:
+            weights = _RACE_WEIGHT_PROFILES.get(dist) or _RACE_WEIGHT_PROFILES[""]
+            for key, value in weights.items():
+                agg[key] += value
+        total = sum(agg.values())
+        vec = [agg[k] / total for k in _RACE_EFFORT_STAT_ORDER] if total > 0 else []
+        self._race_effort_weights_cache = vec
+        return vec
 
     def _postmortem_training_bonus(self, command_idx, chara, preset):
         """Return a bounded bonus to add to a command score based on

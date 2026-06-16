@@ -5934,7 +5934,14 @@ class CareerSimulator:
         # NOT multiplied by race_bonus_mult again; the race-reward hammer
         # (reward_multiplier) still scales it. Gated by
         # `sim_empirical_race_stat_total`; falls back to the grade base.
-        if bool(self.preset.get("sim_empirical_race_stat_total", False)):
+        # Defaults ON when formula training is on: the comment above explains
+        # the two modes must be accurate together, else the career total falls
+        # ~20% short of real careers (measured 2026-06-15: empirical lifts the
+        # user-deck sim 3379->3689 / rating 13162->14329, landing at replay/real
+        # level ~3757). Calibration is real career-log data (8493 samples, exact
+        # context, median 31/race); _empirical_race_stat_total returns 0 -> base
+        # fallback when no calibration exists (e.g. fresh user), so this is safe.
+        if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", False))):
             empirical = self._empirical_race_stat_total(era)
             if empirical > 0:
                 value = empirical
@@ -9113,7 +9120,7 @@ class CareerSimulator:
             # distribution (real careers spread race rewards, not single
             # random stat) when using the empirical total; otherwise keep
             # the legacy single-random-stat behavior.
-            if bool(self.preset.get("sim_empirical_race_stat_total", False)) and (getattr(self, "race_stat_gain_calibration", {}) or {}).get("enabled"):
+            if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", False))) and (getattr(self, "race_stat_gain_calibration", {}) or {}).get("enabled"):
                 stat_allocations = self._apply_distributed_race_stat_gain(race_stat_gain, era)
             else:
                 stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)
@@ -9228,86 +9235,42 @@ class CareerSimulator:
                 discount_pct=discount,
             )
             return
-        # Pre-race buy. Real bot averages ~20 owned skills total across a
-        # career — the sim's earlier defaults (4 pre-race × ~10 races = 40)
-        # were ~2× too high. Lower defaults to 2 pre-race skills/race; the
-        # auto-tuner can still raise via learned_hyperparameters.
+        # Pre-race skill policy (user game-mechanics guidance 2026-06-16):
+        # the bot wins races on STATS, not skill-crutches. The ONLY pre-race
+        # skill worth buying is a single stamina/recovery skill for LONG races
+        # (where running out of stamina is the failure mode). Every other race
+        # is won on stats; remaining SP stays banked for the end-of-career
+        # rating dump (`final=True`). Measured 2026-06-15: pre-race skill-buying
+        # barely moves win rate (8.3 G1 losses with the full up-to-5 crutch vs
+        # 8.9 with none — races are lost to stat deficits skills can't close),
+        # and this policy costs ~nothing in final rating while matching real
+        # play. The skill picker (_skill_purchase_priority, phase="pre_race")
+        # already boosts recovery/heal skills for long races, so the single buy
+        # lands on the stamina skill long races actually need.
+        distance = _distance_key((race_context or {}).get("distance")) if race_context else ""
+        if distance != "long":
+            return
         budget = self.preset.get("calendar_race_prebuy_budget", 520)
         learned = self.preset.get("learned_hyperparameters") or {}
         budget = int(learned.get("calendar_race_prebuy_budget", budget))
         reserve = int(learned.get("calendar_race_prebuy_keep_sp",
                                   self.preset.get("calendar_race_prebuy_keep_sp", 200)))
-        max_skills = int(learned.get("calendar_race_prebuy_max_skills",
-                                     self.preset.get("calendar_race_prebuy_max_skills", 2)))
         min_sp = int(self.preset.get("calendar_race_prebuy_min_sp", 280))
-        if hint_count >= 8:
-            max_skills += 1
-        clean_record_mode = bool(self.preset.get("scheduled_race_clean_record_mode", True))
-        race_grade = ""
-        if clean_record_mode and race_context:
-            pid = int((race_context or {}).get("pid") or 0)
-            race_grade = str((self.race_catalog_by_program_id.get(pid) or {}).get("type") or "").upper()
-            turn = int(self.state.get("turn") or 0)
-            prob, _model = self._race_probability_estimate(
-                pid,
-                race_name,
-                (race_context or {}).get("distance"),
-                (race_context or {}).get("era"),
-                skill_count=self.skills_bought,
-            )
-            danger = prob < float(self.preset.get("calendar_race_clean_prebuy_target_probability", 0.93))
-            if danger or race_grade in {"G1", "G2"}:
-                min_sp = min(min_sp, int(self.preset.get("calendar_race_clean_prebuy_min_sp", 120)))
-                reserve = min(reserve, int(self.preset.get("calendar_race_clean_prebuy_keep_sp", 0)))
-                budget = max(budget, int(self.preset.get("calendar_race_clean_prebuy_budget", 1000)))
-                clean_max = int(self.preset.get("calendar_race_clean_prebuy_max_skills", 8))
-                if race_grade == "G1" or danger:
-                    max_skills = max(max_skills, min(clean_max, 5))
-                else:
-                    max_skills = max(max_skills, min(clean_max, 2))
         if sp < min_sp:
             return
         spendable = max(0, sp - reserve)
         actual_budget = min(spendable, budget)
         skill_cost = self._sim_skill_cost_floor(discount) or max(70, 100 - discount)
-        max_affordable = min(max_skills, actual_budget // skill_cost)
-        skills = max_affordable
-        if clean_record_mode and race_context and actual_budget >= skill_cost:
-            target = float(self.preset.get("calendar_race_clean_prebuy_target_probability", 0.93))
-            pid = int((race_context or {}).get("pid") or 0)
-            base_prob, _base_model = self._race_probability_estimate(
-                pid,
-                race_name,
-                (race_context or {}).get("distance"),
-                (race_context or {}).get("era"),
-                skill_count=self.skills_bought,
-            )
-            min_required = 1 if race_grade in {"G1", "G2"} and base_prob < target else 0
-            skills = 0
-            while skills < max_affordable:
-                prob, _model = self._race_probability_estimate(
-                    pid,
-                    race_name,
-                    (race_context or {}).get("distance"),
-                    (race_context or {}).get("era"),
-                    skill_count=self.skills_bought + skills,
-                )
-                if prob >= target and skills >= min_required:
-                    break
-                skills += 1
-        if race_name and "Kikuka" in str(race_name) and int(legacy.get("recovery_hint_count") or 0) > 0 and actual_budget >= skill_cost:
-            skills = max(1, skills)
-        if race_name and "Tenno Sho (Spring)" in str(race_name) and int(legacy.get("recovery_hint_count") or 0) > 0 and actual_budget >= skill_cost:
-            skills = max(1, skills)
-        if skills > 0:
-            self._buy_simulated_skills(
-                budget=actual_budget,
-                max_count=skills,
-                phase="pre_race",
-                race_name=race_name,
-                race_context=race_context,
-                discount_pct=discount,
-            )
+        if actual_budget < skill_cost:
+            return
+        self._buy_simulated_skills(
+            budget=actual_budget,
+            max_count=1,
+            phase="pre_race",
+            race_name=race_name,
+            race_context=race_context,
+            discount_pct=discount,
+        )
 
     def _estimated_skill_rating_score(self):
         """Return exact simulated skill rating from purchased skill records."""

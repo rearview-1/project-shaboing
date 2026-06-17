@@ -6930,12 +6930,54 @@ class CareerSimulator:
         base = self._current_race_stats()
         return {k: v + CAREER_INVISIBLE_STAT_BONUS for k, v in base.items()}
 
+    def _run_context_aptitudes(self):
+        """The trainee's ACTUAL aptitudes from the live run context, if present.
+        Accepts either a letter dict under `aptitudes` ({"mile":"A",...}) or the
+        raw game-state `proper_*` numeric fields (1=G..8=S) which are mapped to
+        S-G letters here. Returns {} when none are available."""
+        rc = (self.preset or {}).get("_run_context") or {}
+        if not isinstance(rc, dict):
+            return {}
+        apt = rc.get("aptitudes")
+        if isinstance(apt, dict) and apt:
+            return {str(k): str(v).upper() for k, v in apt.items() if v}
+        proper_map = {
+            "proper_distance_short": "sprint", "proper_distance_mile": "mile",
+            "proper_distance_middle": "medium", "proper_distance_long": "long",
+            "proper_running_style_nige": "front", "proper_running_style_senko": "pace",
+            "proper_running_style_sashi": "late", "proper_running_style_oikomi": "end",
+            "proper_ground_turf": "turf", "proper_ground_dirt": "dirt",
+        }
+        out = {}
+        for field, key in proper_map.items():
+            try:
+                n = int(rc.get(field))
+            except (TypeError, ValueError):
+                continue
+            if 1 <= n <= 8:
+                letter = APTITUDE_VALUE_RANK.get(n - 1)
+                if letter:
+                    out[key] = letter
+        return out
+
     def _current_aptitudes(self):
-        effective = (self.legacy_effects or {}).get("effective_aptitudes")
-        if effective:
-            return dict(effective)
-        chara = self.chara_growth_data.get(str(self.trainee_card_id)) or {}
-        return dict(chara.get("base_aptitudes") or {})
+        # Prefer the trainee's ACTUAL aptitudes from the live run context. The
+        # game state's proper_* fields reflect the user's inheritance sparks,
+        # which the sim's generic parent setup does NOT model. Concretely:
+        # Satono Diamond (106701) base mile=C, but the user's real career has
+        # mile=A from mile aptitude sparks — and the physics race engine pins
+        # Mile win-prob ~0.02 at C regardless of stats, so without this the sim
+        # makes every Mile G1 unwinnable and the optimizer learns a policy that
+        # gives up on miles. Verified 2026-06-16: mile C->A = +1096 rating,
+        # mile G1 losses 56->26 over 10 seeds. See [[ss-reachability-diagnosis]].
+        base = dict((self.legacy_effects or {}).get("effective_aptitudes") or {})
+        if not base:
+            chara = self.chara_growth_data.get(str(self.trainee_card_id)) or {}
+            base = dict(chara.get("base_aptitudes") or {})
+        rc_apt = self._run_context_aptitudes()
+        if rc_apt:
+            base.update({k: v for k, v in rc_apt.items() if v})
+        return base
 
     def _target_skill_roles(self):
         roles = set()

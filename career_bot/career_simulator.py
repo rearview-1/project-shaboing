@@ -338,6 +338,36 @@ LEGACY_APTITUDE_NAME_TO_KEY = {
 }
 APTITUDE_RANK_VALUE = {"G": 0, "F": 1, "E": 2, "D": 3, "C": 4, "B": 5, "A": 6, "S": 7}
 APTITUDE_VALUE_RANK = {value: key for key, value in APTITUDE_RANK_VALUE.items()}
+
+# Game-state proper_* fields (1=G..8=S) -> aptitude key. Used to read the
+# trainee's REAL aptitudes (incl. inheritance sparks) from run context / manual
+# captures, since the sim's generic parent setup can't reproduce them.
+_PROPER_FIELD_TO_APT = {
+    "proper_distance_short": "sprint", "proper_distance_mile": "mile",
+    "proper_distance_middle": "medium", "proper_distance_long": "long",
+    "proper_running_style_nige": "front", "proper_running_style_senko": "pace",
+    "proper_running_style_sashi": "late", "proper_running_style_oikomi": "end",
+    "proper_ground_turf": "turf", "proper_ground_dirt": "dirt",
+}
+
+
+def _aptitudes_from_proper_fields(source):
+    """Map a dict carrying proper_* numeric fields (1=G..8=S) to a
+    {sprint/mile/medium/long/front/pace/late/end/turf/dirt: LETTER} dict.
+    Returns {} when no proper_* fields are present/valid."""
+    if not isinstance(source, dict):
+        return {}
+    out = {}
+    for field, key in _PROPER_FIELD_TO_APT.items():
+        try:
+            n = int(source.get(field))
+        except (TypeError, ValueError):
+            continue
+        if 1 <= n <= 8:
+            letter = APTITUDE_VALUE_RANK.get(n - 1)
+            if letter:
+                out[key] = letter
+    return out
 LINEAGE_NODE_WEIGHTS = {"self": 0.30, "p1": 0.22, "p2": 0.22}
 
 STYLE_NUM_TO_KEY = {1: "front", 2: "pace", 3: "late", 4: "end"}
@@ -6933,43 +6963,31 @@ class CareerSimulator:
     def _run_context_aptitudes(self):
         """The trainee's ACTUAL aptitudes from the live run context, if present.
         Accepts either a letter dict under `aptitudes` ({"mile":"A",...}) or the
-        raw game-state `proper_*` numeric fields (1=G..8=S) which are mapped to
-        S-G letters here. Returns {} when none are available."""
+        raw game-state `proper_*` numeric fields. Returns {} when none present."""
         rc = (self.preset or {}).get("_run_context") or {}
         if not isinstance(rc, dict):
             return {}
         apt = rc.get("aptitudes")
         if isinstance(apt, dict) and apt:
             return {str(k): str(v).upper() for k, v in apt.items() if v}
-        proper_map = {
-            "proper_distance_short": "sprint", "proper_distance_mile": "mile",
-            "proper_distance_middle": "medium", "proper_distance_long": "long",
-            "proper_running_style_nige": "front", "proper_running_style_senko": "pace",
-            "proper_running_style_sashi": "late", "proper_running_style_oikomi": "end",
-            "proper_ground_turf": "turf", "proper_ground_dirt": "dirt",
-        }
-        out = {}
-        for field, key in proper_map.items():
-            try:
-                n = int(rc.get(field))
-            except (TypeError, ValueError):
-                continue
-            if 1 <= n <= 8:
-                letter = APTITUDE_VALUE_RANK.get(n - 1)
-                if letter:
-                    out[key] = letter
-        return out
+        return _aptitudes_from_proper_fields(rc)
 
     def _current_aptitudes(self):
-        # Prefer the trainee's ACTUAL aptitudes from the live run context. The
-        # game state's proper_* fields reflect the user's inheritance sparks,
-        # which the sim's generic parent setup does NOT model. Concretely:
-        # Satono Diamond (106701) base mile=C, but the user's real career has
-        # mile=A from mile aptitude sparks — and the physics race engine pins
-        # Mile win-prob ~0.02 at C regardless of stats, so without this the sim
-        # makes every Mile G1 unwinnable and the optimizer learns a policy that
-        # gives up on miles. Verified 2026-06-16: mile C->A = +1096 rating,
-        # mile G1 losses 56->26 over 10 seeds. See [[ss-reachability-diagnosis]].
+        # Prefer the trainee's ACTUAL aptitudes from the live run context (the
+        # CURRENT career's real values — aptitude is per-career, set by that
+        # career's inheritance, so the run context is the unambiguous source).
+        # The game state's proper_* reflect inheritance sparks the sim's generic
+        # parent setup does NOT model: Satono Diamond (106701) base mile=C, but
+        # the user's 4518 career has mile=A — and the physics race engine pins
+        # Mile win-prob ~0.02 at C regardless of stats, so without this every
+        # Mile G1 is unwinnable and the optimizer learns to give up on miles.
+        # Verified 2026-06-16: mile C->A = +1096 rating, mile losses 56->26 over
+        # 10 seeds. See [[ss-reachability-diagnosis]]. The live bot/optimizer
+        # should put the current career's `aptitudes` letter-dict (or raw
+        # proper_* fields) in `_run_context`. Cached per career (static).
+        cached = getattr(self, "_aptitudes_cache", None)
+        if cached is not None:
+            return dict(cached)
         base = dict((self.legacy_effects or {}).get("effective_aptitudes") or {})
         if not base:
             chara = self.chara_growth_data.get(str(self.trainee_card_id)) or {}
@@ -6977,7 +6995,8 @@ class CareerSimulator:
         rc_apt = self._run_context_aptitudes()
         if rc_apt:
             base.update({k: v for k, v in rc_apt.items() if v})
-        return base
+        self._aptitudes_cache = dict(base)
+        return dict(base)
 
     def _target_skill_roles(self):
         roles = set()

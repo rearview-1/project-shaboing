@@ -592,18 +592,58 @@ def _main():
         label="val_winner",
     )
 
+    # Champion gate (user request 2026-06-16): the policy already on disk — the
+    # incumbent, i.e. "the last career results" the optimizer saved — is the bar
+    # to beat. Re-validate it on the SAME fresh seeds so the new winner (chosen
+    # on the candidate seeds) cannot overwrite a better saved policy just because
+    # validation variance happened to favour it there. We only "save the way the
+    # optimizer played" when the new play beats BOTH the raw baseline AND the
+    # reigning champion on validation.
+    val_incumbent = None
+    incumbent_obj = None
+    incumbent_mean = None
+    merged_incumbent = None
+    if incumbent_hp:
+        merged_incumbent = dict(base_preset.get("learned_hyperparameters") or {})
+        merged_incumbent.update(incumbent_hp)
+    if merged_incumbent and merged_incumbent != winner["hp_full"] and merged_incumbent != (base_preset.get("learned_hyperparameters") or {}):
+        print("  -- incumbent (reigning champion to beat) --", flush=True)
+        incumbent_preset = copy.deepcopy(base_preset)
+        incumbent_preset["learned_hyperparameters"] = merged_incumbent
+        val_incumbent = _run_sims(
+            incumbent_preset,
+            n=args.validation_sims,
+            seed_base=args.validation_seed_base,
+            label="val_incumbent",
+        )
+        incumbent_obj = _objective_score(val_incumbent, args.objective, args.ss_threshold)
+        incumbent_mean = statistics.mean(r.rating_score for r in val_incumbent)
+
     base_mean = statistics.mean(r.rating_score for r in val_baseline)
     win_mean = statistics.mean(r.rating_score for r in val_winner)
     base_obj = _objective_score(val_baseline, args.objective, args.ss_threshold)
     win_obj = _objective_score(val_winner, args.objective, args.ss_threshold)
+    # The score the winner must beat = the best prior known play (raw baseline OR
+    # the reigning champion, whichever is higher). This makes saves monotonic:
+    # a worse career never overwrites a better-playing saved policy.
+    prior_best_obj = base_obj if incumbent_obj is None else max(base_obj, incumbent_obj)
+    prior_best_label = "baseline"
+    if incumbent_obj is not None and incumbent_obj > base_obj:
+        prior_best_label = "incumbent champion"
     lift = win_mean - base_mean
     obj_lift = win_obj - base_obj
+    # The lift that GATES the save = winner vs the best prior play (champion).
+    obj_lift_vs_champion = win_obj - prior_best_obj
     base_ss = sum(1 for r in val_baseline if r.rating_score >= args.ss_threshold)
     win_ss = sum(1 for r in val_winner if r.rating_score >= args.ss_threshold)
     n_val = args.validation_sims
     print(f"\nValidation: baseline mean={base_mean:.0f}  winner mean={win_mean:.0f}  mean lift={lift:+.0f}", flush=True)
     print(f"  baseline SS hits: {base_ss}/{n_val}  winner SS hits: {win_ss}/{n_val}", flush=True)
     print(f"  baseline {args.objective} score: {base_obj:.3f}  winner {args.objective} score: {win_obj:.3f}  obj lift: {obj_lift:+.3f}", flush=True)
+    if incumbent_obj is not None:
+        inc_ss = sum(1 for r in val_incumbent if r.rating_score >= args.ss_threshold)
+        print(f"  incumbent champion {args.objective} score: {incumbent_obj:.3f} (mean={incumbent_mean:.0f}, SS {inc_ss}/{n_val})", flush=True)
+    print(f"  bar to beat = {prior_best_label} ({prior_best_obj:.3f}); winner lift vs champion: {obj_lift_vs_champion:+.3f}", flush=True)
 
     # Step 4: Cache if winner is meaningfully better on the chosen objective.
     # "Meaningfully" matters: fractional objectives carry tiny tiebreak terms
@@ -621,9 +661,10 @@ def _main():
         print("\n[4/4] NO-SKILLS diagnostic run — winner NOT saved to the "
               "policy cache (policies tuned without skill margins are not "
               "directly transferable to live careers).", flush=True)
-    elif obj_lift >= min_obj_lift:
-        print(f"\n[4/4] Winner outperformed baseline on {args.objective} "
-              f"(lift={obj_lift:+.3f}). Saving policy to cache.", flush=True)
+    elif obj_lift_vs_champion >= min_obj_lift:
+        print(f"\n[4/4] Winner beat the {prior_best_label} on {args.objective} "
+              f"(lift vs champion={obj_lift_vs_champion:+.3f}). New best career — "
+              f"saving the way the optimizer played to cache.", flush=True)
         cache = load_cache(PROJECT_ROOT, args.instance)
         save_policy(
             cache,
@@ -649,8 +690,9 @@ def _main():
         print(f"  saved -> {_cp(PROJECT_ROOT, args.instance)}", flush=True)
         saved = True
     else:
-        print(f"\n[4/4] Winner did NOT meaningfully outperform baseline on {args.objective} "
-              f"(lift={obj_lift:+.4f} < required {min_obj_lift:.4f}). Not saving.", flush=True)
+        print(f"\n[4/4] Winner did NOT beat the {prior_best_label} on {args.objective} "
+              f"(lift vs champion={obj_lift_vs_champion:+.4f} < required {min_obj_lift:.4f}). "
+              f"Keeping the saved best — not overwriting it with a worse career.", flush=True)
 
     print("\n" + "=" * 70, flush=True)
     print("Summary:", flush=True)
@@ -660,9 +702,12 @@ def _main():
     print(f"  Baseline mean rating: {base_mean:.0f}  SS hits: {base_ss}/{n_val}", flush=True)
     print(f"  Winner   mean rating: {win_mean:.0f}  SS hits: {win_ss}/{n_val}", flush=True)
     print(f"  Mean rating lift:     {lift:+.0f}", flush=True)
-    print(f"  Objective score lift: {obj_lift:+.3f}", flush=True)
+    print(f"  Objective lift vs baseline:  {obj_lift:+.3f}", flush=True)
+    if incumbent_obj is not None:
+        print(f"  Incumbent champion {args.objective}: {incumbent_obj:.3f} (mean {incumbent_mean:.0f})", flush=True)
+    print(f"  Objective lift vs champion:  {obj_lift_vs_champion:+.3f}  (bar: {prior_best_label})", flush=True)
     print(f"  Winning overrides:    {winner['hp_sample']}", flush=True)
-    print(f"  Saved to cache:       {saved}", flush=True)
+    print(f"  Saved to cache:       {saved} (only saves the play when it beats the prior best)", flush=True)
     print("=" * 70, flush=True)
 
 

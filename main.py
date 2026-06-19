@@ -6869,13 +6869,39 @@ def recover_start_session_after_viewer_mismatch(exc):
                     session.close()
             except Exception:
                 pass
+            # Auto-recover (user-approved 2026-06-18): the cached reusable-auth
+            # profile is bound to the WRONG game account — a stale viewer that no
+            # longer matches the live Steam ticket. Re-auth keeps replaying that
+            # stale identity, so the career loop 205/208/102-cascades forever. A
+            # silent headless re-bind to a *different* account isn't possible from
+            # a Steam ticket alone (it needs one game-client capture), so the safe
+            # recovery is: invalidate the stale reusable-auth profile + dev cache
+            # so the bot STOPS replaying the wrong account, then surface a precise
+            # re-auth prompt. The next Refresh Auth captures the current account
+            # cleanly instead of restoring the stale one.
+            try:
+                steam_id = str((refreshed_cfg or {}).get("steam_id") or (cfg or {}).get("steam_id") or "")
+                if steam_id:
+                    invalidate_reusable_auth_profile(
+                        steam_id,
+                        f"viewer mismatch: cached auth bound to {actual_viewer_id}, live account is {expected_viewer_id}",
+                    )
+                clear_dev_session_cache()
+                print(
+                    f"auto-recover: cleared stale auth bound to viewer {actual_viewer_id}; "
+                    f"re-auth required to bind the current account {expected_viewer_id}",
+                    flush=True,
+                )
+            except Exception as clear_exc:
+                errors.append(f"stale-auth clear failed: {redact_sensitive_error_text(clear_exc)}")
             return {
                 "success": False,
                 "needs_auth_refresh": True,
+                "stale_auth_cleared": True,
                 "detail": (
-                    f"Automatic auth refresh is still bound to viewer {actual_viewer_id}, "
-                    f"but career start requires viewer {expected_viewer_id}. "
-                    "Click REFRESH AUTH or log in again to re-authenticate the active game account."
+                    f"The cached login is bound to a different game account (viewer {actual_viewer_id}), "
+                    f"but the live account is viewer {expected_viewer_id}. Sweepy cleared the stale cached "
+                    "auth — click REFRESH AUTH (or log in again) from the CURRENT game client to bind the bot to it."
                 ),
             }
         active_client = refreshed_client

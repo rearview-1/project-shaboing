@@ -3031,8 +3031,10 @@ class CareerSimulator:
         # trainee's REAL distance aptitudes so it runs the winnable race when
         # MANT schedules several G1s on one turn (off-aptitude G1s are
         # win-prob-capped ~0.41 regardless of stats). See [[ss-reachability-diagnosis]].
-        if str(self.preset.get("convex_throughput_mode")).strip().lower() in {"1", "true", "yes", "on"} \
-                or self.preset.get("convex_throughput_mode") is True:
+        _cvx = self.preset.get("convex_throughput_mode")
+        if _cvx is None:
+            _cvx = (self.preset.get("learned_hyperparameters") or {}).get("convex_throughput_mode")
+        if str(_cvx).strip().lower() in {"1", "true", "yes", "on"} or _cvx is True:
             self.preset.setdefault("aptitude_race_selection", True)
         if self.preset.get("aptitude_race_selection"):
             try:

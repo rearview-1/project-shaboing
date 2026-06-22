@@ -156,6 +156,16 @@ PARAM_SPACE = [
     # fraction of its gain clamped above the true 1200 cap, so the bot moves
     # off a maxed stat onto one with headroom instead of burning the turn.
     ("cap_waste_weight",                0.0, 1.0),
+    # Convex-throughput engine sub-levers (added 2026-06-18). Active only when
+    # the candidate carries convex_throughput_mode=True (the optimizer injects it
+    # below). These tune the deck-adaptive convex training scorer in
+    # mant.py _convex_throughput_score: how hard to feed the lagging rainbow
+    # stat (deficit_div/cap), where to stop over-investing a stat (target +
+    # overcap_mult). Search found mean 12,304 -> 15,229 / 50% S+ on TM Opera O.
+    ("convex_target",                   1100, 1200),
+    ("convex_deficit_div",              100, 220),
+    ("convex_deficit_cap",              1.5, 3.5),
+    ("convex_overcap_mult",             0.0, 0.30),
     # NOTE: race_effort_weight (mant.py) tested 2026-06-16 and is a DUD — shifting
     # the build wit->power did NOT win more races (losses are throughput-bound, not
     # allocation-bound) and lowered rating. Left default-off in the strategy, kept
@@ -533,6 +543,11 @@ def _main():
         # parameters not in PARAM_SPACE). Candidate sample WINS.
         merged = dict(cand_preset.get("learned_hyperparameters") or {})
         merged.update(hp_sample)
+        # Every candidate runs the deck-adaptive convex-throughput engine
+        # (training + aptitude-aware race selection). The baseline above stays
+        # non-convex, so the champion gate only adopts convex when it actually
+        # beats the current behavior on this deck. See [[ss-reachability-diagnosis]].
+        merged["convex_throughput_mode"] = True
         cand_preset["learned_hyperparameters"] = merged
         print(f"\n  candidate {i+1}/{args.candidates}: {hp_sample}", flush=True)
         results = _run_sims(

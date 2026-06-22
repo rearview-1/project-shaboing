@@ -464,6 +464,13 @@ def _merge_overrides_into_preset(preset: dict, overrides: dict) -> dict:
     merged = copy.deepcopy(preset)
     lhp = dict(merged.get("learned_hyperparameters") or {})
     lhp.update(overrides)
+    # Every calibrate candidate runs the deck-adaptive convex-throughput engine
+    # (training + aptitude-aware race selection). The baseline (raw `preset`)
+    # stays non-convex, and the save gate only adopts a winner that BEATS the
+    # baseline + cached policy, so this can only improve a deck, never regress
+    # it (verified on TM Opera O: 12,304 -> ~15,200 / 50% S+). See
+    # [[ss-reachability-diagnosis]].
+    lhp["convex_throughput_mode"] = True
     merged["learned_hyperparameters"] = lhp
     return merged
 

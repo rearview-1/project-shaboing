@@ -556,6 +556,23 @@ class MantStrategy(ScenarioStrategy):
         data = state.get("data") or {}
         chara = data.get("chara_info") or {}
         home = data.get("home_info") or {}
+        # Adaptive engine self-wiring (live + sim): when convex throughput mode is
+        # on, auto-enable aptitude-aware race selection and feed the planner the
+        # trainee's real distance aptitudes from the game state so it runs the
+        # winnable race on multi-G1 turns. Idempotent; sim also sets these at init.
+        if self._convex_throughput_on(preset):
+            if preset is not None and not preset.get("aptitude_race_selection"):
+                preset["aptitude_race_selection"] = True
+            planner = getattr(self, "race_planner", None)
+            if planner is not None and not getattr(planner, "_trainee_aptitudes", None):
+                apts = {
+                    "sprint": chara.get("proper_distance_short"),
+                    "mile": chara.get("proper_distance_mile"),
+                    "medium": chara.get("proper_distance_middle"),
+                    "long": chara.get("proper_distance_long"),
+                }
+                if any(v is not None for v in apts.values()):
+                    planner._trainee_aptitudes = {k: v for k, v in apts.items() if v is not None}
         try:
             chara_state = int(chara.get("state") or 0)
         except (TypeError, ValueError):

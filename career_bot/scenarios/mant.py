@@ -1717,6 +1717,8 @@ class MantStrategy(ScenarioStrategy):
         low-risk. It does not authorize risky non-Wit training, so it should
         reduce wasted recovery turns without adding high-failure gambles.
         """
+        if self._convex_throughput_on(preset):
+            return None  # convex mode rests at low HP instead of wit-as-rest
         if not bool((preset or {}).get("low_hp_wit_training_override_enabled", True)):
             return None
         if friendship_failure_guard:
@@ -2907,8 +2909,92 @@ class MantStrategy(ScenarioStrategy):
             },
         }
 
+    def _convex_throughput_on(self, preset):
+        val = (preset or {}).get("convex_throughput_mode")
+        if val is None:
+            val = ((preset or {}).get("learned_hyperparameters") or {}).get("convex_throughput_mode")
+        return str(val).strip().lower() in {"1", "true", "yes", "on"} or val is True
+
+    def _deck_rainbow_indices(self, preset):
+        """Stat indices (speed0/stamina1/power2/guts3/wit4) the DECK can rainbow,
+        i.e. has >=1 support card of that type. Deck-adaptive: this is what makes
+        the convex-throughput build follow the deck instead of fixed priorities."""
+        cached = getattr(self, "_deck_rainbow_idx_cache", None)
+        if cached is not None:
+            return cached
+        counts = self._deck_stat_card_counts(preset) or {}
+        name_to_idx = {v: k for k, v in _COMMAND_IDX_TO_STAT.items()}
+        idxs = {idx for name, idx in name_to_idx.items() if int(counts.get(name, 0) or 0) >= 1}
+        if not idxs:
+            idxs = {0, 1, 2, 4}
+        self._deck_rainbow_idx_cache = idxs
+        return idxs
+
+    def _convex_throughput_score(self, command, chara, preset, turn):
+        """Verified deck-adaptive throughput mechanism (workflow 2026-06-18, +2.3k
+        on TM Opera O). Score a tile by its CONVEX marginal rating gain
+        (rating.py STAT_SCORES is convex: ~2.5/pt at 300, ~6.7/pt at 1100+), so
+        the bot concentrates the DECK'S rainbow stats toward the cap instead of
+        funneling one stat and wasting turns on non-rainbow wit. A deficit weight
+        feeds whichever rainbow stat lags the leader (fixes the chronic-stamina
+        starvation on balanced decks); a bond-bootstrap term gets all deck
+        partners to rainbow; a low-HP penalty makes the bot REST (not wit-train)
+        at low HP. Tunable; gated by convex_throughput_mode (default off)."""
+        rainbow_idx = self._deck_rainbow_indices(preset)
+        target = float(_tuned_value(preset, "convex_target", 1150.0))
+        deficit_div = float(_tuned_value(preset, "convex_deficit_div", 180.0)) or 180.0
+        deficit_cap = float(_tuned_value(preset, "convex_deficit_cap", 2.5))
+        overcap = float(_tuned_value(preset, "convex_overcap_mult", 0.1))
+        sp_weight = float(_tuned_value(preset, "convex_sp_weight", 0.15))
+        trio = [float(self._current_stat(chara, i) or 0.0) for i in rainbow_idx]
+        trio_max = max(trio) if trio else 0.0
+        rating_gain = 0.0
+        for item in command.get("params_inc_dec_info_array") or []:
+            tt = item.get("target_type")
+            val = float(item.get("value") or 0)
+            if val <= 0:
+                continue
+            tgt = STAT_TARGETS.get(tt)
+            if tgt is not None and tgt < 5:
+                cur = float(self._current_stat(chara, tgt) or 0.0)
+                mg = stat_rating_score(int(min(1200, cur + val))) - stat_rating_score(int(min(1200, cur)))
+                if tgt in rainbow_idx:
+                    w = 1.0 + min(deficit_cap, max(0.0, trio_max - cur) / deficit_div)
+                    if cur >= target:
+                        w *= overcap
+                    mg *= w
+                rating_gain += mg
+            elif tt == 30:  # skill points
+                rating_gain += val * sp_weight
+        score = rating_gain
+        bonds = self._bond_map(chara)
+        partners = command.get("training_partner_array") or []
+        decay = max(0.0, (72 - turn) / 72.0)
+        for pid in partners:
+            if pid in DECK_PARTNERS:
+                b = bonds.get(pid, 0)
+                if b < 80:
+                    score += (80 - b) * 0.08 * decay
+        fr = float(command.get("failure_rate") or 0)
+        score *= max(0.0, 1.0 - fr / 50.0)
+        vital = int(chara.get("vital") or 0)
+        hp_after = vital
+        for item in command.get("params_inc_dec_info_array") or []:
+            if item.get("target_type") == 10:
+                hp_after = vital + float(item.get("value") or 0)
+                break
+        if hp_after < 18:
+            score *= 0.3
+        elif hp_after < 32:
+            score *= 0.7
+        if not partners:
+            score *= 0.4
+        return max(0.0, score)
+
     def _score_command(self, command, data, chara, preset):
         turn = int(chara.get("turn") or 0)
+        if self._convex_throughput_on(preset):
+            return self._convex_throughput_score(command, chara, preset, turn)
         weights = self._period_row(preset.get("score_value"), turn, [0.11, 0.10, 0.006, 0.09])
         base = preset.get("base_score") or [0, 0, 0, 0, 0]
         targets = self._expect_attribute_targets(preset, chara, default=[9999, 9999, 9999, 9999, 9999])

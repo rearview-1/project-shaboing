@@ -57,6 +57,10 @@ class RacePlanner:
         self.stamina_estimator = RaceStaminaEstimator()
         self.last_stamina_check = None
         self.last_skip_reason = None
+        # Trainee distance aptitudes (e.g. {"mile":"E","medium":"A",...}), set by
+        # the sim/runner. Used by aptitude-aware race selection to run the
+        # winnable distance when MANT schedules several G1s on one turn.
+        self._trainee_aptitudes = {}
         self.affinity_meta = self._load_affinity_meta()
         self._load()
 
@@ -102,6 +106,48 @@ class RacePlanner:
                 result.add(program_id)
         return result
 
+    @staticmethod
+    def _distance_key_for(entry):
+        """Map a calendar entry's distance to mile/medium/long/sprint, whether
+        it is a category name ("Medium") or raw meters (2000)."""
+        raw = entry.get("distance")
+        key = normalize_distance_key(raw)
+        if key:
+            return key
+        try:
+            meters = int(float(raw))
+        except (TypeError, ValueError):
+            return ""
+        if meters <= 0:
+            return ""
+        if meters <= 1400:
+            return "sprint"
+        if meters <= 1800:
+            return "mile"
+        if meters <= 2400:
+            return "medium"
+        return "long"
+
+    def _reorder_by_aptitude(self, entries, preset):
+        """When several G1s land on the same turn, put the trainee's best
+        distance-aptitude race first so choose() runs the winnable one.
+        Off-aptitude races (mile=E/sprint=G) are hard-capped ~0.41 win-prob
+        regardless of stats, so steering to the A-aptitude race is the single
+        biggest legitimate win lever. Gated; pure stable re-order within a turn,
+        never adds/drops a race."""
+        if not entries or not bool((preset or {}).get("aptitude_race_selection", False)):
+            return entries
+        apts = self._trainee_aptitudes or {}
+        if not apts:
+            return entries
+        ordered = list(enumerate(entries))
+        ordered.sort(key=lambda pair: (
+            int(pair[1].get("turn") or 0),
+            -aptitude_rank(apts.get(self._distance_key_for(pair[1]))),
+            pair[0],
+        ))
+        return [entry for _, entry in ordered]
+
     def scheduled_entries(self, preset):
         entries = []
         for item in preset.get("custom_race_schedule") or []:
@@ -113,7 +159,10 @@ class RacePlanner:
             if turn and program_id:
                 entries.append(dict(item))
         if entries:
-            return sorted(entries, key=lambda item: (int(item.get("turn") or 0), int(item.get("race_id") or 0)))
+            return self._reorder_by_aptitude(
+                sorted(entries, key=lambda item: (int(item.get("turn") or 0), int(item.get("race_id") or 0))),
+                preset,
+            )
 
         for value in preset.get("extra_race_list") or []:
             try:
@@ -138,7 +187,10 @@ class RacePlanner:
                 "venue": race.get("venue", ""),
                 "style": "",
                 })
-        return sorted(entries, key=lambda item: (int(item.get("turn") or 0), int(item.get("race_id") or 0)))
+        return self._reorder_by_aptitude(
+            sorted(entries, key=lambda item: (int(item.get("turn") or 0), int(item.get("race_id") or 0))),
+            preset,
+        )
 
     def scheduled_entries_for_turn(self, preset, turn):
         try:

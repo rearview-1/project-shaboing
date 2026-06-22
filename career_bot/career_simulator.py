@@ -3026,6 +3026,20 @@ class CareerSimulator:
         self.strategy = MantStrategy(race_planner=RacePlanner(str(self.project_root)))
         self.strategy.preset = self.preset
 
+        # Deck/trainee-adaptive policy package: convex-throughput training auto-
+        # enables aptitude-aware race selection, and we feed the planner the
+        # trainee's REAL distance aptitudes so it runs the winnable race when
+        # MANT schedules several G1s on one turn (off-aptitude G1s are
+        # win-prob-capped ~0.41 regardless of stats). See [[ss-reachability-diagnosis]].
+        if str(self.preset.get("convex_throughput_mode")).strip().lower() in {"1", "true", "yes", "on"} \
+                or self.preset.get("convex_throughput_mode") is True:
+            self.preset.setdefault("aptitude_race_selection", True)
+        if self.preset.get("aptitude_race_selection"):
+            try:
+                self.strategy.race_planner._trainee_aptitudes = self._current_aptitudes() or {}
+            except Exception:
+                pass
+
     def _ensure_calendar_in_preset(self):
         if isinstance(self.preset.get("custom_race_schedule"), list) and self.preset.get("custom_race_schedule"):
             return

@@ -401,8 +401,12 @@ def test_latest_session_context_overrides_stale_preset(tmp_path):
 
 
 def test_simulator_uses_inline_session_parent_list_for_legacy_effects():
+    # Uses the legacy deterministic inheritance path so the flat stat/aptitude
+    # assertions below are stable. The cited probabilistic model (default) is
+    # covered by tests/test_inspiration_odds.py.
     preset = dict(
         _make_preset(),
+        sim_inheritance_cited_odds=False,
         _run_context={
             "trainee_card_id": 106701,
             "support_card_ids": [30028, 30074, 20031, 30054, 30010],

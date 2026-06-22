@@ -1107,16 +1107,48 @@ const state = {
             } catch (e) {}
             return null;
         }
+        // Inspiration / inheritance spark base odds — sourced from the shared DB
+        // (public/assets/data/inspiration_odds.json, loaded by ensureInspirationOdds).
+        // INSPIRATION_ODDS_FALLBACK mirrors uma.guide/sparks verbatim so the UI is
+        // correct even if the fetch hasn't completed. Per-star rate for a factor:
+        //   base * (1 + affinity/100), capped at the activation roll.
+        const INSPIRATION_ODDS_FALLBACK = {
+            base_odds_by_star: {
+                blue:  { '1': 0.70, '2': 0.80, '3': 0.90 },
+                pink:  { '1': 0.01, '2': 0.03, '3': 0.05 },
+                green: { '1': 0.05, '2': 0.10, '3': 0.15 },
+                race:  { '1': 0.01, '2': 0.02, '3': 0.03 },
+                white: { '1': 0.03, '2': 0.06, '3': 0.09 }
+            },
+            category_to_spark_type: {
+                stat: 'blue', aptitude: 'pink', unique: 'green',
+                scenario: 'white', skill: 'white', hidden: 'white', race: 'race'
+            }
+        };
+        let inspirationOddsData = null;
+        async function ensureInspirationOdds() {
+            if (inspirationOddsData) return inspirationOddsData;
+            try {
+                const res = await fetch('/assets/data/inspiration_odds.json?t=' + Date.now());
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.base_odds_by_star) inspirationOddsData = json;
+                }
+            } catch (e) { /* keep fallback */ }
+            if (!inspirationOddsData) inspirationOddsData = INSPIRATION_ODDS_FALLBACK;
+            return inspirationOddsData;
+        }
+        function sparkBaseProcRate(category, stars) {
+            const db = inspirationOddsData || INSPIRATION_ODDS_FALLBACK;
+            const type = (db.category_to_spark_type || {})[category] || 'white';
+            const byStar = (db.base_odds_by_star || {})[type] || {};
+            const s = String(Math.max(1, Math.min(3, Number(stars) || 1)));
+            return Number(byStar[s] || 0);
+        }
         function goldBaseProcRateForFactor(factor) {
             const stars = Math.max(0, Math.min(3, Number(factor && factor.stars) || 0));
-            if (stars < 2) return 0;
-            const category = normalizeSparkCategory(factor && factor.category, factor);
-            if (category === 'stat') return stars >= 3 ? 0.90 : 0.80;
-            if (category === 'aptitude') return stars >= 3 ? 0.05 : 0.03;
-            if (category === 'unique') return stars >= 3 ? 0.15 : 0.10;
-            if (category === 'race') return stars >= 3 ? 0.03 : 0.02;
-            if (category === 'scenario' || category === 'skill') return stars >= 3 ? 0.09 : 0.06;
-            return stars >= 3 ? 0.05 : 0.03;
+            if (stars < 2) return 0;  // "gold inspiration" indicator = 2★/3★ sparks only
+            return sparkBaseProcRate(normalizeSparkCategory(factor && factor.category, factor), stars);
         }
         function parentGoldInspirationOdds(parent, sideAffinity) {
             const tree = (parent && parent.tree) || {};
@@ -5875,7 +5907,8 @@ const state = {
             bindSkillHandlers();
             renderTeamPanel();
             ensureAffinityReference();
-            
+            ensureInspirationOdds();
+
             startAccountSyncPolling();
             startRunnerPolling();
             await waitForDomPaint(2);

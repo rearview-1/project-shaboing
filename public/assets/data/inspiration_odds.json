@@ -1,0 +1,51 @@
+{
+  "_source": "https://uma.guide/guides/sparks (fetched 2026-06-22)",
+  "_description": "Inspiration / inheritance (spark) odds. Single source of truth for both the sim (career_bot.career_simulator inheritance model) and the front end (public/app.js inspiration-odds display). Edit here, not in code.",
+  "formula": "InheritanceOdds = base_odds * (1 + AffinityScore / 100)",
+  "formula_example": "15% * (1 + 200/100) = 15% * 3 = 45%",
+  "activations_per_career": 3,
+  "activation_schedule": [
+    {"id": "career_start", "when": "Start of the Career"},
+    {"id": "classic_april", "when": "Beginning of April, Classic Year"},
+    {"id": "senior_april", "when": "Beginning of April, Senior Year"}
+  ],
+  "base_odds_by_star": {
+    "blue":  {"1": 0.70, "2": 0.80, "3": 0.90},
+    "pink":  {"1": 0.01, "2": 0.03, "3": 0.05},
+    "green": {"1": 0.05, "2": 0.10, "3": 0.15},
+    "race":  {"1": 0.01, "2": 0.02, "3": 0.03},
+    "white": {"1": 0.03, "2": 0.06, "3": 0.09}
+  },
+  "spark_type_labels": {
+    "blue": "Blue Stats",
+    "pink": "Pink / Aptitude Whites",
+    "green": "Green (Unique Skill)",
+    "race": "Race",
+    "white": "White Skills, Scenario, Hidden Whites"
+  },
+  "category_to_spark_type": {
+    "stat": "blue",
+    "aptitude": "pink",
+    "unique": "green",
+    "scenario": "white",
+    "skill": "white",
+    "hidden": "white",
+    "race": "race"
+  },
+  "blue_stat_roll": {
+    "_note": "Per-activation stat amount a Blue spark grants when it procs (inclusive range, picked uniformly).",
+    "1": [1, 10],
+    "2": [1, 16],
+    "3": [1, 28]
+  },
+  "lineage_node_weights": {
+    "_note": "Per-node relative proc weight. uma.guide states parents proc higher than grandparents but does NOT publish exact node probabilities; these are this project's estimate, used only for ranking parents in the UI / sim approximation.",
+    "self": 0.30,
+    "p1": 0.22,
+    "p2": 0.22,
+    "gp1": 0.065,
+    "gp2": 0.065,
+    "gp3": 0.065,
+    "gp4": 0.065
+  }
+}

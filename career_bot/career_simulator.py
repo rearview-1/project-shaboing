@@ -2205,6 +2205,28 @@ def _legacy_aptitude_delta(total_stars):
     return min(4, ((total_stars - 1) // 3) + 1)
 
 
+_INSPIRATION_ODDS_CACHE = None
+
+
+def _load_inspiration_odds():
+    """Cited inheritance/inspiration odds (data/inspiration_odds.json), the
+    single source of truth shared with the front end. See uma.guide/sparks."""
+    global _INSPIRATION_ODDS_CACHE
+    if _INSPIRATION_ODDS_CACHE is not None:
+        return _INSPIRATION_ODDS_CACHE
+    root = Path(__file__).resolve().parents[1]
+    # Canonical copy is the front-end-served one (public/assets/data); fall back
+    # to data/ so the sim still works if only the backend copy is present.
+    for rel in ("public/assets/data/inspiration_odds.json", "data/inspiration_odds.json"):
+        try:
+            _INSPIRATION_ODDS_CACHE = json.loads((root / rel).read_text(encoding="utf-8"))
+            return _INSPIRATION_ODDS_CACHE
+        except Exception:
+            continue
+    _INSPIRATION_ODDS_CACHE = {}
+    return _INSPIRATION_ODDS_CACHE
+
+
 def _load_g1_calendar(project_root=None):
     """Load the G1 race calendar from the real `RaceCatalog`.
 
@@ -2867,6 +2889,7 @@ class CareerSimulator:
         self.parent_library = self._load_parent_library()
         self.selected_parent_ids = self._selected_parent_ids()
         self.selected_parents = self._resolve_selected_parents()
+        self._career_seed = seed
         self.legacy_effects = self._compute_legacy_effects()
         self.rng = random.Random(seed)
         # Dedicated RNG for the physics race engine so its many per-section draws do
@@ -3239,7 +3262,138 @@ class CareerSimulator:
                     })
         return entries
 
+    def _compute_legacy_effects_cited(self):
+        """Cited inheritance model — uma.guide/sparks via data/inspiration_odds.json.
+
+        Sparks activate 3x/career (career start + Classic/Senior April). Each
+        spark procs independently per activation at base_odds*(1+affinity/100),
+        with grandparents scaled by lineage node weight. On a proc: Blue rolls a
+        stat amount (1-10/1-16/1-28 by star), Pink upgrades the aptitude one
+        letter, Green/White/Race are learned (deduped). Replaces the old
+        deterministic model (which GUARANTEED pink aptitude upgrades — wrong: the
+        cited pink rate is only 1/3/5% — and used flat blue bonuses). All three
+        activations are folded to career start for a static stat/aptitude card;
+        the April timing is approximated (minor — pink procs are rare)."""
+        odds = _load_inspiration_odds()
+        base_by_star = odds.get("base_odds_by_star") or {}
+        cat_to_type = odds.get("category_to_spark_type") or {}
+        blue_roll = odds.get("blue_stat_roll") or {}
+        node_weights = odds.get("lineage_node_weights") or {}
+        activations = int(odds.get("activations_per_career") or 3)
+        ctx = self.preset.get("_run_context") or {}
+        affinity = self.preset.get("sim_inheritance_affinity")
+        if affinity is None:
+            affinity = ctx.get("inheritance_affinity")
+        try:
+            affinity = float(affinity)
+        except (TypeError, ValueError):
+            affinity = 0.0
+        aff_mult = 1.0 + max(0.0, affinity) / 100.0
+        parent_node_w = float(node_weights.get("p1") or 0.22) or 0.22
+        # Dedicated deterministic RNG so inheritance rolls do NOT consume the
+        # career's main decision stream (keeps training/event/race seeds stable).
+        inherit_rng = random.Random(((int(self._career_seed or 0)) & 0xFFFFFFFF) * 1000003 + 17)
+
+        stat_bonuses = {"speed": 0, "stamina": 0, "power": 0, "guts": 0, "wiz": 0}
+        race_factor_stat_bonus = {"speed": 0, "stamina": 0, "power": 0, "guts": 0, "wiz": 0}
+        aptitude_stars = {key: 0 for key in LEGACY_APTITUDE_NAME_TO_KEY.values()}
+        white_hits = {}
+        green_hits = {}
+
+        for entry in self._legacy_factor_entries():
+            stars = max(1, min(3, _as_int(entry.get("stars")) or 1))
+            spark_type = cat_to_type.get(str(entry.get("category") or ""), "white")
+            base = float((base_by_star.get(spark_type) or {}).get(str(stars), 0.0))
+            if base <= 0:
+                continue
+            node = str(entry.get("node") or "self")
+            node_factor = 1.0 if node in ("self", "p1", "p2") else (
+                float(node_weights.get(node, parent_node_w)) / parent_node_w)
+            proc = min(0.99, base * aff_mult * node_factor)
+            name_key = " ".join(str(entry.get("name") or "").strip().lower()
+                                .replace("○", "").replace("◎", "").split())
+            if spark_type == "blue":
+                stat_key = LEGACY_STAT_NAME_TO_STATE_KEY.get(name_key)
+                if not stat_key:
+                    continue
+                lo, hi = (blue_roll.get(str(stars)) or [1, 1])[:2]
+                for _ in range(activations):
+                    if inherit_rng.random() < proc:
+                        stat_bonuses[stat_key] += inherit_rng.randint(int(lo), int(hi))
+            elif spark_type == "pink":
+                apt_key = LEGACY_APTITUDE_NAME_TO_KEY.get(name_key)
+                if not apt_key:
+                    continue
+                for _ in range(activations):
+                    if inherit_rng.random() < proc:
+                        aptitude_stars[apt_key] += 1  # each proc = +1 letter step
+            else:  # green / white / race — learned (once) if it procs on any activation
+                procced = any(inherit_rng.random() < proc for _ in range(activations))
+                if not procced:
+                    continue
+                key = (str(entry.get("name") or ""), entry.get("id"))
+                if spark_type == "green":
+                    green_hits[key] = entry
+                else:
+                    white_hits[key] = entry
+                    if str(entry.get("category")) == "race":
+                        summary = str(entry.get("effect_summary") or "").lower()
+                        for token, stat_key in LEGACY_STAT_NAME_TO_STATE_KEY.items():
+                            if token and token in summary and stat_key in race_factor_stat_bonus:
+                                race_factor_stat_bonus[stat_key] += max(1, stars) * 2
+
+        base_aptitudes = dict((self.chara_growth_data.get(str(self.trainee_card_id)) or {}).get("base_aptitudes") or {})
+        aptitude_upgrades = {}
+        effective_aptitudes = dict(base_aptitudes)
+        for apt_key, gain in aptitude_stars.items():
+            if gain <= 0:
+                continue
+            base = str(base_aptitudes.get(apt_key) or "").upper()
+            if base not in APTITUDE_RANK_VALUE:
+                continue
+            next_value = min(APTITUDE_RANK_VALUE["A"], APTITUDE_RANK_VALUE[base] + gain)
+            if next_value > APTITUDE_RANK_VALUE[base]:
+                next_rank = APTITUDE_VALUE_RANK[next_value]
+                effective_aptitudes[apt_key] = next_rank
+                aptitude_upgrades[apt_key] = {
+                    "base": base, "next": next_rank, "stars": gain,
+                    "delta": next_value - APTITUDE_RANK_VALUE[base],
+                }
+
+        white_hints = list(white_hits.values())
+        green_hints = list(green_hits.values())
+        recovery_hint_count = 0
+        stamina_hint_count = 0
+        for hint in white_hints + green_hints:
+            text = f"{hint.get('name') or ''} {hint.get('effect_summary') or ''}".lower()
+            if any(token in text for token in ("recovery", "heal", "stamina", "endurance", "corner recovery", "straightaway recovery")):
+                recovery_hint_count += 1
+            if "stamina" in text or "long" in text:
+                stamina_hint_count += 1
+
+        return {
+            "stat_bonuses": stat_bonuses,
+            "race_factor_stat_bonus": race_factor_stat_bonus,
+            "aptitude_stars": aptitude_stars,
+            "aptitude_upgrades": aptitude_upgrades,
+            "effective_aptitudes": effective_aptitudes,
+            "inherited_skill_hint_count": len(white_hints) + len(green_hints),
+            "inherited_unique_hint_count": len(green_hints),
+            "recovery_hint_count": recovery_hint_count,
+            "stamina_hint_count": stamina_hint_count,
+            "legacy_skill_hints": [dict(row) for row in white_hints + green_hints],
+            "inheritance_event_factors": [],
+            "selected_parent_ids": list(self.selected_parent_ids),
+            "selected_parent_names": [str(parent.get("name") or "") for parent in self.selected_parents],
+        }
+
     def _compute_legacy_effects(self):
+        if bool(self.preset.get("sim_inheritance_cited_odds", True)):
+            return self._compute_legacy_effects_cited()
+        # Legacy deterministic inheritance model (pre-2026-06-22). Kept for
+        # rollback via sim_inheritance_cited_odds=False. NOTE: this path
+        # guarantees pink aptitude upgrades (cited rate is only 1/3/5%) and
+        # uses flat blue bonuses — superseded by _compute_legacy_effects_cited.
         stat_bonuses = {"speed": 0, "stamina": 0, "power": 0, "guts": 0, "wiz": 0}
         aptitude_stars = {key: 0 for key in LEGACY_APTITUDE_NAME_TO_KEY.values()}
         white_hints = []

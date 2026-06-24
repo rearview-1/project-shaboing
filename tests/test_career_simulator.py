@@ -737,7 +737,12 @@ def test_event_sp_uses_event_scale_and_source_bucket():
 
 
 def test_sim_race_stat_reward_is_one_random_stat_scaled_by_grade_and_rb():
-    sim = CareerSimulator(preset=_make_preset(), seed=0)
+    # Pins the LEGACY base*RB single-random-stat race reward. The default is now
+    # the empirical distributed total (formula mode on), so disable it here.
+    preset = _make_preset()
+    preset["sim_empirical_race_stat_total"] = False
+    preset["sim_formula_training_gain"] = False
+    sim = CareerSimulator(preset=preset, seed=0)
     sim.state.update({"speed": 100, "stamina": 100, "power": 100, "guts": 100, "wiz": 100})
 
     gain = sim._race_stat_total_gain(

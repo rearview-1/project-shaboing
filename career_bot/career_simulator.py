@@ -4532,9 +4532,11 @@ class CareerSimulator:
         # it structurally cannot represent the high-facility / stacked-rainbow
         # tiles that good (manual) play uses to reach SS — which capped the
         # optimizer at the bot's own mediocre envelope. The formula path can
-        # represent any tile config. Default OFF until validated against the
-        # game table + manual career end-states, then flipped on.
-        if not bool(self.preset.get("sim_formula_training_gain", False)):
+        # represent any tile config. Default ON (2026-06-22): formula is the
+        # primary sim path now (tile output user-verified; convex/optimizer work
+        # all runs on it). Set sim_formula_training_gain=False to force the old
+        # snapshot-replay path (covered decks only; cannot represent SS play).
+        if not bool(self.preset.get("sim_formula_training_gain", True)):
             real_commands = self._make_real_training_commands()
             if real_commands:
                 return real_commands
@@ -6146,7 +6148,7 @@ class CareerSimulator:
         # level ~3757). Calibration is real career-log data (8493 samples, exact
         # context, median 31/race); _empirical_race_stat_total returns 0 -> base
         # fallback when no calibration exists (e.g. fresh user), so this is safe.
-        if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", False))):
+        if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", True))):
             empirical = self._empirical_race_stat_total(era)
             if empirical > 0:
                 value = empirical
@@ -9356,7 +9358,7 @@ class CareerSimulator:
             # distribution (real careers spread race rewards, not single
             # random stat) when using the empirical total; otherwise keep
             # the legacy single-random-stat behavior.
-            if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", False))) and (getattr(self, "race_stat_gain_calibration", {}) or {}).get("enabled"):
+            if bool(self.preset.get("sim_empirical_race_stat_total", self.preset.get("sim_formula_training_gain", True))) and (getattr(self, "race_stat_gain_calibration", {}) or {}).get("enabled"):
                 stat_allocations = self._apply_distributed_race_stat_gain(race_stat_gain, era)
             else:
                 stat_allocations = self._apply_random_race_stat_gain(race_stat_gain)

@@ -3321,12 +3321,15 @@ class CareerSimulator:
                     if inherit_rng.random() < proc:
                         stat_bonuses[stat_key] += inherit_rng.randint(int(lo), int(hi))
             elif spark_type == "pink":
+                # Pink/aptitude sparks raise the STARTING aptitude DETERMINISTICALLY
+                # before the run (uma.guide: "Pink Sparks can increase an Uma's
+                # Aptitudes before the start of the run, up to a maximum of 4 steps").
+                # This is NOT the % Inspiration-Event roll — a stacked mile lineage
+                # reliably gives e.g. Mile A at career start. Accumulate stars; the
+                # letter delta is applied deterministically below.
                 apt_key = LEGACY_APTITUDE_NAME_TO_KEY.get(name_key)
-                if not apt_key:
-                    continue
-                for _ in range(activations):
-                    if inherit_rng.random() < proc:
-                        aptitude_stars[apt_key] += 1  # each proc = +1 letter step
+                if apt_key:
+                    aptitude_stars[apt_key] += stars
             else:  # green / white / race — learned (once) if it procs on any activation
                 procced = any(inherit_rng.random() < proc for _ in range(activations))
                 if not procced:
@@ -3345,18 +3348,20 @@ class CareerSimulator:
         base_aptitudes = dict((self.chara_growth_data.get(str(self.trainee_card_id)) or {}).get("base_aptitudes") or {})
         aptitude_upgrades = {}
         effective_aptitudes = dict(base_aptitudes)
-        for apt_key, gain in aptitude_stars.items():
-            if gain <= 0:
+        for apt_key, total_stars in aptitude_stars.items():
+            delta = _legacy_aptitude_delta(total_stars)  # deterministic, capped at 4 steps
+            if delta <= 0:
                 continue
             base = str(base_aptitudes.get(apt_key) or "").upper()
             if base not in APTITUDE_RANK_VALUE:
                 continue
-            next_value = min(APTITUDE_RANK_VALUE["A"], APTITUDE_RANK_VALUE[base] + gain)
+            # Up to 4 steps, can reach S (uma.guide); old code wrongly capped at A.
+            next_value = min(APTITUDE_RANK_VALUE["S"], APTITUDE_RANK_VALUE[base] + delta)
             if next_value > APTITUDE_RANK_VALUE[base]:
                 next_rank = APTITUDE_VALUE_RANK[next_value]
                 effective_aptitudes[apt_key] = next_rank
                 aptitude_upgrades[apt_key] = {
-                    "base": base, "next": next_rank, "stars": gain,
+                    "base": base, "next": next_rank, "stars": total_stars,
                     "delta": next_value - APTITUDE_RANK_VALUE[base],
                 }
 

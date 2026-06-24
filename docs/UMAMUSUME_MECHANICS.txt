@@ -405,34 +405,40 @@ Sparks activate THREE times per career (uma.guide, verbatim): at the START of
 the Career, and the two INSPIRATION EVENTS at the beginning of April in the
 Classic and Senior years.
 
-Each spark procs independently per activation at:
-  InheritanceOdds = base_odds × (1 + AffinityScore/100)
-  (example: 15% × (1 + 200/100) = 45%)
+TWO DISTINCT EFFECTS — do not conflate them:
 
-Base odds per star (1★/2★/3★):
-  Blue  (stat)                       70% / 80% / 90%
-  Pink  (aptitude)                    1% /  3% /  5%   <- LOW; aptitude is hard to inherit
-  Green (unique skill)                5% / 10% / 15%
-  Race                                1% /  2% /  3%
-  White (skill / scenario / hidden)   3% /  6% /  9%
+(A) STARTING APTITUDE (deterministic, before the run). Inherited PINK/aptitude
+    factors raise the trainee's aptitude LETTERS at career start, up to a
+    maximum of 4 steps (uma.guide: "Pink Sparks can increase an Uma's Aptitudes
+    before the start of the run, up to a maximum of 4 steps"). This is a FIXED
+    table, not a roll — a stacked mile lineage reliably gives e.g. Mile A "off
+    rip". The sim sums inherited pink stars per aptitude and applies a
+    deterministic step delta (≈ 1-3★→+1, 4-6→+2, 7-9→+3, 10+→+4; can reach S).
+    NOTE: the exact game stars→steps table is not in our fetch — our mapping is
+    approximate; the DETERMINISM (not the precise threshold) is the verified part.
 
-On a proc the factor applies its effect:
-  Blue (stat)  → rolls a stat amount: 1★=1-10, 2★=1-16, 3★=1-28 (per activation)
-  Pink (apt)   → upgrades the trainee's aptitude one letter (capped at A)
-  Green        → the trainee learns the parent's unique skill (gold)
-  White        → the trainee learns the skill (cheap hint)
+(B) INSPIRATION-EVENT ACTIVATIONS (the % rates). At the activations each spark
+    procs independently at:
+      InheritanceOdds = base_odds × (1 + AffinityScore/100)   (e.g. 15%×(1+200/100)=45%)
+    Base odds per star (1★/2★/3★):
+      Blue  (stat)                       70% / 80% / 90%   → rolls 1-10 / 1-16 / 1-28
+      Pink  (aptitude)                    1% /  3% /  5%
+      Green (unique skill)                5% / 10% / 15%
+      Race                                1% /  2% /  3%
+      White (skill / scenario / hidden)   3% /  6% /  9%
+    These govern blue STAT rolls, skill/unique learning, and race-factor stats
+    during the run. THIS is what the front end's "inspiration odds of skills"
+    and data/inspiration_odds.json describe.
 
 Grandparents proc lower than parents; uma.guide does NOT publish exact lineage
 node probabilities, so the per-node weights in inspiration_odds.json
 (self 0.30 / p1,p2 0.22 / gp 0.065) are THIS PROJECT'S estimate, used only to
 scale grandparent odds and rank parents in the UI.
 
-IMPORTANT — the pre-2026-06-22 sim model was WRONG: it GUARANTEED pink aptitude
-upgrades (real rate is only 1/3/5%) and used flat blue bonuses (5/12/21). The
-cited model (_compute_legacy_effects_cited, default on; gate
-sim_inheritance_cited_odds=False to roll back) replaces it. So do NOT assume a
-parent's mile/aptitude spark reliably upgrades the trainee's aptitude — even a
-3★ pink at high affinity only upgrades a minority of careers.
+The cited sim model (_compute_legacy_effects_cited, default on; gate
+sim_inheritance_cited_odds=False to roll back) applies (A) deterministically and
+(B) probabilistically. So a parent's mile/aptitude spark DOES reliably set the
+trainee's starting aptitude (effect A) — this is the verified "Mile A off rip".
 
 ================================================================================
 14. AFFINITY / COMPATIBILITY

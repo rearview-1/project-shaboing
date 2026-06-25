@@ -1,0 +1,41 @@
+{
+  "_source": "data/real_shop_snapshots.json",
+  "_description": "Empirical per-era item acquisition from real careers. Drives the sim's data-driven item economy (career_simulator._buy_items_from_real_profile). Regenerate with tools/build_item_economy.py.",
+  "careers_analyzed": 579,
+  "profile": {
+    "junior": {
+      "items_per_career": {
+        "stat": 2.114,
+        "energy": 0.629,
+        "megaphone": 0.366,
+        "other": 1.104,
+        "bond": 0.39,
+        "mood": 0.043
+      },
+      "coin_spend_per_career": 125.1
+    },
+    "classic": {
+      "items_per_career": {
+        "stat": 4.908,
+        "other": 5.472,
+        "energy": 1.884,
+        "bond": 0.575,
+        "mood": 0.485,
+        "megaphone": 1.862
+      },
+      "coin_spend_per_career": 497.3
+    },
+    "senior": {
+      "items_per_career": {
+        "cleat": 3.836,
+        "stat": 8.558,
+        "other": 7.921,
+        "energy": 3.297,
+        "mood": 0.639,
+        "bond": 0.456,
+        "megaphone": 0.244
+      },
+      "coin_spend_per_career": 774.6
+    }
+  }
+}

@@ -2227,6 +2227,25 @@ def _load_inspiration_odds():
     return _INSPIRATION_ODDS_CACHE
 
 
+_ITEM_ECONOMY_CACHE = None
+
+
+def _load_item_economy():
+    """Empirical per-era item-acquisition profile from 579 real careers
+    (data/real_item_economy.json, built by tools/build_item_economy.py from the
+    user's real_shop_snapshots). Drives the sim's data-driven item-economy cap so
+    synthetic buying cannot exceed the REAL per-era buy rate (the inflation fix)."""
+    global _ITEM_ECONOMY_CACHE
+    if _ITEM_ECONOMY_CACHE is not None:
+        return _ITEM_ECONOMY_CACHE
+    try:
+        path = Path(__file__).resolve().parents[1] / "data" / "real_item_economy.json"
+        _ITEM_ECONOMY_CACHE = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        _ITEM_ECONOMY_CACHE = {}
+    return _ITEM_ECONOMY_CACHE
+
+
 def _load_g1_calendar(project_root=None):
     """Load the G1 race calendar from the real `RaceCatalog`.
 
@@ -4051,7 +4070,13 @@ class CareerSimulator:
         The sim does not model Riko's invite event well enough yet, while live
         logs show Riko outings can be available around turn 9. Let the sim
         expose the outing row after that point so Riko pacing is testable.
+
+        FAITHFUL DEFAULT (2026-06-22): OFF. Live only trusts the game's real
+        is_outing row, so the turn/bond heuristic over-grants Riko outings.
+        Enable sim_riko_recreation_heuristic to restore it for pacing tests.
         """
+        if not bool(self.preset.get("sim_riko_recreation_heuristic", False)):
+            return False
         try:
             support_id = int(support_id or 0)
             bond = int(bond or 0)
@@ -4078,12 +4103,17 @@ class CareerSimulator:
     def _partner_cards_for_tile(self, stat_name):
         if not self.sim_support_cards:
             return []
+        # Per-tile appearance calibrated to the CITED specialty-weight mechanic
+        # (100 specialty / 50 absence -> a max-LB specialty card appears on its
+        # tile ~32%, per uma.guide/support-cards + the sim audit). The old
+        # defaults (0.42 + up to 0.25) gave ~67%, which over-placed partners and
+        # inflated rainbow tiles. Overridable via training_facility_curves.json.
         placement_cfg = (self.training_curves or {}).get("partner_placement") or {}
-        preferred = float(placement_cfg.get("preferred_type_chance") or 0.42)
-        off_type = float(placement_cfg.get("off_type_chance") or 0.10)
-        friend_bonus = float(placement_cfg.get("friend_bonus_chance") or 0.05)
+        preferred = float(placement_cfg.get("preferred_type_chance") or 0.24)
+        off_type = float(placement_cfg.get("off_type_chance") or 0.05)
+        friend_bonus = float(placement_cfg.get("friend_bonus_chance") or 0.04)
         specialty_scale = float(placement_cfg.get("specialty_priority_scale") or 500.0)
-        max_specialty_bonus = float(placement_cfg.get("max_specialty_bonus") or 0.25)
+        max_specialty_bonus = float(placement_cfg.get("max_specialty_bonus") or 0.09)
         partners = []
         for card in self.sim_support_cards:
             effects = self._effective_card_effects(
@@ -4227,9 +4257,12 @@ class CareerSimulator:
             for card in partner_cards
         )
         if energy < 0:
-            # The simulator does not execute shop recovery items, so raw
-            # game-side energy costs would force unrealistic rest spam.
-            energy *= 0.55
+            # Energy-cost scale. The old hard 0.55 (a hack for not executing
+            # recovery items) made training too easy vs live. Recovery items are
+            # now modeled data-driven (real_item_economy), so default to the real
+            # full cost (1.0) and let the sim REST like real careers do. Tunable
+            # via sim_formula_energy_cost_scale for re-calibration.
+            energy *= float(self.preset.get("sim_formula_energy_cost_scale", 1.0))
             if reduction > 0:
                 energy *= max(0.65, 1.0 - reduction / 100.0)
         if training_stat == "wit" and is_rainbow:
@@ -5260,11 +5293,40 @@ class CareerSimulator:
         if offered(RESET_WHISTLE_ID) and self._inventory_count(RESET_WHISTLE_ID) < int(self.preset.get("sim_reset_whistle_reserve", 2)):
             buy(RESET_WHISTLE_ID)
 
+    def _cumulative_item_target(self, turn):
+        """Total shop items a REAL career has bought by this turn (pro-rated within
+        each era from data/real_item_economy.json). The data-driven cap on the
+        sim's shop buying so it cannot over-buy and inflate stats."""
+        prof = (_load_item_economy() or {}).get("profile") or {}
+        if not prof:
+            return None
+        total = 0.0
+        for era, (lo, hi) in (("junior", (13, 24)), ("classic", (25, 48)), ("senior", (49, 72))):
+            if turn < lo:
+                continue
+            tgt = sum((prof.get(era, {}).get("items_per_career") or {}).values())
+            frac = min(1.0, max(0.0, (min(turn, hi) - lo + 1) / (hi - lo + 1)))
+            total += tgt * frac
+        return total
+
+    def _item_budget_exhausted(self, turn):
+        if not bool(self.preset.get("sim_data_driven_item_economy", True)):
+            return False
+        target = self._cumulative_item_target(turn)
+        if target is None:
+            return False
+        return int(self.shop_items_bought or 0) >= target
+
     def _maybe_buy_shop_items(self):
         if not bool(self.preset.get("sim_use_shop_items", True)):
             return
         turn = int(self.state.get("turn") or 1)
         if turn < 13 or int(self.state.get("mant_coin") or 0) < 10:
+            return
+        # Data-driven cap: never exceed the REAL per-era item-buy rate (579 real
+        # careers, data/real_item_economy.json). Replaces unbounded synthetic
+        # buying that inflated stats vs live. Gate sim_data_driven_item_economy.
+        if self._item_budget_exhausted(turn):
             return
         bought = 0
         if self._buy_race_heavy_energy_if_needed():
@@ -9055,6 +9117,9 @@ class CareerSimulator:
         pools = self._shop_refresh_pools()
         race_pool = (pools or {}).get("race") if isinstance(pools, dict) else None
         if not race_pool:
+            return 0
+        # Respect the same data-driven total item-buy budget as scheduled buying.
+        if self._item_budget_exhausted(int(self.state.get("turn") or 1)):
             return 0
         grade_key = self._post_race_grade_key(grade)
         primary = f"{grade_key}_{'victory' if won else 'defeat'}"

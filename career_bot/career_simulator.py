@@ -8171,12 +8171,68 @@ class CareerSimulator:
         grade = str((self._current_aptitudes() or {}).get(role) or "").upper()
         return grade if grade in {"S", "A", "B", "C", "D", "E", "F", "G"} else default
 
-    def _physics_real_opponent(self, opponent, surface, band):
+    def _physics_params(self):
+        """Build RaceParams for the physics engine, applying the FIELD-EFFECTIVE /
+        GUTS-BITE calibration (Approach A).
+
+        Calibrated against BOTH the 51 real anchor fields (data/real_race_snapshots
+        .json, 40 wins/11 losses) AND a 300-loss held-out sample of account_b G1
+        postmortems (1768 losses where the player led the displayed field-max in
+        speed/stamina/power yet finished mid-pack — verifying the NPC field
+        effectively races above its trainer-screen stats). Result vs the old
+        raw-vs-raw engine:
+          postmortem_loss_recall 0.38 -> 0.64   (predicts real losses as not-1st)
+          anchor mean rank-err   2.373 -> 2.216  (IMPROVED, not degraded)
+          anchor predicted win   0.784 -> 0.745  (tracks real 0.784: did NOT just
+                                                   make everything lose — 33/40 real
+                                                   anchor wins still predicted wins)
+        The field uplift is GUTS-CONCENTRATED (guts +80, stamina +26) because the
+        player's speed/power lead in these losses is real (it wins the anchor set);
+        what the engine under-models is the field's late-race guts/endurance. The
+        guts knobs make the cited late-race guts term (1+200/sqrt(600*G) family)
+        actually bite the spurt instead of moving it <0.02 m/s. All knobs are
+        preset-overridable; defaults below ARE the calibrated values. Set
+        sim_physics_field_calibration=False to fall back to raw-vs-raw.
+        """
+        import career_bot.race_sim as race_sim
+        preset = self.preset or {}
+        if not bool(preset.get("sim_physics_field_calibration", True)):
+            return race_sim.RaceParams()
+        return race_sim.RaceParams(
+            spurt_guts_coef=float(preset.get("sim_spurt_guts_coef", 0.0015)),
+            late_guts_sustain=float(preset.get("sim_late_guts_sustain", 30.0)),
+            guts_sustain_ref=float(preset.get("sim_guts_sustain_ref", 350.0)),
+            guts_sustain_floor=float(preset.get("sim_guts_sustain_floor", 0.70)),
+        )
+
+    def _physics_field_uplift(self):
+        """Per-stat additive uplift applied to OPPONENT stats so the field races at
+        its effective (not displayed) level. Guts-concentrated by calibration; the
+        player's broad speed/power lead in the loss data is genuine, the missing
+        piece is field guts/endurance. Override via sim_physics_field_uplift
+        (flat int) or sim_physics_field_uplift_vec (per-stat dict)."""
+        preset = self.preset or {}
+        if not bool(preset.get("sim_physics_field_calibration", True)):
+            return {}
+        vec = preset.get("sim_physics_field_uplift_vec")
+        if isinstance(vec, dict):
+            return {k: int(vec.get(k, 0) or 0) for k in ("speed", "stamina", "power", "guts", "wit")}
+        flat = preset.get("sim_physics_field_uplift")
+        if flat is not None:
+            f = int(flat or 0)
+            return {k: f for k in ("speed", "stamina", "power", "guts", "wit")}
+        # Calibrated default: guts-concentrated endurance uplift.
+        return {"guts": 80, "stamina": 26}
+
+    def _physics_real_opponent(self, opponent, surface, band, uplift=None):
         import career_bot.race_sim as race_sim
         apt = opponent.get("aptitudes") or {}
+        uplift = uplift or {}
         return {
             "id": "npc_%s" % (opponent.get("frame_order") or id(opponent)),
-            "stats": {k: int((opponent.get("stats") or {}).get(k, 0)) for k in race_sim.STAT_KEYS},
+            # Field-effective uplift (Approach A): NPCs race above displayed stats.
+            "stats": {k: int((opponent.get("stats") or {}).get(k, 0)) + int(uplift.get(k, 0))
+                      for k in race_sim.STAT_KEYS},
             "style": STYLE_NUM_TO_KEY.get(int(opponent.get("running_style") or 0), "pace"),
             "aptitudes": {
                 "distance": PHYSICS_APT_RANK_LETTER.get(int(apt.get(band, 7) or 7), "A"),
@@ -8189,11 +8245,12 @@ class CareerSimulator:
         """Real opponent field for this race if we have one, else a synthetic field
         calibrated by turn (strength/skills from real field_samples)."""
         import career_bot.race_sim as race_sim
+        uplift = self._physics_field_uplift()
         fields = self.race_fields_by_pid.get(int(pid or 0)) or []
         real = [f for f in fields if f.get("opponents")]
         if real:
             chosen = real[self._physics_rng.randrange(len(real))]
-            return [self._physics_real_opponent(o, surface, band) for o in (chosen.get("opponents") or [])]
+            return [self._physics_real_opponent(o, surface, band, uplift) for o in (chosen.get("opponents") or [])]
         # synthetic fallback
         n = 8 if turn < 27 else (15 if turn < 50 else 17)
         total = _physics_interp(PHYSICS_FIELD_SUM_BY_TURN, turn) * PHYSICS_SYNTH_STRENGTH
@@ -8209,7 +8266,7 @@ class CareerSimulator:
             scale = s / sum(stats.values())
             opponents.append({
                 "id": "synth%d" % i,
-                "stats": {k: int(v * scale) for k, v in stats.items()},
+                "stats": {k: int(v * scale) + int(uplift.get(k, 0)) for k, v in stats.items()},
                 "style": styles[i % 4],
                 "aptitudes": {"distance": "A", "surface": "A"},
                 "skill_count": npc_skills,
@@ -8226,7 +8283,13 @@ class CareerSimulator:
         # sweep (only ~30 distinct fields total), so simulate each once per process.
         cache = _PHYSICS_OPP_TIME_CACHE
         has_real = bool(self.race_fields_by_pid.get(int(pid or 0)))
-        psig = (round(params.hp_drain_scale, 3), round(params.per_skill_velocity, 3), round(params.dt, 3))
+        # Cache key includes the calibrated guts/field knobs so opponent times are
+        # not reused across different calibrations (Approach A field-effective fit).
+        uplift = self._physics_field_uplift()
+        psig = (round(params.hp_drain_scale, 3), round(params.per_skill_velocity, 3), round(params.dt, 3),
+                round(params.spurt_guts_coef, 5), round(params.late_guts_sustain, 2),
+                round(params.guts_sustain_ref, 1), round(params.guts_sustain_floor, 3),
+                tuple(sorted((k, int(v)) for k, v in (uplift or {}).items())))
         key = ((int(pid or 0), int(meters), surface) if has_real
                else ("synth", turn // 6, int(meters), surface)) + psig
         if key in cache:
@@ -8273,7 +8336,7 @@ class CareerSimulator:
         style = self._race_style()
         if style not in race_sim.STYLE_SPEED_COEF:
             style = "pace"
-        params = race_sim.RaceParams()
+        params = self._physics_params()
         opp_times = self._physics_opponent_times(pid, turn, surface, band, meters, params)
         if not opp_times:
             return None

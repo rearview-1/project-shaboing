@@ -107,6 +107,32 @@ class RaceParams:
     per_skill_velocity: float = 0.20   # m/s per active velocity skill (fit: 51 fields -> 78% win, rank_err 1.11)
     velocity_skill_frac: float = 0.6   # fraction of a loadout that boosts speed/accel
     recovery_per_skill_frac: float = 0.025  # HP restored per recovery skill (white~1.5%, gold~5.5%)
+    # --- field effective strength (Approach A) ---
+    # The real game NPC field effectively races ABOVE its displayed/trainer-screen
+    # stats: 1768 account_b G1 losses show the player LEADING field-max in
+    # speed/stamina/power yet finishing mid-pack. This is NOT a player +400 bug
+    # (the live physics path runs the player at displayed stats too); it is the
+    # opponent field being under-modeled. `field_effective_uplift` is added to an
+    # OPPONENT entrant's stats by the live opponent-builder so a displayed-dominant
+    # player keeps only a modest effective lead, letting guts/style/skills decide.
+    # 0 = backward-compatible. Fit jointly with the guts knobs below; a flat uplift
+    # alone over-buffs the field on speed/power (where the player legitimately wins
+    # the anchor set), so the calibrated value is modest and paired with guts-bite.
+    field_effective_uplift: float = 0.0
+    # --- guts as a real outcome factor (root-cause 2) ---
+    # The cited late-race guts term (target-speed page) only fed the spurt target
+    # via math.pow(450*Guts, spurt_guts_exp)*spurt_guts_coef and the HP-drain mod
+    # (1 + 200/sqrt(600*Guts)). At realistic guts (~290 vs ~350) those move spurt
+    # speed by <0.02 m/s and drain by ~3%, far too weak to reproduce the 66%-of-
+    # losses guts signal. We expose the cited term's MAGNITUDE (coef) and add a
+    # guts-driven SPURT-SUSTAIN penalty drawn from the SAME cited 1+200/sqrt(600*G)
+    # family (no new shape): below `guts_sustain_ref` guts, the horse cannot hold
+    # the full spurt target. Both knobs apply symmetrically to every entrant.
+    spurt_guts_coef: float = 0.0001    # magnitude of the cited last-spurt guts term
+    spurt_guts_exp: float = 0.597      # cited exponent (target-speed page); do not invent
+    late_guts_sustain: float = 0.0     # strength of the guts spurt-sustain penalty (0 = off)
+    guts_sustain_ref: float = 400.0    # guts at/above which the sustain penalty vanishes
+    guts_sustain_floor: float = 0.80   # max spurt-target cut from the guts-sustain penalty
 
 
 def _coef3_for_phase(triplet, phase: int) -> float:
@@ -207,10 +233,21 @@ def simulate_entrant(
         base_target *= (1.0 + section_rand)
         if phase == 3:
             # last spurt: scale up, add speed & guts terms (target-speed page).
+            # The guts term's coefficient/exponent are the cited shape with a
+            # CALIBRATABLE magnitude (params.spurt_guts_coef/_exp); raising the
+            # coef makes guts a real homestretch differentiator instead of a
+            # <0.02 m/s rounding term at realistic stats.
             late_target = bspeed * STYLE_SPEED_COEF[style][2] * dprof_speed
             target = ((late_target + 0.01 * bspeed) * 1.05
                       + math.sqrt(500.0 * spd) * dprof_speed * 0.002
-                      + math.pow(450.0 * guts, 0.597) * 0.0001)
+                      + math.pow(450.0 * guts, params.spurt_guts_exp) * params.spurt_guts_coef)
+            # Guts spurt-SUSTAIN penalty (cited 1+200/sqrt(600*G) family applied to
+            # velocity, not just drain): a horse below guts_sustain_ref cannot hold
+            # the full spurt target in the homestretch. Symmetric across entrants.
+            if params.late_guts_sustain > 0.0 and guts < params.guts_sustain_ref:
+                deficit = (200.0 / math.sqrt(600.0 * max(1.0, guts))
+                           - 200.0 / math.sqrt(600.0 * params.guts_sustain_ref))
+                target *= max(params.guts_sustain_floor, 1.0 - params.late_guts_sustain * max(0.0, deficit))
             target *= (1.0 + section_rand)
             if spurt_speed is None:
                 spurt_speed = target

@@ -4320,7 +4320,7 @@ def _training_sim_build_year_effects():
             "Classic Year",
             "Basic",
             "Training Bonus +15%, Friendship Bonus +30%, Stat/SP Gain Cap +20",
-            True,
+            False,
             {"training_effectiveness": 15, "friendship_multiplier": 1.30, "stat_gain_cap": 120, "skill_pt_gain_cap": 120},
         ),
         (
@@ -4328,7 +4328,7 @@ def _training_sim_build_year_effects():
             "Senior Year",
             "Basic",
             "Training Bonus +15%, Friendship Bonus +45%, Stat/SP Gain Cap +40",
-            True,
+            False,
             {"training_effectiveness": 15, "friendship_multiplier": 1.45, "stat_gain_cap": 140, "skill_pt_gain_cap": 140},
         ),
     ]
@@ -4412,14 +4412,16 @@ def _training_sim_load_json(path, default):
 # Scenario-specific gimmicks, uma.guide-training-simulator style: each scenario
 # only shows (and applies) the controls it actually has in game.
 #   "items"        -> Trackblazer/MANT shop items (megaphones + weights)
-#   "year_effects" -> Make-a-newtrack regional venue/year bonuses
+#   "year_effects" -> JP scenario 14 regional venue/year bonuses
 #                     (Hakodate/Sapporo/... + Junior/Classic/Senior + 4-type gate)
 # Global Trackblazer (mant_base) has the item shop; the JP Make a newtrack
-# (climax) scenario (GameWith order 14) has the regional venue toggles but NOT
-# the megaphone items (user-verified). Other scenarios: no extra gimmick panel.
+# regional scenario is master scenario id 14, but the GameWith scraped selector
+# is "1" because it is the newest scenario in that source. Do not attach these
+# effects to GameWith selector "14"; that is MANT/New Track in the scraped list.
+# Other scenarios: no extra gimmick panel.
 TRAINING_SIM_SCENARIO_GIMMICKS = {
     "mant_base": ["items"],
-    "14": ["year_effects"],
+    "1": ["year_effects"],
 }
 
 
@@ -4907,7 +4909,7 @@ async def training_sim_meta():
         "year_effects": _training_sim_year_effect_groups(),
         "support_type_gate": {
             "label": "Require at least 4 support types",
-            "description": "Classic and Senior year regional/basic bonuses only activate when at least four unique support card types are represented.",
+            "description": "Regional bonuses that are marked with the scenario's four-type condition only activate when at least four unique support card types are represented.",
             "default": True,
         },
         "cards": cards,

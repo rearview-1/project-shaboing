@@ -263,6 +263,43 @@
 }
 .training-sim-info-note strong { color: var(--text); }
 
+/* FB (friendship) chip on placed cards — uma.guide parity */
+.training-sim-fb-chip {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 4px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.18);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-align: center;
+    cursor: pointer;
+}
+.training-sim-fb-chip.is-on {
+    color: #6dd700;
+    border-color: rgba(109, 215, 0, 0.65);
+    background: rgba(109, 215, 0, 0.12);
+}
+.training-sim-fb-chip.is-off {
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.04);
+    text-decoration: line-through;
+}
+.training-sim-fb-chip.is-na {
+    color: var(--text-dim);
+    cursor: default;
+    opacity: 0.55;
+}
+
+/* release date on card tiles (base sort = newest first, GameTora-style) */
+.training-sim-card-date {
+    color: var(--text-dim);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
 /* hidden attr must win over section display rules */
 .training-sim-root [hidden] { display: none !important; }
 

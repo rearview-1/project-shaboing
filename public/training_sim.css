@@ -185,6 +185,87 @@
 .training-sim-effect-chip-gate.is-unmet { color: #ffbb54; border-color: rgba(255, 187, 84, 0.5); }
 .training-sim-effect-chip-gate.is-met { color: var(--accent-soft); }
 
+/* --- uma.guide-style per-facility output --- */
+.training-sim-output {
+    margin-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 8px;
+}
+.training-sim-output-primary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.training-sim-output-primary span {
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.training-sim-output-primary strong {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--accent-soft);
+    line-height: 1;
+}
+.training-sim-output-primary strong.is-cost { color: #ff606f; }
+.training-sim-breakdown-details { margin-top: 6px; }
+.training-sim-breakdown-details > summary {
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    list-style: none;
+}
+.training-sim-breakdown-details > summary::-webkit-details-marker { display: none; }
+.training-sim-breakdown-details > summary::before { content: "\25B8 "; }
+.training-sim-breakdown-details[open] > summary::before { content: "\25BE "; }
+.training-sim-breakdown-details[open] > summary { color: var(--accent-soft); }
+.training-sim-breakdown-table {
+    width: 100%;
+    margin-top: 5px;
+    border-collapse: collapse;
+    font-size: 10px;
+}
+.training-sim-breakdown-table th,
+.training-sim-breakdown-table td {
+    padding: 2px 4px;
+    text-align: right;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.training-sim-breakdown-table th { font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+.training-sim-breakdown-table td:first-child { text-align: left; font-weight: 700; }
+.training-sim-breakdown-table td.is-positive strong { color: var(--accent-soft); }
+.training-sim-breakdown-table td.is-cost strong { color: #ff606f; }
+
+/* SP yellow / Energy red rows (uma.guide parity) */
+.training-sim-gain-row strong.is-positive { color: var(--accent-soft); }
+.training-sim-gain-row strong.is-cost { color: #ff606f; }
+
+/* topbar stat-ceiling chip */
+.training-sim-overcap-chip { align-self: flex-end; }
+
+/* footer info note */
+.training-sim-info-note {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+.training-sim-info-note strong { color: var(--text); }
+
+/* hidden attr must win over section display rules */
+.training-sim-root [hidden] { display: none !important; }
+
 @media (max-width: 1040px) {
     .training-sim-workspace { grid-template-columns: 1fr; }
     .training-sim-toolbox-col { position: static; max-height: none; }

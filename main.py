@@ -67,6 +67,7 @@ from career_bot.rating import rank_for_rating_score
 from career_bot.runner import CareerRunner, runtime_output_root
 from career_bot.skill_profiles import build_skill_priority_rows, normalize_distance as normalize_skill_distance, normalize_style as normalize_skill_style, sanitize_blacklist, split_skill_text
 from career_bot.team_trials_dataset import RANK_LABELS, deck_race_bonus_summary, load_team_trials_dataset
+from career_bot.training_compare import make_training_calculator
 from uma_api.client import UmaClient, api_error_response_viewer_id, is_terminal_start_session_auth_error, read_client_version_cache
 
 GLB_STEAM_APP_ID = "3224770"
@@ -4277,6 +4278,355 @@ def support_limit_break_plan_from_load_data(load_data):
     return plan
 
 
+TRAINING_SIM_STATS = ("speed", "stamina", "power", "guts", "wit")
+
+TRAINING_SIM_VENUE_TRAINING_BONUSES = [
+    ("sapporo", "Sapporo", "speed", "Speed Training Bonus +30%"),
+    ("hakodate", "Hakodate", "stamina", "Stamina Training Bonus +30%"),
+    ("niigata", "Niigata", "power", "Power Training Bonus +30%"),
+    ("fukushima", "Fukushima", "guts", "Guts Training Bonus +30%"),
+    ("tokyo", "Tokyo", "wit", "Wit Training Bonus +30%"),
+]
+
+TRAINING_SIM_YEAR_ORDER = ("Junior Year", "Classic Year", "Senior Year")
+
+
+def _training_sim_training_effect(effect_id, year, label, detail, requires_four_support_types, apply, conditions=None, order=0):
+    return {
+        "id": effect_id,
+        "year": year,
+        "label": label,
+        "detail": detail,
+        "requires_four_support_types": bool(requires_four_support_types),
+        "conditions": conditions or {},
+        "apply": apply or {},
+        "order": int(order),
+    }
+
+
+def _training_sim_build_year_effects():
+    effects = []
+    basic_rows = [
+        (
+            "junior_basic",
+            "Junior Year",
+            "Basic",
+            "Training Bonus +15%",
+            False,
+            {"training_effectiveness": 15},
+        ),
+        (
+            "classic_basic",
+            "Classic Year",
+            "Basic",
+            "Training Bonus +15%, Friendship Bonus +30%, Stat/SP Gain Cap +20",
+            True,
+            {"training_effectiveness": 15, "friendship_multiplier": 1.30, "stat_gain_cap": 120, "skill_pt_gain_cap": 120},
+        ),
+        (
+            "senior_basic",
+            "Senior Year",
+            "Basic",
+            "Training Bonus +15%, Friendship Bonus +45%, Stat/SP Gain Cap +40",
+            True,
+            {"training_effectiveness": 15, "friendship_multiplier": 1.45, "stat_gain_cap": 140, "skill_pt_gain_cap": 140},
+        ),
+    ]
+    for idx, (effect_id, year, label, detail, gated, apply) in enumerate(basic_rows):
+        effects.append(_training_sim_training_effect(effect_id, year, label, detail, gated, apply, order=idx))
+
+    year_gates = {"Junior Year": False, "Classic Year": True, "Senior Year": True}
+    for year in TRAINING_SIM_YEAR_ORDER:
+        for idx, (venue_id, venue, stat, detail) in enumerate(TRAINING_SIM_VENUE_TRAINING_BONUSES, start=10):
+            effects.append(_training_sim_training_effect(
+                f"{year.lower().split()[0]}_{venue_id}_training",
+                year,
+                venue,
+                detail,
+                year_gates[year],
+                {"training_effectiveness": 30},
+                {"training": [stat]},
+                order=idx,
+            ))
+
+    classic_friendship = [
+        ("nakayama", "Nakayama", None, "Friendship Bonus +20%", 1.20),
+        ("chukyo", "Chukyo", ["power", "guts"], "Power/Guts Friendship Bonus +60%", 1.60),
+        ("kyoto", "Kyoto", ["stamina", "guts"], "Stamina/Guts Friendship Bonus +60%", 1.60),
+        ("hanshin", "Hanshin", ["stamina", "power"], "Stamina/Power Friendship Bonus +60%", 1.60),
+        ("kokura", "Kokura", ["wit"], "Wit Friendship Bonus +60%", 1.60),
+    ]
+    for idx, (venue_id, venue, trainings, detail, multiplier) in enumerate(classic_friendship, start=20):
+        conditions = {"bonded": True}
+        if trainings:
+            conditions["training"] = trainings
+        effects.append(_training_sim_training_effect(
+            f"classic_{venue_id}_friendship",
+            "Classic Year",
+            venue,
+            detail,
+            True,
+            {"friendship_multiplier": multiplier},
+            conditions,
+            order=idx,
+        ))
+
+    senior_friendship = [
+        ("sapporo", "Sapporo", ["speed"], "Speed Friendship Bonus +60%, Speed Facility SP Bonus +60%", 1.60),
+        ("hakodate", "Hakodate", ["stamina"], "Stamina Friendship Bonus +70%, Stamina Facility SP Bonus +60%", 1.70),
+        ("niigata", "Niigata", ["power"], "Power Friendship Bonus +70%, Power Facility SP Bonus +60%", 1.70),
+        ("fukushima", "Fukushima", ["guts"], "Guts Friendship Bonus +70%, Guts Facility SP Bonus +60%", 1.70),
+        ("tokyo", "Tokyo", ["wit"], "Wit Friendship Bonus +70%, Wit Facility SP Bonus +60%", 1.70),
+        ("nakayama", "Nakayama", ["speed", "power", "wit"], "Speed/Power/Wit Friendship Bonus +50%, Facility SP Bonus +60%", 1.50),
+        ("chukyo", "Chukyo", ["speed", "power", "guts"], "Speed/Power/Guts Friendship Bonus +50%, Facility SP Bonus +60%", 1.50),
+        ("kyoto", "Kyoto", ["speed", "stamina", "wit"], "Speed/Stamina/Wit Friendship Bonus +50%, Facility SP Bonus +60%", 1.50),
+        ("hanshin", "Hanshin", ["speed", "power", "stamina"], "Speed/Power/Stamina Friendship Bonus +50%, Facility SP Bonus +60%", 1.50),
+        ("kokura", "Kokura", ["speed", "guts", "wit"], "Speed/Guts/Wit Friendship Bonus +50%, Facility SP Bonus +60%", 1.50),
+    ]
+    for idx, (venue_id, venue, trainings, detail, multiplier) in enumerate(senior_friendship, start=20):
+        effects.append(_training_sim_training_effect(
+            f"senior_{venue_id}_friendship_sp",
+            "Senior Year",
+            venue,
+            detail,
+            True,
+            {"friendship_multiplier": multiplier, "final_multiplier": {"sp": 1.60}},
+            {"training": trainings, "bonded": True},
+            order=idx,
+        ))
+    return effects
+
+
+TRAINING_SIM_YEAR_EFFECTS = _training_sim_build_year_effects()
+
+
+def _training_sim_load_json(path, default):
+    try:
+        if not Path(path).exists():
+            return default
+        return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    except Exception:
+        return default
+
+
+# Scenario-specific gimmicks, uma.guide-training-simulator style: each scenario
+# only shows (and applies) the controls it actually has in game.
+#   "items"        -> Trackblazer/MANT shop items (megaphones + weights)
+#   "year_effects" -> Make-a-newtrack regional venue/year bonuses
+#                     (Hakodate/Sapporo/... + Junior/Classic/Senior + 4-type gate)
+# Global Trackblazer (mant_base) has the item shop; the JP Make a newtrack
+# (climax) scenario (GameWith order 14) has the regional venue toggles but NOT
+# the megaphone items (user-verified). Other scenarios: no extra gimmick panel.
+TRAINING_SIM_SCENARIO_GIMMICKS = {
+    "mant_base": ["items"],
+    "14": ["year_effects"],
+}
+
+
+def _training_sim_scenario_gimmicks(selector):
+    return list(TRAINING_SIM_SCENARIO_GIMMICKS.get(str(selector or "").strip()) or [])
+
+
+def _training_sim_scenario_rows():
+    rows = [{
+        "selector": "mant_base",
+        "name": "Trackblazer (MANT)",
+        "available_levels": ["1", "2", "3", "4", "5"],
+        "source": "local_trackblazer_base_table",
+        "is_default": False,
+        "gimmicks": _training_sim_scenario_gimmicks("mant_base"),
+    }]
+    data = _training_sim_load_json(base_dir / "data" / "gamewith_scenario_training_curves.json", {})
+    for scenario in data.get("scenarios") or []:
+        if not isinstance(scenario, dict):
+            continue
+        order = str(scenario.get("source_order_newest_first") or "").strip()
+        if not order:
+            continue
+        name = str(scenario.get("name") or f"GameWith scenario {order}").strip()
+        label = name
+        if order == "1":
+            label = f"{name} (JP newest)"
+        rows.append({
+            "selector": order,
+            "name": label,
+            "available_levels": [str(level) for level in (scenario.get("available_levels") or ["5"])],
+            "source": "gamewith_scenario_training_curves",
+            "is_default": order == "1",
+            "gimmicks": _training_sim_scenario_gimmicks(order),
+        })
+    return rows
+
+
+def _training_sim_scenario_selector(raw):
+    value = str(raw or "").strip()
+    if not value or value.lower() in {"mant", "trackblazer", "trackblazer_mant", "mant_base"}:
+        return "mant_base", ""
+    return value, value
+
+
+def _training_sim_owned_lookup():
+    rows = (active_dashboard_data or {}).get("supports") if isinstance(active_dashboard_data, dict) else []
+    lookup = {}
+    for row in rows or []:
+        sid = str(row.get("id") or row.get("support_card_id") or "").strip()
+        if not sid:
+            continue
+        lookup[sid] = {
+            "owned": True,
+            "limit_break_count": max(0, min(4, safe_int(row.get("limit_break_count") or 0))),
+            "support_card_level": safe_int(row.get("support_card_level") or row.get("level") or 0),
+        }
+    return lookup
+
+
+def _training_sim_card_catalog():
+    bonus_data = _training_sim_load_json(base_dir / "data" / "support_card_bonuses.json", {})
+    train_data = _training_sim_load_json(base_dir / "data" / "support_card_training_effects.json", {})
+    owned = _training_sim_owned_lookup()
+    ids = sorted(
+        {
+            str(card_id)
+            for card_id in [*(bonus_data.keys() if isinstance(bonus_data, dict) else []), *(train_data.keys() if isinstance(train_data, dict) else [])]
+            if str(card_id).isdigit()
+        },
+        key=lambda value: int(value),
+    )
+    rows = []
+    for sid in ids:
+        bonus = (bonus_data.get(sid) if isinstance(bonus_data, dict) else {}) or {}
+        train = (train_data.get(sid) if isinstance(train_data, dict) else {}) or {}
+        info = support_map.get(sid, {}) or {}
+        row_owned = owned.get(sid, {})
+        support_type = display_support_type((bonus or {}).get("type") or info.get("type") or train.get("t") or "Unknown")
+        rows.append({
+            "support_card_id": int(sid),
+            "id": sid,
+            "name": str((bonus or {}).get("name") or info.get("name") or f"Support {sid}"),
+            "type": str(support_type),
+            "rarity": str((bonus or {}).get("rarity") or info.get("rarity") or train.get("r") or "?"),
+            "owned": bool(row_owned.get("owned")),
+            "limit_break_count": int(row_owned.get("limit_break_count") or 0),
+            "support_card_level": int(row_owned.get("support_card_level") or 0),
+        })
+    type_order = {"Speed": 0, "Stamina": 1, "Power": 2, "Guts": 3, "Wit": 4, "Pal": 5, "Group": 6}
+    rarity_order = {"SSR": 0, "SR": 1, "R": 2}
+    rows.sort(key=lambda row: (
+        type_order.get(row.get("type"), 99),
+        rarity_order.get(row.get("rarity"), 99),
+        str(row.get("name") or ""),
+        int(row.get("support_card_id") or 0),
+    ))
+    return rows
+
+
+def _training_sim_card_meta_map():
+    return {str(row.get("support_card_id")): row for row in _training_sim_card_catalog()}
+
+
+def _training_sim_gain_delta(left, right):
+    return {
+        key: int(left.get(key) or 0) - int(right.get(key) or 0)
+        for key in ("speed", "stamina", "power", "guts", "wit", "sp", "energy")
+    }
+
+
+def _training_sim_apply_overcap_halving(gains, training_stat, enabled=False):
+    out = dict(gains or {})
+    stat = str(training_stat or "").strip().lower()
+    if enabled and stat in TRAINING_SIM_STATS:
+        out[stat] = int(int(out.get(stat) or 0) // 2)
+    return out
+
+
+def _training_sim_area_cards(raw_cards):
+    cards = []
+    for row in raw_cards or []:
+        if isinstance(row, TrainingSimCardPlacement):
+            sid = int(row.support_card_id or 0)
+            lb = int(row.lb if row.lb is not None else 4)
+        elif isinstance(row, dict):
+            sid = safe_int(row.get("support_card_id") or row.get("id") or 0)
+            lb = safe_int(row.get("lb") if row.get("lb") is not None else row.get("limit_break_count") or 4)
+        else:
+            sid = safe_int(row)
+            lb = 4
+        if sid > 0:
+            cards.append((sid, max(0, min(4, lb))))
+    return cards[:6]
+
+
+def _training_sim_weight_facilities(req):
+    return {
+        str(item or "").strip().lower()
+        for item in (req.weight_facilities or [])
+        if str(item or "").strip().lower() in TRAINING_SIM_STATS
+    }
+
+
+def _training_sim_year_effect_groups():
+    grouped = []
+    for year in TRAINING_SIM_YEAR_ORDER:
+        rows = [
+            {
+                "id": effect.get("id"),
+                "year": effect.get("year"),
+                "label": effect.get("label"),
+                "detail": effect.get("detail"),
+                "requires_four_support_types": bool(effect.get("requires_four_support_types")),
+            }
+            for effect in TRAINING_SIM_YEAR_EFFECTS
+            if effect.get("year") == year
+        ]
+        rows.sort(key=lambda row: next((e.get("order", 999) for e in TRAINING_SIM_YEAR_EFFECTS if e.get("id") == row.get("id")), 999))
+        grouped.append({"year": year, "effects": rows})
+    return grouped
+
+
+def _training_sim_request_support_type_count(req, meta=None):
+    meta = meta or _training_sim_card_meta_map()
+    types = set()
+    for stat in TRAINING_SIM_STATS:
+        for support_card_id, _lb in _training_sim_area_cards((req.areas or {}).get(stat) or []):
+            row = meta.get(str(support_card_id)) or {}
+            support_type = str(row.get("type") or "").strip()
+            if support_type and support_type.lower() != "unknown":
+                types.add(support_type)
+    return len(types), sorted(types)
+
+
+def _training_sim_selected_year_effects(req, meta=None):
+    selected_ids = {str(value or "").strip() for value in (req.year_effect_ids or []) if str(value or "").strip()}
+    effect_by_id = {str(effect.get("id")): effect for effect in TRAINING_SIM_YEAR_EFFECTS}
+    support_type_count, support_types = _training_sim_request_support_type_count(req, meta)
+    enforce_gate = bool(req.enforce_support_type_condition)
+    active = []
+    skipped = []
+    unknown = []
+    for effect_id in sorted(selected_ids):
+        effect = effect_by_id.get(effect_id)
+        if not effect:
+            unknown.append(effect_id)
+            continue
+        if enforce_gate and effect.get("requires_four_support_types") and support_type_count < 4:
+            skipped.append({
+                "id": effect_id,
+                "reason": "requires_at_least_4_support_types",
+                "support_type_count": support_type_count,
+            })
+            continue
+        active.append(effect)
+    return {
+        "effects": active,
+        "skipped": skipped,
+        "unknown": unknown,
+        "support_type_count": support_type_count,
+        "support_types": support_types,
+        "enforce_support_type_condition": enforce_gate,
+        "support_type_condition_met": support_type_count >= 4,
+    }
+
+
 def reconcile_active_selection():
     global active_selection
     data = active_dashboard_data or {}
@@ -4463,6 +4813,27 @@ class ApiDelayRequest(BaseModel):
     max: float = 4.0
     disabled: bool = False
 
+class TrainingSimCardPlacement(BaseModel):
+    support_card_id: int = 0
+    lb: int = 4
+
+class TrainingSimRequest(BaseModel):
+    scenario: str = "14"
+    facility_level: int = 5
+    mood: float = 0.2
+    growth: dict[str, float] = Field(default_factory=dict)
+    areas: dict[str, list[TrainingSimCardPlacement]] = Field(default_factory=dict)
+    npc_counts: dict[str, int] = Field(default_factory=dict)
+    megaphone_bonus_pct: float = 0
+    weight_training_pct: float = 0
+    weight_energy_pct: float = 0
+    weight_facilities: list[str] = Field(default_factory=list)
+    active_scenario_effects: list[str] = Field(default_factory=list)
+    year_effect_ids: list[str] = Field(default_factory=list)
+    enforce_support_type_condition: bool = True
+    trained_stat_over_1200: bool = False
+    bonded: bool = True
+
 class ProfileDatasetIngestRequest(BaseModel):
     recent_files: int = 5
     limit: int = 1000
@@ -4495,6 +4866,187 @@ async def get_turn_delay_settings():
 @app.post("/api/settings/turn-delay")
 async def set_turn_delay_settings(req: ApiDelayRequest):
     return set_turn_delay(req.min, req.max, req.disabled)
+
+
+@app.get("/api/training-sim/meta")
+async def training_sim_meta():
+    cards = _training_sim_card_catalog()
+    scenarios = _training_sim_scenario_rows()
+    return {
+        "success": True,
+        "stats": list(TRAINING_SIM_STATS),
+        "default_scenario": next((row["selector"] for row in scenarios if row.get("is_default")), "mant_base"),
+        "scenarios": scenarios,
+        "moods": [
+            {"label": "Great", "value": 0.2},
+            {"label": "Good", "value": 0.1},
+            {"label": "Normal", "value": 0.0},
+            {"label": "Bad", "value": -0.1},
+            {"label": "Awful", "value": -0.2},
+        ],
+        "growth_presets": [
+            {"label": "None", "growth": {}},
+            {"label": "Speed +10", "growth": {"speed": 10}},
+            {"label": "Speed +20", "growth": {"speed": 20}},
+            {"label": "Wit +20", "growth": {"wit": 20}},
+            {"label": "Speed/Wit +10", "growth": {"speed": 10, "wit": 10}},
+        ],
+        "item_options": {
+            "megaphones": [
+                {"label": "None", "value": 0},
+                {"label": "+20%", "value": 20},
+                {"label": "+40%", "value": 40},
+                {"label": "+60%", "value": 60},
+            ],
+            "weights": {
+                "training_pct": 50,
+                "energy_pct": 20,
+                "facilities": list(TRAINING_SIM_STATS),
+            },
+        },
+        "year_effects": _training_sim_year_effect_groups(),
+        "support_type_gate": {
+            "label": "Require at least 4 support types",
+            "description": "Classic and Senior year regional/basic bonuses only activate when at least four unique support card types are represented.",
+            "default": True,
+        },
+        "cards": cards,
+        "owned_count": sum(1 for card in cards if card.get("owned")),
+    }
+
+
+@app.post("/api/training-sim/calculate")
+async def training_sim_calculate(req: TrainingSimRequest):
+    scenario_selector, calc_scenario = _training_sim_scenario_selector(req.scenario)
+    facility_level = max(1, min(5, safe_int(req.facility_level or 5)))
+    mood = max(-0.2, min(0.2, float(req.mood or 0)))
+    growth = {
+        stat: float((req.growth or {}).get(stat) or 0)
+        for stat in TRAINING_SIM_STATS
+    }
+    gimmicks = set(_training_sim_scenario_gimmicks(scenario_selector))
+    # Scenario-specific gimmicks (uma.guide-style): only apply the inputs the
+    # selected scenario actually has. Megaphones/weights are Trackblazer items;
+    # venue/year effects are Make-a-newtrack (JP order 14). Stale UI payloads
+    # (e.g. a megaphone picked on MANT, then scenario switched to 14) are
+    # ignored server-side rather than silently inflating gains.
+    if "items" in gimmicks:
+        weight_facilities = _training_sim_weight_facilities(req)
+        weight_training_pct = max(0.0, float(req.weight_training_pct or 0))
+        weight_energy_pct = max(0.0, float(req.weight_energy_pct or 0))
+        megaphone_bonus_pct = max(0.0, float(req.megaphone_bonus_pct or 0))
+    else:
+        weight_facilities = set()
+        weight_training_pct = 0.0
+        weight_energy_pct = 0.0
+        megaphone_bonus_pct = 0.0
+    active_effects = list(req.active_scenario_effects or [])
+    calc = make_training_calculator(
+        data_dir=base_dir / "data",
+        scenario=calc_scenario,
+        active_scenario_effects=active_effects,
+    )
+    calc_no_scenario_effects = make_training_calculator(
+        data_dir=base_dir / "data",
+        scenario=calc_scenario,
+        active_scenario_effects=[],
+    )
+    meta = _training_sim_card_meta_map()
+    year_effect_state = _training_sim_selected_year_effects(req, meta)
+    if "year_effects" not in gimmicks:
+        # Venue/year toggles belong to Make-a-newtrack; on other scenarios any
+        # persisted selection is inert (kept in the response shape, applied 0).
+        year_effect_state = dict(year_effect_state, effects=[], skipped=[])
+    combined_scenario_effects = list(getattr(calc, "scenario_effects", []) or []) + list(year_effect_state.get("effects") or [])
+    areas = {}
+    for stat in TRAINING_SIM_STATS:
+        placements = _training_sim_area_cards((req.areas or {}).get(stat) or [])
+        npc = max(0, min(6, safe_int((req.npc_counts or {}).get(stat) or 0)))
+        item_train_pct = megaphone_bonus_pct + (weight_training_pct if stat in weight_facilities else 0)
+        item_energy_pct = weight_energy_pct if stat in weight_facilities else 0
+        common_kwargs = {
+            "facility_level": facility_level,
+            "mood": mood,
+            "growth": growth,
+            "bonded": bool(req.bonded),
+        }
+        base_gains = calc_no_scenario_effects.tile_gain(
+            [],
+            stat,
+            item_train_pct=0,
+            item_energy_pct=0,
+            npc=0,
+            **common_kwargs,
+        )
+        card_gains = calc_no_scenario_effects.tile_gain(
+            placements,
+            stat,
+            item_train_pct=item_train_pct,
+            item_energy_pct=item_energy_pct,
+            npc=npc,
+            **common_kwargs,
+        )
+        total_gains = calc.tile_gain(
+            placements,
+            stat,
+            item_train_pct=item_train_pct,
+            item_energy_pct=item_energy_pct,
+            npc=npc,
+            scenario_effects=combined_scenario_effects,
+            **common_kwargs,
+        )
+        overcap_enabled = bool(req.trained_stat_over_1200)
+        base_gains = _training_sim_apply_overcap_halving(base_gains, stat, overcap_enabled)
+        card_gains = _training_sim_apply_overcap_halving(card_gains, stat, overcap_enabled)
+        total_gains = _training_sim_apply_overcap_halving(total_gains, stat, overcap_enabled)
+        cards = []
+        for support_card_id, lb in placements:
+            row = dict(meta.get(str(support_card_id)) or {})
+            row["support_card_id"] = support_card_id
+            row["lb"] = lb
+            cards.append(row)
+        areas[stat] = {
+            "stat": stat,
+            "facility_level": facility_level,
+            "npc": npc,
+            "cards": cards,
+            "base_gains": base_gains,
+            "card_gains": card_gains,
+            "scenario_bonus": _training_sim_gain_delta(total_gains, card_gains),
+            "total_gains": total_gains,
+            "stat_sum": sum(int(total_gains.get(key) or 0) for key in TRAINING_SIM_STATS),
+        }
+    return {
+        "success": True,
+        "scenario": scenario_selector,
+        "calculator_scenario": calc_scenario or "trackblazer_base",
+        "facility_level": facility_level,
+        "mood": mood,
+        "growth": growth,
+        "megaphone_bonus_pct": megaphone_bonus_pct,
+        "weight_training_pct": weight_training_pct,
+        "weight_energy_pct": weight_energy_pct,
+        "weight_facilities": sorted(weight_facilities),
+        "active_scenario_effects": active_effects,
+        "year_effect_ids": list(req.year_effect_ids or []),
+        "year_effects_active": [
+            {
+                "id": effect.get("id"),
+                "year": effect.get("year"),
+                "label": effect.get("label"),
+                "detail": effect.get("detail"),
+            }
+            for effect in (year_effect_state.get("effects") or [])
+        ],
+        "year_effects_skipped": year_effect_state.get("skipped") or [],
+        "unknown_year_effect_ids": year_effect_state.get("unknown") or [],
+        "trained_stat_over_1200": bool(req.trained_stat_over_1200),
+        "support_type_count": int(year_effect_state.get("support_type_count") or 0),
+        "support_types": year_effect_state.get("support_types") or [],
+        "enforce_support_type_condition": bool(year_effect_state.get("enforce_support_type_condition")),
+        "support_type_condition_met": bool(year_effect_state.get("support_type_condition_met")),
+        "areas": areas,
+    }
 
 
 # --- Learning session endpoints --------------------------------------------

@@ -42,10 +42,7 @@
                     <span>Growth</span>
                     <select id="training-sim-growth-preset"></select>
                 </label>
-                <label class="training-sim-field">
-                    <span>Megaphone</span>
-                    <div id="training-sim-megaphones" class="training-sim-chip-row"></div>
-                </label>
+                <button id="training-sim-overcap-stat" class="training-sim-chip training-sim-overcap-chip" type="button" title="Trained stat over 1200: primary gain halved">Stat over 1200</button>
                 <div class="training-sim-topbar-actions">
                     <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
                     <button id="training-sim-reset" class="btn btn-sm" type="button">Reset All</button>
@@ -80,26 +77,25 @@
 
             <details id="training-sim-bonuses" class="training-sim-bonuses" open>
                 <summary>
-                    <span class="training-sim-title">Items &amp; Scenario Bonuses</span>
+                    <span id="training-sim-scenario-panel-title" class="training-sim-title">Scenario Items &amp; Bonuses</span>
                     <span id="training-sim-item-summary" class="training-sim-item-summary">Selected Facility Bonus: +0% | Other Facilities Bonus: +0%</span>
                 </summary>
-                <section class="training-sim-items">
-                    <div class="training-sim-item-block training-sim-item-block-wide">
-                        <div class="training-sim-item-title">Weights (Single Facility)</div>
-                        <div id="training-sim-weights" class="training-sim-chip-row"></div>
-                    </div>
+
+                <section id="training-sim-items-block" class="training-sim-items">
                     <div class="training-sim-item-block">
-                        <div class="training-sim-item-title">Stat Ceiling</div>
-                        <div class="training-sim-chip-row">
-                            <button id="training-sim-overcap-stat" class="training-sim-chip" type="button">Stat over 1200</button>
-                        </div>
+                        <div class="training-sim-item-title">Megaphone (All Trainings)</div>
+                        <div id="training-sim-megaphones" class="training-sim-chip-row"></div>
+                    </div>
+                    <div class="training-sim-item-block training-sim-item-block-wide">
+                        <div class="training-sim-item-title">Weights (Single Facility, +50% training / +20% energy)</div>
+                        <div id="training-sim-weights" class="training-sim-chip-row"></div>
                     </div>
                 </section>
 
-                <section class="training-sim-year-panel">
+                <section id="training-sim-year-block" class="training-sim-year-panel">
                     <div class="training-sim-section-head">
                         <div>
-                            <span class="training-sim-title">Scenario Regional Bonuses</span>
+                            <span class="training-sim-title">Regional Venue Bonuses</span>
                             <span id="training-sim-year-effect-status" class="training-sim-subtitle">Toggle year and venue effects to model regional bonuses.</span>
                         </div>
                         <label class="training-sim-owned-toggle training-sim-gate-toggle">
@@ -109,7 +105,16 @@
                     </div>
                     <div id="training-sim-year-effects" class="training-sim-year-effects"></div>
                 </section>
+
+                <div id="training-sim-no-gimmick" class="training-sim-empty" hidden>This scenario has no extra items or regional bonuses in the sim.</div>
             </details>
+
+            <div class="training-sim-info-note">
+                <strong>How it works:</strong> Pick a card (or drag) and click a training tile to place it.
+                Cards matching the training type (e.g., Speed cards in Speed training) receive friendship
+                training bonuses. Non-matching cards contribute stat bonuses only. Scenario items and
+                regional bonuses appear only for the scenario that has them.
+            </div>
         </div>
     </main>
     <script src="/training_sim.js"></script>

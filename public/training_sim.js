@@ -36,14 +36,25 @@
         const sel = String((els.scenario && els.scenario.value) || state.scenario || "");
         return ((state.meta || {}).scenarios || []).find(row => String(row.selector) === sel) || null;
     }
+    // Fallback mirror of main.py TRAINING_SIM_SCENARIO_GIMMICKS for servers
+    // started before the backend gained per-scenario gimmicks in /meta —
+    // without it an older backend would hide EVERY panel (incl. Hakodate on 14).
+    // Mirrors main.py TRAINING_SIM_SCENARIO_GIMMICKS exactly. Selector "1" =
+    // らっしゃい！トレセン軒！ (JP newest; its in-game scenario_id is 14, which is
+    // what the user calls it) -> regional venue/year toggles, NO megaphone shop.
+    // GameWith selector "14" is a different scenario — do NOT attach these there.
+    const GIMMICK_FALLBACK = { mant_base: ["items"], "1": ["year_effects"] };
     function scenarioGimmicks() {
         const row = selectedScenarioRow();
-        return new Set((row && row.gimmicks) || []);
+        if (row && Array.isArray(row.gimmicks)) return new Set(row.gimmicks);
+        const sel = String((row && row.selector) || (els.scenario && els.scenario.value) || state.scenario || "");
+        return new Set(GIMMICK_FALLBACK[sel] || []);
     }
     function applyGimmickVisibility() {
         // uma.guide-style: only render the controls the selected scenario has.
-        // Trackblazer (mant_base) -> megaphone/weight items; Make a newtrack
-        // (JP order 14) -> regional venue/year toggles; others -> note.
+        // Trackblazer (mant_base) -> megaphone/weight items; current JP
+        // scenario 14 (GameWith newest selector "1") -> regional venue/year
+        // toggles; others -> note.
         const gimmicks = scenarioGimmicks();
         const row = selectedScenarioRow();
         const hasItems = gimmicks.has("items");

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="blue">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sweepy Training Sim</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/training_sim.css">
+</head>
+<body class="training-sim-standalone">
+    <main class="training-sim-page">
+        <header class="training-sim-hero">
+            <div>
+                <div class="training-sim-brand">SWEEPY KAI</div>
+                <h1>Training Sim</h1>
+                <p>No login required. Pick a scenario, toggle bonuses, place cards, and compare tile output.</p>
+            </div>
+            <div id="standalone-status" class="training-sim-page-status">Loading...</div>
+        </header>
+
+        <div class="training-sim-root">
+            <div class="training-sim-topbar">
+                <label class="training-sim-field">
+                    <span>Scenario</span>
+                    <select id="training-sim-scenario"></select>
+                </label>
+                <label class="training-sim-field">
+                    <span>Facility Lv</span>
+                    <select id="training-sim-level">
+                        <option value="1">Level 1</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3</option>
+                        <option value="4">Level 4</option>
+                        <option value="5" selected>Level 5</option>
+                    </select>
+                </label>
+                <label class="training-sim-field">
+                    <span>Mood</span>
+                    <select id="training-sim-mood"></select>
+                </label>
+                <label class="training-sim-field">
+                    <span>Growth</span>
+                    <select id="training-sim-growth-preset"></select>
+                </label>
+                <label class="training-sim-field">
+                    <span>Megaphone</span>
+                    <div id="training-sim-megaphones" class="training-sim-chip-row"></div>
+                </label>
+                <div class="training-sim-topbar-actions">
+                    <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
+                    <button id="training-sim-reset" class="btn btn-sm" type="button">Reset All</button>
+                </div>
+            </div>
+
+            <div class="training-sim-workspace">
+                <section class="training-sim-areas-section">
+                    <div class="training-sim-section-head">
+                        <span class="training-sim-title">Training Tiles</span>
+                        <span id="training-sim-tiles-hint" class="training-sim-subtitle">Pick a card → click a tile to place it. Click a placed card to remove.</span>
+                    </div>
+                    <div id="training-sim-areas" class="training-sim-areas"></div>
+                </section>
+
+                <section class="training-sim-toolbox training-sim-toolbox-col">
+                    <div class="training-sim-section-head">
+                        <div>
+                            <span class="training-sim-title">Support Cards</span>
+                            <span id="training-sim-status" class="training-sim-subtitle">Loading card data...</span>
+                        </div>
+                        <label class="training-sim-owned-toggle">
+                            <input id="training-sim-owned-only" type="checkbox">
+                            <span>Owned only</span>
+                        </label>
+                    </div>
+                    <input id="training-sim-card-search" class="library-search-input" type="search" placeholder="Search cards by name, type, rarity...">
+                    <div id="training-sim-filter-row" class="training-sim-filter-row"></div>
+                    <div id="training-sim-card-toolbox" class="training-sim-card-toolbox"></div>
+                </section>
+            </div>
+
+            <details class="training-sim-bonuses">
+                <summary>
+                    <span class="training-sim-title">Items &amp; Scenario Bonuses</span>
+                    <span id="training-sim-item-summary" class="training-sim-item-summary">Selected Facility Bonus: +0% | Other Facilities Bonus: +0%</span>
+                </summary>
+                <section class="training-sim-items">
+                    <div class="training-sim-item-block training-sim-item-block-wide">
+                        <div class="training-sim-item-title">Weights (Single Facility)</div>
+                        <div id="training-sim-weights" class="training-sim-chip-row"></div>
+                    </div>
+                    <div class="training-sim-item-block">
+                        <div class="training-sim-item-title">Stat Ceiling</div>
+                        <div class="training-sim-chip-row">
+                            <button id="training-sim-overcap-stat" class="training-sim-chip" type="button">Stat over 1200</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="training-sim-year-panel">
+                    <div class="training-sim-section-head">
+                        <div>
+                            <span class="training-sim-title">Scenario Regional Bonuses</span>
+                            <span id="training-sim-year-effect-status" class="training-sim-subtitle">Toggle year and venue effects to model regional bonuses.</span>
+                        </div>
+                        <label class="training-sim-owned-toggle training-sim-gate-toggle">
+                            <input id="training-sim-support-type-gate" type="checkbox">
+                            <span>Require 4 support types</span>
+                        </label>
+                    </div>
+                    <div id="training-sim-year-effects" class="training-sim-year-effects"></div>
+                </section>
+            </details>
+        </div>
+    </main>
+    <script src="/training_sim.js"></script>
+</body>
+</html>

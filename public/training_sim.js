@@ -241,16 +241,26 @@
         const result = state.result || {};
         const skippedIds = new Set((result.year_effects_skipped || []).map(row => String(row.id || "")));
         const activeIds = new Set(selectedYearEffectIds());
+        const typeCount = Number(result.support_type_count || 0);
+        const gateOn = !!state.enforceSupportTypes;
         els.yearEffects.innerHTML = (meta.year_effects || []).map(group => {
             const buttons = (group.effects || []).map(effect => {
                 const id = String(effect.id || "");
                 const active = activeIds.has(id);
                 const blocked = active && skippedIds.has(id);
+                // Explain the gate BEFORE the user clicks: chips that need 4 card
+                // types show as gated (dimmed, not dead) while under 4 types.
+                const gated = gateOn && effect.requires_four_support_types && typeCount < 4;
+                const reason = blocked
+                    ? `Selected, but inactive: needs 4 card types on tiles (you have ${typeCount}). Untick "Require 4 support types" to force it.`
+                    : "";
                 return `
-                    <button class="training-sim-effect-chip ${active ? "is-active" : ""} ${blocked ? "is-blocked" : ""}" type="button" data-year-effect="${escapeAttr(id)}">
+                    <button class="training-sim-effect-chip ${active ? "is-active" : ""} ${blocked ? "is-blocked" : ""} ${gated && !active ? "is-gated" : ""}" type="button" data-year-effect="${escapeAttr(id)}"
+                        title="${escapeAttr(reason || (gated ? `Needs 4 card types on tiles (you have ${typeCount})` : ""))}">
                         <span class="training-sim-effect-chip-title">${escapeHtml(effect.label || id)}</span>
                         <span class="training-sim-effect-chip-detail">${escapeHtml(effect.detail || "")}</span>
-                        ${effect.requires_four_support_types ? '<span class="training-sim-effect-chip-gate">4 types</span>' : ""}
+                        ${blocked ? `<span class="training-sim-effect-chip-blockreason">needs 4 card types — you have ${typeCount}</span>` : ""}
+                        ${effect.requires_four_support_types ? `<span class="training-sim-effect-chip-gate ${gated ? "is-unmet" : "is-met"}">${gateOn ? `${Math.min(4, typeCount)}/4 types` : "4 types (off)"}</span>` : ""}
                     </button>
                 `;
             }).join("");
@@ -261,12 +271,15 @@
                 </div>
             `;
         }).join("") || '<div class="training-sim-empty">No scenario bonus data loaded.</div>';
-        const typeCount = Number(result.support_type_count || 0);
         const types = (result.support_types || []).join(", ") || "none placed";
         const activeCount = (result.year_effects_active || []).length;
         const skippedCount = (result.year_effects_skipped || []).length;
-        const gate = state.enforceSupportTypes ? `4-type gate on (${typeCount}/4: ${types})` : `4-type gate off (${typeCount} types: ${types})`;
-        els.yearEffectStatus.textContent = `${gate} | active ${activeCount}, skipped ${skippedCount}`;
+        if (gateOn && typeCount < 4) {
+            els.yearEffectStatus.textContent = `Classic/Senior bonuses need 4 card types on tiles — you have ${typeCount} (${types}). Place more types or untick the gate. | active ${activeCount}, inactive ${skippedCount}`;
+        } else {
+            const gate = gateOn ? `4-type gate met (${typeCount}/4: ${types})` : `4-type gate off (${typeCount} types: ${types})`;
+            els.yearEffectStatus.textContent = `${gate} | active ${activeCount}, inactive ${skippedCount}`;
+        }
     }
 
     function renderFilters() {
@@ -286,7 +299,9 @@
             if (state.rarityFilter !== "all" && String(card.rarity || "") !== state.rarityFilter) return false;
             if (!query) return true;
             return [card.support_card_id, card.id, card.name, card.type, card.rarity].join(" ").toLowerCase().includes(query);
-        }).slice(0, 220);
+        });
+        // No hard cap: the old slice(0, 220) cut the type-sorted list after
+        // Speed/Stamina/Power, hiding EVERY Guts/Wit/Pal card unless filtered.
     }
     function renderCardToolbox() {
         const cards = filteredCards();
@@ -298,7 +313,7 @@
             const owned = card.owned ? `LB${Number(card.limit_break_count || 0)}` : "catalog";
             return `
                 <button class="training-sim-card ${typeClass(card.type)} ${active ? "is-selected" : ""}" type="button" data-card-id="${id}">
-                    <img src="/api/images/${id}.png" onerror="this.style.display='none'">
+                    <img src="/api/images/${id}.png" loading="lazy" onerror="this.style.display='none'">
                     <span class="training-sim-card-name">${escapeHtml(card.name || `Support ${id}`)}</span>
                     <span class="training-sim-card-meta">${escapeHtml(card.rarity || "?")} - ${escapeHtml(card.type || "?")} - ${escapeHtml(owned)}</span>
                 </button>
@@ -385,6 +400,13 @@
         try {
             const data = await apiJson("/api/training-sim/meta?t=" + Date.now());
             if (!data || !data.success) throw new Error((data && data.detail) || "Training sim meta failed");
+            // Normalize JP-side type names to the UI's global naming so the
+            // Wit/Pal filter chips and type colors match every card
+            // (backend emits "Intelligence" for Wit and "Friend" for Pal).
+            const typeAliases = { Intelligence: "Wit", Wisdom: "Wit", Int: "Wit", Friend: "Pal" };
+            (data.cards || []).forEach(card => {
+                if (typeAliases[card.type]) card.type = typeAliases[card.type];
+            });
             state.meta = data;
             if (!state.scenario) state.scenario = data.default_scenario || "mant_base";
             renderAll();
@@ -554,6 +576,13 @@
             renderAreas();
             scheduleCalculation();
         });
+    }
+
+    // Persist the Items & Scenario Bonuses panel open/closed state.
+    const bonusesPanel = $("training-sim-bonuses");
+    if (bonusesPanel) {
+        bonusesPanel.open = localGet("trainingSimBonusesOpen", "1") !== "0";
+        bonusesPanel.addEventListener("toggle", () => localSet("trainingSimBonusesOpen", bonusesPanel.open ? "1" : "0"));
     }
 
     bindHandlers();

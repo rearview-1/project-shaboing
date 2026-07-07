@@ -166,6 +166,25 @@
 .training-sim-bonuses > summary .training-sim-item-summary { margin-left: auto; }
 .training-sim-bonuses > section { padding: 4px 18px 16px; }
 
+/* Gate feedback on year/venue chips: gated = dimmed-but-clickable (needs 4
+   types), blocked = selected but inactive with an inline reason. Amber, not
+   error-red — nothing is broken, it just needs more card types. */
+.training-sim-effect-chip.is-gated { opacity: 0.62; }
+.training-sim-effect-chip.is-gated:hover { opacity: 1; }
+.training-sim-effect-chip.is-blocked {
+    border-color: rgba(255, 187, 84, 0.65);
+    background: rgba(255, 187, 84, 0.08);
+}
+.training-sim-effect-chip-blockreason {
+    color: #ffbb54;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.training-sim-effect-chip-gate.is-unmet { color: #ffbb54; border-color: rgba(255, 187, 84, 0.5); }
+.training-sim-effect-chip-gate.is-met { color: var(--accent-soft); }
+
 @media (max-width: 1040px) {
     .training-sim-workspace { grid-template-columns: 1fr; }
     .training-sim-toolbox-col { position: static; max-height: none; }

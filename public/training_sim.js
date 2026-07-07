@@ -25,8 +25,39 @@
         filterRow: $("training-sim-filter-row"),
         cardToolbox: $("training-sim-card-toolbox"),
         areas: $("training-sim-areas"),
-        tilesHint: $("training-sim-tiles-hint")
+        tilesHint: $("training-sim-tiles-hint"),
+        itemsBlock: $("training-sim-items-block"),
+        yearBlock: $("training-sim-year-block"),
+        noGimmick: $("training-sim-no-gimmick"),
+        scenarioPanelTitle: $("training-sim-scenario-panel-title")
     };
+
+    function selectedScenarioRow() {
+        const sel = String((els.scenario && els.scenario.value) || state.scenario || "");
+        return ((state.meta || {}).scenarios || []).find(row => String(row.selector) === sel) || null;
+    }
+    function scenarioGimmicks() {
+        const row = selectedScenarioRow();
+        return new Set((row && row.gimmicks) || []);
+    }
+    function applyGimmickVisibility() {
+        // uma.guide-style: only render the controls the selected scenario has.
+        // Trackblazer (mant_base) -> megaphone/weight items; Make a newtrack
+        // (JP order 14) -> regional venue/year toggles; others -> note.
+        const gimmicks = scenarioGimmicks();
+        const row = selectedScenarioRow();
+        const hasItems = gimmicks.has("items");
+        const hasYear = gimmicks.has("year_effects");
+        if (els.itemsBlock) els.itemsBlock.hidden = !hasItems;
+        if (els.yearBlock) els.yearBlock.hidden = !hasYear;
+        if (els.noGimmick) els.noGimmick.hidden = hasItems || hasYear;
+        if (els.scenarioPanelTitle) {
+            const name = (row && row.name) || "Scenario";
+            els.scenarioPanelTitle.textContent = hasItems ? `${name} — Shop Items`
+                : hasYear ? `${name} — Regional Bonuses`
+                : `${name} — Scenario Bonuses`;
+        }
+    }
 
     function updateArmedHint() {
         if (!els.tilesHint) return;
@@ -163,13 +194,21 @@
         return (els.scenario && els.scenario.value) || state.scenario || (state.meta && state.meta.default_scenario) || "mant_base";
     }
     function syncItemSummary() {
-        const weightCount = weightFacilitiesArray().length;
-        const selected = Number(state.megaphonePct || 0) + (weightCount ? 50 : 0);
-        const other = Number(state.megaphonePct || 0);
         const overcap = state.overcapStat ? " | Trained stat over 1200: primary gain halved" : "";
-        els.itemSummary.textContent = `Selected Facility Bonus: +${selected}% | Other Facilities Bonus: +${other}%${overcap}`;
+        if (!scenarioGimmicks().has("items")) {
+            els.itemSummary.textContent = `No shop items in this scenario${overcap}`;
+            return;
+        }
+        const weighted = weightFacilitiesArray()[0] || "";
+        const selected = Number(state.megaphonePct || 0) + (weighted ? 50 : 0);
+        const other = Number(state.megaphonePct || 0);
+        const energyChip = weighted ? ` | ${statLabel(weighted)} energy cost: +20%` : "";
+        els.itemSummary.textContent = `Selected facility bonus: +${selected}% | Other facilities bonus: +${other}%${energyChip}${overcap}`;
     }
     function payload() {
+        const gimmicks = scenarioGimmicks();
+        const hasItems = gimmicks.has("items");
+        const hasYear = gimmicks.has("year_effects");
         return {
             scenario: selectedScenario(),
             facility_level: selectedLevel(),
@@ -177,12 +216,14 @@
             growth: { ...(state.growth || {}) },
             areas: state.areas || defaultAreas(),
             npc_counts: state.npc || defaultNpc(),
-            megaphone_bonus_pct: Number(state.megaphonePct || 0),
+            // Scenario-specific gimmicks: only send what this scenario has
+            // (the server independently ignores inputs the scenario lacks).
+            megaphone_bonus_pct: hasItems ? Number(state.megaphonePct || 0) : 0,
             weight_training_pct: 50,
             weight_energy_pct: 20,
-            weight_facilities: weightFacilitiesArray(),
+            weight_facilities: hasItems ? weightFacilitiesArray() : [],
             active_scenario_effects: [],
-            year_effect_ids: selectedYearEffectIds(),
+            year_effect_ids: hasYear ? selectedYearEffectIds() : [],
             enforce_support_type_condition: !!state.enforceSupportTypes,
             trained_stat_over_1200: !!state.overcapStat,
             bonded: true
@@ -224,7 +265,9 @@
         els.megaphones.innerHTML = (((meta.item_options || {}).megaphones || []).map(row => `
             <button class="training-sim-chip ${Number(row.value) === Number(state.megaphonePct || 0) ? "is-active" : ""}" type="button" data-megaphone="${escapeAttr(row.value)}">${escapeHtml(row.label)}</button>
         `).join(""));
-        els.weights.innerHTML = STATS.map(stat => `
+        // uma.guide/game parity: weights exist for Speed/Stamina/Power/Guts only
+        // (there is no Wit weight item), and only ONE facility can be weighted.
+        els.weights.innerHTML = STATS.filter(stat => stat !== "wit").map(stat => `
             <button class="training-sim-chip training-sim-chip-stat ${state.weightFacilities[stat] ? "is-active" : ""}" type="button" data-weight="${stat}">
                 ${escapeHtml(statLabel(stat))} Weight
             </button>
@@ -232,6 +275,7 @@
         els.overcapStat.classList.toggle("is-active", !!state.overcapStat);
         els.supportTypeGate.checked = !!state.enforceSupportTypes;
         els.ownedOnly.checked = !!state.ownedOnly;
+        applyGimmickVisibility();
         syncItemSummary();
         renderYearEffects();
     }
@@ -340,13 +384,24 @@
                     </button>
                 `;
             }).join("");
+            // uma.guide-style: big headline gain for the tile's own stat, compact
+            // secondary rows, and a "Show breakdown" expandable (base / cards+items
+            // / scenario) instead of a cryptic one-liner.
+            const cardG = area.card_gains || {};
+            const headlineValue = gainValue(total, stat);
             const gainRows = ["speed", "stamina", "power", "guts", "wit", "sp", "energy"].map(key => {
                 const value = gainValue(total, key);
                 if (!value && !["sp", "energy"].includes(key)) return "";
+                if (key === stat) return "";
                 return `<div class="training-sim-gain-row"><span>${escapeHtml(statLabel(key))}</span><strong class="${gainClass(value, key)}">${formatGain(value, key)}</strong></div>`;
             }).join("");
-            const baseSummary = ["speed", "stamina", "power", "guts", "wit", "sp"].map(key => gainValue(base, key)).filter(Boolean).join(" / ");
-            const scenarioDelta = Object.values(scenario).reduce((sum, value) => sum + Math.abs(Number(value || 0)), 0);
+            const breakdownKeys = ["speed", "stamina", "power", "guts", "wit", "sp", "energy"];
+            const breakdownRows = breakdownKeys.map(key => {
+                const b = gainValue(base, key), c = gainValue(cardG, key), t = gainValue(total, key);
+                if (!b && !c && !t) return "";
+                const s = Number((scenario || {})[key] || 0);
+                return `<tr><td>${escapeHtml(statLabel(key))}</td><td>${formatGain(b, key)}</td><td>${formatGain(c - b, key)}</td><td>${formatGain(s, key)}</td><td class="${gainClass(t, key)}"><strong>${formatGain(t, key)}</strong></td></tr>`;
+            }).join("");
             return `
                 <div class="training-sim-area ${typeClass(statLabel(stat))} ${state.selectedArea === stat ? "is-selected" : ""} ${state.selectedCard ? "is-armed" : ""}" data-area="${stat}">
                     <div class="training-sim-area-head"><span>${escapeHtml(statLabel(stat))}</span><b>${cards.length + npc}/6</b></div>
@@ -359,8 +414,20 @@
                         <button class="btn btn-xs" type="button" data-npc-delta="1" data-npc-area="${stat}">+ NPC</button>
                         <button class="btn btn-xs" type="button" data-clear-area="${stat}">Clear</button>
                     </div>
-                    <div class="training-sim-gains">${gainRows}</div>
-                    <div class="training-sim-breakdown">Base ${escapeHtml(baseSummary || "0")}${scenarioDelta ? ` - Scenario adj ${escapeHtml(String(scenarioDelta))}` : ""}</div>
+                    <div class="training-sim-output">
+                        <div class="training-sim-output-primary">
+                            <span>${escapeHtml(statLabel(stat))}</span>
+                            <strong class="${gainClass(headlineValue)}">${formatGain(headlineValue)}</strong>
+                        </div>
+                        <div class="training-sim-gains">${gainRows}</div>
+                        <details class="training-sim-breakdown-details">
+                            <summary>Show breakdown</summary>
+                            <table class="training-sim-breakdown-table">
+                                <thead><tr><th></th><th>Base</th><th>Cards/Items</th><th>Scenario</th><th>Total</th></tr></thead>
+                                <tbody>${breakdownRows || '<tr><td colspan="5">Drop cards to see stats</td></tr>'}</tbody>
+                            </table>
+                        </details>
+                    </div>
                 </div>
             `;
         }).join("");
@@ -421,6 +488,8 @@
         els.scenario.addEventListener("change", () => {
             state.scenario = els.scenario.value || "";
             localSet("trainingSimScenario", state.scenario);
+            applyGimmickVisibility();
+            syncItemSummary();
             scheduleCalculation();
         });
         els.level.addEventListener("change", () => {
@@ -470,7 +539,9 @@
         els.megaphones.addEventListener("click", event => {
             const btn = event.target.closest("[data-megaphone]");
             if (!btn) return;
-            state.megaphonePct = Number(btn.dataset.megaphone || 0) || 0;
+            const value = Number(btn.dataset.megaphone || 0) || 0;
+            // uma.guide parity: clicking the active option deselects it.
+            state.megaphonePct = value === Number(state.megaphonePct || 0) ? 0 : value;
             localSet("trainingSimMegaphonePct", state.megaphonePct);
             renderControls();
             scheduleCalculation();
@@ -479,7 +550,10 @@
             const btn = event.target.closest("[data-weight]");
             if (!btn) return;
             const stat = btn.dataset.weight;
-            state.weightFacilities[stat] = !state.weightFacilities[stat];
+            // Single-select (one weight item per turn); click again to clear.
+            const wasActive = !!state.weightFacilities[stat];
+            state.weightFacilities = {};
+            if (!wasActive) state.weightFacilities[stat] = true;
             renderControls();
             scheduleCalculation();
         });
@@ -527,6 +601,8 @@
             updateArmedHint();
         });
         els.areas.addEventListener("click", event => {
+            // Clicks inside the breakdown expandable must not place cards/NPCs.
+            if (event.target.closest(".training-sim-breakdown-details")) return;
             const removeBtn = event.target.closest("[data-remove-card-id]");
             if (removeBtn) {
                 removeCardEverywhere(removeBtn.dataset.removeCardId);

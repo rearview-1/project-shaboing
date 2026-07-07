@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "training-sim",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["training_sim_server.py"],
+      "port": 1818,
+      "autoPort": true
+    }
+  ]
+}

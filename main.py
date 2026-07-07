@@ -4485,6 +4485,7 @@ def _training_sim_owned_lookup():
 def _training_sim_card_catalog():
     bonus_data = _training_sim_load_json(base_dir / "data" / "support_card_bonuses.json", {})
     train_data = _training_sim_load_json(base_dir / "data" / "support_card_training_effects.json", {})
+    releases = (_training_sim_load_json(base_dir / "data" / "support_card_releases.json", {}) or {}).get("cards") or {}
     owned = _training_sim_owned_lookup()
     ids = sorted(
         {
@@ -4500,6 +4501,7 @@ def _training_sim_card_catalog():
         train = (train_data.get(sid) if isinstance(train_data, dict) else {}) or {}
         info = support_map.get(sid, {}) or {}
         row_owned = owned.get(sid, {})
+        release = releases.get(sid) or {}
         support_type = display_support_type((bonus or {}).get("type") or info.get("type") or train.get("t") or "Unknown")
         rows.append({
             "support_card_id": int(sid),
@@ -4510,14 +4512,16 @@ def _training_sim_card_catalog():
             "owned": bool(row_owned.get("owned")),
             "limit_break_count": int(row_owned.get("limit_break_count") or 0),
             "support_card_level": int(row_owned.get("support_card_level") or 0),
+            "release_ts": int(release.get("release_ts") or 0),
+            "release_date": release.get("release_date") or None,
         })
-    type_order = {"Speed": 0, "Stamina": 1, "Power": 2, "Guts": 3, "Wit": 4, "Pal": 5, "Group": 6}
-    rarity_order = {"SSR": 0, "SR": 1, "R": 2}
+    # Base sort = JP release date, newest first (GameTora-style). Cards with no
+    # known date sink to the bottom; ties (same banner day) break newest-id
+    # first. data/support_card_releases.json is built by
+    # tools/fetch_support_card_releases.py.
     rows.sort(key=lambda row: (
-        type_order.get(row.get("type"), 99),
-        rarity_order.get(row.get("rarity"), 99),
-        str(row.get("name") or ""),
-        int(row.get("support_card_id") or 0),
+        -int(row.get("release_ts") or 0),
+        -int(row.get("support_card_id") or 0),
     ))
     return rows
 
@@ -4544,17 +4548,20 @@ def _training_sim_apply_overcap_halving(gains, training_stat, enabled=False):
 def _training_sim_area_cards(raw_cards):
     cards = []
     for row in raw_cards or []:
+        fb = True
         if isinstance(row, TrainingSimCardPlacement):
             sid = int(row.support_card_id or 0)
             lb = int(row.lb if row.lb is not None else 4)
+            fb = bool(row.fb)
         elif isinstance(row, dict):
             sid = safe_int(row.get("support_card_id") or row.get("id") or 0)
             lb = safe_int(row.get("lb") if row.get("lb") is not None else row.get("limit_break_count") or 4)
+            fb = row.get("fb") is not False
         else:
             sid = safe_int(row)
             lb = 4
         if sid > 0:
-            cards.append((sid, max(0, min(4, lb))))
+            cards.append({"support_card_id": sid, "lb": max(0, min(4, lb)), "fb": fb})
     return cards[:6]
 
 
@@ -4589,8 +4596,8 @@ def _training_sim_request_support_type_count(req, meta=None):
     meta = meta or _training_sim_card_meta_map()
     types = set()
     for stat in TRAINING_SIM_STATS:
-        for support_card_id, _lb in _training_sim_area_cards((req.areas or {}).get(stat) or []):
-            row = meta.get(str(support_card_id)) or {}
+        for placement in _training_sim_area_cards((req.areas or {}).get(stat) or []):
+            row = meta.get(str(placement["support_card_id"])) or {}
             support_type = str(row.get("type") or "").strip()
             if support_type and support_type.lower() != "unknown":
                 types.add(support_type)
@@ -4818,6 +4825,7 @@ class ApiDelayRequest(BaseModel):
 class TrainingSimCardPlacement(BaseModel):
     support_card_id: int = 0
     lb: int = 4
+    fb: bool = True  # friendship bonus enabled (uma.guide FB chip)
 
 class TrainingSimRequest(BaseModel):
     scenario: str = "14"
@@ -4929,9 +4937,10 @@ async def training_sim_calculate(req: TrainingSimRequest):
     gimmicks = set(_training_sim_scenario_gimmicks(scenario_selector))
     # Scenario-specific gimmicks (uma.guide-style): only apply the inputs the
     # selected scenario actually has. Megaphones/weights are Trackblazer items;
-    # venue/year effects are Make-a-newtrack (JP order 14). Stale UI payloads
-    # (e.g. a megaphone picked on MANT, then scenario switched to 14) are
-    # ignored server-side rather than silently inflating gains.
+    # venue/year effects are JP master scenario id 14, exposed by the GameWith
+    # scrape as selector "1". Stale UI payloads (e.g. a megaphone picked on
+    # MANT, then scenario switched) are ignored server-side rather than
+    # silently inflating gains.
     if "items" in gimmicks:
         weight_facilities = _training_sim_weight_facilities(req)
         weight_training_pct = max(0.0, float(req.weight_training_pct or 0))
@@ -5002,10 +5011,12 @@ async def training_sim_calculate(req: TrainingSimRequest):
         card_gains = _training_sim_apply_overcap_halving(card_gains, stat, overcap_enabled)
         total_gains = _training_sim_apply_overcap_halving(total_gains, stat, overcap_enabled)
         cards = []
-        for support_card_id, lb in placements:
+        for placement in placements:
+            support_card_id = placement["support_card_id"]
             row = dict(meta.get(str(support_card_id)) or {})
             row["support_card_id"] = support_card_id
-            row["lb"] = lb
+            row["lb"] = placement["lb"]
+            row["fb"] = placement.get("fb", True)
             cards.append(row)
         areas[stat] = {
             "stat": stat,

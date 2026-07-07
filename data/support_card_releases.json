@@ -1,0 +1,3253 @@
+{
+ "_source": "https://umapyoi.net/api/v1/support (per-card start_date, unix epoch, JP release)",
+ "_description": "support_card_id -> JP release date. Training sim sorts its card toolbox by release_ts desc (newest first, GameTora-style). Rebuild with tools/fetch_support_card_releases.py.",
+ "generated_at": "2026-07-07T13:24:55Z",
+ "cards": {
+  "10001": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1001
+  },
+  "10002": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1002
+  },
+  "10003": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1003
+  },
+  "10004": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1004
+  },
+  "10005": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1006
+  },
+  "10006": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1007
+  },
+  "10007": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1008
+  },
+  "10008": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1010
+  },
+  "10009": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1011
+  },
+  "10010": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1013
+  },
+  "10011": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1014
+  },
+  "10012": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1015
+  },
+  "10013": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1017
+  },
+  "10014": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1020
+  },
+  "10015": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1030
+  },
+  "10016": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1035
+  },
+  "10017": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1040
+  },
+  "10018": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1041
+  },
+  "10019": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1045
+  },
+  "10020": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1052
+  },
+  "10021": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 9001
+  },
+  "10022": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 9004
+  },
+  "10023": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1009
+  },
+  "10024": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1012
+  },
+  "10025": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1018
+  },
+  "10026": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1019
+  },
+  "10027": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1021
+  },
+  "10028": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1022
+  },
+  "10029": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1023
+  },
+  "10030": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1024
+  },
+  "10031": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1025
+  },
+  "10032": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1026
+  },
+  "10033": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1027
+  },
+  "10034": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1029
+  },
+  "10035": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1031
+  },
+  "10036": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1032
+  },
+  "10037": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1036
+  },
+  "10038": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1037
+  },
+  "10039": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1046
+  },
+  "10040": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1050
+  },
+  "10041": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1051
+  },
+  "10042": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1054
+  },
+  "10043": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1055
+  },
+  "10044": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1056
+  },
+  "10045": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1058
+  },
+  "10046": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1059
+  },
+  "10047": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1060
+  },
+  "10048": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1061
+  },
+  "10049": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1005
+  },
+  "10050": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1044
+  },
+  "10051": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1066
+  },
+  "10052": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1065
+  },
+  "10053": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1063
+  },
+  "10054": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1064
+  },
+  "10055": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1068
+  },
+  "10056": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1067
+  },
+  "10057": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1062
+  },
+  "10058": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1072
+  },
+  "10059": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1047
+  },
+  "10060": {
+   "release_ts": 1630292400,
+   "release_date": "2021-08-30",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 9006
+  },
+  "10061": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1042
+  },
+  "10062": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1069
+  },
+  "10063": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1039
+  },
+  "10064": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1028
+  },
+  "10065": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1053
+  },
+  "10066": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1043
+  },
+  "10067": {
+   "release_ts": 1634698800,
+   "release_date": "2021-10-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1049
+  },
+  "10068": {
+   "release_ts": 1639450800,
+   "release_date": "2021-12-14",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1034
+  },
+  "10069": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1071
+  },
+  "10070": {
+   "release_ts": 1629428400,
+   "release_date": "2021-08-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1048
+  },
+  "10071": {
+   "release_ts": 1634698800,
+   "release_date": "2021-10-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1070
+  },
+  "10072": {
+   "release_ts": 1626750000,
+   "release_date": "2021-07-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1016
+  },
+  "10073": {
+   "release_ts": 1635390000,
+   "release_date": "2021-10-28",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1038
+  },
+  "10074": {
+   "release_ts": 1641870000,
+   "release_date": "2022-01-11",
+   "title_en": "[Acupuncturist]",
+   "chara_id": 9005
+  },
+  "10075": {
+   "release_ts": 1640746800,
+   "release_date": "2021-12-29",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1033
+  },
+  "10076": {
+   "release_ts": 1614135600,
+   "release_date": "2021-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1074
+  },
+  "10077": {
+   "release_ts": 1614135600,
+   "release_date": "2021-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1077
+  },
+  "10078": {
+   "release_ts": 1652151600,
+   "release_date": "2022-05-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1057
+  },
+  "10079": {
+   "release_ts": 1663642800,
+   "release_date": "2022-09-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1085
+  },
+  "10080": {
+   "release_ts": 1663642800,
+   "release_date": "2022-09-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1093
+  },
+  "10081": {
+   "release_ts": 1658286000,
+   "release_date": "2022-07-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1073
+  },
+  "10082": {
+   "release_ts": 1666148400,
+   "release_date": "2022-10-19",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1083
+  },
+  "10083": {
+   "release_ts": 1661310000,
+   "release_date": "2022-08-24",
+   "title_en": "[Event Producer]",
+   "chara_id": 9008
+  },
+  "10084": {
+   "release_ts": 1665975600,
+   "release_date": "2022-10-17",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1084
+  },
+  "10085": {
+   "release_ts": 1669604400,
+   "release_date": "2022-11-28",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1076
+  },
+  "10086": {
+   "release_ts": 1671505200,
+   "release_date": "2022-12-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1078
+  },
+  "10087": {
+   "release_ts": 1674183600,
+   "release_date": "2023-01-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1087
+  },
+  "10088": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1086
+  },
+  "10089": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1094
+  },
+  "10090": {
+   "release_ts": 1705633200,
+   "release_date": "2024-01-19",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1099
+  },
+  "10091": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1104
+  },
+  "10092": {
+   "release_ts": 1687143600,
+   "release_date": "2023-06-19",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1098
+  },
+  "10093": {
+   "release_ts": 1689908400,
+   "release_date": "2023-07-21",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1100
+  },
+  "10094": {
+   "release_ts": 1692846000,
+   "release_date": "2023-08-24",
+   "title_en": "[URA Staff]",
+   "chara_id": 9043
+  },
+  "10095": {
+   "release_ts": 1695956400,
+   "release_date": "2023-09-29",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1107
+  },
+  "10096": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1097
+  },
+  "10097": {
+   "release_ts": 1700449200,
+   "release_date": "2023-11-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1090
+  },
+  "10098": {
+   "release_ts": 1700449200,
+   "release_date": "2023-11-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1102
+  },
+  "10099": {
+   "release_ts": 1703041200,
+   "release_date": "2023-12-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1091
+  },
+  "10100": {
+   "release_ts": 1703041200,
+   "release_date": "2023-12-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1103
+  },
+  "10101": {
+   "release_ts": 1703732400,
+   "release_date": "2023-12-28",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1108
+  },
+  "10102": {
+   "release_ts": 1706670000,
+   "release_date": "2024-01-31",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1082
+  },
+  "10103": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1115
+  },
+  "10104": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Producer]",
+   "chara_id": 9044
+  },
+  "10105": {
+   "release_ts": 1710990000,
+   "release_date": "2024-03-21",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1089
+  },
+  "10106": {
+   "release_ts": 1712631600,
+   "release_date": "2024-04-09",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1105
+  },
+  "10107": {
+   "release_ts": 1714446000,
+   "release_date": "2024-04-30",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1106
+  },
+  "10108": {
+   "release_ts": 1715310000,
+   "release_date": "2024-05-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1092
+  },
+  "10109": {
+   "release_ts": 1719370800,
+   "release_date": "2024-06-26",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 9002
+  },
+  "10110": {
+   "release_ts": 1725937200,
+   "release_date": "2024-09-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1081
+  },
+  "10111": {
+   "release_ts": 1733799600,
+   "release_date": "2024-12-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1124
+  },
+  "10113": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1116
+  },
+  "10114": {
+   "release_ts": 1710990000,
+   "release_date": "2024-03-21",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1109
+  },
+  "10115": {
+   "release_ts": 1726801200,
+   "release_date": "2024-09-20",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1110
+  },
+  "10116": {
+   "release_ts": 1733799600,
+   "release_date": "2024-12-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1128
+  },
+  "10117": {
+   "release_ts": 1714446000,
+   "release_date": "2024-04-30",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1096
+  },
+  "10118": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1114
+  },
+  "10119": {
+   "release_ts": 1743390000,
+   "release_date": "2025-03-31",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1119
+  },
+  "10120": {
+   "release_ts": 1744254000,
+   "release_date": "2025-04-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1075
+  },
+  "10121": {
+   "release_ts": 1744254000,
+   "release_date": "2025-04-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1112
+  },
+  "10122": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1129
+  },
+  "10123": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1130
+  },
+  "10124": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1131
+  },
+  "10125": {
+   "release_ts": 1745982000,
+   "release_date": "2025-04-30",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1080
+  },
+  "10126": {
+   "release_ts": 1747018800,
+   "release_date": "2025-05-12",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1134
+  },
+  "10127": {
+   "release_ts": 1748574000,
+   "release_date": "2025-05-30",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1111
+  },
+  "10128": {
+   "release_ts": 1750993200,
+   "release_date": "2025-06-27",
+   "title_en": "",
+   "chara_id": 9049
+  },
+  "10129": {
+   "release_ts": 1753153200,
+   "release_date": "2025-07-22",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1113
+  },
+  "10131": {
+   "release_ts": 1753930800,
+   "release_date": "2025-07-31",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1117
+  },
+  "10132": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1135
+  },
+  "10133": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1118
+  },
+  "10134": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1133
+  },
+  "10135": {
+   "release_ts": 1756436400,
+   "release_date": "2025-08-29",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1120
+  },
+  "10136": {
+   "release_ts": 1756436400,
+   "release_date": "2025-08-29",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1121
+  },
+  "10137": {
+   "release_ts": 1760065200,
+   "release_date": "2025-10-10",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1126
+  },
+  "10138": {
+   "release_ts": 1761706800,
+   "release_date": "2025-10-29",
+   "title_en": "",
+   "chara_id": 9050
+  },
+  "10139": {
+   "release_ts": 1764298800,
+   "release_date": "2025-11-28",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1127
+  },
+  "10140": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1138
+  },
+  "10141": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1139
+  },
+  "10142": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1136
+  },
+  "10143": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1143
+  },
+  "10144": {
+   "release_ts": 1773198000,
+   "release_date": "2026-03-11",
+   "title_en": "[Tracen Academy]",
+   "chara_id": 1140
+  },
+  "20001": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Good Grief, Welcome Back]",
+   "chara_id": 1005
+  },
+  "20002": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Effort Does Not Betray!]",
+   "chara_id": 1009
+  },
+  "20003": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Stand at the Top!]",
+   "chara_id": 1012
+  },
+  "20004": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Vice President's Swift Justice]",
+   "chara_id": 1018
+  },
+  "20005": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Digital Charging in Progress+]",
+   "chara_id": 1019
+  },
+  "20006": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Verification, Start]",
+   "chara_id": 1023
+  },
+  "20007": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Cute + Cute is～?]",
+   "chara_id": 1024
+  },
+  "20008": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Rain's Recital, My Original]",
+   "chara_id": 1025
+  },
+  "20009": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Workout Companion]",
+   "chara_id": 1026
+  },
+  "20010": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Exercise and Excel!]",
+   "chara_id": 1027
+  },
+  "20011": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[City Girl Training, Begin♯]",
+   "chara_id": 1029
+  },
+  "20012": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Experimental Study of Lifeform A]",
+   "chara_id": 1032
+  },
+  "20013": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[05:00​・​Just As Scheduled]",
+   "chara_id": 1037
+  },
+  "20014": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Rippling Feelings]",
+   "chara_id": 1050
+  },
+  "20015": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Marvelous​☆​Masterplan]",
+   "chara_id": 1055
+  },
+  "20016": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Whereabouts of Luck]",
+   "chara_id": 1056
+  },
+  "20017": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Back-to-Back with Happiness]",
+   "chara_id": 1058
+  },
+  "20018": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Don't Mind the Gazes]",
+   "chara_id": 1059
+  },
+  "20019": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[…Just a Drop of Water]",
+   "chara_id": 1060
+  },
+  "20020": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[First-class Planning]",
+   "chara_id": 1061
+  },
+  "20021": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Together on the Same Path!]",
+   "chara_id": 9004
+  },
+  "20022": {
+   "release_ts": 1610334000,
+   "release_date": "2021-01-11",
+   "title_en": "[Taste my Ikayaki!]",
+   "chara_id": 1021
+  },
+  "20023": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[The Apprentice Witch and the Long Night]",
+   "chara_id": 1044
+  },
+  "20024": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Party People​・​Party Night!]",
+   "chara_id": 1065
+  },
+  "20025": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Thou Shan't Neglect Warming Up]",
+   "chara_id": 1063
+  },
+  "20026": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Disheveled Innocence]",
+   "chara_id": 1060
+  },
+  "20027": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Devoted to You]",
+   "chara_id": 1051
+  },
+  "20028": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Book Recommendations Available!]",
+   "chara_id": 1047
+  },
+  "20029": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Pearl of the World]",
+   "chara_id": 1042
+  },
+  "20030": {
+   "release_ts": 1644289200,
+   "release_date": "2022-02-08",
+   "title_en": "[To Your Hard-working Self!]",
+   "chara_id": 1031
+  },
+  "20031": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[///WARNING GATE///]",
+   "chara_id": 1043
+  },
+  "20032": {
+   "release_ts": 1639450800,
+   "release_date": "2021-12-14",
+   "title_en": "[Smiling Through the Mud]",
+   "chara_id": 1034
+  },
+  "20033": {
+   "release_ts": 1658286000,
+   "release_date": "2022-07-20",
+   "title_en": "[Muddied Campanello]",
+   "chara_id": 1014
+  },
+  "20034": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Blustering in That Heart]",
+   "chara_id": 1071
+  },
+  "20035": {
+   "release_ts": 1629428400,
+   "release_date": "2021-08-20",
+   "title_en": "[nail on Turf]",
+   "chara_id": 1048
+  },
+  "20036": {
+   "release_ts": 1723604400,
+   "release_date": "2024-08-14",
+   "title_en": "[Here's your Salvation♪]",
+   "chara_id": 1064
+  },
+  "20037": {
+   "release_ts": 1632106800,
+   "release_date": "2021-09-20",
+   "title_en": "[GRMA Ramen♪]",
+   "chara_id": 1022
+  },
+  "20038": {
+   "release_ts": 1634698800,
+   "release_date": "2021-10-20",
+   "title_en": "[A First-magnitude Star Does Not Waver]",
+   "chara_id": 1070
+  },
+  "20039": {
+   "release_ts": 1637290800,
+   "release_date": "2021-11-19",
+   "title_en": "[Fussy Supervisor]",
+   "chara_id": 1008
+  },
+  "20040": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[Pulse-Quickening Cooldown]",
+   "chara_id": 1027
+  },
+  "20041": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[First Magnitude Desire]",
+   "chara_id": 1033
+  },
+  "20042": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[Hear! An Exemplary Greeting!]",
+   "chara_id": 1041
+  },
+  "20043": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[At Day's End]",
+   "chara_id": 1001
+  },
+  "20044": {
+   "release_ts": 1646622000,
+   "release_date": "2022-03-07",
+   "title_en": "[Hot​♪​Cute Memory]",
+   "chara_id": 1038
+  },
+  "20045": {
+   "release_ts": 1648782000,
+   "release_date": "2022-04-01",
+   "title_en": "[On the Limit!? UMA♡DOL]",
+   "chara_id": 1046
+  },
+  "20046": {
+   "release_ts": 1649646000,
+   "release_date": "2022-04-11",
+   "title_en": "[Tomboy Witch In Training]",
+   "chara_id": 1044
+  },
+  "20047": {
+   "release_ts": 1652151600,
+   "release_date": "2022-05-10",
+   "title_en": "[Step! Smile! Wink!]",
+   "chara_id": 1003
+  },
+  "20048": {
+   "release_ts": 1655694000,
+   "release_date": "2022-06-20",
+   "title_en": "[Rice, My Favourite]",
+   "chara_id": 1006
+  },
+  "20049": {
+   "release_ts": 1657508400,
+   "release_date": "2022-07-11",
+   "title_en": "[Go For the Gold]",
+   "chara_id": 1040
+  },
+  "20050": {
+   "release_ts": 1660878000,
+   "release_date": "2022-08-19",
+   "title_en": "[On The Slow Waves]",
+   "chara_id": 1020
+  },
+  "20051": {
+   "release_ts": 1663642800,
+   "release_date": "2022-09-20",
+   "title_en": "[The 3rd MIRACLE]",
+   "chara_id": 1093
+  },
+  "20052": {
+   "release_ts": 1666148400,
+   "release_date": "2022-10-19",
+   "title_en": "[\"Go! Go! Tsuyoshi!\"]",
+   "chara_id": 1073
+  },
+  "20053": {
+   "release_ts": 1668654000,
+   "release_date": "2022-11-17",
+   "title_en": "[Stop, Prez!]",
+   "chara_id": 1077
+  },
+  "20054": {
+   "release_ts": 1671505200,
+   "release_date": "2022-12-20",
+   "title_en": "[Grand Fotografia]",
+   "chara_id": 1015
+  },
+  "20055": {
+   "release_ts": 1674183600,
+   "release_date": "2023-01-20",
+   "title_en": "[Would you like your attachment heated?]",
+   "chara_id": 1087
+  },
+  "20056": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Dead End: Blocking The Way]",
+   "chara_id": 1094
+  },
+  "20057": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Gentle & Sleek]",
+   "chara_id": 1059
+  },
+  "20058": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Your smile after school]",
+   "chara_id": 1017
+  },
+  "20059": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Oh, Wonderful Sweetness]",
+   "chara_id": 1032
+  },
+  "20060": {
+   "release_ts": 1679281200,
+   "release_date": "2023-03-20",
+   "title_en": "[Have a Sweet Swim Ring]",
+   "chara_id": 1028
+  },
+  "20061": {
+   "release_ts": 1681830000,
+   "release_date": "2023-04-18",
+   "title_en": "[Chef Golshi's Specialty]",
+   "chara_id": 1007
+  },
+  "20062": {
+   "release_ts": 1684422000,
+   "release_date": "2023-05-18",
+   "title_en": "[A Helluva Drive♪]",
+   "chara_id": 1004
+  },
+  "20063": {
+   "release_ts": 1686279600,
+   "release_date": "2023-06-09",
+   "title_en": "[Peeking Through the Evening Shower]",
+   "chara_id": 1002
+  },
+  "20064": {
+   "release_ts": 1687143600,
+   "release_date": "2023-06-19",
+   "title_en": "[The Gods of Luck Rise Early]",
+   "chara_id": 1098
+  },
+  "20065": {
+   "release_ts": 1689908400,
+   "release_date": "2023-07-21",
+   "title_en": "[Good Tea leaves an Aftertaste]",
+   "chara_id": 1011
+  },
+  "20066": {
+   "release_ts": 1693450800,
+   "release_date": "2023-08-31",
+   "title_en": "[The Helpful Captain and the Little Witch]",
+   "chara_id": 1068
+  },
+  "20067": {
+   "release_ts": 1695178800,
+   "release_date": "2023-09-20",
+   "title_en": "[A Spoiled Kid's Night]",
+   "chara_id": 1010
+  },
+  "20068": {
+   "release_ts": 1697684400,
+   "release_date": "2023-10-19",
+   "title_en": "[Unequalled Gold Medal]",
+   "chara_id": 1060
+  },
+  "20069": {
+   "release_ts": 1699498800,
+   "release_date": "2023-11-09",
+   "title_en": "[Fleeing From Evil?!]",
+   "chara_id": 1062
+  },
+  "20070": {
+   "release_ts": 1700449200,
+   "release_date": "2023-11-20",
+   "title_en": "[Is the Older Sister a Big Deal?]",
+   "chara_id": 1090
+  },
+  "20071": {
+   "release_ts": 1703041200,
+   "release_date": "2023-12-20",
+   "title_en": "[Making the \"Strongest\"!]",
+   "chara_id": 1103
+  },
+  "20072": {
+   "release_ts": 1705633200,
+   "release_date": "2024-01-19",
+   "title_en": "[Polishing the Gjallarhorn]",
+   "chara_id": 1084
+  },
+  "20073": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Time flies]",
+   "chara_id": 1048
+  },
+  "20074": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Pure Eyes are to be Protected]",
+   "chara_id": 1072
+  },
+  "20075": {
+   "release_ts": 1710990000,
+   "release_date": "2024-03-21",
+   "title_en": "[Cheers!]",
+   "chara_id": 1107
+  },
+  "20076": {
+   "release_ts": 1712631600,
+   "release_date": "2024-04-09",
+   "title_en": "[Roadside Feedback]",
+   "chara_id": 1036
+  },
+  "20077": {
+   "release_ts": 1715310000,
+   "release_date": "2024-05-10",
+   "title_en": "[In Shape with Lotion]",
+   "chara_id": 1092
+  },
+  "20078": {
+   "release_ts": 1720494000,
+   "release_date": "2024-07-09",
+   "title_en": "[May this Charm bring Prosperity!]",
+   "chara_id": 1056
+  },
+  "20079": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[Good Marvelous to Everyone☆]",
+   "chara_id": 1055
+  },
+  "20080": {
+   "release_ts": 1725937200,
+   "release_date": "2024-09-10",
+   "title_en": "[Hanagoromo for You]",
+   "chara_id": 1076
+  },
+  "20081": {
+   "release_ts": 1731034800,
+   "release_date": "2024-11-08",
+   "title_en": "[Leave the Haute Couture to Me!]",
+   "chara_id": 1082
+  },
+  "20082": {
+   "release_ts": 1733799600,
+   "release_date": "2024-12-10",
+   "title_en": "[Vanguard Splash!]",
+   "chara_id": 1124
+  },
+  "20083": {
+   "release_ts": 1736478000,
+   "release_date": "2025-01-10",
+   "title_en": "[Beauty and the Moon]",
+   "chara_id": 1086
+  },
+  "20084": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[When Happiness Blooms]",
+   "chara_id": 1130
+  },
+  "20085": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[Whispers of Melon]",
+   "chara_id": 1013
+  },
+  "20086": {
+   "release_ts": 1741662000,
+   "release_date": "2025-03-11",
+   "title_en": "",
+   "chara_id": 1030
+  },
+  "20087": {
+   "release_ts": 1744254000,
+   "release_date": "2025-04-10",
+   "title_en": "",
+   "chara_id": 1112
+  },
+  "20088": {
+   "release_ts": 1747018800,
+   "release_date": "2025-05-12",
+   "title_en": "",
+   "chara_id": 1134
+  },
+  "20089": {
+   "release_ts": 1752202800,
+   "release_date": "2025-07-11",
+   "title_en": "",
+   "chara_id": 1039
+  },
+  "20090": {
+   "release_ts": 1757386800,
+   "release_date": "2025-09-09",
+   "title_en": "",
+   "chara_id": 1054
+  },
+  "20091": {
+   "release_ts": 1760065200,
+   "release_date": "2025-10-10",
+   "title_en": "",
+   "chara_id": 1126
+  },
+  "20092": {
+   "release_ts": 1762743600,
+   "release_date": "2025-11-10",
+   "title_en": "",
+   "chara_id": 1099
+  },
+  "20093": {
+   "release_ts": 1765422000,
+   "release_date": "2025-12-11",
+   "title_en": "",
+   "chara_id": 1059
+  },
+  "20094": {
+   "release_ts": 1767841200,
+   "release_date": "2026-01-08",
+   "title_en": "",
+   "chara_id": 1067
+  },
+  "20095": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1136
+  },
+  "20096": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1010
+  },
+  "20097": {
+   "release_ts": 1773198000,
+   "release_date": "2026-03-11",
+   "title_en": "",
+   "chara_id": 1045
+  },
+  "20098": {
+   "release_ts": 1775790000,
+   "release_date": "2026-04-10",
+   "title_en": "",
+   "chara_id": 1012
+  },
+  "20099": {
+   "release_ts": 1778468400,
+   "release_date": "2026-05-11",
+   "title_en": "",
+   "chara_id": 1071
+  },
+  "30001": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Japan's Number 1 Stage]",
+   "chara_id": 1001
+  },
+  "30002": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Beyond the Brilliant Scenery]",
+   "chara_id": 1002
+  },
+  "30003": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Let Your Dreams Be Known!]",
+   "chara_id": 1003
+  },
+  "30004": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Advance of the Unsinkable Battleship]",
+   "chara_id": 1007
+  },
+  "30005": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Road of Vodka]",
+   "chara_id": 1008
+  },
+  "30006": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[A Myriad of Colors, a Noble Bloom]",
+   "chara_id": 1011
+  },
+  "30007": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Passion Campeóna!]",
+   "chara_id": 1014
+  },
+  "30008": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Long-Awaited Masterplan]",
+   "chara_id": 1020
+  },
+  "30009": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Heaven-Piercing Lightning Girl!]",
+   "chara_id": 1021
+  },
+  "30010": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Gratitude Up to One's Fingertips]",
+   "chara_id": 1022
+  },
+  "30011": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Jump Out and Shine]",
+   "chara_id": 1031
+  },
+  "30012": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[B・N・Winner!!]",
+   "chara_id": 1035
+  },
+  "30013": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Beyond the 7 cm]",
+   "chara_id": 1036
+  },
+  "30014": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Run(my)way]",
+   "chara_id": 1040
+  },
+  "30015": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Fast! Delicious! Fast!]",
+   "chara_id": 1041
+  },
+  "30016": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[A Grain of Peace]",
+   "chara_id": 1045
+  },
+  "30017": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[This Is My 'Umadol' Way☆]",
+   "chara_id": 1046
+  },
+  "30018": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Even as a Tiny Bud]",
+   "chara_id": 1051
+  },
+  "30019": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Urara～n Holiday]",
+   "chara_id": 1052
+  },
+  "30020": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Special Move! W Carrot Punch!]",
+   "chara_id": 1054
+  },
+  "30021": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Welcome to Tracen Academy!]",
+   "chara_id": 9001
+  },
+  "30022": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[As the Ace]",
+   "chara_id": 1013
+  },
+  "30023": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[When Happiness Dances]",
+   "chara_id": 1030
+  },
+  "30024": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "['You'll Be Dearly Beloved']",
+   "chara_id": 1006
+  },
+  "30025": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Sunset-Colored Aspiration]",
+   "chara_id": 1001
+  },
+  "30026": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Turbo Engine, Full Power!]",
+   "chara_id": 1066
+  },
+  "30027": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Laugh All You Want]",
+   "chara_id": 1064
+  },
+  "30028": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Pushed by the Approaching Passion]",
+   "chara_id": 1068
+  },
+  "30029": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Surpassing That Back]",
+   "chara_id": 1067
+  },
+  "30030": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Just keep going.]",
+   "chara_id": 1062
+  },
+  "30031": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Hometown Cheering Express!]",
+   "chara_id": 1029
+  },
+  "30032": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Unrestrainably Burning With Passion]",
+   "chara_id": 1072
+  },
+  "30033": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Dreams Do Come True!]",
+   "chara_id": 1035
+  },
+  "30034": {
+   "release_ts": 1630292400,
+   "release_date": "2021-08-30",
+   "title_en": "[Happiness is Just Around the Corner]",
+   "chara_id": 1030
+  },
+  "30036": {
+   "release_ts": 1630292400,
+   "release_date": "2021-08-30",
+   "title_en": "[Thorough Management]",
+   "chara_id": 9006
+  },
+  "30037": {
+   "release_ts": 1681830000,
+   "release_date": "2023-04-18",
+   "title_en": "[Absolute Emperor]",
+   "chara_id": 1017
+  },
+  "30038": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Sakura in Full Bloom]",
+   "chara_id": 1069
+  },
+  "30039": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[What Makes a Bride!!]",
+   "chara_id": 1039
+  },
+  "30040": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Have the First Bite!]",
+   "chara_id": 1028
+  },
+  "30041": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[A Feeling, A Wish]",
+   "chara_id": 1059
+  },
+  "30042": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Head-on fight!]",
+   "chara_id": 1053
+  },
+  "30043": {
+   "release_ts": 1634698800,
+   "release_date": "2021-10-20",
+   "title_en": "[43, 8, 1]",
+   "chara_id": 1049
+  },
+  "30044": {
+   "release_ts": 1626750000,
+   "release_date": "2021-07-20",
+   "title_en": "[Two Pieces]",
+   "chara_id": 1016
+  },
+  "30045": {
+   "release_ts": 1627527600,
+   "release_date": "2021-07-29",
+   "title_en": "[Chilly Hogging?]",
+   "chara_id": 1044
+  },
+  "30046": {
+   "release_ts": 1627527600,
+   "release_date": "2021-07-29",
+   "title_en": "[Full Power! Tantrum!]",
+   "chara_id": 1035
+  },
+  "30047": {
+   "release_ts": 1627527600,
+   "release_date": "2021-07-29",
+   "title_en": "[Trifle​☆​Vacation]",
+   "chara_id": 1009
+  },
+  "30048": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Invigorating! Winning Shot!]",
+   "chara_id": 1027
+  },
+  "30052": {
+   "release_ts": 1661310000,
+   "release_date": "2022-08-24",
+   "title_en": "[from the GROUND UP]",
+   "chara_id": 9008
+  },
+  "30053": {
+   "release_ts": 1655694000,
+   "release_date": "2022-06-20",
+   "title_en": "[Hands up, crook!]",
+   "chara_id": 1010
+  },
+  "30054": {
+   "release_ts": 1629428400,
+   "release_date": "2021-08-20",
+   "title_en": "[My Hope You Can't Erase]",
+   "chara_id": 1060
+  },
+  "30055": {
+   "release_ts": 1624935600,
+   "release_date": "2021-06-29",
+   "title_en": "[Tomorrow the Entire Country Will Be Dyed Red♪]",
+   "chara_id": 1020
+  },
+  "30056": {
+   "release_ts": 1624935600,
+   "release_date": "2021-06-29",
+   "title_en": "[Tonight, Let's Dance to the Waltz]",
+   "chara_id": 1061
+  },
+  "30057": {
+   "release_ts": 1624935600,
+   "release_date": "2021-06-29",
+   "title_en": "[Legend of the Strongest Uma King]",
+   "chara_id": 1007
+  },
+  "30058": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Two Noble Lights]",
+   "chara_id": 1003
+  },
+  "30059": {
+   "release_ts": 1614092400,
+   "release_date": "2021-02-23",
+   "title_en": "[Blessings are Fugues]",
+   "chara_id": 1026
+  },
+  "30060": {
+   "release_ts": 1626706800,
+   "release_date": "2021-07-19",
+   "title_en": "[Gathering Constellations]",
+   "chara_id": 1066
+  },
+  "30061": {
+   "release_ts": 1629126000,
+   "release_date": "2021-08-16",
+   "title_en": "[Resonating Strain]",
+   "chara_id": 1023
+  },
+  "30062": {
+   "release_ts": 1629774000,
+   "release_date": "2021-08-24",
+   "title_en": "[WINNING DREAM]",
+   "chara_id": 1002
+  },
+  "30063": {
+   "release_ts": 1632106800,
+   "release_date": "2021-09-20",
+   "title_en": "[Gentle Heart, Gentle Step]",
+   "chara_id": 1063
+  },
+  "30064": {
+   "release_ts": 1632884400,
+   "release_date": "2021-09-29",
+   "title_en": "[Let's go, Halloween Night!]",
+   "chara_id": 1021
+  },
+  "30065": {
+   "release_ts": 1632884400,
+   "release_date": "2021-09-29",
+   "title_en": "[Heroine Blessed with Magic]",
+   "chara_id": 1047
+  },
+  "30066": {
+   "release_ts": 1632884400,
+   "release_date": "2021-09-29",
+   "title_en": "[Ghosts and the Magic of Halloween]",
+   "chara_id": 1026
+  },
+  "30067": {
+   "release_ts": 1658286000,
+   "release_date": "2022-07-20",
+   "title_en": "[Love Beyond Affection]",
+   "chara_id": 1017
+  },
+  "30068": {
+   "release_ts": 1635390000,
+   "release_date": "2021-10-28",
+   "title_en": "[Your Sorrow, Your Beauty]",
+   "chara_id": 1038
+  },
+  "30069": {
+   "release_ts": 1635390000,
+   "release_date": "2021-10-28",
+   "title_en": "[Arrow Whistling Through the Skies]",
+   "chara_id": 1016
+  },
+  "30070": {
+   "release_ts": 1635390000,
+   "release_date": "2021-10-28",
+   "title_en": "[Ceremonial Dance Lighting Up the Night]",
+   "chara_id": 1029
+  },
+  "30071": {
+   "release_ts": 1637290800,
+   "release_date": "2021-11-19",
+   "title_en": "[Get Movin'! Live It Up! Party On!]",
+   "chara_id": 1065
+  },
+  "30072": {
+   "release_ts": 1638154800,
+   "release_date": "2021-11-29",
+   "title_en": "[Formation: PARTY]",
+   "chara_id": 1024
+  },
+  "30073": {
+   "release_ts": 1638154800,
+   "release_date": "2021-11-29",
+   "title_en": "[Stubborn Malkuth]",
+   "chara_id": 1050
+  },
+  "30074": {
+   "release_ts": 1638154800,
+   "release_date": "2021-11-29",
+   "title_en": "[Snow-Crystal Day]",
+   "chara_id": 1055
+  },
+  "30075": {
+   "release_ts": 1639450800,
+   "release_date": "2021-12-14",
+   "title_en": "[Solo​・​Chase Helix]",
+   "chara_id": 1025
+  },
+  "30076": {
+   "release_ts": 1640142000,
+   "release_date": "2021-12-22",
+   "title_en": "[Seeking Sights Unseen]",
+   "chara_id": 1002
+  },
+  "30077": {
+   "release_ts": 1640746800,
+   "release_date": "2021-12-29",
+   "title_en": "[Dawn to Night, Stars to Their Heavens]",
+   "chara_id": 1033
+  },
+  "30078": {
+   "release_ts": 1640746800,
+   "release_date": "2021-12-29",
+   "title_en": "[Touching Sleeves Bring Fortune♪]",
+   "chara_id": 1056
+  },
+  "30079": {
+   "release_ts": 1640746800,
+   "release_date": "2021-12-29",
+   "title_en": "[Wishing to Leap Out]",
+   "chara_id": 1058
+  },
+  "30080": {
+   "release_ts": 1641870000,
+   "release_date": "2022-01-11",
+   "title_en": "[Want a Stab?]",
+   "chara_id": 9005
+  },
+  "30081": {
+   "release_ts": 1647572400,
+   "release_date": "2022-03-18",
+   "title_en": "[Accumulating Feelings]",
+   "chara_id": 1001
+  },
+  "30082": {
+   "release_ts": 1643338800,
+   "release_date": "2022-01-28",
+   "title_en": "[Affections in a Small Cup]",
+   "chara_id": 1051
+  },
+  "30083": {
+   "release_ts": 1643338800,
+   "release_date": "2022-01-28",
+   "title_en": "[Blustering! Breakneck! Flower Storm!]",
+   "chara_id": 1041
+  },
+  "30084": {
+   "release_ts": 1643338800,
+   "release_date": "2022-01-28",
+   "title_en": "[In my way]",
+   "chara_id": 1048
+  },
+  "30085": {
+   "release_ts": 1644289200,
+   "release_date": "2022-02-08",
+   "title_en": "[The Joy \"There\"]",
+   "chara_id": 1019
+  },
+  "30086": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[Peachy Backshot!]",
+   "chara_id": 1077
+  },
+  "30087": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[Little By Little]",
+   "chara_id": 1074
+  },
+  "30088": {
+   "release_ts": 1645671600,
+   "release_date": "2022-02-24",
+   "title_en": "[SPECIAL DREAMERS!!]",
+   "chara_id": 1067
+  },
+  "30089": {
+   "release_ts": 1646622000,
+   "release_date": "2022-03-07",
+   "title_en": "[A More Marvelous​☆​World]",
+   "chara_id": 1055
+  },
+  "30090": {
+   "release_ts": 1648522800,
+   "release_date": "2022-03-29",
+   "title_en": "[Enchaînement]",
+   "chara_id": 1017
+  },
+  "30091": {
+   "release_ts": 1648522800,
+   "release_date": "2022-03-29",
+   "title_en": "[Escorte étoile]",
+   "chara_id": 1070
+  },
+  "30092": {
+   "release_ts": 1648522800,
+   "release_date": "2022-03-29",
+   "title_en": "[mag!c number]",
+   "chara_id": 1036
+  },
+  "30093": {
+   "release_ts": 1649646000,
+   "release_date": "2022-04-11",
+   "title_en": "[Outfit as No.1]",
+   "chara_id": 1009
+  },
+  "30094": {
+   "release_ts": 1651114800,
+   "release_date": "2022-04-28",
+   "title_en": "[Spread My Feelings!]",
+   "chara_id": 1053
+  },
+  "30095": {
+   "release_ts": 1651114800,
+   "release_date": "2022-04-28",
+   "title_en": "[The Cheer That Changed the World]",
+   "chara_id": 1042
+  },
+  "30096": {
+   "release_ts": 1651114800,
+   "release_date": "2022-04-28",
+   "title_en": "[Go! Go!​☆​Princess!]",
+   "chara_id": 1039
+  },
+  "30097": {
+   "release_ts": 1652151600,
+   "release_date": "2022-05-10",
+   "title_en": "[Dear Mr. C.B.]",
+   "chara_id": 1057
+  },
+  "30098": {
+   "release_ts": 1653879600,
+   "release_date": "2022-05-30",
+   "title_en": "[Bruraright Passion♪]",
+   "chara_id": 1052
+  },
+  "30099": {
+   "release_ts": 1653879600,
+   "release_date": "2022-05-30",
+   "title_en": "[Bonds Like a Golden Orchid Bouquet]",
+   "chara_id": 1063
+  },
+  "30100": {
+   "release_ts": 1653879600,
+   "release_date": "2022-05-30",
+   "title_en": "[A Scene From Dreams]",
+   "chara_id": 1030
+  },
+  "30101": {
+   "release_ts": 1661310000,
+   "release_date": "2022-08-24",
+   "title_en": "[Q≠0]",
+   "chara_id": 1032
+  },
+  "30102": {
+   "release_ts": 1656558000,
+   "release_date": "2022-06-30",
+   "title_en": "[Glittering Gallop∞]",
+   "chara_id": 1014
+  },
+  "30103": {
+   "release_ts": 1656558000,
+   "release_date": "2022-06-30",
+   "title_en": "[Matikane​☆​Adventure]",
+   "chara_id": 1062
+  },
+  "30104": {
+   "release_ts": 1656558000,
+   "release_date": "2022-06-30",
+   "title_en": "[\"Rhodonite and the Dreamstone\"]",
+   "chara_id": 1047
+  },
+  "30105": {
+   "release_ts": 1658286000,
+   "release_date": "2022-07-20",
+   "title_en": "[Let's Seize Our Dreams!]",
+   "chara_id": 1001
+  },
+  "30106": {
+   "release_ts": 1657508400,
+   "release_date": "2022-07-11",
+   "title_en": "[A Summer Gale Towards Ideals]",
+   "chara_id": 1018
+  },
+  "30107": {
+   "release_ts": 1659063600,
+   "release_date": "2022-07-29",
+   "title_en": "[Sentimentality Advisory♪]",
+   "chara_id": 1004
+  },
+  "30108": {
+   "release_ts": 1659063600,
+   "release_date": "2022-07-29",
+   "title_en": "[Surrender to the Dice]",
+   "chara_id": 1049
+  },
+  "30109": {
+   "release_ts": 1659063600,
+   "release_date": "2022-07-29",
+   "title_en": "[A Fab Heart is a Blooming Heart]",
+   "chara_id": 1069
+  },
+  "30110": {
+   "release_ts": 1660878000,
+   "release_date": "2022-08-19",
+   "title_en": "[It's on the house.]",
+   "chara_id": 1025
+  },
+  "30111": {
+   "release_ts": 1661742000,
+   "release_date": "2022-08-29",
+   "title_en": "[Teio-oo-ooo!!!]",
+   "chara_id": 1003
+  },
+  "30112": {
+   "release_ts": 1661742000,
+   "release_date": "2022-08-29",
+   "title_en": "[TT Ignition!]",
+   "chara_id": 1066
+  },
+  "30113": {
+   "release_ts": 1661742000,
+   "release_date": "2022-08-29",
+   "title_en": "[Uchronia Architect]",
+   "chara_id": 1023
+  },
+  "30114": {
+   "release_ts": 1663642800,
+   "release_date": "2022-09-20",
+   "title_en": "[Behold the Majestic Bloodline]",
+   "chara_id": 1085
+  },
+  "30115": {
+   "release_ts": 1664420400,
+   "release_date": "2022-09-29",
+   "title_en": "[Devils In the Moonlight♪]",
+   "chara_id": 1064
+  },
+  "30116": {
+   "release_ts": 1664420400,
+   "release_date": "2022-09-29",
+   "title_en": "[Angels In the Sunlight♪]",
+   "chara_id": 1065
+  },
+  "30117": {
+   "release_ts": 1664420400,
+   "release_date": "2022-09-29",
+   "title_en": "[Onwards! The Fearsome Demon Queen Forces]",
+   "chara_id": 1043
+  },
+  "30118": {
+   "release_ts": 1666148400,
+   "release_date": "2022-10-19",
+   "title_en": "[A Win Foreshadowed]",
+   "chara_id": 1083
+  },
+  "30119": {
+   "release_ts": 1666926000,
+   "release_date": "2022-10-28",
+   "title_en": "[Ride the Night Winds, Flowers of Prayer]",
+   "chara_id": 1071
+  },
+  "30120": {
+   "release_ts": 1666926000,
+   "release_date": "2022-10-28",
+   "title_en": "[Scorch Even the Heavens, Flame of Devotion]",
+   "chara_id": 1072
+  },
+  "30121": {
+   "release_ts": 1661310000,
+   "release_date": "2022-08-24",
+   "title_en": "[U & Me]",
+   "chara_id": 1026
+  },
+  "30122": {
+   "release_ts": 1668654000,
+   "release_date": "2022-11-17",
+   "title_en": "[Dankeschön]",
+   "chara_id": 1037
+  },
+  "30123": {
+   "release_ts": 1669604400,
+   "release_date": "2022-11-28",
+   "title_en": "[GLAD TIDINGS]",
+   "chara_id": 1016
+  },
+  "30124": {
+   "release_ts": 1669604400,
+   "release_date": "2022-11-28",
+   "title_en": "[Are you merry?]",
+   "chara_id": 1018
+  },
+  "30125": {
+   "release_ts": 1669604400,
+   "release_date": "2022-11-28",
+   "title_en": "[Don't stop anymore!]",
+   "chara_id": 1076
+  },
+  "30126": {
+   "release_ts": 1671505200,
+   "release_date": "2022-12-20",
+   "title_en": "[To Uncharted Winds]",
+   "chara_id": 1078
+  },
+  "30127": {
+   "release_ts": 1672282800,
+   "release_date": "2022-12-29",
+   "title_en": "[Pray To Ward Off Evil Spirits]",
+   "chara_id": 1001
+  },
+  "30128": {
+   "release_ts": 1672282800,
+   "release_date": "2022-12-29",
+   "title_en": "[Capricious Whimsy]",
+   "chara_id": 1044
+  },
+  "30129": {
+   "release_ts": 1672282800,
+   "release_date": "2022-12-29",
+   "title_en": "[Winter Gives Way to Summer's Verdancy]",
+   "chara_id": 1011
+  },
+  "30130": {
+   "release_ts": 1674183600,
+   "release_date": "2023-01-20",
+   "title_en": "[To you]",
+   "chara_id": 1093
+  },
+  "30131": {
+   "release_ts": 1675047600,
+   "release_date": "2023-01-30",
+   "title_en": "[MARVELOUS​☆​CHOCOLATE SHOW]",
+   "chara_id": 1055
+  },
+  "30132": {
+   "release_ts": 1675047600,
+   "release_date": "2023-01-30",
+   "title_en": "[Transform! Garçon Form!]",
+   "chara_id": 1054
+  },
+  "30133": {
+   "release_ts": 1675047600,
+   "release_date": "2023-01-30",
+   "title_en": "[Smile In Fondente]",
+   "chara_id": 1028
+  },
+  "30134": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Radiant]",
+   "chara_id": 1086
+  },
+  "30135": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Raise up your raging torch]",
+   "chara_id": 1104
+  },
+  "30136": {
+   "release_ts": 1677207600,
+   "release_date": "2023-02-24",
+   "title_en": "[Unyielding resolve]",
+   "chara_id": 1083
+  },
+  "30137": {
+   "release_ts": 1679281200,
+   "release_date": "2023-03-20",
+   "title_en": "[In Pursuit of Eternal Glory]",
+   "chara_id": 9040
+  },
+  "30138": {
+   "release_ts": 1680058800,
+   "release_date": "2023-03-29",
+   "title_en": "[Don't close your eyes now]",
+   "chara_id": 1060
+  },
+  "30139": {
+   "release_ts": 1680058800,
+   "release_date": "2023-03-29",
+   "title_en": "[My heart on a night breeze]",
+   "chara_id": 1013
+  },
+  "30140": {
+   "release_ts": 1680058800,
+   "release_date": "2023-03-29",
+   "title_en": "[A waltz with you]",
+   "chara_id": 1003
+  },
+  "30141": {
+   "release_ts": 1682650800,
+   "release_date": "2023-04-28",
+   "title_en": "[Mission: Replenish the Soul]",
+   "chara_id": 1026
+  },
+  "30142": {
+   "release_ts": 1682650800,
+   "release_date": "2023-04-28",
+   "title_en": "[Cherry Blossoms in Full Bloom]",
+   "chara_id": 1076
+  },
+  "30143": {
+   "release_ts": 1682650800,
+   "release_date": "2023-04-28",
+   "title_en": "[The View I Finally Reached]",
+   "chara_id": 1063
+  },
+  "30145": {
+   "release_ts": 1665975600,
+   "release_date": "2022-10-17",
+   "title_en": "[Welcome to Umayuru]",
+   "chara_id": 1084
+  },
+  "30146": {
+   "release_ts": 1666926000,
+   "release_date": "2022-10-28",
+   "title_en": "[Run, Dash, Sprint!!]",
+   "chara_id": 1006
+  },
+  "30147": {
+   "release_ts": 1684465200,
+   "release_date": "2023-05-19",
+   "title_en": "[The frontier]",
+   "chara_id": 1094
+  },
+  "30148": {
+   "release_ts": 1685329200,
+   "release_date": "2023-05-29",
+   "title_en": "[Something Blue]",
+   "chara_id": 1009
+  },
+  "30149": {
+   "release_ts": 1685329200,
+   "release_date": "2023-05-29",
+   "title_en": "[Haute Couture Memory]",
+   "chara_id": 1087
+  },
+  "30150": {
+   "release_ts": 1685329200,
+   "release_date": "2023-05-29",
+   "title_en": "[Heart Ignition!!]",
+   "chara_id": 1008
+  },
+  "30151": {
+   "release_ts": 1687143600,
+   "release_date": "2023-06-19",
+   "title_en": "[Chill chill night*]",
+   "chara_id": 1024
+  },
+  "30152": {
+   "release_ts": 1686279600,
+   "release_date": "2023-06-09",
+   "title_en": "[All'alba vincerò!]",
+   "chara_id": 1015
+  },
+  "30153": {
+   "release_ts": 1688007600,
+   "release_date": "2023-06-29",
+   "title_en": "[Gentle Moon]",
+   "chara_id": 1040
+  },
+  "30154": {
+   "release_ts": 1688007600,
+   "release_date": "2023-06-29",
+   "title_en": "[Like a Seagull]",
+   "chara_id": 1064
+  },
+  "30155": {
+   "release_ts": 1688007600,
+   "release_date": "2023-06-29",
+   "title_en": "[#Summer #NewMe]",
+   "chara_id": 1065
+  },
+  "30156": {
+   "release_ts": 1689908400,
+   "release_date": "2023-07-21",
+   "title_en": "[Lifelong Wonder]",
+   "chara_id": 1100
+  },
+  "30157": {
+   "release_ts": 1690772400,
+   "release_date": "2023-07-31",
+   "title_en": "[The Spume I See With You]",
+   "chara_id": 1025
+  },
+  "30158": {
+   "release_ts": 1690772400,
+   "release_date": "2023-07-31",
+   "title_en": "[Let's Enjoy This Hot Summer!]",
+   "chara_id": 1094
+  },
+  "30159": {
+   "release_ts": 1690772400,
+   "release_date": "2023-07-31",
+   "title_en": "[Seaside Bloom]",
+   "chara_id": 1018
+  },
+  "30160": {
+   "release_ts": 1692846000,
+   "release_date": "2023-08-24",
+   "title_en": "[L'aube Approaches]",
+   "chara_id": 9043
+  },
+  "30161": {
+   "release_ts": 1692846000,
+   "release_date": "2023-08-24",
+   "title_en": "[Soaring Ambition]",
+   "chara_id": 1014
+  },
+  "30162": {
+   "release_ts": 1692846000,
+   "release_date": "2023-08-24",
+   "title_en": "[Precious☆Moments]",
+   "chara_id": 1033
+  },
+  "30163": {
+   "release_ts": 1693450800,
+   "release_date": "2023-08-31",
+   "title_en": "[Blooming Violet of the Gambling Den]",
+   "chara_id": 1049
+  },
+  "30164": {
+   "release_ts": 1695178800,
+   "release_date": "2023-09-20",
+   "title_en": "[Embracing the Fiery Fighting Spirit]",
+   "chara_id": 1012
+  },
+  "30165": {
+   "release_ts": 1695956400,
+   "release_date": "2023-09-29",
+   "title_en": "[Fortuna's Applause]",
+   "chara_id": 1084
+  },
+  "30166": {
+   "release_ts": 1695956400,
+   "release_date": "2023-09-29",
+   "title_en": "[A Sonorous YO-HO!]",
+   "chara_id": 1107
+  },
+  "30167": {
+   "release_ts": 1695956400,
+   "release_date": "2023-09-29",
+   "title_en": "[Hello my clover]",
+   "chara_id": 1022
+  },
+  "30168": {
+   "release_ts": 1697684400,
+   "release_date": "2023-10-19",
+   "title_en": "[Dreams Cut Through the Waves]",
+   "chara_id": 1007
+  },
+  "30169": {
+   "release_ts": 1698634800,
+   "release_date": "2023-10-30",
+   "title_en": "[A Smile Sent From Heaven]",
+   "chara_id": 1073
+  },
+  "30170": {
+   "release_ts": 1698634800,
+   "release_date": "2023-10-30",
+   "title_en": "[Whirl, My Dance]",
+   "chara_id": 1061
+  },
+  "30171": {
+   "release_ts": 1698634800,
+   "release_date": "2023-10-30",
+   "title_en": "[Ah, How Fun, How Fun!]",
+   "chara_id": 1052
+  },
+  "30172": {
+   "release_ts": 1699498800,
+   "release_date": "2023-11-09",
+   "title_en": "[Drive it Home! ...I Suppose]",
+   "chara_id": 1013
+  },
+  "30173": {
+   "release_ts": 1700449200,
+   "release_date": "2023-11-20",
+   "title_en": "[Ensemble of the Earth and Us]",
+   "chara_id": 1102
+  },
+  "30174": {
+   "release_ts": 1701313200,
+   "release_date": "2023-11-30",
+   "title_en": "[Holy Night, For Change]",
+   "chara_id": 1059
+  },
+  "30175": {
+   "release_ts": 1701313200,
+   "release_date": "2023-11-30",
+   "title_en": "[Ember Which Dissolves Winter]",
+   "chara_id": 1086
+  },
+  "30176": {
+   "release_ts": 1701313200,
+   "release_date": "2023-11-30",
+   "title_en": "[Choose, Choose, With All Your Heart]",
+   "chara_id": 1027
+  },
+  "30177": {
+   "release_ts": 1703041200,
+   "release_date": "2023-12-20",
+   "title_en": "[Winning Smile of Satisfaction]",
+   "chara_id": 1091
+  },
+  "30178": {
+   "release_ts": 1703732400,
+   "release_date": "2023-12-28",
+   "title_en": "[Stirring Veins]",
+   "chara_id": 1108
+  },
+  "30179": {
+   "release_ts": 1703732400,
+   "release_date": "2023-12-28",
+   "title_en": "[Wishes of a Hundred Flowers]",
+   "chara_id": 1067
+  },
+  "30180": {
+   "release_ts": 1703732400,
+   "release_date": "2023-12-28",
+   "title_en": "[The Future Ahead!]",
+   "chara_id": 1068
+  },
+  "30181": {
+   "release_ts": 1703732400,
+   "release_date": "2023-12-28",
+   "title_en": "[Sing Together]",
+   "chara_id": 1066
+  },
+  "30182": {
+   "release_ts": 1705633200,
+   "release_date": "2024-01-19",
+   "title_en": "[The White Wings Return]",
+   "chara_id": 1099
+  },
+  "30183": {
+   "release_ts": 1706670000,
+   "release_date": "2024-01-31",
+   "title_en": "[2 Little Smiles]",
+   "chara_id": 1035
+  },
+  "30184": {
+   "release_ts": 1706670000,
+   "release_date": "2024-01-31",
+   "title_en": "[Thank the Cherry Blossom Snow Storm!]",
+   "chara_id": 1041
+  },
+  "30185": {
+   "release_ts": 1706670000,
+   "release_date": "2024-01-31",
+   "title_en": "[Go: Fashionista!]",
+   "chara_id": 1082
+  },
+  "30186": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Balliamo?]",
+   "chara_id": 1116
+  },
+  "30187": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[Simply Controlling]",
+   "chara_id": 1115
+  },
+  "30188": {
+   "release_ts": 1708743600,
+   "release_date": "2024-02-24",
+   "title_en": "[The Sparkle We Form Together]",
+   "chara_id": 9044
+  },
+  "30189": {
+   "release_ts": 1706497200,
+   "release_date": "2024-01-29",
+   "title_en": "[Bounce Chassé Together]",
+   "chara_id": 1068
+  },
+  "30190": {
+   "release_ts": 1708311600,
+   "release_date": "2024-02-19",
+   "title_en": "[Passionate Pizzica]",
+   "chara_id": 1108
+  },
+  "30191": {
+   "release_ts": 1710730800,
+   "release_date": "2024-03-18",
+   "title_en": "[My Brilliante Melody for You]",
+   "chara_id": 1102
+  },
+  "30192": {
+   "release_ts": 1713150000,
+   "release_date": "2024-04-15",
+   "title_en": "[Treasured Révérence]",
+   "chara_id": 1091
+  },
+  "30193": {
+   "release_ts": 1710990000,
+   "release_date": "2024-03-21",
+   "title_en": "[Over the Ocean]",
+   "chara_id": 1089
+  },
+  "30194": {
+   "release_ts": 1710990000,
+   "release_date": "2024-03-21",
+   "title_en": "[Tiara Formed by Ley Lines]",
+   "chara_id": 1109
+  },
+  "30195": {
+   "release_ts": 1711681200,
+   "release_date": "2024-03-29",
+   "title_en": "[White Bird's Arabesque]",
+   "chara_id": 1093
+  },
+  "30196": {
+   "release_ts": 1711681200,
+   "release_date": "2024-03-29",
+   "title_en": "[Sweeping Wind]",
+   "chara_id": 1078
+  },
+  "30197": {
+   "release_ts": 1711681200,
+   "release_date": "2024-03-29",
+   "title_en": "[Burning!!]",
+   "chara_id": 1053
+  },
+  "30198": {
+   "release_ts": 1712631600,
+   "release_date": "2024-04-09",
+   "title_en": "[To the V.E.R.2285 You]",
+   "chara_id": 1105
+  },
+  "30199": {
+   "release_ts": 1714446000,
+   "release_date": "2024-04-30",
+   "title_en": "[Work a Miracle!]",
+   "chara_id": 1106
+  },
+  "30200": {
+   "release_ts": 1714446000,
+   "release_date": "2024-04-30",
+   "title_en": "[Fearless Warrior]",
+   "chara_id": 1096
+  },
+  "30201": {
+   "release_ts": 1714446000,
+   "release_date": "2024-04-30",
+   "title_en": "[Take Them Down!]",
+   "chara_id": 1050
+  },
+  "30202": {
+   "release_ts": 1715310000,
+   "release_date": "2024-05-10",
+   "title_en": "[My Ride for Tomorrow]",
+   "chara_id": 1008
+  },
+  "30203": {
+   "release_ts": 1716476400,
+   "release_date": "2024-05-23",
+   "title_en": "[Opening a new Era]",
+   "chara_id": 1094
+  },
+  "30204": {
+   "release_ts": 1717038000,
+   "release_date": "2024-05-30",
+   "title_en": "[Dozing in the Scent of Happiness]",
+   "chara_id": 1020
+  },
+  "30205": {
+   "release_ts": 1717038000,
+   "release_date": "2024-05-30",
+   "title_en": "[Azure Coronation]",
+   "chara_id": 1090
+  },
+  "30206": {
+   "release_ts": 1717038000,
+   "release_date": "2024-05-30",
+   "title_en": "[Dream of Alstroemeria]",
+   "chara_id": 1091
+  },
+  "30207": {
+   "release_ts": 1719370800,
+   "release_date": "2024-06-26",
+   "title_en": "[Cultivate! Giant Carrot of Dreams!]",
+   "chara_id": 9002
+  },
+  "30208": {
+   "release_ts": 1719370800,
+   "release_date": "2024-06-26",
+   "title_en": "[The Strawberry Field at Dawn]",
+   "chara_id": 1051
+  },
+  "30209": {
+   "release_ts": 1720494000,
+   "release_date": "2024-07-09",
+   "title_en": "[And the Curtains Rise]",
+   "chara_id": 1092
+  },
+  "30210": {
+   "release_ts": 1722222000,
+   "release_date": "2024-07-29",
+   "title_en": "[Candid Shot Between The Waves]",
+   "chara_id": 1046
+  },
+  "30211": {
+   "release_ts": 1722222000,
+   "release_date": "2024-07-29",
+   "title_en": "[Lucky☆Summertime]",
+   "chara_id": 1098
+  },
+  "30212": {
+   "release_ts": 1722222000,
+   "release_date": "2024-07-29",
+   "title_en": "[That Summer's Cut-off Line]",
+   "chara_id": 1100
+  },
+  "30213": {
+   "release_ts": 1724943600,
+   "release_date": "2024-08-29",
+   "title_en": "[The Slapdash Grand Prix has Begun]",
+   "chara_id": 1003
+  },
+  "30214": {
+   "release_ts": 1723604400,
+   "release_date": "2024-08-14",
+   "title_en": "[Full of History and Good Food]",
+   "chara_id": 1022
+  },
+  "30215": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[Devilish Whispers]",
+   "chara_id": 1097
+  },
+  "30216": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[With Love to Our School]",
+   "chara_id": 1114
+  },
+  "30217": {
+   "release_ts": 1726801200,
+   "release_date": "2024-09-20",
+   "title_en": "[Mother Sea of Love]",
+   "chara_id": 1110
+  },
+  "30218": {
+   "release_ts": 1724986800,
+   "release_date": "2024-08-30",
+   "title_en": "[Sunshine Under the Moon]",
+   "chara_id": 1010
+  },
+  "30219": {
+   "release_ts": 1724986800,
+   "release_date": "2024-08-30",
+   "title_en": "[Something troubling you, Pony-chan?]",
+   "chara_id": 1005
+  },
+  "30220": {
+   "release_ts": 1724986800,
+   "release_date": "2024-08-30",
+   "title_en": "[Rewarding Job]",
+   "chara_id": 1083
+  },
+  "30221": {
+   "release_ts": 1724468400,
+   "release_date": "2024-08-24",
+   "title_en": "[Fun and Food Every Day]",
+   "chara_id": 1067
+  },
+  "30222": {
+   "release_ts": 1725937200,
+   "release_date": "2024-09-10",
+   "title_en": "[KNOCK 'EM DOWN!]",
+   "chara_id": 1081
+  },
+  "30223": {
+   "release_ts": 1727665200,
+   "release_date": "2024-09-30",
+   "title_en": "[Chewing up the Refrain]",
+   "chara_id": 1012
+  },
+  "30224": {
+   "release_ts": 1727665200,
+   "release_date": "2024-09-30",
+   "title_en": "[Roar of Apoyando]",
+   "chara_id": 1016
+  },
+  "30225": {
+   "release_ts": 1727665200,
+   "release_date": "2024-09-30",
+   "title_en": "[Making a Power Trio]",
+   "chara_id": 1056
+  },
+  "30226": {
+   "release_ts": 1730170800,
+   "release_date": "2024-10-29",
+   "title_en": "[Cocoon]",
+   "chara_id": 1036
+  },
+  "30227": {
+   "release_ts": 1730170800,
+   "release_date": "2024-10-29",
+   "title_en": "[The Wind Blows For You, Scarlet]",
+   "chara_id": 1009
+  },
+  "30228": {
+   "release_ts": 1731034800,
+   "release_date": "2024-11-08",
+   "title_en": "[COOL⇔CRAZY/Buddy]",
+   "chara_id": 1083
+  },
+  "30229": {
+   "release_ts": 1732762800,
+   "release_date": "2024-11-28",
+   "title_en": "[Alert! New Work Available!]",
+   "chara_id": 1019
+  },
+  "30230": {
+   "release_ts": 1732762800,
+   "release_date": "2024-11-28",
+   "title_en": "[Howling Fortitude]",
+   "chara_id": 1058
+  },
+  "30231": {
+   "release_ts": 1732762800,
+   "release_date": "2024-11-28",
+   "title_en": "[The Ruling Royalty]",
+   "chara_id": 1015
+  },
+  "30232": {
+   "release_ts": 1733799600,
+   "release_date": "2024-12-10",
+   "title_en": "[Blast Off!]",
+   "chara_id": 1128
+  },
+  "30233": {
+   "release_ts": 1735268400,
+   "release_date": "2024-12-27",
+   "title_en": "[Calligraphy Expert]",
+   "chara_id": 1017
+  },
+  "30234": {
+   "release_ts": 1735268400,
+   "release_date": "2024-12-27",
+   "title_en": "[Dear Secluded Me...]",
+   "chara_id": 1071
+  },
+  "30235": {
+   "release_ts": 1735268400,
+   "release_date": "2024-12-27",
+   "title_en": "[Blooming Flowers Smile in the Heavens]",
+   "chara_id": 1004
+  },
+  "30236": {
+   "release_ts": 1736478000,
+   "release_date": "2025-01-10",
+   "title_en": "[Venus Takeoff]",
+   "chara_id": 1042
+  },
+  "30237": {
+   "release_ts": 1738292400,
+   "release_date": "2025-01-31",
+   "title_en": "[Cutest in Ur ♡]",
+   "chara_id": 1038
+  },
+  "30238": {
+   "release_ts": 1738292400,
+   "release_date": "2025-01-31",
+   "title_en": "[Even an Iron Maiden can Smile]",
+   "chara_id": 1063
+  },
+  "30239": {
+   "release_ts": 1738292400,
+   "release_date": "2025-01-31",
+   "title_en": "[This last one is special, okay?]",
+   "chara_id": 1060
+  },
+  "30240": {
+   "release_ts": 1739761200,
+   "release_date": "2025-02-17",
+   "title_en": "[I am the Strongest!!]",
+   "chara_id": 1094
+  },
+  "30241": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[Guiding Light]",
+   "chara_id": 9047
+  },
+  "30242": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[World-Changing Gaze]",
+   "chara_id": 1129
+  },
+  "30243": {
+   "release_ts": 1740366000,
+   "release_date": "2025-02-24",
+   "title_en": "[NEW TALES AWAIT]",
+   "chara_id": 1131
+  },
+  "30244": {
+   "release_ts": 1741662000,
+   "release_date": "2025-03-11",
+   "title_en": "",
+   "chara_id": 1074
+  },
+  "30245": {
+   "release_ts": 1743390000,
+   "release_date": "2025-03-31",
+   "title_en": "",
+   "chara_id": 1008
+  },
+  "30246": {
+   "release_ts": 1743390000,
+   "release_date": "2025-03-31",
+   "title_en": "",
+   "chara_id": 1119
+  },
+  "30247": {
+   "release_ts": 1743390000,
+   "release_date": "2025-03-31",
+   "title_en": "",
+   "chara_id": 1083
+  },
+  "30248": {
+   "release_ts": 1744254000,
+   "release_date": "2025-04-10",
+   "title_en": "",
+   "chara_id": 1075
+  },
+  "30249": {
+   "release_ts": 1745982000,
+   "release_date": "2025-04-30",
+   "title_en": "",
+   "chara_id": 1080
+  },
+  "30250": {
+   "release_ts": 1745982000,
+   "release_date": "2025-04-30",
+   "title_en": "",
+   "chara_id": 1114
+  },
+  "30251": {
+   "release_ts": 1745982000,
+   "release_date": "2025-04-30",
+   "title_en": "",
+   "chara_id": 1081
+  },
+  "30252": {
+   "release_ts": 1747018800,
+   "release_date": "2025-05-12",
+   "title_en": "",
+   "chara_id": 1002
+  },
+  "30253": {
+   "release_ts": 1748574000,
+   "release_date": "2025-05-30",
+   "title_en": "",
+   "chara_id": 1109
+  },
+  "30254": {
+   "release_ts": 1748574000,
+   "release_date": "2025-05-30",
+   "title_en": "",
+   "chara_id": 1112
+  },
+  "30255": {
+   "release_ts": 1748574000,
+   "release_date": "2025-05-30",
+   "title_en": "",
+   "chara_id": 1111
+  },
+  "30256": {
+   "release_ts": 1750993200,
+   "release_date": "2025-06-27",
+   "title_en": "",
+   "chara_id": 1021
+  },
+  "30257": {
+   "release_ts": 1750993200,
+   "release_date": "2025-06-27",
+   "title_en": "",
+   "chara_id": 9049
+  },
+  "30258": {
+   "release_ts": 1752202800,
+   "release_date": "2025-07-11",
+   "title_en": "",
+   "chara_id": 1027
+  },
+  "30259": {
+   "release_ts": 1753153200,
+   "release_date": "2025-07-22",
+   "title_en": "",
+   "chara_id": 1113
+  },
+  "30260": {
+   "release_ts": 1745982000,
+   "release_date": "2025-04-30",
+   "title_en": "",
+   "chara_id": 1013
+  },
+  "30261": {
+   "release_ts": 1753930800,
+   "release_date": "2025-07-31",
+   "title_en": "",
+   "chara_id": 1117
+  },
+  "30262": {
+   "release_ts": 1753930800,
+   "release_date": "2025-07-31",
+   "title_en": "",
+   "chara_id": 1108
+  },
+  "30263": {
+   "release_ts": 1753930800,
+   "release_date": "2025-07-31",
+   "title_en": "",
+   "chara_id": 1091
+  },
+  "30264": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "",
+   "chara_id": 1135
+  },
+  "30265": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "",
+   "chara_id": 1118
+  },
+  "30266": {
+   "release_ts": 1756004400,
+   "release_date": "2025-08-24",
+   "title_en": "",
+   "chara_id": 1133
+  },
+  "30267": {
+   "release_ts": 1756436400,
+   "release_date": "2025-08-29",
+   "title_en": "",
+   "chara_id": 1120
+  },
+  "30268": {
+   "release_ts": 1756436400,
+   "release_date": "2025-08-29",
+   "title_en": "",
+   "chara_id": 1121
+  },
+  "30269": {
+   "release_ts": 1756436400,
+   "release_date": "2025-08-29",
+   "title_en": "",
+   "chara_id": 1092
+  },
+  "30270": {
+   "release_ts": 1757386800,
+   "release_date": "2025-09-09",
+   "title_en": "",
+   "chara_id": 1085
+  },
+  "30271": {
+   "release_ts": 1759114800,
+   "release_date": "2025-09-29",
+   "title_en": "",
+   "chara_id": 1005
+  },
+  "30272": {
+   "release_ts": 1759114800,
+   "release_date": "2025-09-29",
+   "title_en": "",
+   "chara_id": 1037
+  },
+  "30273": {
+   "release_ts": 1759114800,
+   "release_date": "2025-09-29",
+   "title_en": "",
+   "chara_id": 1048
+  },
+  "30274": {
+   "release_ts": 1760065200,
+   "release_date": "2025-10-10",
+   "title_en": "",
+   "chara_id": 1134
+  },
+  "30275": {
+   "release_ts": 1761706800,
+   "release_date": "2025-10-29",
+   "title_en": "",
+   "chara_id": 1003
+  },
+  "30276": {
+   "release_ts": 1761706800,
+   "release_date": "2025-10-29",
+   "title_en": "",
+   "chara_id": 9050
+  },
+  "30277": {
+   "release_ts": 1762743600,
+   "release_date": "2025-11-10",
+   "title_en": "",
+   "chara_id": 1026
+  },
+  "30278": {
+   "release_ts": 1764298800,
+   "release_date": "2025-11-28",
+   "title_en": "",
+   "chara_id": 1007
+  },
+  "30279": {
+   "release_ts": 1764298800,
+   "release_date": "2025-11-28",
+   "title_en": "",
+   "chara_id": 1127
+  },
+  "30280": {
+   "release_ts": 1764298800,
+   "release_date": "2025-11-28",
+   "title_en": "",
+   "chara_id": 1115
+  },
+  "30281": {
+   "release_ts": 1765422000,
+   "release_date": "2025-12-11",
+   "title_en": "",
+   "chara_id": 1034
+  },
+  "30282": {
+   "release_ts": 1766718000,
+   "release_date": "2025-12-26",
+   "title_en": "",
+   "chara_id": 1018
+  },
+  "30283": {
+   "release_ts": 1766718000,
+   "release_date": "2025-12-26",
+   "title_en": "",
+   "chara_id": 1022
+  },
+  "30284": {
+   "release_ts": 1766718000,
+   "release_date": "2025-12-26",
+   "title_en": "",
+   "chara_id": 1124
+  },
+  "30285": {
+   "release_ts": 1767841200,
+   "release_date": "2026-01-08",
+   "title_en": "",
+   "chara_id": 1061
+  },
+  "30286": {
+   "release_ts": 1769742000,
+   "release_date": "2026-01-30",
+   "title_en": "",
+   "chara_id": 1056
+  },
+  "30287": {
+   "release_ts": 1769742000,
+   "release_date": "2026-01-30",
+   "title_en": "",
+   "chara_id": 1105
+  },
+  "30288": {
+   "release_ts": 1769742000,
+   "release_date": "2026-01-30",
+   "title_en": "",
+   "chara_id": 1002
+  },
+  "30289": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1138
+  },
+  "30290": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1139
+  },
+  "30291": {
+   "release_ts": 1771902000,
+   "release_date": "2026-02-24",
+   "title_en": "",
+   "chara_id": 1143
+  },
+  "30292": {
+   "release_ts": 1773198000,
+   "release_date": "2026-03-11",
+   "title_en": "",
+   "chara_id": 1140
+  },
+  "30293": {
+   "release_ts": 1774839600,
+   "release_date": "2026-03-30",
+   "title_en": "",
+   "chara_id": 1075
+  },
+  "30294": {
+   "release_ts": 1774839600,
+   "release_date": "2026-03-30",
+   "title_en": "",
+   "chara_id": 1112
+  },
+  "30295": {
+   "release_ts": 1774839600,
+   "release_date": "2026-03-30",
+   "title_en": "",
+   "chara_id": 1134
+  },
+  "30296": {
+   "release_ts": 1775790000,
+   "release_date": "2026-04-10",
+   "title_en": "",
+   "chara_id": 1087
+  },
+  "30297": {
+   "release_ts": 1777518000,
+   "release_date": "2026-04-30",
+   "title_en": "",
+   "chara_id": 1019
+  },
+  "30298": {
+   "release_ts": 1777518000,
+   "release_date": "2026-04-30",
+   "title_en": "",
+   "chara_id": 1107
+  },
+  "30299": {
+   "release_ts": 1777518000,
+   "release_date": "2026-04-30",
+   "title_en": "",
+   "chara_id": 1032
+  },
+  "30300": {
+   "release_ts": 1778468400,
+   "release_date": "2026-05-11",
+   "title_en": "",
+   "chara_id": 1069
+  },
+  "30301": {
+   "release_ts": 1780023600,
+   "release_date": "2026-05-29",
+   "title_en": "",
+   "chara_id": 1131
+  },
+  "30302": {
+   "release_ts": 1780023600,
+   "release_date": "2026-05-29",
+   "title_en": "",
+   "chara_id": 1067
+  },
+  "30303": {
+   "release_ts": 1780023600,
+   "release_date": "2026-05-29",
+   "title_en": "",
+   "chara_id": 1128
+  },
+  "30304": {
+   "release_ts": 1782702000,
+   "release_date": "2026-06-29",
+   "title_en": "",
+   "chara_id": 1058
+  },
+  "30305": {
+   "release_ts": 1782702000,
+   "release_date": "2026-06-29",
+   "title_en": "",
+   "chara_id": 9001
+  }
+ }
+}

@@ -185,7 +185,13 @@
         const id = cardId(card);
         const rawLb = card && (card.limit_break_count ?? card.lb);
         const lb = Math.max(0, Math.min(4, Number(rawLb == null ? 4 : rawLb) || 0));
-        return { support_card_id: id, lb: card && card.owned ? lb : 4 };
+        return { support_card_id: id, lb: card && card.owned ? lb : 4, fb: true };
+    }
+    function cardMatchesTile(card, stat) {
+        // Friendship applies when the card's type matches the facility;
+        // Pal/Group cards always count as matching (uma.guide parity).
+        const type = String((card && card.type) || "");
+        return type === statLabel(stat) || type === "Pal" || type === "Group";
     }
     function removeCardEverywhere(id) {
         const numericId = Number(id || 0);
@@ -330,7 +336,7 @@
         const activeCount = (result.year_effects_active || []).length;
         const skippedCount = (result.year_effects_skipped || []).length;
         if (gateOn && typeCount < 4) {
-            els.yearEffectStatus.textContent = `Classic/Senior bonuses need 4 card types on tiles — you have ${typeCount} (${types}). Place more types or untick the gate. | active ${activeCount}, inactive ${skippedCount}`;
+            els.yearEffectStatus.textContent = `Some regional bonuses need 4 card types on tiles — you have ${typeCount} (${types}). Place more types or untick the gate. | active ${activeCount}, inactive ${skippedCount}`;
         } else {
             const gate = gateOn ? `4-type gate met (${typeCount}/4: ${types})` : `4-type gate off (${typeCount} types: ${types})`;
             els.yearEffectStatus.textContent = `${gate} | active ${activeCount}, inactive ${skippedCount}`;
@@ -367,10 +373,12 @@
             const active = state.selectedCard && cardId(state.selectedCard) === id;
             const owned = card.owned ? `LB${Number(card.limit_break_count || 0)}` : "catalog";
             return `
-                <button class="training-sim-card ${typeClass(card.type)} ${active ? "is-selected" : ""}" type="button" data-card-id="${id}">
+                <button class="training-sim-card ${typeClass(card.type)} ${active ? "is-selected" : ""}" type="button" data-card-id="${id}"
+                    title="${escapeAttr(card.name || `Support ${id}`)}${card.release_date ? ` — released ${escapeAttr(card.release_date)}` : ""}">
                     <img src="/api/images/${id}.png" loading="lazy" onerror="this.style.display='none'">
                     <span class="training-sim-card-name">${escapeHtml(card.name || `Support ${id}`)}</span>
                     <span class="training-sim-card-meta">${escapeHtml(card.rarity || "?")} - ${escapeHtml(card.type || "?")} - ${escapeHtml(owned)}</span>
+                    ${card.release_date ? `<span class="training-sim-card-date">${escapeHtml(card.release_date)}</span>` : ""}
                 </button>
             `;
         }).join("") || '<div class="training-sim-empty">No matching support cards.</div>';
@@ -388,10 +396,16 @@
             const placedCards = cards.map(row => {
                 const card = findCard(row.support_card_id) || row;
                 const id = Number(row.support_card_id || row.id || 0);
+                const matching = cardMatchesTile(card, stat);
+                const fbOn = row.fb !== false;
+                const fbChip = matching
+                    ? `<span class="training-sim-fb-chip ${fbOn ? "is-on" : "is-off"}" data-fb-toggle="${id}" title="${fbOn ? "Click to disable friendship training" : "Click to enable friendship training"}">FB</span>`
+                    : `<span class="training-sim-fb-chip is-na" title="No friendship bonus (card type doesn't match training)">–</span>`;
                 return `
                     <button class="training-sim-placed-card ${typeClass(card.type)}" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">
                         <img src="/api/images/${id}.png" onerror="this.style.display='none'">
                         <span>${escapeHtml(card.name || `Support ${id}`)}</span>
+                        ${fbChip}
                     </button>
                 `;
             }).join("");
@@ -614,6 +628,21 @@
         els.areas.addEventListener("click", event => {
             // Clicks inside the breakdown expandable must not place cards/NPCs.
             if (event.target.closest(".training-sim-breakdown-details")) return;
+            // FB chip: toggle friendship for that placed card (do NOT remove it).
+            const fbChip = event.target.closest("[data-fb-toggle]");
+            if (fbChip) {
+                event.preventDefault();
+                event.stopPropagation();
+                const id = Number(fbChip.dataset.fbToggle || 0);
+                STATS.forEach(stat => {
+                    (state.areas[stat] || []).forEach(row => {
+                        if (Number(row.support_card_id || 0) === id) row.fb = row.fb === false;
+                    });
+                });
+                renderAreas();
+                scheduleCalculation();
+                return;
+            }
             const removeBtn = event.target.closest("[data-remove-card-id]");
             if (removeBtn) {
                 removeCardEverywhere(removeBtn.dataset.removeCardId);

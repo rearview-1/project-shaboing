@@ -263,6 +263,78 @@
 }
 .training-sim-info-note strong { color: var(--text); }
 
+/* --- Year-tab gimmick bar (scenario venue bonuses, top of page) --- */
+.training-sim-gimmick-bar {
+    margin-top: 10px;
+    padding: 12px 16px;
+    border: 1px solid rgba(109, 215, 0, 0.22);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent-soft, #6dd700) 6%, transparent);
+}
+.training-sim-gimmick-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.training-sim-year-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.training-sim-year-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 9px;
+    background: rgba(0,0,0,0.25);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+}
+.training-sim-year-tab b { color: var(--text-dim); font-weight: 800; }
+.training-sim-year-tab em {
+    font-style: normal;
+    font-size: 9px;
+    font-weight: 800;
+    color: #6dd700;
+}
+.training-sim-year-tab:hover { border-color: rgba(109, 215, 0, 0.5); }
+.training-sim-year-tab.is-open {
+    border-color: rgba(109, 215, 0, 0.72);
+    background: rgba(109, 215, 0, 0.10);
+}
+.training-sim-year-tab.is-filled b { color: #6dd700; }
+.training-sim-year-chips .training-sim-year-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 7px;
+}
+.training-sim-basic-pill {
+    display: block;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+}
+.training-sim-basic-pill.is-on {
+    border-color: rgba(109, 215, 0, 0.6);
+    color: #6dd700;
+    background: rgba(109, 215, 0, 0.07);
+}
+.training-sim-basic-pill b { text-transform: uppercase; margin-right: 6px; }
+.training-sim-gimmick-status { margin-top: 8px; display: block; }
+
 /* FB (friendship) chip on placed cards — uma.guide parity */
 .training-sim-fb-chip {
     display: inline-block;

@@ -9,7 +9,12 @@
         scenario: $("training-sim-scenario"),
         level: $("training-sim-level"),
         mood: $("training-sim-mood"),
-        growthPreset: $("training-sim-growth-preset"),
+        growthOpen: $("training-sim-growth-open"),
+        growthSummary: $("training-sim-growth-summary"),
+        growthModal: $("training-sim-growth-modal"),
+        growthClose: $("training-sim-growth-close"),
+        growthFields: $("training-sim-growth-fields"),
+        growthSave: $("training-sim-growth-save"),
         clearCards: $("training-sim-clear-cards"),
         reset: $("training-sim-reset"),
         megaphones: $("training-sim-megaphones"),
@@ -27,7 +32,9 @@
         areas: $("training-sim-areas"),
         tilesHint: $("training-sim-tiles-hint"),
         itemsBlock: $("training-sim-items-block"),
-        yearBlock: $("training-sim-year-block"),
+        gimmickBar: $("training-sim-gimmick-bar"),
+        yearTabs: $("training-sim-year-tabs"),
+        gimmickTitle: $("training-sim-gimmick-title"),
         noGimmick: $("training-sim-no-gimmick"),
         scenarioPanelTitle: $("training-sim-scenario-panel-title")
     };
@@ -60,7 +67,12 @@
         const hasItems = gimmicks.has("items");
         const hasYear = gimmicks.has("year_effects");
         if (els.itemsBlock) els.itemsBlock.hidden = !hasItems;
-        if (els.yearBlock) els.yearBlock.hidden = !hasYear;
+        if (els.gimmickBar) els.gimmickBar.hidden = !hasYear;
+        if (els.gimmickTitle && hasYear) els.gimmickTitle.textContent = `${(row && row.name) || "Scenario"} — Regional Venue Bonuses`;
+        // The details panel only hosts shop items / the note now; the year bar
+        // at the top replaces it entirely for venue scenarios.
+        const panel = $("training-sim-bonuses");
+        if (panel) panel.hidden = hasYear && !hasItems;
         if (els.noGimmick) els.noGimmick.hidden = hasItems || hasYear;
         if (els.scenarioPanelTitle) {
             const name = (row && row.name) || "Scenario";
@@ -107,6 +119,33 @@
             return fallback;
         }
     }
+    function normalizeGrowth(raw) {
+        const out = {};
+        STATS.forEach(stat => {
+            const n = Number(raw && raw[stat] != null ? raw[stat] : 0);
+            if (Number.isFinite(n) && n !== 0) out[stat] = Math.max(0, Math.min(30, n));
+        });
+        return out;
+    }
+    function growthEquals(a, b) {
+        const left = normalizeGrowth(a);
+        const right = normalizeGrowth(b);
+        return STATS.every(stat => Number(left[stat] || 0) === Number(right[stat] || 0));
+    }
+    function saveGrowth() {
+        localSet("trainingSimGrowth", JSON.stringify(normalizeGrowth(state.growth || {})));
+    }
+    function setGrowth(next, persist = true) {
+        state.growth = normalizeGrowth(next || {});
+        if (persist) saveGrowth();
+    }
+    function growthSummaryText(growth) {
+        const normalized = normalizeGrowth(growth || {});
+        const parts = STATS
+            .filter(stat => Number(normalized[stat] || 0) !== 0)
+            .map(stat => `${LABELS[stat]} +${Number(normalized[stat])}%`);
+        return parts.length ? parts.join(" / ") : "None";
+    }
     function escapeHtml(value) {
         return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     }
@@ -138,10 +177,12 @@
         scenario: localGet("trainingSimScenario", ""),
         level: Number(localGet("trainingSimLevel", "5")) || 5,
         mood: Number(localGet("trainingSimMood", "0.2")),
-        growth: {},
+        growth: normalizeGrowth(localJson("trainingSimGrowth", {})),
+        draftGrowth: {},
         megaphonePct: Number(localGet("trainingSimMegaphonePct", "0")) || 0,
         weightFacilities: {},
         yearEffects: localJson("trainingSimYearEffects", {}),
+        gimmickYear: localGet("trainingSimGimmickYear", "Junior Year"),
         enforceSupportTypes: localBool("trainingSimEnforceSupportTypes", true),
         overcapStat: localBool("trainingSimOvercapStat", false),
         ownedOnly: localBool("trainingSimOwnedOnly", false),
@@ -161,6 +202,20 @@
     }
     function cardId(card) {
         return Number(card && (card.support_card_id || card.id) || 0);
+    }
+    function lbLabel(lb) {
+        const value = Math.max(0, Math.min(4, Number(lb || 0)));
+        return value >= 4 ? "MLB" : `${value}LB`;
+    }
+    function clampLb(value) {
+        const n = Number(value);
+        return Math.max(0, Math.min(4, Number.isFinite(n) ? n : 4));
+    }
+    function lbOptions(selectedLb) {
+        const selected = clampLb(selectedLb);
+        return [0, 1, 2, 3, 4].map(lb =>
+            `<option value="${lb}" ${lb === selected ? "selected" : ""}>${lbLabel(lb)}</option>`
+        ).join("");
     }
     function defaultAreas() {
         return { speed: [], stamina: [], power: [], guts: [], wit: [] };
@@ -184,7 +239,7 @@
     function placementForCard(card) {
         const id = cardId(card);
         const rawLb = card && (card.limit_break_count ?? card.lb);
-        const lb = Math.max(0, Math.min(4, Number(rawLb == null ? 4 : rawLb) || 0));
+        const lb = clampLb(rawLb == null ? 4 : rawLb);
         return { support_card_id: id, lb: card && card.owned ? lb : 4, fb: true };
     }
     function cardMatchesTile(card, stat) {
@@ -209,6 +264,46 @@
     }
     function selectedScenario() {
         return (els.scenario && els.scenario.value) || state.scenario || (state.meta && state.meta.default_scenario) || "mant_base";
+    }
+    function renderGrowthControls() {
+        const growth = normalizeGrowth(state.growth || {});
+        state.growth = growth;
+        if (els.growthSummary) els.growthSummary.textContent = growthSummaryText(growth);
+    }
+    function renderGrowthModal() {
+        if (!els.growthFields) return;
+        const draft = normalizeGrowth(state.draftGrowth || state.growth || {});
+        state.draftGrowth = draft;
+        els.growthFields.innerHTML = STATS.map(stat => `
+            <div class="training-sim-growth-row">
+                <label class="stat-${stat}" for="training-sim-growth-input-${stat}">${escapeHtml(LABELS[stat])}</label>
+                <input id="training-sim-growth-input-${stat}" type="number" min="0" max="30" step="1" value="${escapeAttr(Number(draft[stat] || 0))}" data-growth-modal-stat="${escapeAttr(stat)}">
+                <span>%</span>
+            </div>
+        `).join("");
+    }
+    function openGrowthModal() {
+        if (!els.growthModal) return;
+        state.draftGrowth = normalizeGrowth(state.growth || {});
+        renderGrowthModal();
+        els.growthModal.hidden = false;
+        const first = els.growthModal.querySelector("[data-growth-modal-stat]");
+        if (first) first.focus();
+    }
+    function closeGrowthModal() {
+        if (els.growthModal) els.growthModal.hidden = true;
+    }
+    function saveGrowthModal() {
+        const next = {};
+        if (els.growthFields) {
+            els.growthFields.querySelectorAll("[data-growth-modal-stat]").forEach(input => {
+                next[input.dataset.growthModalStat] = Number(input.value || 0) || 0;
+            });
+        }
+        setGrowth(next);
+        renderGrowthControls();
+        closeGrowthModal();
+        scheduleCalculation();
     }
     function syncItemSummary() {
         const overcap = state.overcapStat ? " | Trained stat over 1200: primary gain halved" : "";
@@ -272,13 +367,7 @@
         const moods = meta.moods || [];
         els.mood.innerHTML = moods.map(row => `<option value="${escapeAttr(row.value)}">${escapeHtml(row.label)}</option>`).join("");
         els.mood.value = String(state.mood);
-        const growthRows = meta.growth_presets || [];
-        els.growthPreset.innerHTML = growthRows.map((row, idx) => `<option value="${idx}">${escapeHtml(row.label)}</option>`).join("");
-        const currentGrowth = growthRows.findIndex(row => JSON.stringify(row.growth || {}) === JSON.stringify(state.growth || {}));
-        els.growthPreset.value = String(currentGrowth >= 0 ? currentGrowth : 0);
-        if (!state.growth || !Object.keys(state.growth).length) {
-            state.growth = { ...((growthRows[0] && growthRows[0].growth) || {}) };
-        }
+        renderGrowthControls();
         els.megaphones.innerHTML = (((meta.item_options || {}).megaphones || []).map(row => `
             <button class="training-sim-chip ${Number(row.value) === Number(state.megaphonePct || 0) ? "is-active" : ""}" type="button" data-megaphone="${escapeAttr(row.value)}">${escapeHtml(row.label)}</button>
         `).join(""));
@@ -297,41 +386,73 @@
         renderYearEffects();
     }
 
+    function yearEffectGroups() {
+        return ((state.meta || {}).year_effects || []);
+    }
+    function basicEffectForYear(group) {
+        return ((group && group.effects) || []).find(e => String(e.id || "").endsWith("_basic")) || null;
+    }
+    function venueEffectsForYear(group) {
+        return ((group && group.effects) || []).filter(e => !String(e.id || "").endsWith("_basic"));
+    }
+    function selectedVenueCount(group) {
+        return venueEffectsForYear(group).filter(e => state.yearEffects[String(e.id)]).length;
+    }
     function renderYearEffects() {
-        const meta = state.meta || {};
+        // Year-tab gimmick bar: Junior/Classic/Senior buttons; each year allows
+        // up to 3 venue buffs; the year's Basic buff auto-applies with any pick.
+        if (!els.gimmickBar || !els.yearTabs) return;
         const result = state.result || {};
         const skippedIds = new Set((result.year_effects_skipped || []).map(row => String(row.id || "")));
-        const activeIds = new Set(selectedYearEffectIds());
         const typeCount = Number(result.support_type_count || 0);
         const gateOn = !!state.enforceSupportTypes;
-        els.yearEffects.innerHTML = (meta.year_effects || []).map(group => {
-            const buttons = (group.effects || []).map(effect => {
-                const id = String(effect.id || "");
-                const active = activeIds.has(id);
-                const blocked = active && skippedIds.has(id);
-                // Explain the gate BEFORE the user clicks: chips that need 4 card
-                // types show as gated (dimmed, not dead) while under 4 types.
-                const gated = gateOn && effect.requires_four_support_types && typeCount < 4;
-                const reason = blocked
-                    ? `Selected, but inactive: needs 4 card types on tiles (you have ${typeCount}). Untick "Require 4 support types" to force it.`
-                    : "";
-                return `
-                    <button class="training-sim-effect-chip ${active ? "is-active" : ""} ${blocked ? "is-blocked" : ""} ${gated && !active ? "is-gated" : ""}" type="button" data-year-effect="${escapeAttr(id)}"
-                        title="${escapeAttr(reason || (gated ? `Needs 4 card types on tiles (you have ${typeCount})` : ""))}">
-                        <span class="training-sim-effect-chip-title">${escapeHtml(effect.label || id)}</span>
-                        <span class="training-sim-effect-chip-detail">${escapeHtml(effect.detail || "")}</span>
-                        ${blocked ? `<span class="training-sim-effect-chip-blockreason">needs 4 card types — you have ${typeCount}</span>` : ""}
-                        ${effect.requires_four_support_types ? `<span class="training-sim-effect-chip-gate ${gated ? "is-unmet" : "is-met"}">${gateOn ? `${Math.min(4, typeCount)}/4 types` : "4 types (off)"}</span>` : ""}
-                    </button>
-                `;
-            }).join("");
+        const groups = yearEffectGroups();
+        if (!groups.length) {
+            els.yearTabs.innerHTML = "";
+            els.yearEffects.innerHTML = '<div class="training-sim-empty">No scenario bonus data loaded.</div>';
+            return;
+        }
+        if (!groups.some(g => String(g.year) === String(state.gimmickYear))) {
+            state.gimmickYear = String(groups[0].year || "");
+        }
+        els.yearTabs.innerHTML = groups.map(group => {
+            const year = String(group.year || "Year");
+            const count = selectedVenueCount(group);
+            const open = year === state.gimmickYear;
             return `
-                <div class="training-sim-year-group">
-                    <div class="training-sim-year-heading">${escapeHtml(group.year || "Year")}</div>
-                    <div class="training-sim-year-chip-grid">${buttons}</div>
-                </div>
+                <button class="training-sim-year-tab ${open ? "is-open" : ""} ${count ? "is-filled" : ""}" type="button" data-gimmick-year="${escapeAttr(year)}">
+                    <span>${escapeHtml(year)}</span>
+                    <b>${count}/3</b>
+                    ${count ? '<em>+ Basic</em>' : ""}
+                </button>
             `;
-        }).join("") || '<div class="training-sim-empty">No scenario bonus data loaded.</div>';
+        }).join("");
+        const group = groups.find(g => String(g.year) === state.gimmickYear) || groups[0];
+        const basic = basicEffectForYear(group);
+        const basicOn = !!(basic && state.yearEffects[String(basic.id)]);
+        const chips = venueEffectsForYear(group).map(effect => {
+            const id = String(effect.id || "");
+            const active = !!state.yearEffects[id];
+            const blocked = active && skippedIds.has(id);
+            const gated = gateOn && effect.requires_four_support_types && typeCount < 4;
+            const reason = blocked
+                ? `Selected, but inactive: needs 4 card types on tiles (you have ${typeCount}). Untick "Require 4 support types" to force it.`
+                : "";
+            return `
+                <button class="training-sim-effect-chip ${active ? "is-active" : ""} ${blocked ? "is-blocked" : ""} ${gated && !active ? "is-gated" : ""}" type="button" data-year-effect="${escapeAttr(id)}"
+                    title="${escapeAttr(reason || (gated ? `Needs 4 card types on tiles (you have ${typeCount})` : ""))}">
+                    <span class="training-sim-effect-chip-title">${escapeHtml(effect.label || id)}</span>
+                    <span class="training-sim-effect-chip-detail">${escapeHtml(effect.detail || "")}</span>
+                    ${blocked ? `<span class="training-sim-effect-chip-blockreason">needs 4 card types — you have ${typeCount}</span>` : ""}
+                    ${effect.requires_four_support_types ? `<span class="training-sim-effect-chip-gate ${gated ? "is-unmet" : "is-met"}">${gateOn ? `${Math.min(4, typeCount)}/4 types` : "4 types (off)"}</span>` : ""}
+                </button>
+            `;
+        }).join("");
+        const basicRow = basic ? `
+            <div class="training-sim-basic-pill ${basicOn ? "is-on" : ""}" title="The year's Basic buff is applied automatically as soon as any venue buff for that year is selected.">
+                <b>Basic</b> ${escapeHtml(basic.detail || "")} — ${basicOn ? "auto-applied ✓" : "auto-applies with your first venue pick"}
+            </div>` : "";
+        els.yearEffects.innerHTML = basicRow + `<div class="training-sim-year-chip-grid">${chips}</div>`;
         const types = (result.support_types || []).join(", ") || "none placed";
         const activeCount = (result.year_effects_active || []).length;
         const skippedCount = (result.year_effects_skipped || []).length;
@@ -378,7 +499,7 @@
         els.cardToolbox.innerHTML = cards.map(card => {
             const id = cardId(card);
             const active = state.selectedCard && cardId(state.selectedCard) === id;
-            const owned = card.owned ? `LB${Number(card.limit_break_count || 0)}` : "catalog";
+            const owned = card.owned ? lbLabel(card.limit_break_count) : "catalog";
             return `
                 <button class="training-sim-card ${typeClass(card.type)} ${active ? "is-selected" : ""}" type="button" data-card-id="${id}"
                     title="${escapeAttr(card.name || `Support ${id}`)}${card.release_date ? ` — released ${escapeAttr(card.release_date)}` : ""}">
@@ -403,17 +524,24 @@
             const placedCards = cards.map(row => {
                 const card = findCard(row.support_card_id) || row;
                 const id = Number(row.support_card_id || row.id || 0);
+                const lb = clampLb(row.lb == null ? card.limit_break_count : row.lb);
                 const matching = cardMatchesTile(card, stat);
                 const fbOn = row.fb !== false;
                 const fbChip = matching
                     ? `<span class="training-sim-fb-chip ${fbOn ? "is-on" : "is-off"}" data-fb-toggle="${id}" title="${fbOn ? "Click to disable friendship training" : "Click to enable friendship training"}">FB</span>`
                     : `<span class="training-sim-fb-chip is-na" title="No friendship bonus (card type doesn't match training)">–</span>`;
                 return `
-                    <button class="training-sim-placed-card ${typeClass(card.type)}" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">
+                    <div class="training-sim-placed-card ${typeClass(card.type)}" data-placed-card-id="${id}">
+                        <button class="training-sim-placed-remove" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">×</button>
                         <img src="/api/images/${id}.png" onerror="this.style.display='none'">
                         <span>${escapeHtml(card.name || `Support ${id}`)}</span>
-                        ${fbChip}
-                    </button>
+                        <div class="training-sim-placed-controls">
+                            <select class="training-sim-lb-select" data-lb-card-id="${id}" title="Limit break level for ${escapeAttr(card.name || id)}">
+                                ${lbOptions(lb)}
+                            </select>
+                            ${fbChip}
+                        </div>
+                    </div>
                 `;
             }).join("");
             // uma.guide-style: big headline gain for the tile's own stat, compact
@@ -534,12 +662,18 @@
             localSet("trainingSimMood", state.mood);
             scheduleCalculation();
         });
-        els.growthPreset.addEventListener("change", () => {
-            const idx = Number(els.growthPreset.value || 0);
-            const row = ((state.meta || {}).growth_presets || [])[idx] || {};
-            state.growth = { ...(row.growth || {}) };
-            scheduleCalculation();
-        });
+        if (els.growthOpen) els.growthOpen.addEventListener("click", openGrowthModal);
+        if (els.growthClose) els.growthClose.addEventListener("click", closeGrowthModal);
+        if (els.growthSave) els.growthSave.addEventListener("click", saveGrowthModal);
+        if (els.growthModal) {
+            els.growthModal.addEventListener("click", event => {
+                if (event.target === els.growthModal) closeGrowthModal();
+            });
+            els.growthModal.addEventListener("keydown", event => {
+                if (event.key === "Escape") closeGrowthModal();
+                if (event.key === "Enter" && event.target && event.target.matches("[data-growth-modal-stat]")) saveGrowthModal();
+            });
+        }
         els.search.addEventListener("input", () => {
             state.search = els.search.value || "";
             renderCardToolbox();
@@ -562,6 +696,7 @@
             state.weightFacilities = {};
             state.yearEffects = {};
             state.overcapStat = false;
+            setGrowth({});
             localSet("trainingSimMegaphonePct", "0");
             localSet("trainingSimOvercapStat", "0");
             saveYearEffects();
@@ -601,13 +736,32 @@
             renderYearEffects();
             scheduleCalculation();
         });
+        els.yearTabs.addEventListener("click", event => {
+            const btn = event.target.closest("[data-gimmick-year]");
+            if (!btn) return;
+            state.gimmickYear = btn.dataset.gimmickYear || "";
+            localSet("trainingSimGimmickYear", state.gimmickYear);
+            renderYearEffects();
+        });
         els.yearEffects.addEventListener("click", event => {
             const btn = event.target.closest("[data-year-effect]");
             if (!btn) return;
             const id = btn.dataset.yearEffect || "";
             if (!id) return;
-            state.yearEffects[id] = !state.yearEffects[id];
-            if (!state.yearEffects[id]) delete state.yearEffects[id];
+            const groups = yearEffectGroups();
+            const group = groups.find(g => (g.effects || []).some(e => String(e.id) === id)) || null;
+            const turningOn = !state.yearEffects[id];
+            if (turningOn && group && selectedVenueCount(group) >= 3) {
+                els.yearEffectStatus.textContent = `${group.year}: max 3 venue buffs — deselect one first.`;
+                return;
+            }
+            if (turningOn) state.yearEffects[id] = true; else delete state.yearEffects[id];
+            // Auto-manage the year's Basic buff: on iff >=1 venue buff selected.
+            const basic = basicEffectForYear(group);
+            if (basic) {
+                if (selectedVenueCount(group) > 0) state.yearEffects[String(basic.id)] = true;
+                else delete state.yearEffects[String(basic.id)];
+            }
             saveYearEffects();
             renderYearEffects();
             scheduleCalculation();
@@ -635,6 +789,7 @@
         els.areas.addEventListener("click", event => {
             // Clicks inside the breakdown expandable must not place cards/NPCs.
             if (event.target.closest(".training-sim-breakdown-details")) return;
+            if (event.target.closest(".training-sim-placed-card") && !event.target.closest("[data-remove-card-id], [data-fb-toggle]")) return;
             // FB chip: toggle friendship for that placed card (do NOT remove it).
             const fbChip = event.target.closest("[data-fb-toggle]");
             if (fbChip) {
@@ -696,6 +851,19 @@
                 const cards = (state.areas[stat] || []).length;
                 state.npc[stat] = Math.max(0, Math.min(6 - cards, current + 1));
             }
+            renderAreas();
+            scheduleCalculation();
+        });
+        els.areas.addEventListener("change", event => {
+            const lbSelect = event.target.closest("[data-lb-card-id]");
+            if (!lbSelect) return;
+            const id = Number(lbSelect.dataset.lbCardId || 0);
+            const lb = clampLb(lbSelect.value);
+            STATS.forEach(stat => {
+                (state.areas[stat] || []).forEach(row => {
+                    if (Number(row.support_card_id || 0) === id) row.lb = lb;
+                });
+            });
             renderAreas();
             scheduleCalculation();
         });

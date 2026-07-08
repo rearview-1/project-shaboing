@@ -38,15 +38,28 @@
                     <span>Mood</span>
                     <select id="training-sim-mood"></select>
                 </label>
-                <label class="training-sim-field">
-                    <span>Growth</span>
-                    <select id="training-sim-growth-preset"></select>
-                </label>
+                <button id="training-sim-growth-open" class="training-sim-growth-open" type="button">
+                    <span>Growth Rates</span>
+                    <strong id="training-sim-growth-summary">None</strong>
+                </button>
                 <button id="training-sim-overcap-stat" class="training-sim-chip training-sim-overcap-chip" type="button" title="Trained stat over 1200: primary gain halved">Stat over 1200</button>
                 <div class="training-sim-topbar-actions">
                     <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
                     <button id="training-sim-reset" class="btn btn-sm" type="button">Reset All</button>
                 </div>
+            </div>
+
+            <div id="training-sim-gimmick-bar" class="training-sim-gimmick-bar" hidden>
+                <div class="training-sim-gimmick-head">
+                    <span id="training-sim-gimmick-title" class="training-sim-title">Regional Venue Bonuses</span>
+                    <label class="training-sim-owned-toggle training-sim-gate-toggle">
+                        <input id="training-sim-support-type-gate" type="checkbox">
+                        <span>Require 4 support types</span>
+                    </label>
+                </div>
+                <div id="training-sim-year-tabs" class="training-sim-year-tabs"></div>
+                <div id="training-sim-year-effects" class="training-sim-year-chips"></div>
+                <div id="training-sim-year-effect-status" class="training-sim-subtitle training-sim-gimmick-status"></div>
             </div>
 
             <div class="training-sim-workspace">
@@ -92,20 +105,6 @@
                     </div>
                 </section>
 
-                <section id="training-sim-year-block" class="training-sim-year-panel">
-                    <div class="training-sim-section-head">
-                        <div>
-                            <span class="training-sim-title">Regional Venue Bonuses</span>
-                            <span id="training-sim-year-effect-status" class="training-sim-subtitle">Toggle year and venue effects to model regional bonuses.</span>
-                        </div>
-                        <label class="training-sim-owned-toggle training-sim-gate-toggle">
-                            <input id="training-sim-support-type-gate" type="checkbox">
-                            <span>Require 4 support types</span>
-                        </label>
-                    </div>
-                    <div id="training-sim-year-effects" class="training-sim-year-effects"></div>
-                </section>
-
                 <div id="training-sim-no-gimmick" class="training-sim-empty" hidden>This scenario has no extra items or regional bonuses in the sim.</div>
             </details>
 
@@ -117,6 +116,17 @@
             </div>
         </div>
     </main>
+    <div id="training-sim-growth-modal" class="training-sim-growth-modal-overlay" hidden>
+        <div class="training-sim-growth-modal" role="dialog" aria-modal="true" aria-labelledby="training-sim-growth-title">
+            <div class="training-sim-growth-modal-head">
+                <h2 id="training-sim-growth-title">Growth Rates</h2>
+                <button id="training-sim-growth-close" class="training-sim-growth-close" type="button" aria-label="Close growth rates">&times;</button>
+            </div>
+            <p>Set the Uma's growth rate for each stat (0-30%).</p>
+            <div id="training-sim-growth-fields" class="training-sim-growth-fields"></div>
+            <button id="training-sim-growth-save" class="training-sim-growth-save" type="button">Save</button>
+        </div>
+    </div>
     <script src="/training_sim.js"></script>
 </body>
 </html>

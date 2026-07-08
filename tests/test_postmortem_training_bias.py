@@ -8,6 +8,7 @@ postmortem aggregation was forensic-only.
 
 import unittest
 
+from career_bot.postmortem_feedback import POSTMORTEM_FEEDBACK_SCHEMA
 from career_bot.scenarios.mant import MantStrategy
 
 
@@ -30,6 +31,7 @@ class PostmortemTrainingBonusTests(unittest.TestCase):
         self.preset_no_hints = {"expect_attribute": [1200, 1200, 1200, 1200, 1200]}
         self.preset_with_hints = {
             "expect_attribute": [1200, 1200, 1200, 1200, 1200],
+            "postmortem_feedback_schema": POSTMORTEM_FEEDBACK_SCHEMA,
             "race_specific_stat_hints": {
                 11017: {
                     "program_id": 11017, "loss_count": 3,
@@ -39,6 +41,14 @@ class PostmortemTrainingBonusTests(unittest.TestCase):
             },
         }
         self.chara_turn_33 = {"turn": 33}
+
+    def test_legacy_unversioned_hints_are_ignored(self):
+        preset = dict(self.preset_with_hints)
+        preset.pop("postmortem_feedback_schema", None)
+        planner = _FakePlanner([{"turn": 35, "program_id": 11017}])
+        strategy = MantStrategy(race_planner=planner)
+        bonus = strategy._postmortem_training_bonus(2, self.chara_turn_33, preset)
+        self.assertEqual(bonus, 0.0)
 
     def test_returns_zero_when_no_planner(self):
         strategy = MantStrategy(race_planner=None)

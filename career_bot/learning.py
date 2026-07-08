@@ -1005,7 +1005,11 @@ def _instance_local_learning_scope_enabled():
     scope = str(os.environ.get("SWEEPY_AUTO_LEARNING_SCOPE") or "").strip().lower()
     if scope in {"instance", "local", "instance_local"}:
         return True
-    return bool(os.environ.get("SWEEPY_SHARED_RUNTIME_PATHS") and os.environ.get("SWEEPY_INSTANCE_NAME"))
+    if scope in {"shared", "shared_preset", "shared_overlay", "shared_runtime", "shared_learning", "global"}:
+        return False
+    # Dual runtimes should share the learning pool by default. Instance-local
+    # learning remains available, but it must be explicitly requested.
+    return False
 
 
 def resolve_runtime_learning_pools(samples, primary_root=None, *, instance_local=False, min_local_samples=3):
@@ -4081,6 +4085,18 @@ def _preset_validation_context(preset):
     })
 
 
+def _validation_context_has_strong_anchor(context):
+    context = context if isinstance(context, dict) else {}
+    return bool(
+        context.get("trainee_card_id")
+        or context.get("exact_deck_signature")
+        or context.get("support_card_ids")
+        or context.get("friend_card_id")
+        or context.get("schedule_signature")
+        or context.get("parent_signature")
+    )
+
+
 def _overlap_ratio(left, right):
     left_set = set(left or [])
     right_set = set(right or [])
@@ -4211,24 +4227,48 @@ def select_context_adaptive_samples(samples, preset=None):
             "similar_count": 0,
             "global_count": len(samples),
         }
+    if not _validation_context_has_strong_anchor(anchor_context):
+        return {
+            "samples": samples,
+            "enabled": True,
+            "mode": "no_context_anchor",
+            "anchor": fingerprint,
+            "sample_count": len(samples),
+            "exact_count": 0,
+            "similar_count": 0,
+            "global_count": len(samples),
+            "selected_count": len(samples),
+        }
     exact_threshold = as_int(preset.get("learning_context_exact_match_score"), 28)
     similar_threshold = as_int(preset.get("learning_context_similar_match_score"), 14)
     min_exact = max(1, as_int(preset.get("learning_context_min_exact_samples"), 4))
     min_similar = max(min_exact, as_int(preset.get("learning_context_min_similar_samples"), 8))
+    soft_min_similar = max(1, as_int(preset.get("learning_context_soft_min_similar_samples"), 3))
+    global_fallback_enabled = bool(preset.get("learning_context_global_fallback_enabled", False))
     scored = []
     for sample in samples:
         score = _sample_validation_match_score(anchor_context, sample)
         scored.append((score, sample))
     exact = [sample for score, sample in scored if score >= exact_threshold]
     similar = [sample for score, sample in scored if score >= similar_threshold]
-    selected = samples
-    mode = "global_fallback"
+    selected = []
+    mode = "context_cold_start_no_global"
     if len(exact) >= min_exact:
         selected = exact
         mode = "exact_context"
     elif len(similar) >= min_similar:
         selected = similar
         mode = "similar_context"
+    elif len(similar) >= soft_min_similar:
+        # New deck/trainee/parent bundles often have only a handful of local
+        # careers at first. Learning from those weak-but-relevant runs is safer
+        # than copying unrelated global/manual top samples from a different
+        # context, which was the main source of post-swap regression.
+        selected = similar
+        mode = "similar_context_low_sample"
+    elif global_fallback_enabled:
+        selected = samples
+        mode = "global_fallback"
     max_score = max((score for score, _sample in scored), default=0)
     return {
         "samples": selected,
@@ -4245,6 +4285,8 @@ def select_context_adaptive_samples(samples, preset=None):
         "similar_threshold": similar_threshold,
         "min_exact_samples": min_exact,
         "min_similar_samples": min_similar,
+        "soft_min_similar_samples": soft_min_similar,
+        "global_fallback_enabled": global_fallback_enabled,
     }
 
 
@@ -4772,6 +4814,8 @@ def build_postmortem_feedback_refresh(base_dir, preset_name, current_preset=None
             "runtime_roots_used": resolved_runtime_roots,
         }
 
+    from career_bot.postmortem_feedback import POSTMORTEM_FEEDBACK_SCHEMA
+
     per_race_hints = race_stat_hints(postmortem_root)
     attempt_history = load_race_attempt_history(postmortem_root)
     per_race_hints = attach_diagnoses(per_race_hints, attempt_history)
@@ -4805,6 +4849,7 @@ def build_postmortem_feedback_refresh(base_dir, preset_name, current_preset=None
     else:
         learned_race_style_overrides = {}
 
+    learned["postmortem_feedback_schema"] = POSTMORTEM_FEEDBACK_SCHEMA
     learned["race_specific_stat_hints"] = per_race_hints
     learned["postmortem_global_hint"] = global_hint
     if race_success_hints:
@@ -4824,6 +4869,7 @@ def build_postmortem_feedback_refresh(base_dir, preset_name, current_preset=None
         "source_preset": source_name,
         "learned_preset": source_name,
         "mode": "postmortem_only",
+        "postmortem_feedback_schema": POSTMORTEM_FEEDBACK_SCHEMA,
         "runtime_roots_used": resolved_runtime_roots,
         "race_specific_stat_hints": per_race_hints,
         "postmortem_global_hint": global_hint,
@@ -6699,7 +6745,9 @@ def learn_preset(
             behavior_usable = shared_behavior
     behavior_pool_sample_count_before_context = len(behavior_usable)
     context_adaptation_result = select_context_adaptive_samples(behavior_usable, preset=preset)
-    selected_context_samples = context_adaptation_result.get("samples") or behavior_usable
+    selected_context_samples = context_adaptation_result.get("samples")
+    if selected_context_samples is None:
+        selected_context_samples = behavior_usable
     context_adaptation = {
         key: value for key, value in context_adaptation_result.items()
         if key != "samples"
@@ -6708,8 +6756,13 @@ def learn_preset(
         behavior_usable = selected_context_samples
     else:
         context_adaptation = dict(context_adaptation)
-        context_adaptation["mode"] = "global_fallback_min_samples"
-        context_adaptation["selected_count"] = len(behavior_usable)
+        if bool(preset.get("learning_context_global_fallback_enabled", False)):
+            context_adaptation["mode"] = "global_fallback_min_samples"
+            context_adaptation["selected_count"] = len(behavior_usable)
+        else:
+            behavior_usable = selected_context_samples
+            context_adaptation["mode"] = "context_insufficient_no_global"
+            context_adaptation["selected_count"] = len(behavior_usable)
     policy_gate_summary = annotate_policy_steering_gates(
         behavior_usable,
         preset=preset,
@@ -7163,10 +7216,13 @@ def learn_preset(
         per_race_hints = attach_diagnoses(per_race_hints, attempt_history)
     else:
         per_race_hints = {}
+    from career_bot.postmortem_feedback import POSTMORTEM_FEEDBACK_SCHEMA
+
     global_hint = merge_global_signal(per_race_hints)
     if per_race_hints:
         # Stored on the learned preset for the bot to consult at runtime
         # (training-policy bias). Keys are program_ids (ints).
+        learned["postmortem_feedback_schema"] = POSTMORTEM_FEEDBACK_SCHEMA
         learned["race_specific_stat_hints"] = per_race_hints
         learned["postmortem_global_hint"] = global_hint
     # Hard per-race stat targets: the "no more losses" rail. Soft hints
@@ -7280,6 +7336,7 @@ def learn_preset(
         "support_action_summary": dict(_support_action_counts(usable)),
         "training_policy_challenger": learned.get("training_policy_challenger") or {},
         "policy_steering_gate": policy_gate_summary,
+        "postmortem_feedback_schema": POSTMORTEM_FEEDBACK_SCHEMA,
         "race_specific_stat_hints": per_race_hints,
         "postmortem_global_hint": global_hint,
         "race_specific_success_hints": race_success_hints,
@@ -7339,6 +7396,7 @@ def learn_preset(
         "primary_runtime_root": _normalized_runtime_root(primary_root),
         "parent_farming_rules": learned.get("parent_farming_rules") or {},
         "white_spark_rank_diagnostic": white_rank_diagnostic,
+        "postmortem_feedback_schema": POSTMORTEM_FEEDBACK_SCHEMA,
         "race_specific_stat_hints": per_race_hints,
         "postmortem_global_hint": global_hint,
         "race_specific_success_hints": race_success_hints,
@@ -7779,5 +7837,44 @@ def save_instance_learning_outputs(base_dir, learned, report):
             store.save_runtime_state(instance_name, source_name, layers["runtime"])
         report["policy_overrides_path"] = str(store.policy_overrides_path(instance_name, layers["family"]))
     report["instance_preset_path"] = str(learned_path)
+    _atomic_write_json(report_path, report)
+    return learned_path, report_path
+
+
+def save_shared_learning_outputs(base_dir, learned, report):
+    from career_bot.presets import shared_learning_override_path, split_preset_layers
+
+    base = Path(base_dir)
+    runtime = runtime_roots(base)[0]
+    report_dir = runtime / "learning"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_path = report_dir / f"learning_report_{timestamp}.json"
+
+    source_name = report.get("source_preset") or learned.get("learning_metadata", {}).get("source_preset") or learned.get("name") or "preset"
+    store = PresetStore(base_dir)
+    current_source = store.read_one(source_name) or {}
+
+    learned = copy.deepcopy(learned)
+    learned["name"] = source_name
+    learned["shared_learning_source_preset"] = source_name
+    learned, preserved_keys = _preserve_operator_owned_fields(learned, current_source)
+    learned["name"] = source_name
+    learned["shared_learning_source_preset"] = source_name
+
+    report = copy.deepcopy(report)
+    report["apply_scope"] = "shared_overlay"
+    if preserved_keys:
+        report["preserved_operator_fields"] = preserved_keys
+
+    learned_path = shared_learning_override_path(base_dir, source_name)
+    _atomic_write_json(learned_path, normalize_preset(learned))
+    if store.config_path(source_name).exists():
+        layers = split_preset_layers(learned, instance_override=True)
+        store.save_policy_model(layers["family"], layers["model"])
+        if layers["runtime"]:
+            store.save_runtime_state("", source_name, layers["runtime"])
+        report["policy_model_path"] = str(store.policy_model_path(layers["family"]))
+    report["shared_preset_path"] = str(learned_path)
     _atomic_write_json(report_path, report)
     return learned_path, report_path

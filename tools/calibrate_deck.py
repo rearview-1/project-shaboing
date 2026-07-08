@@ -33,12 +33,17 @@ import random
 import statistics
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from career_bot.career_simulator import CareerSimulator, MANT_EPITHET_SETS
+from career_bot.career_simulator import (
+    CareerSimulator,
+    MANT_EPITHET_SETS,
+    hydrate_preset_with_latest_session_context,
+)
 from career_bot.deck_policy_cache import (
     apply_policy_to_preset,
     deck_signature,
@@ -162,6 +167,38 @@ def _detect_parent_ids(instance: str) -> tuple[int, int, str]:
     return 0, 0, "none found"
 
 
+def _hydrated_signature_context(preset: dict) -> tuple[dict, list[int], int, int, int]:
+    """Hydrate latest UI/session context without constructing a simulator.
+
+    `CareerSimulator.__init__` is intentionally heavy: it loads runtime
+    observations, empirical calibrations, catalogs, and parent data. Calibrate
+    only needs deck/trainee/friend/scenario for the policy signature here, so
+    use the same session-context hydrator directly and leave full simulator
+    construction for actual runs.
+    """
+    hydrated = hydrate_preset_with_latest_session_context(copy.deepcopy(preset), PROJECT_ROOT)
+    run_context = hydrated.get("_run_context") or {}
+    deck_ids = [
+        int(value or 0)
+        for value in (run_context.get("support_card_ids") or [])
+        if int(value or 0)
+    ]
+    if len(deck_ids) < 5:
+        deck_ids = [
+            int((card or {}).get("support_card_id") or (card or {}).get("id") or (card or {}).get("card_id") or 0)
+            for card in (run_context.get("support_cards") or [])
+            if isinstance(card, dict)
+            and int((card or {}).get("support_card_id") or (card or {}).get("id") or (card or {}).get("card_id") or 0)
+        ]
+        if deck_ids:
+            run_context["support_card_ids"] = deck_ids
+            hydrated["_run_context"] = run_context
+    trainee_card_id = int(run_context.get("trainee_card_id") or hydrated.get("trainee_card_id") or 0)
+    friend_card_id = int(run_context.get("friend_card_id") or hydrated.get("friend_card_id") or 0)
+    scenario_id = int(hydrated.get("scenario_id") or run_context.get("scenario_id") or 4)
+    return hydrated, deck_ids, trainee_card_id, friend_card_id, scenario_id
+
+
 def _epithet_race_names() -> set[str]:
     """Every race that participates in any MANT epithet route.
 
@@ -222,24 +259,50 @@ def _strat_summary(result) -> str:
     return f"strats=[{' '.join(parts)}]"
 
 
+def _print_sim_result(seed: int, result):
+    marker = "SS!" if result.rating_score >= 17500 else (
+        "S+" if result.rating_score >= 15900 else (
+            "S" if result.rating_score >= 14500 else ""
+        )
+    )
+    strat = _strat_summary(result)
+    print(
+        f"    seed {seed}: rank={result.rank:>4} "
+        f"rating={result.rating_score:>5} stat_sum={result.stat_sum:>4} "
+        f"{strat}  {marker}".rstrip(),
+        flush=True,
+    )
+
+
+_SIM_RUN_SECONDS: list[float] = []
+
+
+def _steady_state_sim_seconds(fallback: float = 15.0) -> float:
+    """Estimate post-warmup sim cost for candidate scheduling.
+
+    The first simulator in a calibrate process hydrates runtime observations and
+    empirical calibration data. Later sims reuse those caches and are much
+    faster. Candidate budgeting must use the steady-state cost, not the first
+    warmup cost, or optimizer.bat exits after baseline without testing enough
+    candidates.
+    """
+    timings = [float(value) for value in _SIM_RUN_SECONDS if float(value) > 0]
+    if not timings:
+        return float(fallback)
+    steady = timings[1:] if len(timings) > 1 else timings
+    return max(5.0, statistics.median(steady) * 1.25)
+
+
 def _run_sims(preset: dict, *, n: int, seed_base: int) -> list:
     results = []
     for i in range(n):
-        sim = CareerSimulator(preset=copy.deepcopy(preset), seed=seed_base + i)
-        r = sim.run()
-        results.append(r)
-        marker = "SS!" if r.rating_score >= 17500 else (
-            "S+" if r.rating_score >= 15900 else (
-                "S" if r.rating_score >= 14500 else ""
-            )
-        )
-        strat = _strat_summary(r)
-        print(
-            f"    seed {seed_base + i}: rank={r.rank:>4} "
-            f"rating={r.rating_score:>5} stat_sum={r.stat_sum:>4} "
-            f"{strat}  {marker}".rstrip(),
-            flush=True,
-        )
+        seed = seed_base + i
+        started = time.time()
+        sim = CareerSimulator(preset=copy.deepcopy(preset), seed=seed)
+        result = sim.run()
+        _SIM_RUN_SECONDS.append(time.time() - started)
+        results.append(result)
+        _print_sim_result(seed, result)
     return results
 
 
@@ -694,12 +757,8 @@ def calibrate(
         _log("=" * 60)
 
     # Hydrate session context (so deck_signature matches what the bot will face)
-    sim = CareerSimulator(preset=copy.deepcopy(preset), seed=rng_seed)
-    deck_ids = [int(c.get("support_card_id") or 0) for c in (sim.deck or [])
-                if isinstance(c, dict) and int(c.get("support_card_id") or 0)]
-    trainee_card_id = int((sim.preset.get("_run_context") or {}).get("trainee_card_id") or 0)
-    friend_card_id = int((sim.preset.get("_run_context") or {}).get("friend_card_id") or 0)
-    scenario_id = int(preset.get("scenario_id") or 4)
+    # without paying for a full simulator construction before the baseline pass.
+    preset, deck_ids, trainee_card_id, friend_card_id, scenario_id = _hydrated_signature_context(preset)
 
     if not deck_ids or not trainee_card_id:
         report = {
@@ -745,6 +804,22 @@ def calibrate(
                         target_win_rate=target_win_rate,
                         max_epithet_losses=max_epithet_losses,
                         min_rating=min_rating):
+        cache = load_cache(PROJECT_ROOT, instance)
+        save_policy(
+            cache, signature,
+            trainee_card_id=trainee_card_id,
+            support_card_ids=deck_ids,
+            scenario_id=scenario_id,
+            friend_card_id=friend_card_id,
+            learned_hyperparameters=dict(preset.get("learned_hyperparameters") or {}),
+            baseline_rating_mean=baseline_mean,
+            optimized_rating_mean=baseline_mean,
+            rating_lift=0,
+            n_baseline=len(baseline_results),
+            n_optimized=len(baseline_results),
+            optimized_at_iso=datetime.now().isoformat(timespec="seconds"),
+        )
+        save_cache(cache, PROJECT_ROOT, instance)
         _log(f"baseline ALREADY comfortable — saving as-is to cache.")
         return {
             "status": "done",
@@ -800,11 +875,7 @@ def calibrate(
     # sim can take tens of seconds with real observation data loaded.
     initial_screen_sims = max(1, min(2, sims_per_candidate))
     confirm_sims = max(sims_per_candidate, 3)
-    elapsed_after_baseline = max(0.1, time.time() - t_start)
-    per_sim_estimate = max(
-        15.0,
-        (elapsed_after_baseline / max(1, len(baseline_results))) * 1.25,
-    )
+    per_sim_estimate = _steady_state_sim_seconds(fallback=15.0)
     _log(f"adaptive time model: estimated {per_sim_estimate:.1f}s per sim")
 
     def _evaluate_candidate(overrides_in, phase_label):
@@ -893,6 +964,7 @@ def calibrate(
     while True:
         elapsed = time.time() - t_start
         time_remaining = time_budget_sec - elapsed
+        per_sim_estimate = _steady_state_sim_seconds(fallback=per_sim_estimate)
         # Adaptive needs initial_screen_sims + (maybe) confirm_sims headroom
         budget_for_one_more = (initial_screen_sims + confirm_sims) * per_sim_estimate
         # If we're tight on time, allow at least the screening part
@@ -977,22 +1049,6 @@ def calibrate(
     # Step 3: validate winner on fresh seeds (unless winner == baseline)
     if not best_overrides:
         _log("no candidate beat baseline and baseline is not comfortable; not saving.")
-        cache = load_cache(PROJECT_ROOT, instance)
-        save_policy(
-            cache, signature,
-            trainee_card_id=trainee_card_id,
-            support_card_ids=deck_ids,
-            scenario_id=scenario_id,
-            friend_card_id=friend_card_id,
-            learned_hyperparameters=dict(preset.get("learned_hyperparameters") or {}),
-            baseline_rating_mean=baseline_mean,
-            optimized_rating_mean=baseline_mean,
-            rating_lift=0,
-            n_baseline=len(baseline_results),
-            n_optimized=len(baseline_results),
-            optimized_at_iso="",
-        )
-        save_cache(cache, PROJECT_ROOT, instance)
         return {
             "status": "done",
             "reason": "no candidate beat baseline; no policy saved",
@@ -1099,7 +1155,7 @@ def calibrate(
             rating_lift=val_mean - baseline_mean,
             n_baseline=len(baseline_results),
             n_optimized=len(val_results),
-            optimized_at_iso="",
+            optimized_at_iso=datetime.now().isoformat(timespec="seconds"),
         )
         save_cache(cache, PROJECT_ROOT, instance)
         saved = True

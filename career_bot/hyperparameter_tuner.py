@@ -349,6 +349,7 @@ def _context_adapt_careers(careers, preset):
         from career_bot.learning import (
             _preset_validation_context,
             _sample_validation_match_score,
+            _validation_context_has_strong_anchor,
             context_fingerprint_from_validation_context,
         )
     except Exception:
@@ -359,10 +360,20 @@ def _context_adapt_careers(careers, preset):
             "selected_count": len(careers),
         }
     anchor = _preset_validation_context(preset)
+    if not _validation_context_has_strong_anchor(anchor):
+        return careers, {
+            "enabled": True,
+            "mode": "no_context_anchor",
+            "career_count": len(careers),
+            "selected_count": len(careers),
+            "anchor": context_fingerprint_from_validation_context(anchor),
+        }
     exact_threshold = _safe_int(preset.get("learning_context_exact_match_score"), 28)
     similar_threshold = _safe_int(preset.get("learning_context_similar_match_score"), 14)
     min_exact = max(1, _safe_int(preset.get("learning_context_min_exact_samples"), 4))
     min_similar = max(min_exact, _safe_int(preset.get("learning_context_min_similar_samples"), 8))
+    soft_min_similar = max(1, _safe_int(preset.get("learning_context_soft_min_similar_samples"), 3))
+    global_fallback_enabled = bool(preset.get("learning_context_global_fallback_enabled", False))
     exact = []
     similar = []
     max_score = 0
@@ -384,9 +395,15 @@ def _context_adapt_careers(careers, preset):
     elif len(similar) >= min_similar:
         selected = similar
         mode = "similar_context"
-    else:
+    elif len(similar) >= soft_min_similar:
+        selected = similar
+        mode = "similar_context_low_sample"
+    elif global_fallback_enabled:
         selected = careers
         mode = "global_fallback"
+    else:
+        selected = []
+        mode = "context_cold_start_no_global"
     return selected, {
         "enabled": True,
         "mode": mode,
@@ -400,6 +417,8 @@ def _context_adapt_careers(careers, preset):
         "similar_threshold": similar_threshold,
         "min_exact_samples": min_exact,
         "min_similar_samples": min_similar,
+        "soft_min_similar_samples": soft_min_similar,
+        "global_fallback_enabled": global_fallback_enabled,
     }
 
 

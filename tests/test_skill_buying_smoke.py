@@ -520,6 +520,50 @@ class SkillBuyingSmokeTests(unittest.TestCase):
         self.assertLessEqual(len(client.calls[0]["payload"]), 2)
         self.assertEqual(buyer.last_result["reason"], "pre_race_calendar_skill_budget")
 
+    def test_g1_pre_race_buy_does_not_skip_on_ordinary_safe_probability(self):
+        buyer = SkillBuyer(BASE_DIR)
+        client = FakeSkillClient()
+
+        state, bought = buyer.buy_limited_for_race(
+            client,
+            make_state(
+                turn=33,
+                skill_point=1000,
+                speed=900,
+                stamina=800,
+                power=900,
+                wiz=800,
+                skill_tips_array=[
+                    {"group_id": 20035, "rarity": 1, "level": 0},
+                    {"group_id": 20053, "rarity": 1, "level": 3},
+                ],
+            ),
+            {
+                "manual_purchase_at_end": True,
+                "learn_skill_only_user_provided": False,
+                "learn_skill_append_defaults": True,
+                "pre_race_winprob_gate_enabled": True,
+                "pre_race_target_win_probability": 0.93,
+                "calendar_race_prebuy_min_sp": 120,
+                "calendar_race_prebuy_keep_sp": 0,
+                "calendar_race_prebuy_budget": 1000,
+                "calendar_race_prebuy_max_skills": 2,
+                "skill_profile_style": "late_surger",
+                "skill_profile_distance": "mile",
+            },
+            {
+                "race_name": "NHK Mile Cup",
+                "grade": "G1",
+                "style": "late_surger",
+                "distance": "Mile",
+                "requirements": {"speed": 450, "power": 420, "wit": 380},
+            },
+        )
+
+        self.assertGreaterEqual(bought, 1)
+        self.assertEqual(len(client.calls), 1)
+        self.assertNotEqual(buyer.last_result.get("skip"), "pre_race_skip_high_win_prob")
+
     def test_calendar_pre_race_buy_respects_sp_reserve(self):
         buyer = SkillBuyer(BASE_DIR)
         client = FakeSkillClient()

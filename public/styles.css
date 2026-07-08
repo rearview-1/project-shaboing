@@ -6811,6 +6811,625 @@
     height: 18px;
     margin-bottom: 4px;
 }
+
+/* JP training tile simulator */
+.training-sim-root {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px;
+    color: var(--text);
+}
+
+.training-sim-topbar,
+.training-sim-items,
+.training-sim-year-panel,
+.training-sim-toolbox,
+.training-sim-areas-section {
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)), var(--surface);
+}
+
+.training-sim-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    padding: 12px;
+}
+
+.training-sim-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 118px;
+}
+
+.training-sim-field:first-child {
+    min-width: 240px;
+    flex: 1;
+}
+
+.training-sim-field span,
+.training-sim-item-title,
+.training-sim-title {
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.training-sim-field select {
+    height: 32px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    background: var(--surface-deep);
+    color: var(--text);
+    padding: 0 8px;
+    font-weight: 700;
+}
+
+.training-sim-growth-open {
+    min-width: 170px;
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 45px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.22);
+    color: var(--text);
+    cursor: pointer;
+    padding: 7px 10px;
+}
+
+.training-sim-growth-open:hover {
+    border-color: rgba(var(--accent-rgb), 0.6);
+    background: rgba(var(--accent-rgb), 0.1);
+}
+
+.training-sim-growth-open span {
+    color: var(--text-dim);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.training-sim-growth-open strong {
+    max-width: 100%;
+    color: var(--accent-soft);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.training-sim-growth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(0,0,0,0.62);
+}
+
+.training-sim-growth-modal-overlay[hidden] {
+    display: none !important;
+}
+
+.training-sim-growth-modal {
+    width: min(380px, calc(100vw - 24px));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    background: #1b1d22;
+    color: var(--text);
+    box-shadow: 0 26px 80px rgba(0,0,0,0.55);
+    overflow: hidden;
+}
+
+.training-sim-growth-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 4px 14px;
+    margin: 0 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.training-sim-growth-modal h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.training-sim-growth-close {
+    border: 0;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0;
+}
+
+.training-sim-growth-close:hover { color: var(--text); }
+
+.training-sim-growth-modal p {
+    margin: 28px 18px 22px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.training-sim-growth-fields {
+    display: grid;
+    gap: 14px;
+    padding: 0 18px 22px;
+}
+
+.training-sim-growth-row {
+    display: grid;
+    grid-template-columns: 82px 80px 24px;
+    align-items: center;
+    gap: 10px;
+}
+
+.training-sim-growth-row label {
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.training-sim-growth-row label.stat-speed { color: #4aa3ff; }
+.training-sim-growth-row label.stat-stamina { color: #ff5d5d; }
+.training-sim-growth-row label.stat-power { color: #ffad42; }
+.training-sim-growth-row label.stat-guts { color: #ff73ba; }
+.training-sim-growth-row label.stat-wit { color: #63dc7d; }
+
+.training-sim-growth-row input {
+    height: 42px;
+    width: 80px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    background: #20232b;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    padding: 0 9px;
+}
+
+.training-sim-growth-row span {
+    color: var(--text-dim);
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.training-sim-growth-save {
+    width: calc(100% - 36px);
+    margin: 2px 18px 20px;
+    min-height: 48px;
+    border: 0;
+    border-radius: 8px;
+    background: #68a635;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.training-sim-growth-save:hover { filter: brightness(1.08); }
+
+.training-sim-items {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.2fr);
+    gap: 12px;
+    padding: 12px;
+    border-color: rgba(109, 215, 0, 0.5);
+    background: linear-gradient(180deg, rgba(109,215,0,.075), rgba(255,255,255,.012)), var(--surface);
+}
+
+.training-sim-item-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.training-sim-item-summary {
+    grid-column: 1 / -1;
+    border: 1px dashed rgba(255,255,255,0.14);
+    border-radius: 7px;
+    padding: 8px 10px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.training-sim-chip-row,
+.training-sim-filter-row,
+.training-sim-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.training-sim-chip {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.22);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    padding: 7px 9px;
+    text-transform: uppercase;
+}
+
+.training-sim-chip:hover,
+.training-sim-chip.is-active {
+    border-color: rgba(var(--accent-rgb), 0.65);
+    background: rgba(var(--accent-rgb), 0.14);
+    color: var(--accent-soft);
+}
+
+.training-sim-toolbox,
+.training-sim-year-panel,
+.training-sim-areas-section {
+    padding: 12px;
+}
+
+.training-sim-year-panel {
+    border-color: rgba(109, 215, 0, 0.42);
+    background: linear-gradient(180deg, rgba(109,215,0,.055), rgba(255,255,255,.012)), var(--surface);
+}
+
+.training-sim-gate-toggle {
+    white-space: nowrap;
+}
+
+.training-sim-year-effects {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.training-sim-year-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.training-sim-year-heading {
+    border-radius: 7px;
+    background: rgba(202, 98, 82, 0.86);
+    color: #fff3ee;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 8px 10px;
+    text-align: center;
+}
+
+.training-sim-year-chip-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+.training-sim-effect-chip {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    min-height: 54px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.2);
+    color: var(--text);
+    cursor: pointer;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.training-sim-effect-chip:hover,
+.training-sim-effect-chip.is-active {
+    border-color: rgba(109, 215, 0, 0.72);
+    background: rgba(109, 215, 0, 0.1);
+}
+
+.training-sim-effect-chip.is-blocked {
+    border-color: rgba(255, 96, 111, 0.62);
+    background: rgba(255, 96, 111, 0.08);
+}
+
+.training-sim-effect-chip-title {
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.training-sim-effect-chip-detail {
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.training-sim-effect-chip-gate {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    color: #ffe07a;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .04em;
+    padding: 2px 5px;
+    text-transform: uppercase;
+}
+
+.training-sim-section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.training-sim-subtitle {
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+.training-sim-owned-toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.training-sim-filter-row {
+    justify-content: space-between;
+    margin: 9px 0;
+}
+
+.training-sim-card-toolbox {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 8px;
+    max-height: 190px;
+    overflow: auto;
+    padding: 8px;
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.15);
+}
+
+.training-sim-card {
+    display: grid;
+    grid-template-rows: 48px auto auto;
+    gap: 4px;
+    align-items: start;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.025);
+    color: var(--text);
+    cursor: pointer;
+    min-height: 104px;
+    padding: 7px;
+    text-align: left;
+}
+
+.training-sim-card:hover,
+.training-sim-card.is-selected {
+    border-color: rgba(var(--accent-rgb), 0.72);
+    background: rgba(var(--accent-rgb), 0.1);
+}
+
+.training-sim-card img,
+.training-sim-placed-card img {
+    width: 42px;
+    height: 42px;
+    border-radius: 7px;
+    object-fit: cover;
+}
+
+.training-sim-card-name {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.training-sim-card-meta {
+    color: var(--text-dim);
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.training-sim-areas {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.training-sim-area {
+    min-width: 0;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    overflow: hidden;
+}
+
+.training-sim-area.is-selected {
+    border-color: rgba(var(--accent-rgb), 0.7);
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.12);
+}
+
+.training-sim-area-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 2px solid rgba(255,255,255,0.16);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.training-sim-area-head b {
+    border-radius: 5px;
+    background: rgba(0,0,0,0.3);
+    color: var(--text-dim);
+    font-size: 10px;
+    padding: 2px 5px;
+}
+
+.type-speed { --tile-color: #2e8dff; }
+.type-stamina { --tile-color: #ff5a67; }
+.type-power { --tile-color: #f58a2b; }
+.type-guts { --tile-color: #ff53b1; }
+.type-wit { --tile-color: #35d978; }
+.type-pal { --tile-color: #a1e34d; }
+
+.training-sim-area.type-speed { background: linear-gradient(180deg, rgba(46,141,255,.12), rgba(255,255,255,.02)); }
+.training-sim-area.type-stamina { background: linear-gradient(180deg, rgba(255,90,103,.12), rgba(255,255,255,.02)); }
+.training-sim-area.type-power { background: linear-gradient(180deg, rgba(245,138,43,.12), rgba(255,255,255,.02)); }
+.training-sim-area.type-guts { background: linear-gradient(180deg, rgba(255,83,177,.12), rgba(255,255,255,.02)); }
+.training-sim-area.type-wit { background: linear-gradient(180deg, rgba(53,217,120,.12), rgba(255,255,255,.02)); }
+.training-sim-area-head { border-bottom-color: color-mix(in srgb, var(--tile-color, var(--accent)) 70%, transparent); }
+
+.training-sim-drop-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 165px;
+    padding: 10px;
+}
+
+.training-sim-drop-hint {
+    display: grid;
+    place-items: center;
+    min-height: 116px;
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 10px;
+}
+
+.training-sim-placed-card {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    border: 1px solid color-mix(in srgb, var(--tile-color, var(--accent)) 55%, transparent);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.18);
+    color: var(--text);
+    cursor: pointer;
+    min-width: 0;
+    padding: 5px;
+}
+
+.training-sim-placed-card span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.training-sim-npc-pill {
+    border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 7px;
+    text-align: center;
+}
+
+.training-sim-area-actions {
+    display: flex;
+    gap: 5px;
+    padding: 0 10px 8px;
+}
+
+.btn-xs {
+    min-height: 22px !important;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+}
+
+.training-sim-gains {
+    padding: 8px 10px 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.training-sim-gain-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 0;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.training-sim-gain-row strong {
+    color: var(--text);
+    font-size: 11px;
+}
+
+.training-sim-gain-row strong.is-positive { color: #7de35e; }
+.training-sim-gain-row strong.is-cost { color: #ff606f; }
+
+.training-sim-breakdown,
+.training-sim-empty {
+    color: var(--text-dim);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 10px 10px;
+}
+
+@media (max-width: 1200px) {
+    .training-sim-areas {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+    .training-sim-year-effects {
+        grid-template-columns: 1fr;
+    }
+    .training-sim-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .training-sim-areas,
+    .training-sim-card-toolbox {
+        grid-template-columns: 1fr;
+    }
+}
 .team-trials-ace {
     align-self: stretch;
     border-radius: 999px;

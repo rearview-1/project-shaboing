@@ -127,3 +127,33 @@ def test_cache_path_routes_to_instance_dir():
 def test_lookup_returns_none_for_unknown_signature():
     cache = {"schema": SCHEMA, "policies": {}}
     assert lookup_policy(cache, "nonexistent") is None
+
+
+def test_lookup_ignores_legacy_noop_calibration_entry():
+    cache = {
+        "schema": SCHEMA,
+        "policies": {
+            "sig": {
+                "learned_hyperparameters": {"speed_priority_bonus_mid": 0.1},
+                "rating_lift": 0,
+                "n_optimized_sims": 2,
+                "optimized_at": "",
+            }
+        },
+    }
+    assert lookup_policy(cache, "sig") is None
+
+
+def test_lookup_keeps_timestamped_baseline_comfort_entry():
+    cache = {
+        "schema": SCHEMA,
+        "policies": {
+            "sig": {
+                "learned_hyperparameters": {"speed_priority_bonus_mid": 0.1},
+                "rating_lift": 0,
+                "n_optimized_sims": 2,
+                "optimized_at": "2026-06-24T12:00:00",
+            }
+        },
+    }
+    assert lookup_policy(cache, "sig") == {"speed_priority_bonus_mid": 0.1}

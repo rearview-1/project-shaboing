@@ -511,6 +511,10 @@
                                 <span class="rail-name">Owned Cards</span>
                                 <span class="rail-count" id="rail-count-cards"></span>
                             </button>
+                            <button type="button" class="rail-item rail-item-secondary" data-cat="training-sim">
+                                <span class="rail-name">Training Sim</span>
+                                <span class="rail-count rail-count-tag">JP</span>
+                            </button>
                             <button type="button" class="rail-item rail-item-secondary" data-cat="bot">
                                 <span class="rail-name">Bot View</span>
                                 <span class="rail-count rail-count-tag">debug</span>
@@ -850,6 +854,96 @@
                                 <div id="card-inventory-status" class="friend-status">No duplicate support uncaps currently available.</div>
                                 <div id="card-grid" class="data-grid"></div>
                             </div>
+                            <div class="lib-pane" data-pane="training-sim">
+                                <div class="training-sim-root">
+                                    <div class="training-sim-topbar">
+                                        <label class="training-sim-field">
+                                            <span>Scenario</span>
+                                            <select id="training-sim-scenario"></select>
+                                        </label>
+                                        <label class="training-sim-field">
+                                            <span>Facility Lv</span>
+                                            <select id="training-sim-level">
+                                                <option value="1">Level 1</option>
+                                                <option value="2">Level 2</option>
+                                                <option value="3">Level 3</option>
+                                                <option value="4">Level 4</option>
+                                                <option value="5" selected>Level 5</option>
+                                            </select>
+                                        </label>
+                                        <label class="training-sim-field">
+                                            <span>Mood</span>
+                                            <select id="training-sim-mood"></select>
+                                        </label>
+                                        <label class="training-sim-field">
+                                            <span>Growth</span>
+                                            <select id="training-sim-growth-preset"></select>
+                                        </label>
+                                        <button id="training-sim-growth-open" class="training-sim-growth-open" type="button">
+                                            <span>Growth Rates</span>
+                                            <strong id="training-sim-growth-summary">None</strong>
+                                        </button>
+                                        <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
+                                        <button id="training-sim-reset" class="btn btn-sm" type="button">Reset All</button>
+                                    </div>
+
+                                    <section id="training-sim-items-block" class="training-sim-items">
+                                        <div class="training-sim-item-block">
+                                            <div class="training-sim-item-title">Megaphone (All Trainings)</div>
+                                            <div id="training-sim-megaphones" class="training-sim-chip-row"></div>
+                                        </div>
+                                        <div class="training-sim-item-block training-sim-item-block-wide">
+                                            <div class="training-sim-item-title">Weights (Single Facility)</div>
+                                            <div id="training-sim-weights" class="training-sim-chip-row"></div>
+                                        </div>
+                                        <div class="training-sim-item-block">
+                                            <div class="training-sim-item-title">Stat Ceiling</div>
+                                            <div class="training-sim-chip-row">
+                                                <button id="training-sim-overcap-stat" class="training-sim-chip" type="button">Stat over 1200</button>
+                                            </div>
+                                        </div>
+                                        <div id="training-sim-item-summary" class="training-sim-item-summary">Selected Facility Bonus: +0% | Other Facilities Bonus: +0%</div>
+                                    </section>
+
+                                    <section id="training-sim-year-block" class="training-sim-year-panel">
+                                        <div class="training-sim-section-head">
+                                            <div>
+                                                <span class="training-sim-title">Scenario Regional Bonuses</span>
+                                                <span id="training-sim-year-effect-status" class="training-sim-subtitle">Toggle year and venue effects to model regional bonuses.</span>
+                                            </div>
+                                            <label class="training-sim-owned-toggle training-sim-gate-toggle">
+                                                <input id="training-sim-support-type-gate" type="checkbox">
+                                                <span>Require 4 support types</span>
+                                            </label>
+                                        </div>
+                                        <div id="training-sim-year-effects" class="training-sim-year-effects"></div>
+                                    </section>
+
+                                    <section class="training-sim-toolbox">
+                                        <div class="training-sim-section-head">
+                                            <div>
+                                                <span class="training-sim-title">Card Toolbox</span>
+                                                <span id="training-sim-status" class="training-sim-subtitle">Loading card data...</span>
+                                            </div>
+                                            <label class="training-sim-owned-toggle">
+                                                <input id="training-sim-owned-only" type="checkbox">
+                                                <span>Owned only</span>
+                                            </label>
+                                        </div>
+                                        <input id="training-sim-card-search" class="library-search-input" type="search" placeholder="Search cards or skills...">
+                                        <div id="training-sim-filter-row" class="training-sim-filter-row"></div>
+                                        <div id="training-sim-card-toolbox" class="training-sim-card-toolbox"></div>
+                                    </section>
+
+                                    <section class="training-sim-areas-section">
+                                        <div class="training-sim-section-head">
+                                            <span class="training-sim-title">Training Areas</span>
+                                            <span class="training-sim-subtitle">Click a card, then click a tile. Click a placed card to remove it.</span>
+                                        </div>
+                                        <div id="training-sim-areas" class="training-sim-areas"></div>
+                                    </section>
+                                </div>
+                            </div>
                             <div class="lib-pane" data-pane="bot">
                                 <div class="lib-toolbar">
                                     <button id="bot-view-refresh-btn" class="btn btn-sm" type="button">REFRESH</button>
@@ -940,6 +1034,17 @@
                     <div id="friend-profile-status" class="friend-status"></div>
                     <button id="friend-profile-close-btn" class="btn btn-sm" type="button">CLOSE</button>
                 </div>
+            </div>
+        </div>
+        <div id="training-sim-growth-modal" class="training-sim-growth-modal-overlay" hidden>
+            <div class="training-sim-growth-modal" role="dialog" aria-modal="true" aria-labelledby="training-sim-growth-title">
+                <div class="training-sim-growth-modal-head">
+                    <h2 id="training-sim-growth-title">Growth Rates</h2>
+                    <button id="training-sim-growth-close" class="training-sim-growth-close" type="button" aria-label="Close growth rates">&times;</button>
+                </div>
+                <p>Set the Uma's growth rate for each stat (0-30%).</p>
+                <div id="training-sim-growth-fields" class="training-sim-growth-fields"></div>
+                <button id="training-sim-growth-save" class="training-sim-growth-save" type="button">Save</button>
             </div>
         </div>
         <div class="daily-race-picker-overlay" id="daily-race-picker-overlay">

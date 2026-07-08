@@ -19,7 +19,7 @@ from career_bot.career_simulator import (
 )
 
 
-def _make_sim():
+def _make_sim(*, static_card_hints=False):
     deck = [
         {"support_card_id": 30036, "lb_level": 0},   # Riko (Friends)
         {"support_card_id": 30054, "lb_level": 4},   # Nice Nature (Wit)
@@ -31,6 +31,8 @@ def _make_sim():
         "name": "card_data_test",
         "scenario_id": 4,
         "sim_use_latest_session_context": False,
+        "sim_use_runtime_observations": False,
+        "sim_use_card_hint_events": not static_card_hints,
         "_run_context": {
             "support_card_ids": [30036, 30054, 30014, 30010, 30028],
             "friend_card_id": 30017,
@@ -149,7 +151,7 @@ def test_failure_protection_floors_at_zero():
 
 def test_deck_card_hint_levels_stack_across_cards():
     """When multiple cards hint the same skill, their hint_levels stack."""
-    sim = _make_sim()
+    sim = _make_sim(static_card_hints=True)
     hints = sim._sim_deck_card_hint_levels()
     # At least one skill should have a stacked hint level > 1 in this
     # deck (Gold City has hint_levels=4, Kitasan/Smart Falcon have 2 each).
@@ -164,7 +166,7 @@ def test_skill_candidates_get_card_hint_levels():
     reflects deck contributions, separate from `legacy_only_hint_level`
     (parent inheritance) — and the combined `legacy_hint_level` is the
     sum used for discount calculation."""
-    sim = _make_sim()
+    sim = _make_sim(static_card_hints=True)
     cands_with_card_hints = [
         c for c in sim.sim_skill_candidates
         if int(c.get("card_hint_level") or 0) > 0
@@ -180,6 +182,40 @@ def test_skill_candidates_get_card_hint_levels():
         assert effective == legacy_only + card, (
             f"Effective hint level {effective} should be legacy {legacy_only} + card {card}"
         )
+
+
+def test_card_hints_are_discovered_from_training_tip_events():
+    """Default mode earns card hints from training tip events instead of
+    assuming every deck hint skill is known at career start."""
+    sim = _make_sim()
+    assert sim._sim_deck_card_hint_levels().get("ids") == {}
+
+    card = next(
+        c for c in sim.sim_support_cards
+        if (sim.support_bonus_data.get(str(c["support_card_id"])) or {}).get("hint_skills")
+    )
+    partner_id = int(card["partner_id"])
+    sim.state["turn"] = 5
+    sim._apply_training_hint_events(
+        {
+            "training_partner_array": [partner_id],
+            "tips_event_partner_array": [partner_id],
+            "_sim_facility_level": 1,
+        },
+        card.get("type") or "speed",
+    )
+
+    assert sim.sim_hint_events
+    learned_skill_id = sim.sim_hint_events[0]["skill_id"]
+    assert sim._sim_deck_card_hint_levels()["ids"][learned_skill_id] >= 1
+
+    sim._ensure_sim_skill_candidates_current()
+    matching = [
+        c for c in sim.sim_skill_candidates
+        if int(c.get("skill_id") or 0) == learned_skill_id
+    ]
+    if matching:
+        assert int(matching[0].get("card_hint_level") or 0) >= 1
 
 
 def test_card_hint_level_drives_skill_discount():

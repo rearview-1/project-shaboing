@@ -24,7 +24,7 @@ def launch_instance(repo_root, python_exe, *, host, port, instance_name, runtime
     env["SWEEPY_INSTANCE_NAME"] = str(instance_name)
     env["UMA_RUNTIME_DIR"] = str(runtime_dir)
     env["SWEEPY_SHARED_RUNTIME_PATHS"] = os.pathsep.join(str(path) for path in shared_runtime_paths)
-    env["SWEEPY_AUTO_LEARNING_SCOPE"] = "instance_local"
+    env["SWEEPY_AUTO_LEARNING_SCOPE"] = "shared_overlay"
     env["SWEEPY_AUTH_CAPTURE_KILL_GAME"] = "0"
     env["SWEEPY_INSTANCE_DEVICE_IDENTITY"] = "1"
     env["SWEEPY_STEAM_APP_ID"] = "3224770"

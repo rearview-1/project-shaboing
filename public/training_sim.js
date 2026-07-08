@@ -10,6 +10,12 @@
         level: $("training-sim-level"),
         mood: $("training-sim-mood"),
         growthPreset: $("training-sim-growth-preset"),
+        growthOpen: $("training-sim-growth-open"),
+        growthSummary: $("training-sim-growth-summary"),
+        growthModal: $("training-sim-growth-modal"),
+        growthClose: $("training-sim-growth-close"),
+        growthFields: $("training-sim-growth-fields"),
+        growthSave: $("training-sim-growth-save"),
         clearCards: $("training-sim-clear-cards"),
         reset: $("training-sim-reset"),
         megaphones: $("training-sim-megaphones"),
@@ -107,6 +113,33 @@
             return fallback;
         }
     }
+    function normalizeGrowth(raw) {
+        const out = {};
+        STATS.forEach(stat => {
+            const n = Number(raw && raw[stat] != null ? raw[stat] : 0);
+            if (Number.isFinite(n) && n !== 0) out[stat] = Math.max(0, Math.min(30, n));
+        });
+        return out;
+    }
+    function growthEquals(a, b) {
+        const left = normalizeGrowth(a);
+        const right = normalizeGrowth(b);
+        return STATS.every(stat => Number(left[stat] || 0) === Number(right[stat] || 0));
+    }
+    function saveGrowth() {
+        localSet("trainingSimGrowth", JSON.stringify(normalizeGrowth(state.growth || {})));
+    }
+    function setGrowth(next, persist = true) {
+        state.growth = normalizeGrowth(next || {});
+        if (persist) saveGrowth();
+    }
+    function growthSummaryText(growth) {
+        const normalized = normalizeGrowth(growth || {});
+        const parts = STATS
+            .filter(stat => Number(normalized[stat] || 0) !== 0)
+            .map(stat => `${LABELS[stat]} +${Number(normalized[stat])}%`);
+        return parts.length ? parts.join(" / ") : "None";
+    }
     function escapeHtml(value) {
         return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
     }
@@ -138,7 +171,8 @@
         scenario: localGet("trainingSimScenario", ""),
         level: Number(localGet("trainingSimLevel", "5")) || 5,
         mood: Number(localGet("trainingSimMood", "0.2")),
-        growth: {},
+        growth: normalizeGrowth(localJson("trainingSimGrowth", {})),
+        draftGrowth: {},
         megaphonePct: Number(localGet("trainingSimMegaphonePct", "0")) || 0,
         weightFacilities: {},
         yearEffects: localJson("trainingSimYearEffects", {}),
@@ -210,6 +244,55 @@
     function selectedScenario() {
         return (els.scenario && els.scenario.value) || state.scenario || (state.meta && state.meta.default_scenario) || "mant_base";
     }
+    function renderGrowthControls() {
+        const rows = ((state.meta || {}).growth_presets || []);
+        const growth = normalizeGrowth(state.growth || {});
+        state.growth = growth;
+        const currentGrowth = rows.findIndex(row => growthEquals(row.growth || {}, growth));
+        if (els.growthPreset) {
+            els.growthPreset.innerHTML = [
+                ...rows.map((row, idx) => `<option value="${idx}">${escapeHtml(row.label)}</option>`),
+                `<option value="custom">Custom</option>`
+            ].join("");
+            els.growthPreset.value = currentGrowth >= 0 ? String(currentGrowth) : "custom";
+        }
+        if (els.growthSummary) els.growthSummary.textContent = growthSummaryText(growth);
+    }
+    function renderGrowthModal() {
+        if (!els.growthFields) return;
+        const draft = normalizeGrowth(state.draftGrowth || state.growth || {});
+        state.draftGrowth = draft;
+        els.growthFields.innerHTML = STATS.map(stat => `
+            <div class="training-sim-growth-row">
+                <label class="stat-${stat}" for="training-sim-growth-input-${stat}">${escapeHtml(LABELS[stat])}</label>
+                <input id="training-sim-growth-input-${stat}" type="number" min="0" max="30" step="1" value="${escapeAttr(Number(draft[stat] || 0))}" data-growth-modal-stat="${escapeAttr(stat)}">
+                <span>%</span>
+            </div>
+        `).join("");
+    }
+    function openGrowthModal() {
+        if (!els.growthModal) return;
+        state.draftGrowth = normalizeGrowth(state.growth || {});
+        renderGrowthModal();
+        els.growthModal.hidden = false;
+        const first = els.growthModal.querySelector("[data-growth-modal-stat]");
+        if (first) first.focus();
+    }
+    function closeGrowthModal() {
+        if (els.growthModal) els.growthModal.hidden = true;
+    }
+    function saveGrowthModal() {
+        const next = {};
+        if (els.growthFields) {
+            els.growthFields.querySelectorAll("[data-growth-modal-stat]").forEach(input => {
+                next[input.dataset.growthModalStat] = Number(input.value || 0) || 0;
+            });
+        }
+        setGrowth(next);
+        renderGrowthControls();
+        closeGrowthModal();
+        scheduleCalculation();
+    }
     function syncItemSummary() {
         const overcap = state.overcapStat ? " | Trained stat over 1200: primary gain halved" : "";
         if (!scenarioGimmicks().has("items")) {
@@ -272,13 +355,7 @@
         const moods = meta.moods || [];
         els.mood.innerHTML = moods.map(row => `<option value="${escapeAttr(row.value)}">${escapeHtml(row.label)}</option>`).join("");
         els.mood.value = String(state.mood);
-        const growthRows = meta.growth_presets || [];
-        els.growthPreset.innerHTML = growthRows.map((row, idx) => `<option value="${idx}">${escapeHtml(row.label)}</option>`).join("");
-        const currentGrowth = growthRows.findIndex(row => JSON.stringify(row.growth || {}) === JSON.stringify(state.growth || {}));
-        els.growthPreset.value = String(currentGrowth >= 0 ? currentGrowth : 0);
-        if (!state.growth || !Object.keys(state.growth).length) {
-            state.growth = { ...((growthRows[0] && growthRows[0].growth) || {}) };
-        }
+        renderGrowthControls();
         els.megaphones.innerHTML = (((meta.item_options || {}).megaphones || []).map(row => `
             <button class="training-sim-chip ${Number(row.value) === Number(state.megaphonePct || 0) ? "is-active" : ""}" type="button" data-megaphone="${escapeAttr(row.value)}">${escapeHtml(row.label)}</button>
         `).join(""));
@@ -535,11 +612,25 @@
             scheduleCalculation();
         });
         els.growthPreset.addEventListener("change", () => {
+            if (els.growthPreset.value === "custom") return;
             const idx = Number(els.growthPreset.value || 0);
             const row = ((state.meta || {}).growth_presets || [])[idx] || {};
-            state.growth = { ...(row.growth || {}) };
+            setGrowth(row.growth || {});
+            renderGrowthControls();
             scheduleCalculation();
         });
+        if (els.growthOpen) els.growthOpen.addEventListener("click", openGrowthModal);
+        if (els.growthClose) els.growthClose.addEventListener("click", closeGrowthModal);
+        if (els.growthSave) els.growthSave.addEventListener("click", saveGrowthModal);
+        if (els.growthModal) {
+            els.growthModal.addEventListener("click", event => {
+                if (event.target === els.growthModal) closeGrowthModal();
+            });
+            els.growthModal.addEventListener("keydown", event => {
+                if (event.key === "Escape") closeGrowthModal();
+                if (event.key === "Enter" && event.target && event.target.matches("[data-growth-modal-stat]")) saveGrowthModal();
+            });
+        }
         els.search.addEventListener("input", () => {
             state.search = els.search.value || "";
             renderCardToolbox();
@@ -562,6 +653,7 @@
             state.weightFacilities = {};
             state.yearEffects = {};
             state.overcapStat = false;
+            setGrowth({});
             localSet("trainingSimMegaphonePct", "0");
             localSet("trainingSimOvercapStat", "0");
             saveYearEffects();

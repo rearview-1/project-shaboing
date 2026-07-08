@@ -22,6 +22,7 @@ from pathlib import Path
 
 STAT_KEYS = ("speed", "stamina", "power", "guts", "wit")
 INVISIBLE_BONUS = 400              # +400 invisible career-mode bonus to every stat during races
+RACE_THRESHOLDS_SCHEMA = "sweepy_race_thresholds_v2"
 SPARK_TARGET_RAW = 1100            # 3-star blue spark threshold
 DEFAULT_LOOKAHEAD_TURNS = 18       # next-races window for primary pressure analysis
 EXTENDED_LOOKAHEAD_TURNS = 36      # secondary "horizon" check for far races
@@ -47,6 +48,10 @@ def _load_race_thresholds(path):
         with open(path, encoding="utf-8") as fh:
             raw = json.load(fh)
     except Exception:
+        _RACE_THRESHOLDS_CACHE[key] = {}
+        return {}
+    schema = str(raw.get("schema") or "").strip()
+    if schema and schema != RACE_THRESHOLDS_SCHEMA:
         _RACE_THRESHOLDS_CACHE[key] = {}
         return {}
     payload = raw.get("thresholds") or {}

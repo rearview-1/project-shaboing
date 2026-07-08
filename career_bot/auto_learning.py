@@ -7,6 +7,7 @@ from career_bot.learning import (
     save_instance_learning_outputs,
     save_learning_report_only,
     save_learning_outputs,
+    save_shared_learning_outputs,
 )
 
 
@@ -39,13 +40,16 @@ def _apply_scope(preset):
         or ""
     ).strip().lower()
     if not scope and os.environ.get("SWEEPY_SHARED_RUNTIME_PATHS") and os.environ.get("SWEEPY_INSTANCE_NAME"):
-        scope = "instance_local"
+        scope = "shared_overlay"
     aliases = {
         "instance": "instance_local",
         "local": "instance_local",
         "instance_local": "instance_local",
         "shared": "shared_preset",
         "shared_preset": "shared_preset",
+        "shared_overlay": "shared_overlay",
+        "shared_runtime": "shared_overlay",
+        "shared_learning": "shared_overlay",
         "global": "shared_preset",
     }
     return aliases.get(scope, "shared_preset")
@@ -70,6 +74,8 @@ def _apply_postmortem_refresh(base_dir, preset, apply_scope, runtime_paths=None,
             refresh_report["trigger_reason"] = reason
             if apply_scope == "instance_local":
                 preset_path, report_path = save_instance_learning_outputs(base_dir, refreshed, refresh_report)
+            elif apply_scope == "shared_overlay":
+                preset_path, report_path = save_shared_learning_outputs(base_dir, refreshed, refresh_report)
             else:
                 preset_path, report_path = save_learning_outputs(base_dir, refreshed, refresh_report, apply=True)
             return {
@@ -170,6 +176,8 @@ def run_auto_learning(base_dir, preset, *, career_log=None, status=None, account
                     apply_scope = _apply_scope(preset)
                     if apply_scope == "instance_local":
                         preset_path, report_path = save_instance_learning_outputs(base_dir, refreshed, refresh_report)
+                    elif apply_scope == "shared_overlay":
+                        preset_path, report_path = save_shared_learning_outputs(base_dir, refreshed, refresh_report)
                     else:
                         preset_path, report_path = save_learning_outputs(base_dir, refreshed, refresh_report, apply=True)
                     refresh_result = {
@@ -272,6 +280,8 @@ def run_auto_learning(base_dir, preset, *, career_log=None, status=None, account
         }
     if apply and apply_scope == "instance_local":
         preset_path, report_path = save_instance_learning_outputs(base_dir, learned, report)
+    elif apply and apply_scope == "shared_overlay":
+        preset_path, report_path = save_shared_learning_outputs(base_dir, learned, report)
     else:
         preset_path, report_path = save_learning_outputs(base_dir, learned, report, apply=apply)
     return {

@@ -50,14 +50,15 @@ class StaminaRetrySkillBuyer:
 
 
 class CalendarPrebuyPlanner:
-    def __init__(self, stamina_low=False):
+    def __init__(self, stamina_low=False, grade="G1"):
         self.stamina_low = stamina_low
+        self.grade = grade
         self.catalog = SimpleNamespace(by_program_id={
             168: {
                 "id": 2171,
                 "name": "Kikuka Sho",
                 "date": "Classic Year Late Oct",
-                "type": "G1",
+                "type": grade,
                 "terrain": "Turf",
                 "distance": "Long",
                 "venue": "Kyoto",
@@ -73,7 +74,7 @@ class CalendarPrebuyPlanner:
             "program_id": int(program_id or 0),
             "turn": int(current_turn or 0),
             "name": "Kikuka Sho",
-            "type": "G1",
+            "type": self.grade,
             "distance": "Long",
             "style": "",
         }
@@ -85,7 +86,7 @@ class CalendarPrebuyPlanner:
         return {
             "program_id": int(program_id or 0),
             "race_name": "Kikuka Sho",
-            "grade": "G1",
+            "grade": self.grade,
             "distance": "Long",
             "style": (entry or {}).get("style") or "",
             "stamina_low": bool(self.stamina_low),
@@ -101,6 +102,7 @@ class CalendarPrebuySkillBuyer:
         self.generic_calls = 0
         self.stamina_calls = 0
         self.last_check = None
+        self.last_kwargs = {}
         self.last_result = {}
         self.attempt_events = []
         self.recover_after_error = False
@@ -108,6 +110,7 @@ class CalendarPrebuySkillBuyer:
     def buy_limited_for_race(self, client, state, preset, stamina_check, **_kwargs):
         self.generic_calls += 1
         self.last_check = dict(stamina_check or {})
+        self.last_kwargs = dict(_kwargs)
         self.last_result = {"result": "ok"}
         return state, 1
 
@@ -432,10 +435,10 @@ class ActionableHomeTransitionClient:
 
 
 class RunnerLoopModeStateTests(unittest.TestCase):
-    def test_calendar_prebuy_skips_generic_buys_when_end_buy_is_active(self):
+    def test_calendar_prebuy_skips_generic_buys_when_end_buy_is_active_for_low_stakes_races(self):
         runner = CareerRunner(BASE_DIR)
         runner.report = new_report({"name": "test"}, scenario_id=4)
-        runner.race_planner = CalendarPrebuyPlanner(stamina_low=False)
+        runner.race_planner = CalendarPrebuyPlanner(stamina_low=False, grade="G3")
         runner.skill_buyer = CalendarPrebuySkillBuyer()
 
         state = {"data": {"chara_info": {"turn": 44, "skill_point": 1200, "stamina": 500}}}
@@ -462,6 +465,38 @@ class RunnerLoopModeStateTests(unittest.TestCase):
         self.assertEqual(rows[0]["reason"], "manual_purchase_at_end")
         self.assertEqual(rows[0]["style"], "late_surger")
 
+    def test_calendar_prebuy_g1_bypasses_end_buy_for_clean_record(self):
+        runner = CareerRunner(BASE_DIR)
+        runner.report = new_report({"name": "test"}, scenario_id=4)
+        runner.race_planner = CalendarPrebuyPlanner(stamina_low=False, grade="G1")
+        runner.skill_buyer = CalendarPrebuySkillBuyer()
+
+        state = {"data": {"chara_info": {"turn": 44, "skill_point": 1200, "stamina": 500}}}
+        preset = {
+            "manual_purchase_at_end": True,
+            "calendar_race_prebuy_enabled": True,
+            "calendar_race_prebuy_min_sp": 80,
+            "calendar_race_prebuy_budget": 1800,
+            "calendar_race_prebuy_keep_sp": 0,
+            "calendar_race_prebuy_max_skills": 10,
+            "skill_profile_style": "late_surger",
+            "scheduled_race_clean_record_mode": True,
+        }
+
+        runner._maybe_buy_calendar_race_skills(None, state, preset, program_id=168, current_turn=44)
+
+        self.assertEqual(runner.skill_buyer.generic_calls, 1)
+        self.assertEqual(runner.skill_buyer.last_check["grade"], "G1")
+        self.assertGreaterEqual(runner.skill_buyer.last_kwargs["budget"], 1400)
+        self.assertGreaterEqual(runner.skill_buyer.last_kwargs["max_skills"], 10)
+        rows = [
+            event
+            for turn in runner.report.get("turns") or []
+            for event in (turn.get("events") or [])
+            if event.get("event") == "pre_race_calendar_skill_skip"
+        ]
+        self.assertEqual(rows, [])
+
     def test_calendar_prebuy_can_be_explicitly_allowed_with_end_buy(self):
         runner = CareerRunner(BASE_DIR)
         runner.race_planner = CalendarPrebuyPlanner(stamina_low=False)
@@ -480,7 +515,7 @@ class RunnerLoopModeStateTests(unittest.TestCase):
         self.assertEqual(runner.skill_buyer.generic_calls, 1)
         self.assertEqual(runner.skill_buyer.last_check["style"], "late_surger")
 
-    def test_calendar_prebuy_end_buy_still_allows_stamina_rescue_only(self):
+    def test_calendar_prebuy_end_buy_still_allows_stamina_rescue_before_clean_record_buy(self):
         runner = CareerRunner(BASE_DIR)
         runner.report = new_report({"name": "test"}, scenario_id=4)
         runner.race_planner = CalendarPrebuyPlanner(stamina_low=True)
@@ -497,7 +532,7 @@ class RunnerLoopModeStateTests(unittest.TestCase):
         runner._maybe_buy_calendar_race_skills(None, state, preset, program_id=168, current_turn=44)
 
         self.assertEqual(runner.skill_buyer.stamina_calls, 1)
-        self.assertEqual(runner.skill_buyer.generic_calls, 0)
+        self.assertEqual(runner.skill_buyer.generic_calls, 1)
         self.assertEqual(runner.skill_buyer.last_check["style"], "late_surger")
 
     def test_hot_reload_preserves_transient_loop_mode_flag(self):
@@ -1561,6 +1596,49 @@ class RunnerRecoverySmokeTests(unittest.TestCase):
         self.assertEqual(runner.status["alarm_clocks_used"], 1)
         self.assertIn("after 1 alarm clock", runner._race_result_label(result))
         self.assertIn("previous #2", runner._race_result_label(result))
+
+    def test_g1_clean_record_forces_retry_when_clock_limit_zero(self):
+        runner = CareerRunner(BASE_DIR)
+        runner.race_planner = CalendarPrebuyPlanner(grade="G1")
+        client = RaceContinueWinClient()
+        _, result = runner._resolve_race_end_with_retries(
+            client,
+            race_end_state(24, 168, rank=2),
+            current_turn=24,
+            program_id=168,
+            preset={
+                "clock_use_limit": 0,
+                "scheduled_race_clean_record_mode": True,
+                "race_continue_delay_seconds": 0,
+                "clock_pre_race_end_probe_seconds": 0,
+            },
+            race_start_info={"program_id": 168, "is_short": True},
+        )
+
+        self.assertTrue(result["won"])
+        self.assertEqual(client.calls[0], ("race_continue", 24, 2))
+        self.assertEqual(runner.status["race_retries"], 1)
+
+    def test_non_g1_does_not_force_retry_when_clock_limit_zero(self):
+        runner = CareerRunner(BASE_DIR)
+        runner.race_planner = CalendarPrebuyPlanner(grade="G3")
+        client = RaceContinueWinClient()
+        _, result = runner._resolve_race_end_with_retries(
+            client,
+            race_end_state(24, 168, rank=2),
+            current_turn=24,
+            program_id=168,
+            preset={
+                "clock_use_limit": 0,
+                "scheduled_race_clean_record_mode": True,
+                "race_continue_delay_seconds": 0,
+                "clock_pre_race_end_probe_seconds": 0,
+            },
+            race_start_info={"program_id": 168, "is_short": True},
+        )
+
+        self.assertFalse(result["won"])
+        self.assertEqual(client.calls, [])
 
     def test_default_pre_end_probe_matches_live_alarm_clock_timing(self):
         runner = CareerRunner(BASE_DIR)

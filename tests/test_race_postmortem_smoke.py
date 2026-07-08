@@ -69,6 +69,57 @@ class AnalyzeTraceTests(unittest.TestCase):
         self.assertEqual(loss["primary_gap_stat"], "stamina")
         self.assertEqual(loss["opponents_above_player_per_stat"]["stamina"], 1)
 
+    def test_moderate_guts_gap_preserves_raw_but_not_causal_primary(self):
+        program_map = {170: {"race_instance_id": 110001, "name": "Test G1"}}
+        player = _horse(viewer_id=999, speed=500, stamina=500, power=500, guts=300, wiz=500)
+        weak_npc = _horse(viewer_id=0, speed=200, stamina=200, power=200, guts=200, wiz=200, frame_order=2)
+        guts_npc = _horse(viewer_id=0, speed=350, stamina=350, power=350, guts=450, wiz=350, frame_order=3)
+        rows = [
+            _row("single_mode_free/race_start", "RES", {
+                "race_start_info": {"program_id": 170, "race_horse_data": [player, weak_npc, guts_npc]},
+            }),
+            _row("single_mode_free/race_end", "RES", {
+                "race_reward_info": {"result_rank": 3},
+                "race_history": [{"turn": 34, "program_id": 170, "result_rank": 3}],
+            }),
+        ]
+        trace = _write_trace(rows)
+        try:
+            losses = analyze_trace(trace, program_map)
+        finally:
+            trace.unlink()
+        self.assertEqual(len(losses), 1)
+        loss = losses[0]
+        self.assertEqual(loss["field_max_gap_over_player"]["guts"], 150)
+        self.assertEqual(loss["raw_primary_gap_stat"], "guts")
+        self.assertEqual(loss["raw_primary_gap_value"], 150)
+        self.assertIsNone(loss["primary_gap_stat"])
+        self.assertEqual(loss["primary_gap_value"], 0)
+        self.assertEqual(loss["primary_gap_method"], "causal_weighted_gap")
+
+    def test_extreme_guts_gap_can_be_causal_primary(self):
+        program_map = {170: {"race_instance_id": 110001, "name": "Test G1"}}
+        player = _horse(viewer_id=999, speed=500, stamina=500, power=500, guts=250, wiz=500)
+        guts_npc = _horse(viewer_id=0, speed=350, stamina=350, power=350, guts=520, wiz=350, frame_order=2)
+        rows = [
+            _row("single_mode_free/race_start", "RES", {
+                "race_start_info": {"program_id": 170, "race_horse_data": [player, guts_npc]},
+            }),
+            _row("single_mode_free/race_end", "RES", {
+                "race_reward_info": {"result_rank": 3},
+                "race_history": [{"turn": 34, "program_id": 170, "result_rank": 3}],
+            }),
+        ]
+        trace = _write_trace(rows)
+        try:
+            losses = analyze_trace(trace, program_map)
+        finally:
+            trace.unlink()
+        loss = losses[0]
+        self.assertEqual(loss["raw_primary_gap_stat"], "guts")
+        self.assertEqual(loss["primary_gap_stat"], "guts")
+        self.assertEqual(loss["primary_gap_value"], 270)
+
     def test_g1_win_is_skipped(self):
         program_map = {170: {"race_instance_id": 110001, "name": "Test G1"}}
         player = _horse(viewer_id=999, speed=500, stamina=400, power=500, guts=400, wiz=600)
@@ -155,6 +206,16 @@ class SummarizeLossesTests(unittest.TestCase):
         self.assertEqual(summary["count"], 2)
         self.assertEqual(summary["worst_stat"], "stamina")
         self.assertEqual(summary["average_field_max_gap"]["stamina"], 150)
+
+    def test_summary_does_not_blame_moderate_guts_gap(self):
+        losses = [
+            {"field_max_gap_over_player": {"speed": -180, "stamina": -120, "power": -210, "guts": 150, "wit": -130}},
+        ]
+        summary = summarize_losses(losses)
+        self.assertEqual(summary["average_field_max_gap"]["guts"], 150)
+        self.assertIsNone(summary["worst_stat"])
+        self.assertEqual(summary["worst_stat_average_gap"], 0)
+        self.assertEqual(summary["worst_stat_method"], "causal_weighted_gap")
 
 
 if __name__ == "__main__":

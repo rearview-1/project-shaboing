@@ -1842,8 +1842,76 @@ class LoopConfigSmokeTests(unittest.TestCase):
         self.assertEqual(result["instance"]["port"], 1616)
         self.assertIn("runtime_dir", result["instance"])
         self.assertTrue(result["instance"]["dual_mode"])
+        self.assertEqual(result["instance"]["auto_learning_scope"], "shared_overlay")
         self.assertFalse(result["instance"]["auth_capture_kill_game"])
         self.assertTrue(result["instance"]["instance_device_identity"])
+
+    def test_instance_local_learning_requires_explicit_scope(self):
+        with patch.dict(
+            "os.environ",
+            {
+                "SWEEPY_INSTANCE_NAME": "account_a",
+                "SWEEPY_SHARED_RUNTIME_PATHS": r"C:\tmp\a;C:\tmp\b",
+            },
+            clear=True,
+        ):
+            self.assertFalse(main.instance_local_learning_enabled())
+
+        with patch.dict(
+            "os.environ",
+            {"SWEEPY_AUTO_LEARNING_SCOPE": "instance_local"},
+            clear=True,
+        ):
+            self.assertTrue(main.instance_local_learning_enabled())
+
+    def test_resolve_effective_preset_merges_shared_learning_overlay(self):
+        from career_bot.presets import shared_learning_override_path
+
+        class Store:
+            def read_one(self, name):
+                return {
+                    "name": name,
+                    "skill_profile_style": "late_surger",
+                    "custom_race_schedule": [{"program_id": 1}],
+                    "rest_threshold": 55,
+                }
+
+        with tempfile.TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            account_a = Path(tmp) / "account_a"
+            account_b = Path(tmp) / "account_b"
+            project_root.mkdir()
+            account_a.mkdir()
+            account_b.mkdir()
+            with patch.dict(
+                "os.environ",
+                {
+                    "UMA_RUNTIME_DIR": str(account_a),
+                    "SWEEPY_INSTANCE_NAME": "account_a",
+                    "SWEEPY_SHARED_RUNTIME_PATHS": f"{account_a}{os.pathsep}{account_b}",
+                },
+                clear=True,
+            ), patch.object(main, "DIR", project_root):
+                self.saved_preset_store = main.preset_store
+                main.preset_store = Store()
+                path = shared_learning_override_path(main.DIR, "xguri parent")
+                path.write_text(
+                    json.dumps(
+                        {
+                            "name": "xguri parent",
+                            "skill_profile_style": "front_runner",
+                            "custom_race_schedule": [{"program_id": 999}],
+                            "rest_threshold": 64,
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                preset = main.resolve_effective_preset("xguri parent")
+
+        self.assertEqual(preset["rest_threshold"], 64)
+        self.assertEqual(preset["skill_profile_style"], "late_surger")
+        self.assertEqual(preset["custom_race_schedule"], [{"program_id": 1}])
 
     def test_auth_capture_leaves_game_running_by_default_in_dual_mode(self):
         with patch.dict(

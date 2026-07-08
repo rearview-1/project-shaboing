@@ -150,6 +150,21 @@ def test_write_and_load_sim_observations(tmp_path):
     assert len(snapshots) == 1
     assert snapshots[0]["turn"] == 1
     assert snapshots[0]["commands"][0]["stat"] == "speed"
+    fast_snapshots = load_runtime_training_snapshots(
+        tmp_path,
+        run_context={"runtime_instance": "account_b"},
+        copy_result=False,
+    )
+    fast_again = load_runtime_training_snapshots(
+        tmp_path,
+        run_context={"runtime_instance": "account_b"},
+        copy_result=False,
+    )
+    assert fast_snapshots is fast_again
+    safe_again = load_runtime_training_snapshots(tmp_path, run_context={"runtime_instance": "account_b"})
+    assert safe_again is not fast_snapshots
+    safe_again[0]["turn"] = 999
+    assert fast_again[0]["turn"] == 1
 
     events = load_runtime_event_observations(tmp_path, run_context={"runtime_instance": "account_b"})
     assert events["choice_count"] == 1

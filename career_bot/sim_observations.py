@@ -1294,6 +1294,7 @@ def load_runtime_training_snapshots(
     *,
     run_context: dict[str, Any] | None = None,
     max_records: int = 8000,
+    copy_result: bool = True,
 ) -> list[dict[str, Any]]:
     """Load training snapshots exported by recent real bot runs."""
 
@@ -1303,7 +1304,8 @@ def load_runtime_training_snapshots(
     files = _observation_file_list(project_root, preferred)
     cache_key = _observation_cache_key("training", files, max_records)
     if cache_key in _OBSERVATION_CACHE:
-        return copy.deepcopy(_OBSERVATION_CACHE[cache_key])
+        cached = _OBSERVATION_CACHE[cache_key]
+        return copy.deepcopy(cached) if copy_result else cached
     for path in files:
         try:
             lines = path.read_text(encoding="utf-8-sig").splitlines()
@@ -1330,9 +1332,9 @@ def load_runtime_training_snapshots(
             snapshot["source_observation"] = str(path)
             snapshots.append(snapshot)
             if max_records and len(snapshots) >= max_records:
-                _OBSERVATION_CACHE[cache_key] = copy.deepcopy(snapshots)
+                _OBSERVATION_CACHE[cache_key] = copy.deepcopy(snapshots) if copy_result else snapshots
                 return snapshots
-    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(snapshots)
+    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(snapshots) if copy_result else snapshots
     return snapshots
 
 
@@ -1341,6 +1343,7 @@ def load_runtime_event_observations(
     *,
     run_context: dict[str, Any] | None = None,
     max_records: int = 12000,
+    copy_result: bool = True,
 ) -> dict[str, Any]:
     """Load normalized event observations exported by recent real bot runs."""
 
@@ -1348,7 +1351,8 @@ def load_runtime_event_observations(
     files = _observation_file_list(project_root, preferred)
     cache_key = _observation_cache_key("events", files, max_records)
     if cache_key in _OBSERVATION_CACHE:
-        return copy.deepcopy(_OBSERVATION_CACHE[cache_key])
+        cached = _OBSERVATION_CACHE[cache_key]
+        return copy.deepcopy(cached) if copy_result else cached
 
     records: list[dict[str, Any]] = []
     by_source = Counter()
@@ -1435,7 +1439,7 @@ def load_runtime_event_observations(
                     "fixed_turn_events": profiles.get("fixed_turn_events") or [],
                     "events": records,
                 }
-                _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result)
+                _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result) if copy_result else result
                 return result
 
     profiles = _event_profiles_from_records(records, career_count=len(career_ids))
@@ -1454,7 +1458,7 @@ def load_runtime_event_observations(
         "fixed_turn_events": profiles.get("fixed_turn_events") or [],
         "events": records,
     }
-    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result)
+    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result) if copy_result else result
     return result
 
 
@@ -1501,6 +1505,7 @@ def load_runtime_shop_summary(
     *,
     run_context: dict[str, Any] | None = None,
     max_records: int = 12000,
+    copy_result: bool = True,
 ) -> dict[str, Any]:
     """Summarize observed shop/item use rows exported by real bot runs."""
 
@@ -1516,7 +1521,8 @@ def load_runtime_shop_summary(
     files = _observation_file_list(project_root, preferred)
     cache_key = _observation_cache_key("shop", files, max_records)
     if cache_key in _OBSERVATION_CACHE:
-        return copy.deepcopy(_OBSERVATION_CACHE[cache_key])
+        cached = _OBSERVATION_CACHE[cache_key]
+        return copy.deepcopy(cached) if copy_result else cached
 
     def consume_record(record: dict[str, Any]) -> None:
         nonlocal snapshot_count
@@ -1599,7 +1605,7 @@ def load_runtime_shop_summary(
             "rival_programs": dict(rival),
         },
     }
-    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result)
+    _OBSERVATION_CACHE[cache_key] = copy.deepcopy(result) if copy_result else result
     return result
 
 

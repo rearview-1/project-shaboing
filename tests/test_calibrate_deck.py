@@ -16,13 +16,16 @@ from tools.calibrate_deck import (
     _dedupe_override_candidates,
     _epithet_losses,
     _epithet_race_names,
+    _hydrated_signature_context,
     _is_best_effort_clean_progress,
     _is_comfortable,
     _merge_overrides_into_preset,
     _mean_rating,
     _quality_key,
     _self_learning_overrides_from_results,
+    _SIM_RUN_SECONDS,
     _ss_rate,
+    _steady_state_sim_seconds,
     _strat_summary,
     _win_rate,
 )
@@ -64,6 +67,36 @@ def test_mean_rating_handles_empty():
 def test_mean_rating_is_arithmetic_mean():
     results = [_FakeResult(15000), _FakeResult(17000), _FakeResult(19000)]
     assert _mean_rating(results) == 17000
+
+
+def test_hydrated_signature_context_uses_embedded_run_context_without_simulator():
+    preset = {
+        "name": "metadata_only",
+        "scenario_id": 4,
+        "sim_use_latest_session_context": False,
+        "_run_context": {
+            "trainee_card_id": 101502,
+            "support_card_ids": [20031, 30028, 30016, 30007, 20008],
+            "friend_card_id": 30032,
+        },
+    }
+
+    hydrated, deck_ids, trainee_card_id, friend_card_id, scenario_id = _hydrated_signature_context(preset)
+
+    assert hydrated["_run_context"]["support_card_ids"] == [20031, 30028, 30016, 30007, 20008]
+    assert deck_ids == [20031, 30028, 30016, 30007, 20008]
+    assert trainee_card_id == 101502
+    assert friend_card_id == 30032
+    assert scenario_id == 4
+
+
+def test_steady_state_sim_seconds_ignores_first_warmup_cost():
+    _SIM_RUN_SECONDS.clear()
+    try:
+        _SIM_RUN_SECONDS.extend([60.0, 5.0, 6.0, 5.5])
+        assert _steady_state_sim_seconds() == 6.875
+    finally:
+        _SIM_RUN_SECONDS.clear()
 
 
 # -------------------- _is_comfortable --------------------

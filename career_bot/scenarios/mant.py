@@ -12,7 +12,10 @@ from career_bot.projection import (
     projection_enabled as _projection_enabled,
     projection_phase as _projection_phase,
 )
-from career_bot.postmortem_feedback import upcoming_race_stat_demand
+from career_bot.postmortem_feedback import (
+    POSTMORTEM_FEEDBACK_SCHEMA,
+    upcoming_race_stat_demand,
+)
 from career_bot.presets import resolve_expect_attribute
 from career_bot.rating import stat_rating_score
 from career_bot.race_success_feedback import upcoming_race_success_demand
@@ -3541,7 +3544,15 @@ class MantStrategy(ScenarioStrategy):
         derailing the existing scoring's clear winners."""
         if not self.race_planner:
             return 0.0
-        hints = preset.get("race_specific_stat_hints") if isinstance(preset, dict) else None
+        if not isinstance(preset, dict):
+            return 0.0
+        if preset.get("postmortem_feedback_schema") != POSTMORTEM_FEEDBACK_SCHEMA:
+            # Older learned presets can contain stale loss hints from before the
+            # Guts dominance guard. Do not let those legacy blocks steer live
+            # training; auto-learning will repopulate this with the current
+            # schema after the next postmortem refresh.
+            return 0.0
+        hints = preset.get("race_specific_stat_hints")
         if not hints:
             return 0.0
         scheduled = []

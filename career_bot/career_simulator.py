@@ -454,6 +454,7 @@ _FALLBACK_G1_CALENDAR = [
 
 
 _JSON_DATA_CACHE = {}
+_JSON_FILE_CACHE = {}
 _SIM_CALIBRATION_CACHE = {}
 
 
@@ -740,10 +741,21 @@ _LATEST_SESSION_CONTEXT_FIELDS = (
 
 
 def _load_json_file(path):
+    path = Path(path)
     try:
-        return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+        stat = path.stat()
+        cache_key = (str(path.resolve()), int(stat.st_mtime_ns), int(stat.st_size))
+    except (OSError, TypeError, ValueError):
+        cache_key = None
+    if cache_key is not None and cache_key in _JSON_FILE_CACHE:
+        return _JSON_FILE_CACHE[cache_key]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError, TypeError):
         return None
+    if cache_key is not None:
+        _JSON_FILE_CACHE[cache_key] = data
+    return data
 
 
 def _path_key(path):
@@ -1074,6 +1086,7 @@ def hydrate_preset_with_latest_session_context(preset, project_root=None):
     of stale `_run_context` embedded in an old preset JSON.
     """
     hydrated = copy.deepcopy(preset or {})
+    explicit_scenario_id = _as_int(hydrated.get("scenario_id"))
     if hydrated.get("sim_use_latest_session_context") is False:
         return hydrated
     preferred_instance = _preferred_runtime_instance(hydrated)
@@ -1093,7 +1106,7 @@ def hydrate_preset_with_latest_session_context(preset, project_root=None):
     if run_context.get("support_cards") and not run_context.get("support_card_lb_levels"):
         run_context["support_card_lb_levels"] = _support_lb_lookup(run_context.get("support_cards") or [])
     hydrated["_run_context"] = run_context
-    if run_context.get("scenario_id"):
+    if run_context.get("scenario_id") and not explicit_scenario_id:
         hydrated["scenario_id"] = _as_int(run_context.get("scenario_id"), hydrated.get("scenario_id") or 4)
     hydrated["_sim_latest_session_context_source"] = str(source) if source else ""
     if run_context.get("runtime_instance"):
@@ -2478,6 +2491,7 @@ class SimResult:
     fidelity_warnings: list = field(default_factory=list)
     training_decisions: list = field(default_factory=list)
     sim_hakuraku_races: list = field(default_factory=list)
+    sim_hint_events: list = field(default_factory=list)
 
 
 # MANT (Trackblazer) epithets — FULL list (35 total: 32 grant stats, 3 grant
@@ -2690,9 +2704,9 @@ class CareerSimulator:
         self.preset.setdefault("calendar_race_prebuy_all_scheduled", True)
         self.preset.setdefault("scheduled_race_clean_record_mode", True)
         self.preset.setdefault("calendar_race_clean_prebuy_min_sp", 120)
-        self.preset.setdefault("calendar_race_clean_prebuy_budget", 1000)
+        self.preset.setdefault("calendar_race_clean_prebuy_budget", 1400)
         self.preset.setdefault("calendar_race_clean_prebuy_keep_sp", 0)
-        self.preset.setdefault("calendar_race_clean_prebuy_max_skills", 8)
+        self.preset.setdefault("calendar_race_clean_prebuy_max_skills", 10)
         # Wire stat_value_multiplier defaults so scoring works
         self.preset.setdefault("stat_value_multiplier", [0.022, 0.016, 0.018, 0.012, 0.016, 0.01])
         self.preset.setdefault("score_value", [[0.11, 0.1, 0.006, 0.09]] * 5)
@@ -2730,6 +2744,7 @@ class CareerSimulator:
                 self.project_root,
                 run_context=self.preset.get("_run_context") or {},
                 max_records=runtime_training_limit,
+                copy_result=False,
             )
             if runtime_training_snapshots:
                 self.real_training_snapshots = list(self.real_training_snapshots or []) + runtime_training_snapshots
@@ -2750,6 +2765,7 @@ class CareerSimulator:
                 self.project_root,
                 run_context=self.preset.get("_run_context") or {},
                 max_records=runtime_shop_limit,
+                copy_result=False,
             )
             runtime_shop_summary = runtime_shop.get("summary") if isinstance(runtime_shop, dict) else {}
             if runtime_shop_summary:
@@ -2767,6 +2783,7 @@ class CareerSimulator:
                 self.project_root,
                 run_context=self.preset.get("_run_context") or {},
                 max_records=runtime_event_limit,
+                copy_result=False,
             )
             if isinstance(runtime_events, dict):
                 self.runtime_event_observations = runtime_events.get("events") or []
@@ -2950,6 +2967,12 @@ class CareerSimulator:
             self.fidelity_warnings.append(
                 "empirical skill-rating calibration unavailable; using fallback skill rating defaults"
             )
+        # Card hints are not globally known at career start. The simulator
+        # discovers them from per-turn tips/hint events generated on training
+        # tiles, then rebuilds the available skill pool before skill buying.
+        self.sim_discovered_hint_levels = {}
+        self.sim_hint_events = []
+        self._sim_skill_candidates_dirty = False
         self.sim_skill_candidates = self._build_sim_skill_candidates()
         self.skill_rating_calibration = self._finalize_empirical_skill_cost_calibration()
         if self.skill_rating_calibration.get("skill_cost_scale"):
@@ -4131,6 +4154,54 @@ class CareerSimulator:
             partners = [self.rng.choice(self.sim_support_cards)]
         return partners
 
+    def _sim_card_hint_events_enabled(self):
+        return bool(self.preset.get("sim_use_card_hint_events", True))
+
+    def _hint_event_chance(self, card, training_stat, partner_cards, facility_level):
+        support_id = int((card or {}).get("support_card_id") or 0)
+        record = self.support_bonus_data.get(str(support_id)) or self.support_bonus_data.get(support_id) or {}
+        if not record.get("hint_skills"):
+            return 0.0
+        effects = self._effective_card_effects(
+            card,
+            training_stat=training_stat,
+            partner_cards=partner_cards,
+            facility_level=facility_level,
+        )
+        try:
+            hint_freq = float(effects.get("hint_freq") or 0)
+        except (TypeError, ValueError):
+            hint_freq = 0.0
+        try:
+            base = float(self.preset.get("sim_hint_base_chance") or 0.04)
+        except (TypeError, ValueError):
+            base = 0.04
+        try:
+            scale = float(self.preset.get("sim_hint_frequency_scale") or 1.0)
+        except (TypeError, ValueError):
+            scale = 1.0
+        # In-game hint frequency is exposed as a card stat, not as a guaranteed
+        # event. Treat the displayed value as a per-tile probability boost and
+        # keep a cap so high-hint cards do not produce multiple perfect hints
+        # every appearance.
+        chance = base + (max(0.0, hint_freq) / 100.0) * max(0.0, scale)
+        return max(0.0, min(0.85, chance))
+
+    def _tips_event_partner_array_for_tile(self, partner_cards, training_stat, facility_level):
+        if not self._sim_card_hint_events_enabled():
+            return [int(card["partner_id"]) for card in (partner_cards or [])[:1]]
+        weighted = []
+        for card in partner_cards or []:
+            chance = self._hint_event_chance(card, training_stat, partner_cards, facility_level)
+            if chance <= 0:
+                continue
+            if self.rng.random() < chance:
+                weighted.append((int(card.get("partner_id") or 0), chance))
+        if not weighted:
+            return []
+        chosen = self._choose_weighted(weighted)
+        return [int(chosen)] if chosen else []
+
     def _mood_base_effect(self, mood_value):
         """Mood's per-level training-gain effect — STANDARD table for all scenarios
         including Trackblazer/MANT. The MANT-aware uma.guide training simulator
@@ -4635,7 +4706,11 @@ class CareerSimulator:
                 "current_turn": self.state["turn"],
                 "current_vital": self.state["hp"],
                 "training_partner_array": partners,
-                "tips_event_partner_array": partners[:1] if partner_cards else [],
+                "tips_event_partner_array": self._tips_event_partner_array_for_tile(
+                    partner_cards,
+                    stat_name,
+                    facility_level,
+                ),
                 "params_inc_dec_info_array": params,
                 "failure_rate": failure_rate,
                 "_sim_is_rainbow": is_rainbow,
@@ -6933,6 +7008,80 @@ class CareerSimulator:
             return None
         return self._apply_sim_event_effects(source_info, template, choice)
 
+    def _mark_sim_skill_candidates_dirty(self):
+        self._sim_deck_card_hint_levels_cache = None
+        self._sim_skill_candidates_dirty = True
+
+    def _support_card_for_partner_id(self, partner_id):
+        try:
+            partner_id = int(partner_id or 0)
+        except (TypeError, ValueError):
+            return None
+        for card in self.sim_support_cards or []:
+            if int(card.get("partner_id") or 0) == partner_id:
+                return card
+        return None
+
+    def _record_training_hint_event(self, card, stat_name, partner_cards, facility_level):
+        support_id = int((card or {}).get("support_card_id") or 0)
+        record = self.support_bonus_data.get(str(support_id)) or self.support_bonus_data.get(support_id) or {}
+        hint_skills = []
+        for raw in record.get("hint_skills") or []:
+            try:
+                hint_skills.append(int(raw))
+            except (TypeError, ValueError):
+                continue
+        if not hint_skills:
+            return None
+        effects = self._effective_card_effects(
+            card,
+            training_stat=stat_name,
+            partner_cards=partner_cards,
+            facility_level=facility_level,
+        )
+        try:
+            hint_level = int(effects.get("hint_levels") or 0)
+        except (TypeError, ValueError):
+            hint_level = 0
+        # Hint Lv Up +0 still grants a level-1 hint when the event itself
+        # appears; cards with higher hint_levels stack faster.
+        hint_level = max(1, hint_level)
+        unpurchased = [sid for sid in hint_skills if sid not in self._purchased_skill_ids]
+        skill_id = int(self.rng.choice(unpurchased or hint_skills))
+        current = int(self.sim_discovered_hint_levels.get(skill_id, 0) or 0)
+        new_level = min(5, current + hint_level)
+        self.sim_discovered_hint_levels[skill_id] = new_level
+        event = {
+            "turn": int(self.state.get("turn") or 0),
+            "training": stat_name,
+            "partner_id": int(card.get("partner_id") or 0),
+            "support_card_id": support_id,
+            "support_name": card.get("name") or record.get("name") or "",
+            "skill_id": skill_id,
+            "hint_level_gain": hint_level,
+            "hint_level_total": new_level,
+        }
+        self.sim_hint_events.append(event)
+        self._mark_sim_skill_candidates_dirty()
+        return event
+
+    def _apply_training_hint_events(self, cmd, stat_name):
+        if not self._sim_card_hint_events_enabled():
+            return
+        partner_ids = [int(p) for p in (cmd.get("training_partner_array") or []) if str(p).isdigit()]
+        partner_cards = [
+            card for card in (self.sim_support_cards or [])
+            if int(card.get("partner_id") or 0) in set(partner_ids)
+        ]
+        try:
+            facility_level = int(cmd.get("_sim_facility_level") or self._facility_level(stat_name))
+        except (TypeError, ValueError):
+            facility_level = self._facility_level(stat_name)
+        for partner_id in cmd.get("tips_event_partner_array") or []:
+            card = self._support_card_for_partner_id(partner_id)
+            if card:
+                self._record_training_hint_event(card, stat_name, partner_cards, facility_level)
+
     def _apply_training(self, cmd):
         stat_name = cmd["_sim_primary_stat"]
         # If failure: bot loses HP but no stat gain
@@ -6968,6 +7117,7 @@ class CareerSimulator:
                 self.state["skill_point"] = max(0, int(self.state.get("skill_point") or 0) + v)
                 if v > 0:
                     self.sp_gain_sources["training"] += v
+        self._apply_training_hint_events(cmd, stat_name)
         # Bond gain per co-trained partner. Empirical (2026-06-12, 603
         # observed single-turn deltas across 19 live account_b careers):
         # +7 is the dominant gain (404/603), +9 when the partner is the
@@ -7383,16 +7533,28 @@ class CareerSimulator:
         )
 
     def _sim_deck_card_hint_levels(self):
-        """Build a {skill_id: hint_level} map from cards in the deck.
+        """Build a {skill_id: hint_level} map from card hints.
 
-        Each card's `hint_levels` (effective tier) applies to every skill in
-        the card's `hint_skills` list. Stacks additively when multiple deck
-        cards hint the same skill. Cached on first call.
+        Default mode is turn-faithful: only hints actually fired during
+        simulated training are counted. Compatibility mode
+        (`sim_use_card_hint_events=false`) keeps the old static behavior where
+        every deck hint skill is known from turn 1.
         """
         cached = getattr(self, "_sim_deck_card_hint_levels_cache", None)
         if cached is not None:
             return cached
         result = {"ids": {}}
+        if self._sim_card_hint_events_enabled():
+            for skill_id, level in (getattr(self, "sim_discovered_hint_levels", {}) or {}).items():
+                try:
+                    sid = int(skill_id)
+                    hint_level = int(level or 0)
+                except (TypeError, ValueError):
+                    continue
+                if sid and hint_level > 0:
+                    result["ids"][sid] = min(5, hint_level)
+            self._sim_deck_card_hint_levels_cache = result
+            return result
         for card in (self.sim_support_cards or []):
             try:
                 hint_level = int(self._effective_card_effects(card).get("hint_levels") or 0)
@@ -7512,9 +7674,15 @@ class CareerSimulator:
         candidates.sort(key=lambda item: (-int(item.get("rating_score") or 0), int(item.get("base_cost") or 9999), item["skill_id"]))
         return candidates
 
+    def _ensure_sim_skill_candidates_current(self):
+        if getattr(self, "_sim_skill_candidates_dirty", False):
+            self.sim_skill_candidates = self._build_sim_skill_candidates()
+            self._sim_skill_candidates_dirty = False
+
     def _sim_available_skill_keys(self):
         ids = set()
         names = set()
+        card_hint_events = self._sim_card_hint_events_enabled()
         for card in getattr(self, "sim_support_cards", None) or self.deck or []:
             support_id = card.get("support_card_id") or card.get("id")
             try:
@@ -7522,12 +7690,23 @@ class CareerSimulator:
             except (TypeError, ValueError):
                 support_id = 0
             row = self.support_bonus_data.get(str(support_id)) or self.support_bonus_data.get(support_id) or {}
-            for field in ("event_skills", "hint_skills"):
-                for skill_id in row.get(field) or []:
+            for skill_id in row.get("event_skills") or []:
+                try:
+                    ids.add(int(skill_id))
+                except (TypeError, ValueError):
+                    continue
+            if not card_hint_events:
+                for skill_id in row.get("hint_skills") or []:
                     try:
                         ids.add(int(skill_id))
                     except (TypeError, ValueError):
                         continue
+        if card_hint_events:
+            for skill_id in (getattr(self, "sim_discovered_hint_levels", {}) or {}).keys():
+                try:
+                    ids.add(int(skill_id))
+                except (TypeError, ValueError):
+                    continue
         for hint in (self.legacy_effects or {}).get("legacy_skill_hints") or []:
             if hint.get("category") not in {"skill", "unique"}:
                 continue
@@ -7650,6 +7829,7 @@ class CareerSimulator:
         return calibration
 
     def _available_skill_candidates(self, discount_pct, budget=None):
+        self._ensure_sim_skill_candidates_current()
         rows = []
         for candidate in self.sim_skill_candidates:
             skill_id = int(candidate.get("skill_id") or 0)
@@ -9409,10 +9589,18 @@ class CareerSimulator:
         won = self.rng.random() <= float(prob or 0.0)
 
         continues_used = 0
+        g1_clean_continue = (
+            str(grade or "").upper() == "G1"
+            and bool(self.preset.get("scheduled_race_clean_record_mode", True))
+            and bool(self.preset.get("g1_race_continue_enabled", True))
+        )
         if (
             not won
-            and bool(self.preset.get("sim_scheduled_race_continue_enabled", False))
             and bool(self.preset.get("scheduled_race_clean_record_mode", True))
+            and (
+                bool(self.preset.get("sim_scheduled_race_continue_enabled", False))
+                or g1_clean_continue
+            )
         ):
             try:
                 continue_limit = int(
@@ -9424,6 +9612,14 @@ class CareerSimulator:
                 )
             except (TypeError, ValueError):
                 continue_limit = 0
+            if g1_clean_continue:
+                try:
+                    continue_limit = max(
+                        continue_limit,
+                        int(self.preset.get("g1_race_continue_min_limit") or 5),
+                    )
+                except (TypeError, ValueError):
+                    continue_limit = max(continue_limit, 5)
             while not won and self.race_continues_used < continue_limit:
                 retry_prob, retry_model = self._race_probability_estimate(
                     pid,
@@ -9779,6 +9975,7 @@ class CareerSimulator:
             train_picks_by_stat=dict(self.train_picks),
             bonus_fires=dict(self.bonus_fires),
             purchased_skills=list(self.purchased_skills),
+            sim_hint_events=list(self.sim_hint_events),
             shop_items_bought=self.shop_items_bought,
             shop_items_used=self.shop_items_used,
             rival_races_run=self.rival_races_run,

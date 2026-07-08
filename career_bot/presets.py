@@ -567,8 +567,29 @@ def instance_learning_override_path(base_dir, preset_name):
     return instance_learning_override_dir(base_dir) / f"{slugify(preset_name)}.json"
 
 
+def shared_learning_override_dir(base_dir):
+    path = Path(base_dir) / "uma_runtime" / "shared_learning" / "presets"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def shared_learning_override_path(base_dir, preset_name):
+    return shared_learning_override_dir(base_dir) / f"{slugify(preset_name)}.json"
+
+
 def read_instance_learning_override(base_dir, preset_name):
     path = instance_learning_override_path(base_dir, preset_name)
+    if not path.exists():
+        return None
+    try:
+        data = normalize_preset(json.loads(path.read_text(encoding="utf-8-sig")))
+        return {k: v for k, v in data.items() if k not in CONFIG_ONLY_KEYS}
+    except Exception:
+        return None
+
+
+def read_shared_learning_override(base_dir, preset_name):
+    path = shared_learning_override_path(base_dir, preset_name)
     if not path.exists():
         return None
     try:
@@ -581,6 +602,13 @@ def read_instance_learning_override(base_dir, preset_name):
 def write_instance_learning_override(base_dir, preset_name, preset):
     data = {k: v for k, v in normalize_preset(preset).items() if k not in CONFIG_ONLY_KEYS}
     path = instance_learning_override_path(base_dir, preset_name)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def write_shared_learning_override(base_dir, preset_name, preset):
+    data = {k: v for k, v in normalize_preset(preset).items() if k not in CONFIG_ONLY_KEYS}
+    path = shared_learning_override_path(base_dir, preset_name)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
 
@@ -712,6 +740,13 @@ def normalize_preset(raw):
     normalized.setdefault("auto_learning_progression_delta", 500)
     normalized.setdefault("learning_use_stratified_reference_groups", True)
     normalized.setdefault("learning_use_deviation_signal", True)
+    normalized.setdefault("learning_context_adaptation_enabled", True)
+    normalized.setdefault("learning_context_exact_match_score", 28)
+    normalized.setdefault("learning_context_similar_match_score", 14)
+    normalized.setdefault("learning_context_min_exact_samples", 4)
+    normalized.setdefault("learning_context_min_similar_samples", 8)
+    normalized.setdefault("learning_context_soft_min_similar_samples", 3)
+    normalized.setdefault("learning_context_global_fallback_enabled", False)
     normalized.setdefault("auto_learning_statuses", ["finished"])
     normalized.setdefault("auto_learning_runtime_paths", [])
     normalized.setdefault("auto_learning_output_name", "")
@@ -766,11 +801,13 @@ def normalize_preset(raw):
     normalized.setdefault("calendar_race_prebuy_all_scheduled", True)
     normalized.setdefault("scheduled_race_clean_record_mode", True)
     normalized.setdefault("calendar_race_clean_prebuy_min_sp", 120)
-    normalized.setdefault("calendar_race_clean_prebuy_budget", 1000)
+    normalized.setdefault("calendar_race_clean_prebuy_budget", 1400)
     normalized.setdefault("calendar_race_clean_prebuy_keep_sp", 0)
-    normalized.setdefault("calendar_race_clean_prebuy_max_skills", 8)
-    normalized.setdefault("calendar_race_clean_prebuy_target_probability", 0.93)
+    normalized.setdefault("calendar_race_clean_prebuy_max_skills", 10)
+    normalized.setdefault("calendar_race_clean_prebuy_target_probability", 0.985)
     normalized.setdefault("calendar_race_prebuy_allow_midcareer_with_end_buy", False)
+    normalized.setdefault("g1_race_continue_enabled", True)
+    normalized.setdefault("g1_race_continue_min_limit", 5)
     normalized.setdefault("scheduled_race_safety_training_lookahead_turns", 18)
     normalized.setdefault("scheduled_race_safety_requirement_scale", 0.94)
     normalized.setdefault("scheduled_race_safety_bonus_cap", 0.75)

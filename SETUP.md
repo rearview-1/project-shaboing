@@ -147,6 +147,27 @@ Or directly:
 
 The bot starts a local API server (FastAPI/uvicorn) and waits for the game client to launch and auth.
 
+## JP Hachimi GameTora skill names + mechanics text
+
+If JP Hachimi translation updates overwrite local skill names or descriptions, run:
+
+```bat
+apply_jp_gametora_skill_names.bat
+```
+
+The script refreshes `data/gametora_skill_overrides.json` from GameTora, then reapplies
+GameTora skill names to every `localized_data*/text_data_dict.json` in the JP Hachimi
+install. Skill descriptions use Hachimi's mechanics text when it exists; new skills that
+Hachimi does not know about fall back to generated GameTora condition/effect text. Backups
+are created before writing. You can override the JP Hachimi path with:
+
+```bat
+apply_jp_gametora_skill_names.bat --hachimi-dir "C:\path\to\UmamusumePrettyDerby_Jpn\hachimi"
+```
+
+Set `SWEEPY_SKIP_GAMETORA_FETCH=1` before running the script to apply the cached
+`data/gametora_skill_overrides.json` without fetching fresh GameTora data.
+
 On first run with no prior data, you'll see fidelity warnings like:
 
 - `manual race thresholds unavailable; using fallback race thresholds`

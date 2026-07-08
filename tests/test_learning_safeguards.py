@@ -5,11 +5,12 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from career_bot.auto_learning import run_auto_learning
+from career_bot.auto_learning import _apply_scope, run_auto_learning
 from career_bot.learning import (
     DECK_AWARE_TOP_SCORE_FLOORS,
     LearnedPresetInvariantError,
     _attach_learning_metadata_to_samples,
+    _instance_local_learning_scope_enabled,
     _is_behavior_learning_sample,
     _is_manual_sample,
     _preserve_operator_owned_fields,
@@ -37,6 +38,7 @@ from career_bot.learning import (
     runtime_roots,
     save_learning_outputs,
     sample_signature,
+    select_context_adaptive_samples,
     select_context_validation_samples,
     select_reference_groups,
     selected_training_action,
@@ -562,6 +564,46 @@ class LearningSafeguardsTests(unittest.TestCase):
             self.assertEqual(roots, [explicit_b.resolve(), explicit_a.resolve()])
             self.assertNotIn(fallback.resolve(), roots)
 
+    def test_dual_runtime_paths_do_not_force_instance_local_learning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            explicit_a = Path(tmp) / "runtime_a"
+            explicit_b = Path(tmp) / "runtime_b"
+            explicit_a.mkdir()
+            explicit_b.mkdir()
+
+            with patch.dict(
+                os.environ,
+                {
+                    "UMA_RUNTIME_DIR": str(explicit_b),
+                    "SWEEPY_INSTANCE_NAME": "account_b",
+                    "SWEEPY_SHARED_RUNTIME_PATHS": f"{explicit_a}{os.pathsep}{explicit_b}",
+                },
+                clear=True,
+            ):
+                self.assertFalse(_instance_local_learning_scope_enabled())
+
+    def test_instance_local_learning_still_requires_explicit_scope(self):
+        with patch.dict(os.environ, {"SWEEPY_AUTO_LEARNING_SCOPE": "instance_local"}, clear=True):
+            self.assertTrue(_instance_local_learning_scope_enabled())
+
+    def test_auto_learning_apply_scope_defaults_shared_overlay_in_dual_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            explicit_a = Path(tmp) / "runtime_a"
+            explicit_b = Path(tmp) / "runtime_b"
+            explicit_a.mkdir()
+            explicit_b.mkdir()
+
+            with patch.dict(
+                os.environ,
+                {
+                    "UMA_RUNTIME_DIR": str(explicit_b),
+                    "SWEEPY_INSTANCE_NAME": "account_b",
+                    "SWEEPY_SHARED_RUNTIME_PATHS": f"{explicit_a}{os.pathsep}{explicit_b}",
+                },
+                clear=True,
+            ):
+                self.assertEqual(_apply_scope({}), "shared_overlay")
+
     def test_preset_store_saved_copy_shadows_legacy_template_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             base_dir = Path(tmp)
@@ -831,6 +873,95 @@ class LearningSafeguardsTests(unittest.TestCase):
         self.assertEqual(picked["mode"], "contextual")
         self.assertEqual([row["path"] for row in picked["samples"]], ["matching.json"])
         self.assertGreaterEqual(picked["match_count"], 1)
+
+    def test_context_adaptive_samples_use_low_count_similar_instead_of_global_pool(self):
+        preset = {
+            "name": "xguri parent",
+            "skill_profile_style": "late_surger",
+            "skill_profile_distance": "medium",
+            "_run_context": {
+                "preset_name": "xguri parent",
+                "trainee_card_id": 101502,
+                "friend_card_id": 30032,
+                "deck_quality_bucket": 2,
+                "support_cards": [
+                    {"support_card_id": 20031, "type": "Speed", "lb_level": 4},
+                    {"support_card_id": 30028, "type": "Speed", "lb_level": 4},
+                    {"support_card_id": 30016, "type": "Stamina", "lb_level": 3},
+                    {"support_card_id": 30007, "type": "Power", "lb_level": 4},
+                    {"support_card_id": 20008, "type": "Stamina", "lb_level": 4},
+                ],
+            },
+            "learning_context_min_exact_samples": 4,
+            "learning_context_min_similar_samples": 8,
+            "learning_context_soft_min_similar_samples": 3,
+        }
+
+        def similar_row(idx):
+            return {
+                "path": f"tm_similar_{idx}.json",
+                "preset_name": "xguri parent",
+                "actions": [{}] * 20,
+                "run_context": {
+                    "preset_name": "xguri parent",
+                    "trainee_card_id": 101502,
+                    "friend_card_id": 30032,
+                    "deck_quality_bucket": 2,
+                    "skill_profile_style": "late_surger",
+                    "skill_profile_distance": "medium",
+                    "support_cards": [
+                        {"support_card_id": 20031, "type": "Speed", "lb_level": 4},
+                        {"support_card_id": 30028, "type": "Speed", "lb_level": 4},
+                        {"support_card_id": 30016, "type": "Stamina", "lb_level": 3},
+                        {"support_card_id": 30007, "type": "Power", "lb_level": 4},
+                        {"support_card_id": 20008, "type": "Stamina", "lb_level": 4},
+                    ],
+                },
+            }
+
+        unrelated = [
+            {
+                "path": f"manual_bakushin_{idx}.json",
+                "preset_name": "xguri parent",
+                "actions": [{}] * 20,
+                "run_context": {
+                    "preset_name": "xguri parent",
+                    "trainee_card_id": 104101,
+                    "friend_card_id": 30094,
+                    "deck_quality_bucket": 3,
+                    "skill_profile_style": "front_runner",
+                    "skill_profile_distance": "sprint",
+                    "support_cards": [
+                        {"support_card_id": 30019, "type": "Speed", "lb_level": 4},
+                        {"support_card_id": 20041, "type": "Wit", "lb_level": 4},
+                        {"support_card_id": 30086, "type": "Wit", "lb_level": 4},
+                    ],
+                },
+            }
+            for idx in range(5)
+        ]
+        rows = [*unrelated, *(similar_row(idx) for idx in range(3))]
+
+        selected = select_context_adaptive_samples(rows, preset=preset)
+
+        self.assertEqual(selected["mode"], "similar_context_low_sample")
+        self.assertEqual(selected["selected_count"], 3)
+        self.assertEqual(
+            {row["path"] for row in selected["samples"]},
+            {"tm_similar_0.json", "tm_similar_1.json", "tm_similar_2.json"},
+        )
+
+    def test_context_adaptive_samples_keep_pool_when_no_strong_anchor_exists(self):
+        rows = [
+            {"path": "a.json", "actions": [{}], "run_context": {}},
+            {"path": "b.json", "actions": [{}], "run_context": {}},
+        ]
+
+        selected = select_context_adaptive_samples(rows, preset={"name": "test"})
+
+        self.assertEqual(selected["mode"], "no_context_anchor")
+        self.assertEqual(selected["selected_count"], 2)
+        self.assertEqual([row["path"] for row in selected["samples"]], ["a.json", "b.json"])
 
     def test_shadow_challenger_stages_then_promotes(self):
         preset = {

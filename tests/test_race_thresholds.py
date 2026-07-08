@@ -79,6 +79,55 @@ class BuildRaceThresholdsTests(unittest.TestCase):
         self.assertEqual(target["guts"], 861)
         self.assertEqual(target["wit"], 855)
 
+    def test_moderate_guts_gap_does_not_raise_target_or_stat_gap_count(self):
+        """A moderate Guts-only field gap is not enough evidence to pressure
+        Guts training when speed/stamina/power/wit are already ahead."""
+        loss = _loss(
+            program_id=164,
+            effective={"speed": 900, "stamina": 760, "power": 850, "guts": 600, "wit": 900},
+            gaps={"speed": -180, "stamina": -80, "power": -160, "guts": 150, "wit": -120},
+            race_name="Moderate Guts Noise G1",
+        )
+        thresholds = build_race_thresholds([_postmortem([loss])])
+        entry = thresholds[164]
+        target = entry["target_effective"]
+        self.assertEqual(target["speed"], 900)
+        self.assertEqual(target["stamina"], 760)
+        self.assertEqual(target["power"], 850)
+        self.assertEqual(target["guts"], 600)
+        self.assertEqual(target["wit"], 900)
+        self.assertEqual(entry["no_stat_gap_loss_count"], 1)
+        self.assertEqual(entry["primary_gap_stat_history"], {})
+
+    def test_old_unguarded_primary_gap_stat_does_not_poison_threshold_history(self):
+        """Older postmortem files may have serialized primary_gap_stat=guts
+        from the raw max-gap rule. Rebuilds must recompute from raw gaps."""
+        loss = _loss(
+            program_id=166,
+            effective={"speed": 900, "stamina": 760, "power": 850, "guts": 600, "wit": 900},
+            gaps={"speed": -180, "stamina": -80, "power": -160, "guts": 150, "wit": -120},
+            race_name="Legacy Primary Guts G1",
+            primary="guts",
+        )
+        thresholds = build_race_thresholds([_postmortem([loss])])
+        entry = thresholds[166]
+        self.assertEqual(entry["primary_gap_stat_history"], {})
+        self.assertEqual(entry["no_stat_gap_loss_count"], 1)
+
+    def test_extreme_guts_gap_still_raises_target(self):
+        """The guard is not a blanket Guts ban: extreme Guts gaps remain
+        actionable."""
+        loss = _loss(
+            program_id=165,
+            effective={"speed": 900, "stamina": 760, "power": 850, "guts": 500, "wit": 900},
+            gaps={"speed": -180, "stamina": -80, "power": -160, "guts": 260, "wit": -120},
+            race_name="Extreme Guts Gap G1",
+        )
+        thresholds = build_race_thresholds([_postmortem([loss])])
+        entry = thresholds[165]
+        self.assertEqual(entry["target_effective"]["guts"], 500 + 260 + DEFAULT_CUSHION)
+        self.assertEqual(entry["no_stat_gap_loss_count"], 0)
+
     def test_multiple_losses_take_max_target_per_stat(self):
         """Two losses on the same race with different stat profiles.
         Per-stat target = max across losses."""
@@ -142,6 +191,23 @@ class BuildRaceThresholdsTests(unittest.TestCase):
     def test_load_returns_empty_when_file_malformed(self):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "race_thresholds.json").write_text("not json", encoding="utf-8")
+            self.assertEqual(load_race_thresholds(tmp), {})
+
+    def test_load_rejects_stale_v1_threshold_schema(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "race_thresholds.json").write_text(
+                json.dumps({
+                    "schema": "sweepy_race_thresholds_v1",
+                    "thresholds": {
+                        "164": {
+                            "race_name": "NHK Mile Cup",
+                            "target_effective": {"guts": 999},
+                            "primary_gap_stat_history": {"guts": 14},
+                        },
+                    },
+                }),
+                encoding="utf-8",
+            )
             self.assertEqual(load_race_thresholds(tmp), {})
 
     def test_no_program_id_loss_is_skipped(self):

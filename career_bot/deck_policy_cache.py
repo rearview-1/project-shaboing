@@ -73,7 +73,25 @@ def save_cache(cache: dict, project_root: Path, instance: str = "account_b"):
 
 
 def lookup_policy(cache: dict, signature: str) -> dict | None:
-    return ((cache.get("policies") or {}).get(signature) or {}).get("learned_hyperparameters")
+    entry = (cache.get("policies") or {}).get(signature) or {}
+    if not entry:
+        return None
+    # Older calibrate_deck builds wrote a baseline policy while reporting
+    # saved_to_cache=false when no candidate improved. Those entries have no
+    # timestamp, no lift, and tiny sample counts; applying them makes
+    # optimizer.bat feel like it "did something" while actually pinning stale
+    # behavior. Keep valid baseline-comfort saves: new ones have optimized_at.
+    try:
+        stale_noop = (
+            not str(entry.get("optimized_at") or "").strip()
+            and float(entry.get("rating_lift") or 0.0) <= 0.0
+            and int(entry.get("n_optimized_sims") or 0) <= 2
+        )
+    except (TypeError, ValueError):
+        stale_noop = False
+    if stale_noop:
+        return None
+    return entry.get("learned_hyperparameters")
 
 
 def save_policy(cache: dict, signature: str, *,

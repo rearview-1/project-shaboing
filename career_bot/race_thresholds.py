@@ -28,6 +28,7 @@ from pathlib import Path
 from career_bot.postmortem_feedback import (
     STAT_KEYS,
     _worst_stat_with_dominance_guard,
+    actionable_gap_stats,
     load_recent_postmortems,
 )
 
@@ -35,7 +36,7 @@ from career_bot.postmortem_feedback import (
 DEFAULT_CUSHION = 50
 RECENT_POSTMORTEM_LIMIT = 30
 THRESHOLDS_FILENAME = "race_thresholds.json"
-SCHEMA = "sweepy_race_thresholds_v1"
+SCHEMA = "sweepy_race_thresholds_v2"
 
 
 def _coerce_int(value, default=0):
@@ -62,16 +63,18 @@ def _per_loss_target(loss, cushion):
     # Dominance guard (same rule as hint aggregation): when the only
     # positive gap is the phantom small-deficit pattern, don't raise any
     # target — stat pressure can't fix that loss.
-    guarded_stat, _guarded_gap = _worst_stat_with_dominance_guard(
-        {stat: float(_coerce_int(gaps.get(stat))) for stat in STAT_KEYS if stat in gaps}
-    )
+    actionable_stats = actionable_gap_stats({
+        stat: float(_coerce_int(gaps.get(stat)))
+        for stat in STAT_KEYS
+        if stat in gaps
+    })
     target = {}
     for stat in STAT_KEYS:
         eff = _coerce_int(effective.get(stat))
         if eff <= 0:
             continue
         gap = _coerce_int(gaps.get(stat))
-        if gap > 0 and guarded_stat is not None:
+        if gap > 0 and stat in actionable_stats:
             target[stat] = eff + gap + cushion
         else:
             target[stat] = eff
@@ -127,12 +130,20 @@ def build_race_thresholds(postmortems, cushion=DEFAULT_CUSHION):
             for stat, value in per_loss.items():
                 if value > entry["target_effective"][stat]:
                     entry["target_effective"][stat] = value
-            primary = loss.get("primary_gap_stat") or ""
-            if primary in STAT_KEYS:
-                entry["primary_gap_stat_history"][primary] += 1
             gaps = loss.get("field_max_gap_over_player") or {}
-            positive_gaps = [stat for stat in STAT_KEYS if _coerce_int(gaps.get(stat)) > 0]
-            if not positive_gaps:
+            recomputed_primary, _primary_gap = _worst_stat_with_dominance_guard({
+                stat: float(_coerce_int(gaps.get(stat)))
+                for stat in STAT_KEYS
+                if stat in gaps
+            })
+            if recomputed_primary in STAT_KEYS:
+                entry["primary_gap_stat_history"][recomputed_primary] += 1
+            actionable_stats = actionable_gap_stats({
+                stat: float(_coerce_int(gaps.get(stat)))
+                for stat in STAT_KEYS
+                if stat in gaps
+            })
+            if not actionable_stats:
                 entry["no_stat_gap_loss_count"] += 1
     result = {}
     for program_id, entry in by_race.items():
@@ -172,6 +183,9 @@ def load_race_thresholds(runtime_root):
     except (json.JSONDecodeError, OSError):
         return {}
     raw = payload.get("thresholds") or {}
+    schema = str(payload.get("schema") or "").strip()
+    if schema and schema != SCHEMA:
+        return {}
     out = {}
     for key, value in raw.items():
         program_id = _coerce_int(key)

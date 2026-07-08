@@ -54,9 +54,7 @@ def _loss(
 
 class AggregationTests(unittest.TestCase):
     def test_losses_grouped_by_race_id_not_globally(self):
-        """The whole point: an NHK Mile Cup loss with -120 Power and a
-        Kikuka Sho loss with -200 Guts should produce TWO race-specific
-        hints, not a global hint claiming both races need Guts."""
+        """Race-specific hints must not collapse into a global Guts bias."""
         pms = [
             _postmortem([
                 _loss(11017, "NHK Mile Cup", {"speed": 80, "stamina": -50, "power": 120, "guts": -30, "wit": -10}),
@@ -69,13 +67,12 @@ class AggregationTests(unittest.TestCase):
         self.assertEqual(len(agg), 2)
         nhk = agg[11017]
         kikuka = agg[11034]
-        # NHK identifies Power as the stat to grow.
+
         self.assertEqual(nhk["worst_stat"], "power")
         self.assertEqual(nhk["avg_gap"]["power"], 120.0)
-        # Kikuka identifies Guts. Critically, the Kikuka hint does NOT
-        # mention Power as the worst — the two races are independent.
-        self.assertEqual(kikuka["worst_stat"], "guts")
+        self.assertEqual(kikuka["worst_stat"], "stamina")
         self.assertEqual(kikuka["avg_gap"]["guts"], 200.0)
+        self.assertEqual(kikuka["avg_gap"]["stamina"], 180.0)
 
     def test_multiple_losses_same_race_average_correctly(self):
         """If the bot loses NHK Mile Cup 3 times, each with its own

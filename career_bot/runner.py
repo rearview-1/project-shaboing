@@ -1321,7 +1321,7 @@ class CareerRunner:
                 return preset.get(key)
         return default
 
-    def _race_continue_config(self, preset):
+    def _race_continue_config(self, preset, program_id=None):
         limit = self._safe_int(self._preset_value(
             preset,
             "clock_use_limit",
@@ -1440,6 +1440,18 @@ class CareerRunner:
             "race_retry_pre_end_retry_205",
             default=False,
         ))
+        if (
+            program_id
+            and self._is_g1_program(program_id)
+            and bool((preset or {}).get("scheduled_race_clean_record_mode", True))
+            and self._config_enabled((preset or {}).get("g1_race_continue_enabled", True))
+        ):
+            g1_min_limit = self._safe_int(self._preset_value(
+                preset,
+                "g1_race_continue_min_limit",
+                default=5,
+            ))
+            limit = max(limit, g1_min_limit)
         return {
             # The game only allows five race continues across one career run.
             "limit": min(5, max(0, limit)),
@@ -1473,8 +1485,8 @@ class CareerRunner:
         if delay_seconds:
             time.sleep(delay_seconds)
 
-    def _race_continue_remaining(self, preset):
-        cfg = self._race_continue_config(preset)
+    def _race_continue_remaining(self, preset, program_id=None):
+        cfg = self._race_continue_config(preset, program_id=program_id)
         used = self._safe_int(self.status.get("race_retries"))
         return max(0, cfg["limit"] - used)
 
@@ -1494,7 +1506,7 @@ class CareerRunner:
         return info
 
     def _load_pre_race_end_state(self, client, current_turn, program_id, preset):
-        cfg = self._race_continue_config(preset)
+        cfg = self._race_continue_config(preset, program_id=program_id)
         deadline = time.time() + (cfg["pre_end_probe_seconds"] if cfg["limit"] > 0 else 0)
         last_state = None
         last_result = {}
@@ -1517,7 +1529,7 @@ class CareerRunner:
             time.sleep(cfg["pre_end_probe_interval"])
 
     def _race_continue_attempt_types(self, preset, info=None, allow_carat_spend=True, program_id=None):
-        cfg = self._race_continue_config(preset)
+        cfg = self._race_continue_config(preset, program_id=program_id)
         attempts = []
         seen = set()
         info = info or {}
@@ -1909,10 +1921,10 @@ class CareerRunner:
         This pre-end path is kept for resume/reconciliation states that already
         contain a current-turn loss before /race_end has been accepted.
         """
-        cfg = self._race_continue_config(preset)
+        cfg = self._race_continue_config(preset, program_id=program_id)
         if cfg["limit"] <= 0:
             return load_state, race_result
-        if self._race_continue_remaining(preset) <= 0:
+        if self._race_continue_remaining(preset, program_id=program_id) <= 0:
             return load_state, race_result
 
         resources_used = []
@@ -1920,7 +1932,7 @@ class CareerRunner:
         race_attempt_index = 1
 
         while (
-            self._race_continue_remaining(preset) > 0
+            self._race_continue_remaining(preset, program_id=program_id) > 0
             and len(resources_used) < cfg["consecutive_limit"]
             and race_result
             and not race_result.get("won")
@@ -2074,10 +2086,10 @@ class CareerRunner:
         If the server accepts this call, the hidden race result was retryable.
         If it rejects with 500, keep the resource enabled and accept race_end.
         """
-        cfg = self._race_continue_config(preset)
+        cfg = self._race_continue_config(preset, program_id=program_id)
         if not cfg["pre_end_continue_probe"] or cfg["limit"] <= 0:
             return None, None, False
-        if self._race_continue_remaining(preset) <= 0:
+        if self._race_continue_remaining(preset, program_id=program_id) <= 0:
             return None, None, False
         if not self._same_active_race_state(race_state, current_turn, program_id, playing_states={3}):
             return None, None, False
@@ -2088,7 +2100,7 @@ class CareerRunner:
         probe_deadline = time.time() + max(0.0, float(cfg.get("pre_end_probe_seconds") or 0))
         probe_interval = max(0.05, float(cfg.get("pre_end_probe_interval") or 0.0))
 
-        while self._race_continue_remaining(preset) > 0 and len(resources_used) < cfg["consecutive_limit"]:
+        while self._race_continue_remaining(preset, program_id=program_id) > 0 and len(resources_used) < cfg["consecutive_limit"]:
             if not self._same_active_race_state(current_state, current_turn, program_id, playing_states={3}):
                 data = (current_state or {}).get("data") or {}
                 chara = data.get("chara_info") or {}
@@ -2317,10 +2329,10 @@ class CareerRunner:
         if not race_result or race_result.get("won"):
             return end_result, race_result
 
-        cfg = self._race_continue_config(preset)
+        cfg = self._race_continue_config(preset, program_id=program_id)
         if cfg["limit"] <= 0:
             return end_result, race_result
-        if self._race_continue_remaining(preset) <= 0:
+        if self._race_continue_remaining(preset, program_id=program_id) <= 0:
             self._log("race_continue_skip", current_turn, "career retry limit reached")
             self._add_race_continue_event(
                 "race_continue_skip",
@@ -2336,7 +2348,7 @@ class CareerRunner:
         resources_used = []
         failed_ranks = []
         while (
-            self._race_continue_remaining(preset) > 0
+            self._race_continue_remaining(preset, program_id=program_id) > 0
             and len(resources_used) < cfg["consecutive_limit"]
             and race_result
             and not race_result.get("won")
@@ -5244,8 +5256,13 @@ class CareerRunner:
                 )
                 return state
 
-        if bool((preset or {}).get("manual_purchase_at_end", False)) and not bool(
-            (preset or {}).get("calendar_race_prebuy_allow_midcareer_with_end_buy", False)
+        high_stakes_calendar_race = str(grade).upper() in {"G1", "G2"}
+        if (
+            bool((preset or {}).get("manual_purchase_at_end", False))
+            and not bool((preset or {}).get("calendar_race_prebuy_allow_midcareer_with_end_buy", False))
+            and not high_stakes_calendar_race
+            and not bool(stamina_check.get("stamina_low"))
+            and not bool(stamina_check.get("static_stamina_low"))
         ):
             self._debug("pre_race_calendar_skill_skip", state, {
                 "reason": "manual_purchase_at_end",
@@ -5328,14 +5345,21 @@ class CareerRunner:
                 clean_max = int((preset or {}).get("calendar_race_clean_prebuy_max_skills") or max(8, max_skills))
             except (TypeError, ValueError):
                 clean_max = max(8, max_skills)
+            if str(grade).upper() == "G1":
+                # Existing user presets may carry weaker historical values.
+                # Treat G1s as hard clean-record gates regardless of stale
+                # preset JSON so a deck swap cannot silently inherit unsafe
+                # mid-career skill limits.
+                clean_budget = max(clean_budget, 1400)
+                clean_max = max(clean_max, 10)
             if dangerous:
                 min_sp = min(min_sp, clean_min_sp)
                 reserve = min(reserve, clean_reserve)
                 budget = max(budget, clean_budget)
                 if str(grade).upper() == "G1" or bool(stamina_check.get("stamina_low")):
-                    max_skills = max(max_skills, min(clean_max, 5))
+                    max_skills = max(max_skills, clean_max)
                 else:
-                    max_skills = max(max_skills, min(clean_max, 2))
+                    max_skills = max(max_skills, min(clean_max, 3))
             elif all_scheduled_prebuy and str(grade).upper() not in {"G1", "G2"}:
                 # Keep end-buy intact on low-risk scheduled fillers.
                 max_skills = min(max_skills, 1)

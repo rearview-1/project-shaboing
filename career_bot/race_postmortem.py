@@ -16,6 +16,8 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+from career_bot.postmortem_feedback import _worst_stat_with_dominance_guard
+
 
 STAT_KEYS = ("speed", "stamina", "power", "guts", "wit")
 GRADE_BY_FIRST_DIGIT = {"1": "G1", "2": "G2", "3": "G3", "4": "OP"}
@@ -239,9 +241,13 @@ def analyze_trace(trace_path, race_program_map=None, started_at=None, ended_at=N
                 key: sum(1 for horse in opponents if _horse_stats(horse).get(key, 0) > player_stats.get(key, 0))
                 for key in STAT_KEYS
             }
-            primary_stat, primary_gap = max(field_max_gaps.items(), key=lambda item: item[1]) if field_max_gaps else (None, 0)
-            if primary_stat is not None and primary_gap <= 0:
-                primary_stat, primary_gap = None, 0
+            raw_primary_stat, raw_primary_gap = max(field_max_gaps.items(), key=lambda item: item[1]) if field_max_gaps else (None, 0)
+            if raw_primary_stat is not None and raw_primary_gap <= 0:
+                raw_primary_stat, raw_primary_gap = None, 0
+            primary_stat, primary_gap = _worst_stat_with_dominance_guard({
+                key: float(value or 0)
+                for key, value in field_max_gaps.items()
+            })
             # Richer capture (added 2026-05): style, skills, finish time,
             # environment. The legacy stats-only postmortem misses cases
             # like "lost NHK Mile Cup to a field full of Pace Chasers
@@ -276,8 +282,11 @@ def analyze_trace(trace_path, race_program_map=None, started_at=None, ended_at=N
                 "field_median_stats": {key: opponent_summary[key]["median"] for key in STAT_KEYS},
                 "field_max_gap_over_player": field_max_gaps,
                 "opponents_above_player_per_stat": count_above_player,
+                "raw_primary_gap_stat": raw_primary_stat,
+                "raw_primary_gap_value": raw_primary_gap if raw_primary_stat else 0,
                 "primary_gap_stat": primary_stat,
                 "primary_gap_value": primary_gap if primary_stat else 0,
+                "primary_gap_method": "causal_weighted_gap",
                 "player_aptitude": _aptitude_summary(player),
                 # Richer capture:
                 "player_running_style": _safe_int(player.get("running_style")),
@@ -311,12 +320,13 @@ def summarize_losses(losses):
         for key in STAT_KEYS:
             totals[key] += (loss.get("field_max_gap_over_player") or {}).get(key, 0)
     averages = {key: round(totals[key] / len(losses), 1) for key in STAT_KEYS}
-    worst_stat, worst_value = max(averages.items(), key=lambda item: item[1])
+    worst_stat, worst_value = _worst_stat_with_dominance_guard(averages)
     return {
         "count": len(losses),
         "average_field_max_gap": averages,
-        "worst_stat": worst_stat if worst_value > 0 else None,
-        "worst_stat_average_gap": worst_value if worst_value > 0 else 0,
+        "worst_stat": worst_stat,
+        "worst_stat_average_gap": worst_value if worst_stat else 0,
+        "worst_stat_method": "causal_weighted_gap",
     }
 
 

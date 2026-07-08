@@ -27,7 +27,13 @@ except ModuleNotFoundError as exc:
     build_deck_advice = None
     OPTIONAL_IMPORT_ERRORS["career_bot.deck_advice"] = str(exc)
 from career_bot.observed_profiles import append_team_observations, load_observation_samples, summarize_observation_samples
-from career_bot.presets import PresetStore, instance_learning_override_path, read_instance_learning_override, slugify
+from career_bot.presets import (
+    PresetStore,
+    instance_learning_override_path,
+    read_instance_learning_override,
+    read_shared_learning_override,
+    slugify,
+)
 from career_bot.manual_recorder import (
     ManualCareerRecorder,
     build_report_from_hachimi_summaries,
@@ -4898,6 +4904,13 @@ async def training_sim_meta():
             {"label": "None", "growth": {}},
             {"label": "Speed +10", "growth": {"speed": 10}},
             {"label": "Speed +20", "growth": {"speed": 20}},
+            {"label": "Stamina +10", "growth": {"stamina": 10}},
+            {"label": "Stamina +20", "growth": {"stamina": 20}},
+            {"label": "Power +10", "growth": {"power": 10}},
+            {"label": "Power +20", "growth": {"power": 20}},
+            {"label": "Guts +10", "growth": {"guts": 10}},
+            {"label": "Guts +20", "growth": {"guts": 20}},
+            {"label": "Wit +10", "growth": {"wit": 10}},
             {"label": "Wit +20", "growth": {"wit": 20}},
             {"label": "Speed/Wit +10", "growth": {"speed": 10, "wit": 10}},
         ],
@@ -5771,9 +5784,21 @@ def instance_local_learning_enabled():
     scope = str(os.environ.get("SWEEPY_AUTO_LEARNING_SCOPE") or "").strip().lower()
     if scope in {"instance", "local", "instance_local"}:
         return True
-    if scope in {"shared", "shared_preset", "global"}:
+    if scope in {"shared", "shared_preset", "shared_overlay", "shared_runtime", "shared_learning", "global"}:
         return False
-    return bool(os.environ.get("SWEEPY_SHARED_RUNTIME_PATHS") and os.environ.get("SWEEPY_INSTANCE_NAME"))
+    # Dual runtimes share learned policy by default. Use
+    # SWEEPY_AUTO_LEARNING_SCOPE=instance_local only when intentionally
+    # isolating account-specific experiments.
+    return False
+
+
+def shared_learning_overlay_enabled():
+    scope = str(os.environ.get("SWEEPY_AUTO_LEARNING_SCOPE") or "").strip().lower()
+    if scope in {"shared_overlay", "shared_runtime", "shared_learning"}:
+        return True
+    if not scope and os.environ.get("SWEEPY_SHARED_RUNTIME_PATHS") and os.environ.get("SWEEPY_INSTANCE_NAME"):
+        return True
+    return False
 
 
 OPERATOR_OWNED_FALLBACK_KEYS = {
@@ -5903,6 +5928,16 @@ def resolve_effective_preset(name, base_preset=None):
     if not preset:
         return None
     if not instance_local_learning_enabled():
+        if shared_learning_overlay_enabled():
+            override = read_shared_learning_override(DIR, name)
+            if isinstance(override, dict):
+                merged = dict(preset)
+                merged.update(override)
+                for key in OPERATOR_OWNED_FALLBACK_KEYS:
+                    if key in preset:
+                        merged[key] = preset[key]
+                merged["name"] = preset.get("name") or name
+                return merged
         return preset
     override = read_instance_learning_override(DIR, name)
     if not isinstance(override, dict):
@@ -11121,7 +11156,11 @@ async def dev_version():
             "port": sweepy_bind_port(),
             "runtime_dir": str(dev_runtime_dir()),
             "dual_mode": dual_instance_mode_enabled(),
-            "auto_learning_scope": "instance_local" if instance_local_learning_enabled() else "shared_preset",
+            "auto_learning_scope": (
+                "instance_local"
+                if instance_local_learning_enabled()
+                else ("shared_overlay" if shared_learning_overlay_enabled() else "shared_preset")
+            ),
             "auth_capture_kill_game": auth_capture_kill_game_enabled(),
             "instance_device_identity": env_flag("SWEEPY_INSTANCE_DEVICE_IDENTITY", False),
         },

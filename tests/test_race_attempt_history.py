@@ -141,6 +141,29 @@ class DiagnosisIntegrationTests(unittest.TestCase):
         self.assertIn("skill_gap", result["secondary"])
         self.assertIn(200391, result["missing_skill_ids"])
 
+    def test_moderate_guts_gap_is_not_primary_when_core_stats_dominate(self):
+        """Guts is often the largest raw field gap because it is the lowest
+        build stat, but that should not become the loss cause unless the gap is
+        overwhelming."""
+        hint = {
+            "worst_stat": None,
+            "worst_stat_gap": 0,
+            "style_mismatch_suggested": False,
+            "avg_gap": {
+                "speed": -180,
+                "stamina": -120,
+                "power": -210,
+                "guts": 150,
+                "wit": -130,
+            },
+            "common_opponent_skills": [],
+        }
+        from career_bot.postmortem_feedback import _worst_stat_with_dominance_guard
+
+        worst, gap = _worst_stat_with_dominance_guard(hint["avg_gap"])
+        self.assertIsNone(worst)
+        self.assertEqual(gap, 0.0)
+
     def test_style_mismatch_never_emits_style_advice(self):
         """When stat gaps are below the 30-pt threshold and style_mismatch
         IS the primary signal, the diagnosis still returns

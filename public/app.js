@@ -21,6 +21,14 @@
                 return fallback;
             }
         }
+        function safeLocalJson(key, fallback) {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+                return parsed && typeof parsed === 'object' ? parsed : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
         function browserSlugify(value, fallback = 'planner_profile') {
             const cleaned = String(value || '')
                 .replace(/[^\w.\- ]+/g, '')
@@ -119,12 +127,32 @@ const state = {
             isEndingCareer: false,
             lastCareerCompletionToken: safeLocalGet('lastCareerCompletionToken', ''),
             favorites: loadFavoriteState(),
-            librarySearch: { decks: '', friends: '', cardBorrows: '', trainees: '', parents: '', cards: '', borrowUmas: '', teamTrials: '' },
+            librarySearch: { decks: '', friends: '', cardBorrows: '', trainees: '', parents: '', cards: '', borrowUmas: '', teamTrials: '', trainingSim: '' },
             teamTrialsData: null,
             teamTrialsLoading: false,
             teamTrialsSourceKind: '',
             teamTrialsSelectedTeamKey: '',
             teamTrialsSelectedCharacterKey: '',
+            trainingSimMeta: null,
+            trainingSimLoading: false,
+            trainingSimResult: null,
+            trainingSimSelectedCard: null,
+            trainingSimSelectedArea: 'speed',
+            trainingSimAreas: { speed: [], stamina: [], power: [], guts: [], wit: [] },
+            trainingSimNpc: { speed: 0, stamina: 0, power: 0, guts: 0, wit: 0 },
+            trainingSimScenario: safeLocalGet('trainingSimScenario', ''),
+            trainingSimLevel: Number(safeLocalGet('trainingSimLevel', '5')) || 5,
+            trainingSimMood: Number(safeLocalGet('trainingSimMood', '0.2')),
+            trainingSimGrowth: safeLocalJson('trainingSimGrowth', {}),
+            trainingSimDraftGrowth: {},
+            trainingSimMegaphonePct: Number(safeLocalGet('trainingSimMegaphonePct', '0')) || 0,
+            trainingSimWeightFacilities: {},
+            trainingSimYearEffects: safeLocalJson('trainingSimYearEffects', {}),
+            trainingSimEnforceSupportTypes: safeLocalBool('trainingSimEnforceSupportTypes', true),
+            trainingSimOvercapStat: safeLocalBool('trainingSimOvercapStat', false),
+            trainingSimOwnedOnly: safeLocalBool('trainingSimOwnedOnly', false),
+            trainingSimTypeFilter: 'all',
+            trainingSimRarityFilter: 'all',
             isSavingPreset: false,
             raceData: [],
             selectedRaces: new Set(),
@@ -255,6 +283,33 @@ const state = {
             deckList: document.getElementById('deck-list'),
             botViewRefreshBtn: document.getElementById('bot-view-refresh-btn'),
             botViewOutput: document.getElementById('bot-view-output'),
+            trainingSimScenario: document.getElementById('training-sim-scenario'),
+            trainingSimLevel: document.getElementById('training-sim-level'),
+            trainingSimMood: document.getElementById('training-sim-mood'),
+            trainingSimGrowthPreset: document.getElementById('training-sim-growth-preset'),
+            trainingSimGrowthOpen: document.getElementById('training-sim-growth-open'),
+            trainingSimGrowthSummary: document.getElementById('training-sim-growth-summary'),
+            trainingSimGrowthModal: document.getElementById('training-sim-growth-modal'),
+            trainingSimGrowthClose: document.getElementById('training-sim-growth-close'),
+            trainingSimGrowthFields: document.getElementById('training-sim-growth-fields'),
+            trainingSimGrowthSave: document.getElementById('training-sim-growth-save'),
+            trainingSimClearCards: document.getElementById('training-sim-clear-cards'),
+            trainingSimReset: document.getElementById('training-sim-reset'),
+            trainingSimMegaphones: document.getElementById('training-sim-megaphones'),
+            trainingSimWeights: document.getElementById('training-sim-weights'),
+            trainingSimOvercapStat: document.getElementById('training-sim-overcap-stat'),
+            trainingSimItemsBlock: document.getElementById('training-sim-items-block'),
+            trainingSimYearBlock: document.getElementById('training-sim-year-block'),
+            trainingSimItemSummary: document.getElementById('training-sim-item-summary'),
+            trainingSimYearEffects: document.getElementById('training-sim-year-effects'),
+            trainingSimYearEffectStatus: document.getElementById('training-sim-year-effect-status'),
+            trainingSimSupportTypeGate: document.getElementById('training-sim-support-type-gate'),
+            trainingSimStatus: document.getElementById('training-sim-status'),
+            trainingSimOwnedOnly: document.getElementById('training-sim-owned-only'),
+            trainingSimCardSearch: document.getElementById('training-sim-card-search'),
+            trainingSimFilterRow: document.getElementById('training-sim-filter-row'),
+            trainingSimCardToolbox: document.getElementById('training-sim-card-toolbox'),
+            trainingSimAreas: document.getElementById('training-sim-areas'),
             umaCount: document.getElementById('uma-count'),
             cardCount: document.getElementById('card-count'),
             parentCount: document.getElementById('parent-count'),
@@ -453,6 +508,25 @@ const state = {
             pace_chaser: 'Pace',
             late_surger: 'Late',
             end_closer: 'End'
+        };
+        const TRAINING_SIM_STATS = ['speed', 'stamina', 'power', 'guts', 'wit'];
+        const TRAINING_SIM_LABELS = {
+            speed: 'Speed',
+            stamina: 'Stamina',
+            power: 'Power',
+            guts: 'Guts',
+            wit: 'Wit',
+            sp: 'SP',
+            energy: 'Energy'
+        };
+        const TRAINING_SIM_TYPE_CLASSES = {
+            Speed: 'type-speed',
+            Stamina: 'type-stamina',
+            Power: 'type-power',
+            Guts: 'type-guts',
+            Wit: 'type-wit',
+            Pal: 'type-pal',
+            Group: 'type-pal'
         };
         function setLoadingScreen(visible) {
             if (!els.loadingScreen) return;
@@ -7058,6 +7132,650 @@ const state = {
             }
         }
 
+        let trainingSimCalcTimer = 0;
+        let trainingSimCalcSeq = 0;
+
+        function trainingSimStatLabel(stat) {
+            return TRAINING_SIM_LABELS[stat] || String(stat || '').toUpperCase();
+        }
+        function trainingSimTypeClass(type) {
+            return TRAINING_SIM_TYPE_CLASSES[type] || '';
+        }
+        function trainingSimCardId(card) {
+            return Number(card && (card.support_card_id || card.id) || 0);
+        }
+        function trainingSimDefaultAreas() {
+            return { speed: [], stamina: [], power: [], guts: [], wit: [] };
+        }
+        function trainingSimDefaultNpc() {
+            return { speed: 0, stamina: 0, power: 0, guts: 0, wit: 0 };
+        }
+        function trainingSimWeightFacilitiesArray() {
+            return TRAINING_SIM_STATS.filter(stat => state.trainingSimWeightFacilities && state.trainingSimWeightFacilities[stat]);
+        }
+        function trainingSimSelectedYearEffectIds() {
+            return Object.keys(state.trainingSimYearEffects || {}).filter(id => !!state.trainingSimYearEffects[id]);
+        }
+        function trainingSimSaveYearEffects() {
+            safeLocalSet('trainingSimYearEffects', JSON.stringify(state.trainingSimYearEffects || {}));
+        }
+        function trainingSimFindCard(cardId) {
+            const id = Number(cardId || 0);
+            return ((state.trainingSimMeta && state.trainingSimMeta.cards) || []).find(card => trainingSimCardId(card) === id) || null;
+        }
+        function trainingSimPlacementForCard(card) {
+            const id = trainingSimCardId(card);
+            const rawLb = card && (card.limit_break_count ?? card.lb);
+            const lb = Math.max(0, Math.min(4, Number(rawLb == null ? 4 : rawLb) || 0));
+            return { support_card_id: id, lb: card && card.owned ? lb : 4 };
+        }
+        function trainingSimRemoveCardEverywhere(cardId) {
+            const id = Number(cardId || 0);
+            TRAINING_SIM_STATS.forEach(stat => {
+                state.trainingSimAreas[stat] = (state.trainingSimAreas[stat] || []).filter(row => Number(row.support_card_id || row.id || 0) !== id);
+            });
+        }
+        function trainingSimSelectedScenario() {
+            return (els.trainingSimScenario && els.trainingSimScenario.value) || state.trainingSimScenario || (state.trainingSimMeta && state.trainingSimMeta.default_scenario) || 'mant_base';
+        }
+        function trainingSimSelectedScenarioRow() {
+            const selected = String(trainingSimSelectedScenario() || '');
+            return ((state.trainingSimMeta && state.trainingSimMeta.scenarios) || []).find(row => String(row.selector) === selected) || null;
+        }
+        function trainingSimScenarioGimmicks() {
+            const row = trainingSimSelectedScenarioRow();
+            if (row && Array.isArray(row.gimmicks)) return new Set(row.gimmicks);
+            const selected = String(trainingSimSelectedScenario() || '');
+            const fallback = { mant_base: ['items'], '1': ['year_effects'] };
+            return new Set(fallback[selected] || []);
+        }
+        function trainingSimApplyGimmickVisibility() {
+            const gimmicks = trainingSimScenarioGimmicks();
+            if (els.trainingSimItemsBlock) els.trainingSimItemsBlock.hidden = !gimmicks.has('items');
+            if (els.trainingSimYearBlock) els.trainingSimYearBlock.hidden = !gimmicks.has('year_effects');
+        }
+        function trainingSimSelectedMood() {
+            const value = Number((els.trainingSimMood && els.trainingSimMood.value) || state.trainingSimMood || 0);
+            return Number.isFinite(value) ? value : 0;
+        }
+        function trainingSimSelectedLevel() {
+            const value = Number((els.trainingSimLevel && els.trainingSimLevel.value) || state.trainingSimLevel || 5);
+            return Math.max(1, Math.min(5, Number.isFinite(value) ? value : 5));
+        }
+        function trainingSimNormalizeGrowth(raw) {
+            const out = {};
+            TRAINING_SIM_STATS.forEach(stat => {
+                const n = Number(raw && raw[stat] != null ? raw[stat] : 0);
+                if (Number.isFinite(n) && n !== 0) out[stat] = Math.max(0, Math.min(30, n));
+            });
+            return out;
+        }
+        function trainingSimGrowthEquals(a, b) {
+            const left = trainingSimNormalizeGrowth(a);
+            const right = trainingSimNormalizeGrowth(b);
+            return TRAINING_SIM_STATS.every(stat => Number(left[stat] || 0) === Number(right[stat] || 0));
+        }
+        function trainingSimSaveGrowth() {
+            safeLocalSet('trainingSimGrowth', JSON.stringify(trainingSimNormalizeGrowth(state.trainingSimGrowth || {})));
+        }
+        function trainingSimSetGrowth(next, persist = true) {
+            state.trainingSimGrowth = trainingSimNormalizeGrowth(next || {});
+            if (persist) trainingSimSaveGrowth();
+        }
+        function trainingSimGrowthSummaryText(growth) {
+            const normalized = trainingSimNormalizeGrowth(growth || {});
+            const parts = TRAINING_SIM_STATS
+                .filter(stat => Number(normalized[stat] || 0) !== 0)
+                .map(stat => `${TRAINING_SIM_LABELS[stat]} +${Number(normalized[stat])}%`);
+            return parts.length ? parts.join(' / ') : 'None';
+        }
+        function trainingSimCurrentGrowth() {
+            const growth = trainingSimNormalizeGrowth(state.trainingSimGrowth || {});
+            state.trainingSimGrowth = growth;
+            return { ...growth };
+        }
+        function trainingSimRenderGrowthControls() {
+            const rows = ((state.trainingSimMeta || {}).growth_presets || []);
+            const growth = trainingSimCurrentGrowth();
+            const current = rows.findIndex(row => trainingSimGrowthEquals(row.growth || {}, growth));
+            if (els.trainingSimGrowthPreset) {
+                els.trainingSimGrowthPreset.innerHTML = [
+                    ...rows.map((row, idx) => `<option value="${idx}">${escapeHtml(row.label)}</option>`),
+                    '<option value="custom">Custom</option>'
+                ].join('');
+                els.trainingSimGrowthPreset.value = current >= 0 ? String(current) : 'custom';
+            }
+            if (els.trainingSimGrowthSummary) els.trainingSimGrowthSummary.textContent = trainingSimGrowthSummaryText(growth);
+        }
+        function trainingSimRenderGrowthModal() {
+            if (!els.trainingSimGrowthFields) return;
+            const draft = trainingSimNormalizeGrowth(state.trainingSimDraftGrowth || state.trainingSimGrowth || {});
+            state.trainingSimDraftGrowth = draft;
+            els.trainingSimGrowthFields.innerHTML = TRAINING_SIM_STATS.map(stat => `
+                <div class="training-sim-growth-row">
+                    <label class="stat-${stat}" for="training-sim-growth-input-${stat}">${escapeHtml(TRAINING_SIM_LABELS[stat])}</label>
+                    <input id="training-sim-growth-input-${stat}" type="number" min="0" max="30" step="1" value="${escapeAttr(Number(draft[stat] || 0))}" data-training-sim-growth-modal-stat="${escapeAttr(stat)}">
+                    <span>%</span>
+                </div>
+            `).join('');
+        }
+        function trainingSimOpenGrowthModal() {
+            if (!els.trainingSimGrowthModal) return;
+            state.trainingSimDraftGrowth = trainingSimNormalizeGrowth(state.trainingSimGrowth || {});
+            trainingSimRenderGrowthModal();
+            els.trainingSimGrowthModal.hidden = false;
+            const first = els.trainingSimGrowthModal.querySelector('[data-training-sim-growth-modal-stat]');
+            if (first) first.focus();
+        }
+        function trainingSimCloseGrowthModal() {
+            if (els.trainingSimGrowthModal) els.trainingSimGrowthModal.hidden = true;
+        }
+        function trainingSimSaveGrowthModal() {
+            const next = {};
+            if (els.trainingSimGrowthFields) {
+                els.trainingSimGrowthFields.querySelectorAll('[data-training-sim-growth-modal-stat]').forEach(input => {
+                    next[input.dataset.trainingSimGrowthModalStat] = Number(input.value || 0) || 0;
+                });
+            }
+            trainingSimSetGrowth(next);
+            trainingSimRenderGrowthControls();
+            trainingSimCloseGrowthModal();
+            scheduleTrainingSimCalculation();
+        }
+        function trainingSimSyncItemSummary() {
+            if (!els.trainingSimItemSummary) return;
+            const gimmicks = trainingSimScenarioGimmicks();
+            const overcap = state.trainingSimOvercapStat ? ' | Trained stat over 1200: primary gain halved' : '';
+            if (!gimmicks.has('items')) {
+                els.trainingSimItemSummary.textContent = `No shop items in this scenario${overcap}`;
+                return;
+            }
+            const weightCount = trainingSimWeightFacilitiesArray().length;
+            const selected = Number(state.trainingSimMegaphonePct || 0) + (weightCount ? 50 : 0);
+            const other = Number(state.trainingSimMegaphonePct || 0);
+            els.trainingSimItemSummary.textContent = `Selected Facility Bonus: +${selected}% | Other Facilities Bonus: +${other}%${overcap}`;
+        }
+        function trainingSimPayload() {
+            const gimmicks = trainingSimScenarioGimmicks();
+            const hasItems = gimmicks.has('items');
+            const hasYear = gimmicks.has('year_effects');
+            return {
+                scenario: trainingSimSelectedScenario(),
+                facility_level: trainingSimSelectedLevel(),
+                mood: trainingSimSelectedMood(),
+                growth: trainingSimCurrentGrowth(),
+                areas: state.trainingSimAreas || trainingSimDefaultAreas(),
+                npc_counts: state.trainingSimNpc || trainingSimDefaultNpc(),
+                megaphone_bonus_pct: hasItems ? Number(state.trainingSimMegaphonePct || 0) : 0,
+                weight_training_pct: 50,
+                weight_energy_pct: 20,
+                weight_facilities: hasItems ? trainingSimWeightFacilitiesArray() : [],
+                active_scenario_effects: [],
+                year_effect_ids: hasYear ? trainingSimSelectedYearEffectIds() : [],
+                enforce_support_type_condition: !!state.trainingSimEnforceSupportTypes,
+                trained_stat_over_1200: !!state.trainingSimOvercapStat,
+                bonded: true
+            };
+        }
+        function trainingSimGainValue(gains, key) {
+            const value = Number((gains || {})[key] || 0);
+            return Number.isFinite(value) ? value : 0;
+        }
+        function trainingSimFormatGain(value, key = '') {
+            const n = Number(value || 0);
+            if (key === 'energy') return n > 0 ? `+${n}` : String(n);
+            return n >= 0 ? `+${n}` : String(n);
+        }
+        function trainingSimGainClass(value, key = '') {
+            const n = Number(value || 0);
+            if (key === 'energy') return n < 0 ? 'is-cost' : n > 0 ? 'is-positive' : '';
+            return n > 0 ? 'is-positive' : n < 0 ? 'is-cost' : '';
+        }
+        function trainingSimRenderControls() {
+            const meta = state.trainingSimMeta || {};
+            if (els.trainingSimScenario) {
+                const rows = meta.scenarios || [];
+                const selected = state.trainingSimScenario || meta.default_scenario || 'mant_base';
+                els.trainingSimScenario.innerHTML = rows.map(row => `<option value="${escapeAttr(row.selector)}">${escapeHtml(row.name || row.selector)}</option>`).join('');
+                els.trainingSimScenario.value = rows.some(row => String(row.selector) === String(selected)) ? selected : (meta.default_scenario || 'mant_base');
+                state.trainingSimScenario = els.trainingSimScenario.value;
+            }
+            if (els.trainingSimLevel) els.trainingSimLevel.value = String(trainingSimSelectedLevel());
+            if (els.trainingSimMood) {
+                const rows = meta.moods || [];
+                els.trainingSimMood.innerHTML = rows.map(row => `<option value="${escapeAttr(row.value)}">${escapeHtml(row.label)}</option>`).join('');
+                els.trainingSimMood.value = String(state.trainingSimMood);
+            }
+            if (els.trainingSimGrowthPreset) {
+                trainingSimRenderGrowthControls();
+            }
+            if (els.trainingSimMegaphones) {
+                const rows = ((meta.item_options || {}).megaphones || []);
+                els.trainingSimMegaphones.innerHTML = rows.map(row => `
+                    <button class="training-sim-chip ${Number(row.value) === Number(state.trainingSimMegaphonePct || 0) ? 'is-active' : ''}" type="button" data-training-sim-megaphone="${escapeAttr(row.value)}">${escapeHtml(row.label)}</button>
+                `).join('');
+            }
+            if (els.trainingSimWeights) {
+                els.trainingSimWeights.innerHTML = TRAINING_SIM_STATS.filter(stat => stat !== 'wit').map(stat => `
+                    <button class="training-sim-chip training-sim-chip-stat ${state.trainingSimWeightFacilities[stat] ? 'is-active' : ''}" type="button" data-training-sim-weight="${stat}">
+                        ${escapeHtml(trainingSimStatLabel(stat))} Weight
+                    </button>
+                `).join('');
+            }
+            if (els.trainingSimOvercapStat) {
+                els.trainingSimOvercapStat.classList.toggle('is-active', !!state.trainingSimOvercapStat);
+            }
+            if (els.trainingSimOwnedOnly) els.trainingSimOwnedOnly.checked = !!state.trainingSimOwnedOnly;
+            if (els.trainingSimSupportTypeGate) els.trainingSimSupportTypeGate.checked = !!state.trainingSimEnforceSupportTypes;
+            trainingSimApplyGimmickVisibility();
+            trainingSimSyncItemSummary();
+            trainingSimRenderYearEffects();
+        }
+        function trainingSimRenderYearEffects() {
+            if (!els.trainingSimYearEffects) return;
+            const meta = state.trainingSimMeta || {};
+            const result = state.trainingSimResult || {};
+            const skippedIds = new Set((result.year_effects_skipped || []).map(row => String(row.id || '')));
+            const activeIds = new Set(trainingSimSelectedYearEffectIds());
+            const groups = meta.year_effects || [];
+            els.trainingSimYearEffects.innerHTML = groups.map(group => {
+                const effects = group.effects || [];
+                const buttons = effects.map(effect => {
+                    const id = String(effect.id || '');
+                    const active = activeIds.has(id);
+                    const blocked = active && skippedIds.has(id);
+                    const gated = !!effect.requires_four_support_types;
+                    return `
+                        <button class="training-sim-effect-chip ${active ? 'is-active' : ''} ${blocked ? 'is-blocked' : ''}" type="button" data-training-sim-year-effect="${escapeAttr(id)}">
+                            <span class="training-sim-effect-chip-title">${escapeHtml(effect.label || id)}</span>
+                            <span class="training-sim-effect-chip-detail">${escapeHtml(effect.detail || '')}</span>
+                            ${gated ? '<span class="training-sim-effect-chip-gate">4 types</span>' : ''}
+                        </button>
+                    `;
+                }).join('');
+                return `
+                    <div class="training-sim-year-group">
+                        <div class="training-sim-year-heading">${escapeHtml(group.year || 'Year')}</div>
+                        <div class="training-sim-year-chip-grid">${buttons}</div>
+                    </div>
+                `;
+            }).join('') || '<div class="training-sim-empty">No scenario bonus data loaded.</div>';
+            if (els.trainingSimYearEffectStatus) {
+                const typeCount = Number(result.support_type_count || 0);
+                const types = (result.support_types || []).join(', ') || 'none placed';
+                const activeCount = (result.year_effects_active || []).length;
+                const skippedCount = (result.year_effects_skipped || []).length;
+                const gate = state.trainingSimEnforceSupportTypes ? `4-type gate on (${typeCount}/4: ${types})` : `4-type gate off (${typeCount} types: ${types})`;
+                els.trainingSimYearEffectStatus.textContent = `${gate} | active ${activeCount}, skipped ${skippedCount}`;
+            }
+        }
+        function trainingSimRenderFilters() {
+            if (!els.trainingSimFilterRow) return;
+            const typeOptions = ['all', 'Speed', 'Stamina', 'Power', 'Guts', 'Wit', 'Pal', 'Group'];
+            const rarityOptions = ['all', 'SSR', 'SR', 'R'];
+            const makeChip = (kind, value, active) => `
+                <button class="training-sim-chip ${active ? 'is-active' : ''}" type="button" data-training-sim-filter="${kind}" data-value="${escapeAttr(value)}">${escapeHtml(value === 'all' ? 'All' : value)}</button>
+            `;
+            els.trainingSimFilterRow.innerHTML = `
+                <div class="training-sim-chip-group">${typeOptions.map(value => makeChip('type', value, state.trainingSimTypeFilter === value)).join('')}</div>
+                <div class="training-sim-chip-group">${rarityOptions.map(value => makeChip('rarity', value, state.trainingSimRarityFilter === value)).join('')}</div>
+            `;
+        }
+        function trainingSimFilteredCards() {
+            const meta = state.trainingSimMeta || {};
+            const query = String(state.librarySearch.trainingSim || '').trim().toLowerCase();
+            return (meta.cards || []).filter(card => {
+                if (state.trainingSimOwnedOnly && !card.owned) return false;
+                if (state.trainingSimTypeFilter !== 'all' && String(card.type || '') !== state.trainingSimTypeFilter) return false;
+                if (state.trainingSimRarityFilter !== 'all' && String(card.rarity || '') !== state.trainingSimRarityFilter) return false;
+                if (!query) return true;
+                const haystack = [card.support_card_id, card.id, card.name, card.type, card.rarity].join(' ').toLowerCase();
+                return haystack.includes(query);
+            }).sort((a, b) =>
+                // Default order matches GameTora: newest released cards first.
+                // Unknown release dates sink, and cards on the same banner day
+                // tie-break by newest card id first.
+                (Number(b.release_ts || 0) - Number(a.release_ts || 0))
+                || (Number(b.support_card_id || 0) - Number(a.support_card_id || 0))
+            );
+        }
+        function trainingSimRenderCardToolbox() {
+            if (!els.trainingSimCardToolbox) return;
+            const cards = trainingSimFilteredCards();
+            if (els.trainingSimStatus) {
+                const meta = state.trainingSimMeta || {};
+                els.trainingSimStatus.textContent = `${cards.length} shown / ${(meta.cards || []).length || 0} cards${meta.owned_count ? `, ${meta.owned_count} owned` : ''}`;
+            }
+            els.trainingSimCardToolbox.innerHTML = cards.map(card => {
+                const id = trainingSimCardId(card);
+                const active = state.trainingSimSelectedCard && trainingSimCardId(state.trainingSimSelectedCard) === id;
+                const owned = card.owned ? `LB${Number(card.limit_break_count || 0)}` : 'catalog';
+                const releaseDate = card.release_date ? `<span class="training-sim-card-date">${escapeHtml(card.release_date)}</span>` : '';
+                return `
+                    <button class="training-sim-card ${trainingSimTypeClass(card.type)} ${active ? 'is-selected' : ''}" type="button" data-card-id="${id}"
+                        title="${escapeAttr(card.name || `Support ${id}`)}${card.release_date ? ` - released ${escapeAttr(card.release_date)}` : ''}">
+                        <img src="/api/images/${id}.png" onerror="hideBrokenImage(this)">
+                        <span class="training-sim-card-name">${escapeHtml(card.name || `Support ${id}`)}</span>
+                        <span class="training-sim-card-meta">${escapeHtml(card.rarity || '?')} · ${escapeHtml(card.type || '?')} · ${escapeHtml(owned)}</span>
+                        ${releaseDate}
+                    </button>
+                `;
+            }).join('') || '<div class="training-sim-empty">No matching support cards.</div>';
+        }
+        function trainingSimRenderAreas() {
+            if (!els.trainingSimAreas) return;
+            const result = state.trainingSimResult || {};
+            const areas = result.areas || {};
+            els.trainingSimAreas.innerHTML = TRAINING_SIM_STATS.map(stat => {
+                const area = areas[stat] || {};
+                const cards = state.trainingSimAreas[stat] || [];
+                const npc = Number((state.trainingSimNpc || {})[stat] || 0);
+                const total = area.total_gains || {};
+                const base = area.base_gains || {};
+                const scenario = area.scenario_bonus || {};
+                const isSelected = state.trainingSimSelectedArea === stat;
+                const placedCards = cards.map(row => {
+                    const card = trainingSimFindCard(row.support_card_id) || row;
+                    const id = Number(row.support_card_id || row.id || 0);
+                    return `
+                        <button class="training-sim-placed-card ${trainingSimTypeClass(card.type)}" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">
+                            <img src="/api/images/${id}.png" onerror="hideBrokenImage(this)">
+                            <span>${escapeHtml(card.name || `Support ${id}`)}</span>
+                        </button>
+                    `;
+                }).join('');
+                const gainRows = ['speed', 'stamina', 'power', 'guts', 'wit', 'sp', 'energy'].map(key => {
+                    const value = trainingSimGainValue(total, key);
+                    if (!value && !['sp', 'energy'].includes(key)) return '';
+                    return `
+                        <div class="training-sim-gain-row">
+                            <span>${escapeHtml(trainingSimStatLabel(key))}</span>
+                            <strong class="${trainingSimGainClass(value, key)}">${trainingSimFormatGain(value, key)}</strong>
+                        </div>
+                    `;
+                }).join('');
+                const baseSummary = ['speed', 'stamina', 'power', 'guts', 'wit', 'sp']
+                    .map(key => trainingSimGainValue(base, key))
+                    .filter(Boolean)
+                    .join(' / ');
+                const scenarioDelta = Object.values(scenario).reduce((sum, value) => sum + Math.abs(Number(value || 0)), 0);
+                return `
+                    <div class="training-sim-area ${trainingSimTypeClass(trainingSimStatLabel(stat))} ${isSelected ? 'is-selected' : ''}" data-training-area="${stat}">
+                        <div class="training-sim-area-head">
+                            <span>${escapeHtml(trainingSimStatLabel(stat))}</span>
+                            <b>${cards.length + npc}/6</b>
+                        </div>
+                        <div class="training-sim-drop-zone">
+                            ${placedCards || '<div class="training-sim-drop-hint">Drop cards or click for NPC</div>'}
+                            ${npc ? `<div class="training-sim-npc-pill">${npc} NPC${npc === 1 ? '' : 's'}</div>` : ''}
+                        </div>
+                        <div class="training-sim-area-actions">
+                            <button class="btn btn-xs" type="button" data-npc-delta="-1" data-area="${stat}">- NPC</button>
+                            <button class="btn btn-xs" type="button" data-npc-delta="1" data-area="${stat}">+ NPC</button>
+                            <button class="btn btn-xs" type="button" data-clear-area="${stat}">Clear</button>
+                        </div>
+                        <div class="training-sim-gains">${gainRows}</div>
+                        <div class="training-sim-breakdown">
+                            Base ${escapeHtml(baseSummary || '0')}${scenarioDelta ? ` · Scenario adj ${escapeHtml(String(scenarioDelta))}` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        function trainingSimRenderAll() {
+            trainingSimRenderControls();
+            trainingSimRenderFilters();
+            trainingSimRenderCardToolbox();
+            trainingSimRenderAreas();
+        }
+        async function calculateTrainingSimNow() {
+            if (!state.trainingSimMeta || !els.trainingSimAreas) return;
+            const seq = ++trainingSimCalcSeq;
+            try {
+                const data = await apiJson('/api/training-sim/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(trainingSimPayload())
+                });
+                if (seq !== trainingSimCalcSeq) return;
+                if (!data || !data.success) throw new Error((data && data.detail) || 'Training sim calculation failed');
+                state.trainingSimResult = data;
+                trainingSimRenderYearEffects();
+                trainingSimRenderAreas();
+            } catch (e) {
+                if (els.trainingSimStatus) els.trainingSimStatus.textContent = `Calculation failed: ${e.message || e}`;
+            }
+        }
+        function scheduleTrainingSimCalculation() {
+            if (trainingSimCalcTimer) window.clearTimeout(trainingSimCalcTimer);
+            trainingSimCalcTimer = window.setTimeout(calculateTrainingSimNow, 80);
+        }
+        async function loadTrainingSimMeta(force = false) {
+            if (state.trainingSimLoading) return;
+            if (state.trainingSimMeta && !force) {
+                trainingSimRenderAll();
+                scheduleTrainingSimCalculation();
+                return;
+            }
+            state.trainingSimLoading = true;
+            if (els.trainingSimStatus) els.trainingSimStatus.textContent = 'Loading training sim data...';
+            try {
+                const data = await apiJson('/api/training-sim/meta?t=' + Date.now());
+                if (!data || !data.success) throw new Error((data && data.detail) || 'Training sim meta failed');
+                state.trainingSimMeta = data;
+                if (!state.trainingSimScenario) state.trainingSimScenario = data.default_scenario || 'mant_base';
+                trainingSimRenderAll();
+                scheduleTrainingSimCalculation();
+            } catch (e) {
+                if (els.trainingSimStatus) els.trainingSimStatus.textContent = `Training sim unavailable: ${e.message || e}`;
+            } finally {
+                state.trainingSimLoading = false;
+            }
+        }
+        function bindTrainingSimHandlers() {
+            if (bindTrainingSimHandlers.bound) return;
+            bindTrainingSimHandlers.bound = true;
+            if (els.trainingSimScenario) {
+                els.trainingSimScenario.addEventListener('change', () => {
+                    state.trainingSimScenario = els.trainingSimScenario.value || '';
+                    safeLocalSet('trainingSimScenario', state.trainingSimScenario);
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimLevel) {
+                els.trainingSimLevel.addEventListener('change', () => {
+                    state.trainingSimLevel = trainingSimSelectedLevel();
+                    safeLocalSet('trainingSimLevel', state.trainingSimLevel);
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimMood) {
+                els.trainingSimMood.addEventListener('change', () => {
+                    state.trainingSimMood = trainingSimSelectedMood();
+                    safeLocalSet('trainingSimMood', state.trainingSimMood);
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimGrowthPreset) {
+                els.trainingSimGrowthPreset.addEventListener('change', () => {
+                    if (els.trainingSimGrowthPreset.value === 'custom') return;
+                    const idx = Number(els.trainingSimGrowthPreset.value || 0);
+                    const row = ((state.trainingSimMeta || {}).growth_presets || [])[idx] || {};
+                    trainingSimSetGrowth(row.growth || {});
+                    trainingSimRenderGrowthControls();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimGrowthOpen) els.trainingSimGrowthOpen.addEventListener('click', trainingSimOpenGrowthModal);
+            if (els.trainingSimGrowthClose) els.trainingSimGrowthClose.addEventListener('click', trainingSimCloseGrowthModal);
+            if (els.trainingSimGrowthSave) els.trainingSimGrowthSave.addEventListener('click', trainingSimSaveGrowthModal);
+            if (els.trainingSimGrowthModal) {
+                els.trainingSimGrowthModal.addEventListener('click', event => {
+                    if (event.target === els.trainingSimGrowthModal) trainingSimCloseGrowthModal();
+                });
+                els.trainingSimGrowthModal.addEventListener('keydown', event => {
+                    if (event.key === 'Escape') trainingSimCloseGrowthModal();
+                    if (event.key === 'Enter' && event.target && event.target.matches('[data-training-sim-growth-modal-stat]')) trainingSimSaveGrowthModal();
+                });
+            }
+            if (els.trainingSimCardSearch) {
+                els.trainingSimCardSearch.addEventListener('input', () => {
+                    state.librarySearch.trainingSim = els.trainingSimCardSearch.value || '';
+                    trainingSimRenderCardToolbox();
+                });
+            }
+            if (els.trainingSimOwnedOnly) {
+                els.trainingSimOwnedOnly.addEventListener('change', () => {
+                    state.trainingSimOwnedOnly = !!els.trainingSimOwnedOnly.checked;
+                    safeLocalSet('trainingSimOwnedOnly', state.trainingSimOwnedOnly ? '1' : '0');
+                    trainingSimRenderCardToolbox();
+                });
+            }
+            if (els.trainingSimClearCards) {
+                els.trainingSimClearCards.addEventListener('click', () => {
+                    state.trainingSimAreas = trainingSimDefaultAreas();
+                    scheduleTrainingSimCalculation();
+                    trainingSimRenderAll();
+                });
+            }
+            if (els.trainingSimReset) {
+                els.trainingSimReset.addEventListener('click', () => {
+                    state.trainingSimAreas = trainingSimDefaultAreas();
+                    state.trainingSimNpc = trainingSimDefaultNpc();
+                    state.trainingSimSelectedCard = null;
+                    state.trainingSimMegaphonePct = 0;
+                    state.trainingSimWeightFacilities = {};
+                    state.trainingSimYearEffects = {};
+                    state.trainingSimOvercapStat = false;
+                    trainingSimSetGrowth({});
+                    safeLocalSet('trainingSimMegaphonePct', '0');
+                    safeLocalSet('trainingSimOvercapStat', '0');
+                    trainingSimSaveYearEffects();
+                    trainingSimRenderAll();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimMegaphones) {
+                els.trainingSimMegaphones.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-training-sim-megaphone]');
+                    if (!btn) return;
+                    state.trainingSimMegaphonePct = Number(btn.dataset.trainingSimMegaphone || 0) || 0;
+                    safeLocalSet('trainingSimMegaphonePct', state.trainingSimMegaphonePct);
+                    trainingSimRenderControls();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimWeights) {
+                els.trainingSimWeights.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-training-sim-weight]');
+                    if (!btn) return;
+                    const stat = btn.dataset.trainingSimWeight;
+                    state.trainingSimWeightFacilities[stat] = !state.trainingSimWeightFacilities[stat];
+                    trainingSimRenderControls();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimOvercapStat) {
+                els.trainingSimOvercapStat.addEventListener('click', () => {
+                    state.trainingSimOvercapStat = !state.trainingSimOvercapStat;
+                    safeLocalSet('trainingSimOvercapStat', state.trainingSimOvercapStat ? '1' : '0');
+                    trainingSimRenderControls();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimSupportTypeGate) {
+                els.trainingSimSupportTypeGate.addEventListener('change', () => {
+                    state.trainingSimEnforceSupportTypes = !!els.trainingSimSupportTypeGate.checked;
+                    safeLocalSet('trainingSimEnforceSupportTypes', state.trainingSimEnforceSupportTypes ? '1' : '0');
+                    trainingSimRenderYearEffects();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimYearEffects) {
+                els.trainingSimYearEffects.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-training-sim-year-effect]');
+                    if (!btn) return;
+                    const id = btn.dataset.trainingSimYearEffect || '';
+                    if (!id) return;
+                    state.trainingSimYearEffects[id] = !state.trainingSimYearEffects[id];
+                    if (!state.trainingSimYearEffects[id]) delete state.trainingSimYearEffects[id];
+                    trainingSimSaveYearEffects();
+                    trainingSimRenderYearEffects();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+            if (els.trainingSimFilterRow) {
+                els.trainingSimFilterRow.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-training-sim-filter]');
+                    if (!btn) return;
+                    const kind = btn.dataset.trainingSimFilter;
+                    const value = btn.dataset.value || 'all';
+                    if (kind === 'type') state.trainingSimTypeFilter = value;
+                    if (kind === 'rarity') state.trainingSimRarityFilter = value;
+                    trainingSimRenderFilters();
+                    trainingSimRenderCardToolbox();
+                });
+            }
+            if (els.trainingSimCardToolbox) {
+                els.trainingSimCardToolbox.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-card-id]');
+                    if (!btn) return;
+                    state.trainingSimSelectedCard = trainingSimFindCard(btn.dataset.cardId);
+                    trainingSimRenderCardToolbox();
+                });
+            }
+            if (els.trainingSimAreas) {
+                els.trainingSimAreas.addEventListener('click', event => {
+                    const removeBtn = event.target.closest('[data-remove-card-id]');
+                    if (removeBtn) {
+                        trainingSimRemoveCardEverywhere(removeBtn.dataset.removeCardId);
+                        trainingSimRenderAreas();
+                        scheduleTrainingSimCalculation();
+                        return;
+                    }
+                    const npcBtn = event.target.closest('[data-npc-delta]');
+                    if (npcBtn) {
+                        const stat = npcBtn.dataset.area;
+                        const delta = Number(npcBtn.dataset.npcDelta || 0);
+                        const cards = (state.trainingSimAreas[stat] || []).length;
+                        const current = Number((state.trainingSimNpc || {})[stat] || 0);
+                        state.trainingSimNpc[stat] = Math.max(0, Math.min(6 - cards, current + delta));
+                        trainingSimRenderAreas();
+                        scheduleTrainingSimCalculation();
+                        return;
+                    }
+                    const clearBtn = event.target.closest('[data-clear-area]');
+                    if (clearBtn) {
+                        const stat = clearBtn.dataset.clearArea;
+                        state.trainingSimAreas[stat] = [];
+                        state.trainingSimNpc[stat] = 0;
+                        trainingSimRenderAreas();
+                        scheduleTrainingSimCalculation();
+                        return;
+                    }
+                    const area = event.target.closest('[data-training-area]');
+                    if (!area) return;
+                    const stat = area.dataset.trainingArea;
+                    state.trainingSimSelectedArea = stat;
+                    if (state.trainingSimSelectedCard) {
+                        const placement = trainingSimPlacementForCard(state.trainingSimSelectedCard);
+                        trainingSimRemoveCardEverywhere(placement.support_card_id);
+                        const current = state.trainingSimAreas[stat] || [];
+                        const npc = Number((state.trainingSimNpc || {})[stat] || 0);
+                        if (current.length + npc < 6) current.push(placement);
+                        state.trainingSimAreas[stat] = current;
+                    } else {
+                        const current = Number((state.trainingSimNpc || {})[stat] || 0);
+                        const cards = (state.trainingSimAreas[stat] || []).length;
+                        state.trainingSimNpc[stat] = Math.max(0, Math.min(6 - cards, current + 1));
+                    }
+                    trainingSimRenderAreas();
+                    scheduleTrainingSimCalculation();
+                });
+            }
+        }
+        bindTrainingSimHandlers();
+
         /* ---------- Library rail switching ---------- */
         function bindLibraryRail() {
             const rail = document.getElementById('lib-rail');
@@ -7075,10 +7793,11 @@ const state = {
             document.querySelectorAll('.lib-rail .rail-item').forEach(b => b.classList.toggle('active', b.getAttribute('data-cat') === cat));
             document.querySelectorAll('.lib-content .lib-pane').forEach(p => p.classList.toggle('active', p.getAttribute('data-pane') === cat));
             if (cat === 'session' && typeof renderSessionParentsRetuned === 'function') renderSessionParentsRetuned();
+            if (cat === 'training-sim') loadTrainingSimMeta();
             const label = document.getElementById('lib-current-label');
             if (label) {
                 const counts = retuned.lastCounts || {};
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW'})[cat] || cat.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', 'training-sim':'TRAINING SIM', bot:'BOT VIEW'})[cat] || cat.toUpperCase();
                 const n = counts[cat];
                 label.innerText = n != null ? `${name} · ${n}` : name;
             }
@@ -7092,7 +7811,8 @@ const state = {
                 borrow: null,
                 'card-borrow': (dashData && dashData.friends ? dashData.friends.length : null),
                 friends: null,
-                cards: (dashData && dashData.supports ? dashData.supports.length : null)
+                cards: (dashData && dashData.supports ? dashData.supports.length : null),
+                'training-sim': null
             };
             if (dashData && dashData.friendsList) counts.friends = dashData.friendsList.length;
             if (dashData && dashData.borrowQuota) counts.borrow = `${dashData.borrowQuota.remaining}/${dashData.borrowQuota.max}`;
@@ -7107,7 +7827,7 @@ const state = {
             });
             const label = document.getElementById('lib-current-label');
             if (label && counts[retuned.currentPane] != null) {
-                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', bot:'BOT VIEW'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
+                const name = ({decks:'DECKS', trainees:'TRAINEES', parents:'PARENTS', session:'SESSION PARENTS', borrow:'BORROW', 'card-borrow':'CARD BORROW', friends:'FRIENDS', cards:'OWNED CARDS', 'training-sim':'TRAINING SIM', bot:'BOT VIEW'})[retuned.currentPane] || retuned.currentPane.toUpperCase();
                 label.innerText = `${name} · ${counts[retuned.currentPane]}`;
             }
         }

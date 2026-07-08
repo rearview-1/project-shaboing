@@ -42,6 +42,10 @@
                     <span>Growth</span>
                     <select id="training-sim-growth-preset"></select>
                 </label>
+                <button id="training-sim-growth-open" class="training-sim-growth-open" type="button">
+                    <span>Growth Rates</span>
+                    <strong id="training-sim-growth-summary">None</strong>
+                </button>
                 <button id="training-sim-overcap-stat" class="training-sim-chip training-sim-overcap-chip" type="button" title="Trained stat over 1200: primary gain halved">Stat over 1200</button>
                 <div class="training-sim-topbar-actions">
                     <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
@@ -117,6 +121,17 @@
             </div>
         </div>
     </main>
+    <div id="training-sim-growth-modal" class="training-sim-growth-modal-overlay" hidden>
+        <div class="training-sim-growth-modal" role="dialog" aria-modal="true" aria-labelledby="training-sim-growth-title">
+            <div class="training-sim-growth-modal-head">
+                <h2 id="training-sim-growth-title">Growth Rates</h2>
+                <button id="training-sim-growth-close" class="training-sim-growth-close" type="button" aria-label="Close growth rates">&times;</button>
+            </div>
+            <p>Set the Uma's growth rate for each stat (0-30%).</p>
+            <div id="training-sim-growth-fields" class="training-sim-growth-fields"></div>
+            <button id="training-sim-growth-save" class="training-sim-growth-save" type="button">Save</button>
+        </div>
+    </div>
     <script src="/training_sim.js"></script>
 </body>
 </html>

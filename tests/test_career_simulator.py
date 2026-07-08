@@ -131,6 +131,34 @@ def test_simulator_emits_synthetic_hakuraku_race_payload():
     assert sim.races_run[0]["hakuraku_payload"] is payload
 
 
+def test_simulator_g1_clean_record_retry_floor_matches_runner():
+    preset = dict(
+        _make_preset(),
+        clock_use_limit=0,
+        scheduled_race_clean_record_mode=True,
+        g1_race_continue_enabled=True,
+        g1_race_continue_min_limit=5,
+    )
+    sim = CareerSimulator(preset=preset, seed=42)
+    sim.state["turn"] = 44
+    calls = {"count": 0}
+
+    def forced_loss_then_win(*_args, **_kwargs):
+        calls["count"] += 1
+        prob = 0.0 if calls["count"] == 1 else 1.0
+        return prob, {"model": "forced_test", "win_probability": prob}
+
+    sim._race_probability_estimate = forced_loss_then_win
+
+    won, _sp_reward = sim._simulate_race(168, "Kikuka Sho", "Long", "classic")
+
+    assert won is True
+    assert sim.race_continues_used == 1
+    assert sim.races_run[-1]["continued"] is True
+    assert sim.races_run[-1]["continue_attempts"] == 1
+    assert sim.races_run[-1]["finish_rank"] == 1
+
+
 def test_manual_race_threshold_applies_hidden_bonus_to_trainee_only():
     sim = CareerSimulator(preset=_make_preset(), seed=42)
     pid = 999991

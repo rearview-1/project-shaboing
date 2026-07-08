@@ -803,6 +803,12 @@ class SkillBuyer:
         gate_enabled = bool((preset or {}).get("pre_race_winprob_gate_enabled", True))
         target_prob = float((preset or {}).get("pre_race_target_win_probability", 0.93))
         gate_min_save_sp = _as_int((preset or {}).get("pre_race_winprob_gate_min_save_sp"), 1200)
+        race_grade = str((race_check or {}).get("grade") or "").strip().upper()
+        if race_grade == "G1":
+            target_prob = max(
+                target_prob,
+                float((preset or {}).get("pre_race_g1_target_win_probability", 0.985)),
+            )
         if gate_enabled:
             # Compute current owned-skill count (used by probability model)
             data_now = state.get("data") or {}

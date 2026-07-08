@@ -28,6 +28,7 @@ from career_bot.race_learning_filters import (
 
 POSTMORTEM_DIR_NAME = "postmortems"
 RECENT_POSTMORTEM_LIMIT = 20
+POSTMORTEM_FEEDBACK_SCHEMA = "sweepy_postmortem_feedback_v2"
 
 STAT_KEYS = ("speed", "stamina", "power", "guts", "wit")
 # Map stat name → command index used by training_policy / mant.py. Used
@@ -55,6 +56,21 @@ RUNNING_STYLE_NAMES = {
 PHANTOM_GAP_MAX_PTS = 100.0
 DOMINANT_LEAD_GUARD_PTS = 100.0
 
+# Race-loss postmortems compare raw field max stats against the player's raw
+# visible stats. That is useful forensic data, but it over-attributes losses to
+# Guts because Guts is usually the lowest build stat while being a weak causal
+# race stat compared with speed/stamina/power/wit. Keep Guts actionable only
+# when the gap is overwhelming; otherwise treat it as supporting noise.
+STAT_CAUSAL_WEIGHTS = {
+    "speed": 1.00,
+    "stamina": 1.00,
+    "power": 0.95,
+    "wit": 0.85,
+    "guts": 0.35,
+}
+GUTS_PRIMARY_MIN_GAP_PTS = 220.0
+GUTS_SECONDARY_TARGET_MIN_GAP_PTS = 180.0
+
 
 def _worst_stat_with_dominance_guard(avg_gap):
     """Return (worst_stat, worst_gap) from an avg_gap dict, or (None, 0.0).
@@ -66,7 +82,44 @@ def _worst_stat_with_dominance_guard(avg_gap):
     """
     if not avg_gap:
         return None, 0.0
-    worst_stat, worst_gap = max(avg_gap.items(), key=lambda kv: kv[1])
+    positive = {
+        key: float(value or 0)
+        for key, value in avg_gap.items()
+        if key in STAT_KEYS and float(value or 0) > 0
+    }
+    if not positive:
+        return None, 0.0
+
+    # Guts can be a contributor, but it should not be the headline cause of
+    # normal close losses. Pick it as primary only when it is much larger than
+    # every other weighted gap or is an extreme standalone deficit.
+    filtered = dict(positive)
+    if "guts" in filtered:
+        guts_gap = filtered["guts"]
+        guts_weighted = guts_gap * STAT_CAUSAL_WEIGHTS["guts"]
+        top_non_guts_weighted = max(
+            (
+                gap * STAT_CAUSAL_WEIGHTS.get(stat, 1.0)
+                for stat, gap in filtered.items()
+                if stat != "guts"
+            ),
+            default=0.0,
+        )
+        if (
+            guts_gap < GUTS_PRIMARY_MIN_GAP_PTS
+            and (
+                top_non_guts_weighted <= 0
+                or guts_weighted < max(1.0, top_non_guts_weighted * 1.35)
+            )
+        ):
+            filtered.pop("guts", None)
+    if not filtered:
+        return None, 0.0
+
+    worst_stat, worst_gap = max(
+        filtered.items(),
+        key=lambda kv: kv[1] * STAT_CAUSAL_WEIGHTS.get(kv[0], 1.0),
+    )
     if worst_gap <= 0:
         return None, 0.0
     if worst_gap < PHANTOM_GAP_MAX_PTS:
@@ -76,6 +129,35 @@ def _worst_stat_with_dominance_guard(avg_gap):
             if mean_lead >= DOMINANT_LEAD_GUARD_PTS:
                 return None, 0.0
     return worst_stat, worst_gap
+
+
+def actionable_gap_stats(gaps):
+    """Return stat gaps that should produce training/threshold pressure.
+
+    This is stricter than "all positive gaps": Guts is only actionable when it
+    is the selected primary cause or the raw deficit is very large. This prevents
+    repeated race-loss learning from biasing the bot into unnecessary Guts
+    training when the actual problem is skill/stamina/speed/power/wit/RNG.
+    """
+    if not gaps:
+        return set()
+    numeric = {}
+    for stat in STAT_KEYS:
+        try:
+            numeric[stat] = float(gaps.get(stat) or 0)
+        except (TypeError, ValueError):
+            numeric[stat] = 0.0
+    primary, _gap = _worst_stat_with_dominance_guard(numeric)
+    if not primary:
+        return set()
+    out = set()
+    for stat, gap in numeric.items():
+        if gap <= 0:
+            continue
+        if stat == "guts" and stat != primary and gap < GUTS_SECONDARY_TARGET_MIN_GAP_PTS:
+            continue
+        out.add(stat)
+    return out
 
 
 def load_recent_postmortems(runtime_root, limit=RECENT_POSTMORTEM_LIMIT):

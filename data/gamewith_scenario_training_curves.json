@@ -1,0 +1,739 @@
+{
+  "last_update": 202606291409,
+  "notes": [
+    "GameWith exposes stat and skill-point base values, but not HP/energy cost in this table.",
+    "Current extracted data only includes the levels present in the GameWith bundle; at the time of extraction this is level 5.",
+    "source_order_newest_first is GameWith display order, not confirmed internal game scenario_id."
+  ],
+  "scenarios": [
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 15,
+            "power": 3,
+            "skill_pt": 7,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 13,
+            "skill_pt": 7,
+            "stamina": 8
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 4,
+            "skill_pt": 7,
+            "speed": 15
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 6,
+            "skill_pt": 7,
+            "stamina": 14
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 7,
+            "speed": 5,
+            "wit": 11
+          }
+        }
+      },
+      "name": "らっしゃい！トレセン軒！",
+      "source_order_newest_first": 1
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 12,
+            "power": 3,
+            "skill_pt": 7,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 14,
+            "skill_pt": 7,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 4,
+            "skill_pt": 7,
+            "speed": 15
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 7,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 7,
+            "speed": 4,
+            "wit": 12
+          }
+        }
+      },
+      "name": "Beyond Dreams -共に前に、共に光を-",
+      "source_order_newest_first": 2
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 24,
+            "power": 3,
+            "skill_pt": 7,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 23,
+            "skill_pt": 7,
+            "stamina": 8
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 6,
+            "skill_pt": 7,
+            "speed": 23
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 7,
+            "stamina": 23
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 7,
+            "speed": 3,
+            "wit": 15
+          }
+        }
+      },
+      "name": "ごくらく♪ゆこま温泉郷",
+      "source_order_newest_first": 3
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 14,
+            "power": 3,
+            "skill_pt": 6,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 15,
+            "skill_pt": 6,
+            "stamina": 5
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 3,
+            "skill_pt": 6,
+            "speed": 16
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 7,
+            "skill_pt": 6,
+            "stamina": 13
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 12
+          }
+        }
+      },
+      "name": "無人島へようこそ -DESIGN YOUR ISLAND-",
+      "source_order_newest_first": 4
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 14,
+            "power": 3,
+            "skill_pt": 7,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 14,
+            "skill_pt": 7,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 4,
+            "skill_pt": 7,
+            "speed": 15
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 7,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 5,
+            "wit": 11
+          }
+        }
+      },
+      "name": "The Twinkle Legends",
+      "source_order_newest_first": 5
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 13,
+            "power": 3,
+            "skill_pt": 5,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 14,
+            "skill_pt": 5,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 4,
+            "skill_pt": 5,
+            "speed": 15
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 6,
+            "skill_pt": 5,
+            "stamina": 14
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 12
+          }
+        }
+      },
+      "name": "走れ！メカウマ娘 ― 夢繋ぐ発明 ―",
+      "source_order_newest_first": 6
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 14,
+            "power": 3,
+            "skill_pt": 5,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 13,
+            "skill_pt": 5,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 4,
+            "skill_pt": 5,
+            "speed": 15
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 5,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 12
+          }
+        }
+      },
+      "name": "収穫ッ！満腹ッ！大豊食祭",
+      "source_order_newest_first": 7
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 16,
+            "power": 1,
+            "skill_pt": 6,
+            "speed": 2
+          }
+        },
+        "power": {
+          "5": {
+            "power": 15,
+            "skill_pt": 6,
+            "stamina": 3
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 2,
+            "skill_pt": 6,
+            "speed": 16
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 3,
+            "skill_pt": 6,
+            "stamina": 15
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 6,
+            "speed": 3,
+            "wit": 15
+          }
+        }
+      },
+      "name": "U.A.F Ready Go! ＜青練習＞",
+      "source_order_newest_first": 8
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 12,
+            "power": 1,
+            "skill_pt": 10,
+            "speed": 2
+          }
+        },
+        "power": {
+          "5": {
+            "power": 11,
+            "skill_pt": 10,
+            "stamina": 3
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 2,
+            "skill_pt": 10,
+            "speed": 12
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 3,
+            "skill_pt": 10,
+            "stamina": 11
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 10,
+            "speed": 3,
+            "wit": 11
+          }
+        }
+      },
+      "name": "U.A.F Ready Go! ＜赤練習＞",
+      "source_order_newest_first": 9
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 16,
+            "power": 1,
+            "skill_pt": 5,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 14,
+            "skill_pt": 6,
+            "speed": 2,
+            "stamina": 2
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 2,
+            "skill_pt": 4,
+            "speed": 18
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 2,
+            "skill_pt": 6,
+            "speed": 1,
+            "stamina": 14
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 5,
+            "wit": 14
+          }
+        }
+      },
+      "name": "U.A.F Ready Go! ＜黄練習＞",
+      "source_order_newest_first": 10
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 14,
+            "power": 3,
+            "skill_pt": 6,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 15,
+            "skill_pt": 6,
+            "stamina": 7
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 5,
+            "skill_pt": 6,
+            "speed": 14
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 6,
+            "skill_pt": 6,
+            "stamina": 13
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 6,
+            "speed": 4,
+            "wit": 13
+          }
+        }
+      },
+      "name": "プロジェクト L'Arc",
+      "source_order_newest_first": 11
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 13,
+            "power": 4,
+            "skill_pt": 5,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 13,
+            "skill_pt": 5,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 5,
+            "skill_pt": 5,
+            "speed": 14
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 5,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 12
+          }
+        }
+      },
+      "name": "グランドマスターズ",
+      "source_order_newest_first": 12
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 11,
+            "power": 3,
+            "skill_pt": 4,
+            "speed": 3
+          }
+        },
+        "power": {
+          "5": {
+            "power": 13,
+            "skill_pt": 4,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 6,
+            "skill_pt": 4,
+            "speed": 12
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 4,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 10
+          }
+        }
+      },
+      "name": "私たちのグランドライブ",
+      "source_order_newest_first": 13
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 10,
+            "power": 4,
+            "skill_pt": 2,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 10,
+            "skill_pt": 2,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 6,
+            "skill_pt": 2,
+            "speed": 12
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 5,
+            "skill_pt": 2,
+            "stamina": 11
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 3,
+            "speed": 4,
+            "wit": 10
+          }
+        }
+      },
+      "name": "Make a newtrack 〜クライマックス開幕〜",
+      "source_order_newest_first": 14
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 10,
+            "power": 4,
+            "skill_pt": 4,
+            "speed": 4
+          }
+        },
+        "power": {
+          "5": {
+            "power": 13,
+            "skill_pt": 4,
+            "stamina": 6
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 6,
+            "skill_pt": 4,
+            "speed": 12
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 8,
+            "skill_pt": 4,
+            "stamina": 12
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 5,
+            "speed": 4,
+            "wit": 10
+          }
+        }
+      },
+      "name": "アオハル杯",
+      "source_order_newest_first": 15
+    },
+    {
+      "available_levels": [
+        "5"
+      ],
+      "facilities": {
+        "guts": {
+          "5": {
+            "guts": 12,
+            "power": 5,
+            "skill_pt": 2,
+            "speed": 5
+          }
+        },
+        "power": {
+          "5": {
+            "power": 12,
+            "skill_pt": 2,
+            "stamina": 7
+          }
+        },
+        "speed": {
+          "5": {
+            "power": 7,
+            "skill_pt": 2,
+            "speed": 14
+          }
+        },
+        "stamina": {
+          "5": {
+            "guts": 6,
+            "skill_pt": 2,
+            "stamina": 13
+          }
+        },
+        "wit": {
+          "5": {
+            "skill_pt": 2,
+            "speed": 4,
+            "wit": 13
+          }
+        }
+      },
+      "name": "URAファイナルズ",
+      "source_order_newest_first": 16
+    }
+  ],
+  "schema": "sweepy_gamewith_scenario_training_curves_v1",
+  "source": "GameWith support-card comparison tool frontend data",
+  "source_urls": {
+    "article": "https://gamewith.jp/uma-musume/article/show/283210",
+    "script": "https://gamewith-tool.s3.ap-northeast-1.amazonaws.com/assets/js/uma_supportcard_compare.v3.min.js?67",
+    "update": "https://gamewith-tool.s3-ap-northeast-1.amazonaws.com/uma-musume/update.json"
+  }
+}

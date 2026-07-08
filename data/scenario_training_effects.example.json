@@ -1,0 +1,35 @@
+{
+  "schema": "sweepy_scenario_training_effects_v1",
+  "notes": [
+    "Copy this shape to data/scenario_training_effects.json when real scenario effects are known.",
+    "Effects are inactive unless enabled_by_default is true or the CLI passes --effect <id>.",
+    "Use scenario aliases to match either GameWith newest-first order, internal scenario_id, or name substrings."
+  ],
+  "scenarios": {
+    "example_scenario": {
+      "name": "Example Scenario",
+      "aliases": ["example", "99"],
+      "effects": [
+        {
+          "id": "sample_speed_bonus",
+          "name": "Sample speed-training scenario modifier",
+          "enabled_by_default": false,
+          "conditions": {
+            "training": ["speed"],
+            "facility_level_min": 5
+          },
+          "apply": {
+            "base_add": {"speed": 1, "power": 1},
+            "stat_bonus": {"speed": 2},
+            "skill_pt_bonus": 1,
+            "mood_effect": 10,
+            "training_effectiveness": 5,
+            "final_multiplier": {"speed": 1.1},
+            "final_add": {"sp": 2},
+            "energy_add": -1
+          }
+        }
+      ]
+    }
+  }
+}

@@ -360,7 +360,14 @@
             if (state.rarityFilter !== "all" && String(card.rarity || "") !== state.rarityFilter) return false;
             if (!query) return true;
             return [card.support_card_id, card.id, card.name, card.type, card.rarity].join(" ").toLowerCase().includes(query);
-        });
+        }).sort((a, b) =>
+            // Base sort = release date, newest first (GameTora-style), enforced
+            // client-side too so the order holds even against a backend that
+            // predates release_ts in /meta. No-date cards sink; same-day
+            // banners tiebreak newest-id first.
+            (Number(b.release_ts || 0) - Number(a.release_ts || 0))
+            || (Number(b.support_card_id || 0) - Number(a.support_card_id || 0))
+        );
         // No hard cap: the old slice(0, 220) cut the type-sorted list after
         // Speed/Stamina/Power, hiding EVERY Guts/Wit/Pal card unless filtered.
     }

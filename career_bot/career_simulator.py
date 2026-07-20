@@ -583,7 +583,7 @@ def _uma_rl(unique, t):
     return 0
 
 
-def _uma_unique_grant(unique, t, level, matching):
+def _uma_unique_grant(unique, t, level, matching, bonded=True):
     """$h(): the UNIQUE effect's contribution to effectType `t`. Covers the
     type-101 specials, the Rl()-routed scaled types, the direct (type0==t) case,
     and the type1 secondary-unique fallback. `matching` gates the one type-102
@@ -598,6 +598,8 @@ def _uma_unique_grant(unique, t, level, matching):
         return float(unique.get(key) or 0)
 
     if ty == 101:
+        if not bonded:
+            return 0
         if t == int(v("value01")):
             return v("value02")
         if t == int(v("value03")) and v("value04"):
@@ -628,17 +630,52 @@ def _uma_g7(t, base, unique_grant):
     return base + unique_grant
 
 
-def _uma_card_effect(record, t, level, matching):
+def _uma_card_effect(record, t, level, matching, bonded=True):
     """pt(): combine the base curve (cd) with the unique ($h) via G7 for a
     single effectType. Returns the fully-resolved value (0 if absent)."""
     curves = record.get("c") or {}
     markers = curves.get(str(t))
     unique = record.get("u") or {}
     if not markers:
-        grant = _uma_unique_grant(unique, t, level, matching)
+        grant = _uma_unique_grant(unique, t, level, matching, bonded=bonded)
         return grant if grant > 0 else 0
     base = _uma_curve_value(markers, level)
-    return _uma_g7(t, base, _uma_unique_grant(unique, t, level, matching))
+    return _uma_g7(t, base, _uma_unique_grant(unique, t, level, matching, bonded=bonded))
+
+
+def _support_bonus_record_effect(record, lb, key, *, bonded=True):
+    """Read one effect field from support_card_bonuses.json at the requested LB.
+
+    This is intentionally small and local to avoid importing the interactive
+    training-comparison module into the career simulator. It covers expanded
+    LB-table fields that are not present in the compact uma.guide curve table,
+    such as Wit friendship recovery.
+    """
+    if not record or not key:
+        return 0.0
+    try:
+        target_lb = max(0, min(4, int(lb or 0)))
+    except (TypeError, ValueError):
+        target_lb = 4
+    levels = record.get("lb_levels") or []
+    row = next((item for item in levels if int((item or {}).get("lb") or 0) == target_lb), None)
+    if row is None and levels:
+        row = levels[min(target_lb, len(levels) - 1)]
+    try:
+        value = float((row or {}).get(key) or 0)
+    except (TypeError, ValueError):
+        value = 0.0
+    for unique in record.get("unique_effects") or []:
+        if str((unique or {}).get("condition") or "") != "bond_gte":
+            continue
+        if not bonded:
+            continue
+        grants = unique.get("grants") or {}
+        try:
+            value += float(grants.get(key) or 0)
+        except (TypeError, ValueError):
+            continue
+    return value
 
 
 def _load_event_effect_templates(project_root):
@@ -4355,7 +4392,7 @@ class CareerSimulator:
         facilities = (self.training_curves or {}).get("facilities") or {}
         base = (facilities.get(training_stat) or {}).get(str(facility_level)) or {}
         friendship = 1.0
-        mood_eff = train_eff = energy_red = 0.0
+        mood_eff = train_eff = energy_red = wit_recovery = 0.0
         bonuses = {"speed": 0.0, "stamina": 0.0, "power": 0.0, "guts": 0.0, "wit": 0.0, "sp": 0.0}
         stat_fx = {"speed": 3, "stamina": 4, "power": 5, "guts": 6, "wit": 7, "sp": 30}
         for support_id, lb in deck:
@@ -4366,12 +4403,20 @@ class CareerSimulator:
             ctype = _normalize_support_type((self.support_bonus_data.get(str(support_id)) or {}).get("type"))
             matching = (int(record.get("t") or 0) == 3) or (ctype == training_stat)
             for stat, fx in stat_fx.items():
-                bonuses[stat] += _uma_card_effect(record, fx, level, matching)
-            mood_eff += _uma_card_effect(record, 2, level, matching)
-            train_eff += _uma_card_effect(record, 8, level, matching)
-            energy_red += _uma_card_effect(record, 28, level, matching)
+                bonuses[stat] += _uma_card_effect(record, fx, level, matching, bonded=bool(bonded))
+            mood_eff += _uma_card_effect(record, 2, level, matching, bonded=bool(bonded))
+            train_eff += _uma_card_effect(record, 8, level, matching, bonded=bool(bonded))
+            energy_red += _uma_card_effect(record, 28, level, matching, bonded=bool(bonded))
             if matching and bonded:
-                friend_val = _uma_card_effect(record, 1, level, matching)
+                if training_stat == "wit":
+                    bonus_record = self.support_bonus_data.get(str(support_id)) or {}
+                    wit_recovery += _support_bonus_record_effect(
+                        bonus_record,
+                        lb,
+                        "wit_friendship_recovery",
+                        bonded=bool(bonded),
+                    )
+                friend_val = _uma_card_effect(record, 1, level, matching, bonded=bool(bonded))
                 if friend_val > 0:
                     friendship *= 1.0 + friend_val / 100.0
         count = len(deck) + int(npc)
@@ -4389,6 +4434,8 @@ class CareerSimulator:
             pre = math.floor((base_val + bonuses[stat]) * friendship * mood_mult * train_mult * count_mult * growth_mult)
             out[stat] = pre + math.floor(pre * item_train_pct / 100.0)
         energy = float(base.get("energy") or 0)
+        if training_stat == "wit" and wit_recovery:
+            energy += wit_recovery
         w = energy * (1.0 - energy_red / 100.0) if energy < 0 else energy
         out["energy"] = math.floor(w - math.floor(abs(w) * item_energy_pct / 100.0)) if w < 0 else int(w)
         return out

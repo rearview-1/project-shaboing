@@ -7,6 +7,55 @@ def test_tile_gain_reuses_uma_guide_anchor():
     assert gains["power"] == 20
 
 
+def test_tile_gain_reuses_raw_facility_table_without_modifiers():
+    gains = tile_gain([], "speed", facility_level=5, mood=0.0, bonded=False)
+    assert gains == {"speed": 12, "stamina": 0, "power": 6, "guts": 0, "wit": 0, "sp": 2, "energy": -25}
+
+
+def test_training_sim_overcap_can_halve_substats_independently():
+    import main
+
+    gains = {"speed": 12, "power": 6, "sp": 2, "energy": -25}
+
+    assert main._training_sim_apply_overcap_halving(gains, "speed", False, {"power": True})["power"] == 3
+    assert main._training_sim_apply_overcap_halving(gains, "speed", False, {"power": True})["speed"] == 12
+    assert main._training_sim_apply_overcap_halving(gains, "speed", True, {"power": True})["speed"] == 6
+
+
+def test_tile_gain_respects_limit_break_level():
+    low = tile_gain([(30028, 0)], "speed", facility_level=5, mood=0.2, bonded=True)
+    high = tile_gain([(30028, 4)], "speed", facility_level=5, mood=0.2, bonded=True)
+
+    assert high != low
+    assert high["speed"] > low["speed"]
+    assert high["power"] > low["power"]
+
+
+def test_tile_gain_respects_per_card_bond_for_bond_gated_uniques():
+    bonded = tile_gain([{"support_card_id": 30053, "lb": 4, "bond": True}], "speed", facility_level=5, mood=0.2)
+    unbonded = tile_gain([{"support_card_id": 30053, "lb": 4, "bond": False}], "speed", facility_level=5, mood=0.2)
+
+    assert bonded["speed"] > unbonded["speed"]
+    assert bonded["sp"] > unbonded["sp"]
+
+
+def test_wit_friendship_recovery_is_modeled_for_bonded_wit_cards():
+    bonded = tile_gain([{"support_card_id": 10028, "lb": 4, "bond": True}], "wit", facility_level=5, mood=0.2)
+    unbonded = tile_gain([{"support_card_id": 10028, "lb": 4, "bond": False}], "wit", facility_level=5, mood=0.2)
+
+    assert bonded["energy"] > unbonded["energy"]
+
+
+def test_tile_gain_uses_full_lb_fallback_for_new_cards_missing_compact_data():
+    bonded = tile_gain([{"support_card_id": 30304, "lb": 4, "bond": True}], "stamina", facility_level=5, mood=0.2)
+    unbonded = tile_gain([{"support_card_id": 30304, "lb": 4, "bond": False}], "stamina", facility_level=5, mood=0.2)
+
+    assert bonded["stamina"] > 0
+    assert bonded["guts"] > 0
+    assert bonded["stamina"] > unbonded["stamina"]
+    assert bonded["guts"] > unbonded["guts"]
+
+
 def test_rank_candidate_cards_reports_delta_vs_baseline():
     rows = rank_candidate_cards(
         baseline_deck=[(30028, 4)],

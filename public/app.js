@@ -149,7 +149,7 @@ const state = {
             trainingSimWeightFacilities: {},
             trainingSimYearEffects: safeLocalJson('trainingSimYearEffects', {}),
             trainingSimEnforceSupportTypes: safeLocalBool('trainingSimEnforceSupportTypes', true),
-            trainingSimOvercapStat: safeLocalBool('trainingSimOvercapStat', false),
+            trainingSimOvercapStats: safeLocalJson('trainingSimOvercapStats', {}),
             trainingSimOwnedOnly: safeLocalBool('trainingSimOwnedOnly', false),
             trainingSimTypeFilter: 'all',
             trainingSimRarityFilter: 'all',
@@ -7144,6 +7144,20 @@ const state = {
         function trainingSimCardId(card) {
             return Number(card && (card.support_card_id || card.id) || 0);
         }
+        function trainingSimLbLabel(lb) {
+            const value = Math.max(0, Math.min(4, Number(lb || 0)));
+            return value >= 4 ? 'MLB' : `${value}LB`;
+        }
+        function trainingSimClampLb(value) {
+            const n = Number(value);
+            return Math.max(0, Math.min(4, Number.isFinite(n) ? n : 4));
+        }
+        function trainingSimLbOptions(selectedLb) {
+            const selected = trainingSimClampLb(selectedLb);
+            return [0, 1, 2, 3, 4].map(lb =>
+                `<option value="${lb}" ${lb === selected ? 'selected' : ''}>${trainingSimLbLabel(lb)}</option>`
+            ).join('');
+        }
         function trainingSimDefaultAreas() {
             return { speed: [], stamina: [], power: [], guts: [], wit: [] };
         }
@@ -7166,8 +7180,12 @@ const state = {
         function trainingSimPlacementForCard(card) {
             const id = trainingSimCardId(card);
             const rawLb = card && (card.limit_break_count ?? card.lb);
-            const lb = Math.max(0, Math.min(4, Number(rawLb == null ? 4 : rawLb) || 0));
-            return { support_card_id: id, lb: card && card.owned ? lb : 4 };
+            const lb = trainingSimClampLb(rawLb == null ? 4 : rawLb);
+            return { support_card_id: id, lb: card && card.owned ? lb : 4, fb: true, bond: true };
+        }
+        function trainingSimCardMatchesTile(card, stat) {
+            const type = String((card && card.type) || '');
+            return type === trainingSimStatLabel(stat) || type === 'Pal' || type === 'Group';
         }
         function trainingSimRemoveCardEverywhere(cardId) {
             const id = Number(cardId || 0);
@@ -7209,6 +7227,19 @@ const state = {
                 if (Number.isFinite(n) && n !== 0) out[stat] = Math.max(0, Math.min(30, n));
             });
             return out;
+        }
+        function trainingSimNormalizeOvercapStats(raw) {
+            const out = {};
+            TRAINING_SIM_STATS.forEach(stat => {
+                if (raw && raw[stat]) out[stat] = true;
+            });
+            return out;
+        }
+        function trainingSimOvercapSummaryText(raw) {
+            const selected = TRAINING_SIM_STATS
+                .filter(stat => raw && raw[stat])
+                .map(stat => TRAINING_SIM_LABELS[stat]);
+            return selected.length ? ` | Over 1200: ${selected.join(', ')} gains halved` : '';
         }
         function trainingSimGrowthEquals(a, b) {
             const left = trainingSimNormalizeGrowth(a);
@@ -7285,7 +7316,7 @@ const state = {
         function trainingSimSyncItemSummary() {
             if (!els.trainingSimItemSummary) return;
             const gimmicks = trainingSimScenarioGimmicks();
-            const overcap = state.trainingSimOvercapStat ? ' | Trained stat over 1200: primary gain halved' : '';
+            const overcap = trainingSimOvercapSummaryText(state.trainingSimOvercapStats || {});
             if (!gimmicks.has('items')) {
                 els.trainingSimItemSummary.textContent = `No shop items in this scenario${overcap}`;
                 return;
@@ -7313,7 +7344,8 @@ const state = {
                 active_scenario_effects: [],
                 year_effect_ids: hasYear ? trainingSimSelectedYearEffectIds() : [],
                 enforce_support_type_condition: !!state.trainingSimEnforceSupportTypes,
-                trained_stat_over_1200: !!state.trainingSimOvercapStat,
+                trained_stat_over_1200: false,
+                stats_over_1200: { ...(state.trainingSimOvercapStats || {}) },
                 bonded: true
             };
         }
@@ -7363,7 +7395,11 @@ const state = {
                 `).join('');
             }
             if (els.trainingSimOvercapStat) {
-                els.trainingSimOvercapStat.classList.toggle('is-active', !!state.trainingSimOvercapStat);
+                els.trainingSimOvercapStat.innerHTML = TRAINING_SIM_STATS.map(stat => `
+                    <button class="training-sim-chip training-sim-chip-stat ${(state.trainingSimOvercapStats || {})[stat] ? 'is-active' : ''}" type="button" data-training-sim-overcap-stat="${stat}">
+                        ${escapeHtml(TRAINING_SIM_LABELS[stat])}
+                    </button>
+                `).join('');
             }
             if (els.trainingSimOwnedOnly) els.trainingSimOwnedOnly.checked = !!state.trainingSimOwnedOnly;
             if (els.trainingSimSupportTypeGate) els.trainingSimSupportTypeGate.checked = !!state.trainingSimEnforceSupportTypes;
@@ -7449,7 +7485,7 @@ const state = {
             els.trainingSimCardToolbox.innerHTML = cards.map(card => {
                 const id = trainingSimCardId(card);
                 const active = state.trainingSimSelectedCard && trainingSimCardId(state.trainingSimSelectedCard) === id;
-                const owned = card.owned ? `LB${Number(card.limit_break_count || 0)}` : 'catalog';
+                const owned = card.owned ? trainingSimLbLabel(card.limit_break_count) : 'catalog';
                 const releaseDate = card.release_date ? `<span class="training-sim-card-date">${escapeHtml(card.release_date)}</span>` : '';
                 return `
                     <button class="training-sim-card ${trainingSimTypeClass(card.type)} ${active ? 'is-selected' : ''}" type="button" data-card-id="${id}"
@@ -7477,11 +7513,27 @@ const state = {
                 const placedCards = cards.map(row => {
                     const card = trainingSimFindCard(row.support_card_id) || row;
                     const id = Number(row.support_card_id || row.id || 0);
+                    const lb = trainingSimClampLb(row.lb == null ? card.limit_break_count : row.lb);
+                    const matching = trainingSimCardMatchesTile(card, stat);
+                    const bondOn = row.bond !== false;
+                    const fbOn = bondOn && row.fb !== false;
+                    const bondChip = `<span class="training-sim-bond-chip ${bondOn ? 'is-on' : 'is-off'}" data-training-sim-bond-card-id="${id}" title="${bondOn ? 'Bond >= 80: bond-gated uniques are active' : 'Bond below 80: bond-gated uniques and friendship are inactive'}">Bond</span>`;
+                    const fbChip = matching
+                        ? `<span class="training-sim-fb-chip ${fbOn ? 'is-on' : 'is-off'}" data-training-sim-fb-card-id="${id}" title="${bondOn ? (fbOn ? 'Click to disable friendship training' : 'Click to enable friendship training') : 'Enable Bond first to allow friendship training'}">FB</span>`
+                        : `<span class="training-sim-fb-chip is-na" title="No friendship bonus (card type doesn't match training)">-</span>`;
                     return `
-                        <button class="training-sim-placed-card ${trainingSimTypeClass(card.type)}" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">
+                        <div class="training-sim-placed-card ${trainingSimTypeClass(card.type)}" data-placed-card-id="${id}">
+                            <button class="training-sim-placed-remove" type="button" data-remove-card-id="${id}" title="Remove ${escapeAttr(card.name || id)}">×</button>
                             <img src="/api/images/${id}.png" onerror="hideBrokenImage(this)">
                             <span>${escapeHtml(card.name || `Support ${id}`)}</span>
-                        </button>
+                            <div class="training-sim-placed-controls">
+                                <select class="training-sim-lb-select" data-training-sim-lb-card-id="${id}" title="Limit break level for ${escapeAttr(card.name || id)}">
+                                    ${trainingSimLbOptions(lb)}
+                                </select>
+                                ${bondChip}
+                                ${fbChip}
+                            </div>
+                        </div>
                     `;
                 }).join('');
                 const gainRows = ['speed', 'stamina', 'power', 'guts', 'wit', 'sp', 'energy'].map(key => {
@@ -7646,9 +7698,10 @@ const state = {
                     state.trainingSimMegaphonePct = 0;
                     state.trainingSimWeightFacilities = {};
                     state.trainingSimYearEffects = {};
-                    state.trainingSimOvercapStat = false;
+                    state.trainingSimOvercapStats = {};
                     trainingSimSetGrowth({});
                     safeLocalSet('trainingSimMegaphonePct', '0');
+                    safeLocalSet('trainingSimOvercapStats', '{}');
                     safeLocalSet('trainingSimOvercapStat', '0');
                     trainingSimSaveYearEffects();
                     trainingSimRenderAll();
@@ -7676,9 +7729,15 @@ const state = {
                 });
             }
             if (els.trainingSimOvercapStat) {
-                els.trainingSimOvercapStat.addEventListener('click', () => {
-                    state.trainingSimOvercapStat = !state.trainingSimOvercapStat;
-                    safeLocalSet('trainingSimOvercapStat', state.trainingSimOvercapStat ? '1' : '0');
+                els.trainingSimOvercapStat.addEventListener('click', event => {
+                    const btn = event.target.closest('[data-training-sim-overcap-stat]');
+                    if (!btn) return;
+                    const stat = btn.dataset.trainingSimOvercapStat;
+                    state.trainingSimOvercapStats = trainingSimNormalizeOvercapStats(state.trainingSimOvercapStats || {});
+                    state.trainingSimOvercapStats[stat] = !state.trainingSimOvercapStats[stat];
+                    if (!state.trainingSimOvercapStats[stat]) delete state.trainingSimOvercapStats[stat];
+                    safeLocalSet('trainingSimOvercapStats', JSON.stringify(state.trainingSimOvercapStats || {}));
+                    safeLocalSet('trainingSimOvercapStat', '0');
                     trainingSimRenderControls();
                     scheduleTrainingSimCalculation();
                 });
@@ -7697,8 +7756,21 @@ const state = {
                     if (!btn) return;
                     const id = btn.dataset.trainingSimYearEffect || '';
                     if (!id) return;
+                    const groups = ((state.trainingSimMeta || {}).year_effects || []);
+                    const group = groups.find(row => (row.effects || []).some(effect => String(effect.id || '') === id)) || null;
+                    const isBasic = String(id).endsWith('_basic');
                     state.trainingSimYearEffects[id] = !state.trainingSimYearEffects[id];
                     if (!state.trainingSimYearEffects[id]) delete state.trainingSimYearEffects[id];
+                    if (group && !isBasic) {
+                        const basic = (group.effects || []).find(effect => String(effect.id || '').endsWith('_basic'));
+                        const anyVenueSelected = (group.effects || [])
+                            .filter(effect => !String(effect.id || '').endsWith('_basic'))
+                            .some(effect => !!state.trainingSimYearEffects[String(effect.id || '')]);
+                        if (basic) {
+                            if (anyVenueSelected) state.trainingSimYearEffects[String(basic.id)] = true;
+                            else delete state.trainingSimYearEffects[String(basic.id)];
+                        }
+                    }
                     trainingSimSaveYearEffects();
                     trainingSimRenderYearEffects();
                     scheduleTrainingSimCalculation();
@@ -7726,6 +7798,46 @@ const state = {
             }
             if (els.trainingSimAreas) {
                 els.trainingSimAreas.addEventListener('click', event => {
+                    if (event.target.closest('.training-sim-placed-card') && !event.target.closest('[data-remove-card-id], [data-training-sim-bond-card-id], [data-training-sim-fb-card-id]')) return;
+                    const bondChip = event.target.closest('[data-training-sim-bond-card-id]');
+                    if (bondChip) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        const id = Number(bondChip.dataset.trainingSimBondCardId || 0);
+                        TRAINING_SIM_STATS.forEach(stat => {
+                            (state.trainingSimAreas[stat] || []).forEach(row => {
+                                if (Number(row.support_card_id || 0) === id) {
+                                    const next = row.bond === false;
+                                    row.bond = next;
+                                    row.fb = next;
+                                }
+                            });
+                        });
+                        trainingSimRenderAreas();
+                        scheduleTrainingSimCalculation();
+                        return;
+                    }
+                    const fbChip = event.target.closest('[data-training-sim-fb-card-id]');
+                    if (fbChip) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        const id = Number(fbChip.dataset.trainingSimFbCardId || 0);
+                        TRAINING_SIM_STATS.forEach(stat => {
+                            (state.trainingSimAreas[stat] || []).forEach(row => {
+                                if (Number(row.support_card_id || 0) === id) {
+                                    if (row.bond === false) {
+                                        row.bond = true;
+                                        row.fb = true;
+                                    } else {
+                                        row.fb = row.fb === false;
+                                    }
+                                }
+                            });
+                        });
+                        trainingSimRenderAreas();
+                        scheduleTrainingSimCalculation();
+                        return;
+                    }
                     const removeBtn = event.target.closest('[data-remove-card-id]');
                     if (removeBtn) {
                         trainingSimRemoveCardEverywhere(removeBtn.dataset.removeCardId);
@@ -7769,6 +7881,19 @@ const state = {
                         const cards = (state.trainingSimAreas[stat] || []).length;
                         state.trainingSimNpc[stat] = Math.max(0, Math.min(6 - cards, current + 1));
                     }
+                    trainingSimRenderAreas();
+                    scheduleTrainingSimCalculation();
+                });
+                els.trainingSimAreas.addEventListener('change', event => {
+                    const lbSelect = event.target.closest('[data-training-sim-lb-card-id]');
+                    if (!lbSelect) return;
+                    const id = Number(lbSelect.dataset.trainingSimLbCardId || 0);
+                    const lb = trainingSimClampLb(lbSelect.value);
+                    TRAINING_SIM_STATS.forEach(stat => {
+                        (state.trainingSimAreas[stat] || []).forEach(row => {
+                            if (Number(row.support_card_id || 0) === id) row.lb = lb;
+                        });
+                    });
                     trainingSimRenderAreas();
                     scheduleTrainingSimCalculation();
                 });

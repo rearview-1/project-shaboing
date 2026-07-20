@@ -1,6 +1,39 @@
 {
   "presets": [
     {
+      "name": "Mile + Power Farm",
+      "selection": {
+        "deck": {
+          "id": 1,
+          "name": "MANT Mile"
+        },
+        "friend": {
+          "viewer_id": 0,
+          "support_card_id": 30032,
+          "name": "Derman",
+          "support_name": "Yaeno Muteki"
+        },
+        "trainee": {
+          "id": "101502",
+          "name": "TM Opera O"
+        },
+        "veterans": [
+          {
+            "instance_id": 992,
+            "card_id": "101901",
+            "name": "Agnes Digital"
+          },
+          {
+            "instance_id": 1928,
+            "card_id": "100401",
+            "name": "Maruzensky"
+          }
+        ],
+        "guestParent": null
+      },
+      "saved_at": 1781822938.268311
+    },
+    {
       "name": "Satono Mile Farm",
       "selection": {
         "deck": {

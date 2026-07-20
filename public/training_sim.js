@@ -89,7 +89,7 @@
             els.tilesHint.textContent = `▸ Placing: ${name} — click a tile to drop it.`;
             els.tilesHint.classList.add("is-armed-hint");
         } else {
-            els.tilesHint.textContent = "Pick a card → click a tile to place it. Click a placed card to remove.";
+            els.tilesHint.textContent = "Pick a card, click a tile to place it. Use X to remove.";
             els.tilesHint.classList.remove("is-armed-hint");
         }
     }
@@ -126,6 +126,17 @@
             if (Number.isFinite(n) && n !== 0) out[stat] = Math.max(0, Math.min(30, n));
         });
         return out;
+    }
+    function normalizeOvercapStats(raw) {
+        const out = {};
+        STATS.forEach(stat => {
+            if (raw && raw[stat]) out[stat] = true;
+        });
+        return out;
+    }
+    function overcapSummaryText(raw) {
+        const selected = STATS.filter(stat => raw && raw[stat]).map(stat => LABELS[stat]);
+        return selected.length ? ` | Over 1200: ${selected.join(", ")} gains halved` : "";
     }
     function growthEquals(a, b) {
         const left = normalizeGrowth(a);
@@ -184,7 +195,7 @@
         yearEffects: localJson("trainingSimYearEffects", {}),
         gimmickYear: localGet("trainingSimGimmickYear", "Junior Year"),
         enforceSupportTypes: localBool("trainingSimEnforceSupportTypes", true),
-        overcapStat: localBool("trainingSimOvercapStat", false),
+        overcapStats: normalizeOvercapStats(localJson("trainingSimOvercapStats", {})),
         ownedOnly: localBool("trainingSimOwnedOnly", false),
         typeFilter: "all",
         rarityFilter: "all",
@@ -240,7 +251,7 @@
         const id = cardId(card);
         const rawLb = card && (card.limit_break_count ?? card.lb);
         const lb = clampLb(rawLb == null ? 4 : rawLb);
-        return { support_card_id: id, lb: card && card.owned ? lb : 4, fb: true };
+        return { support_card_id: id, lb: card && card.owned ? lb : 4, fb: true, bond: true };
     }
     function cardMatchesTile(card, stat) {
         // Friendship applies when the card's type matches the facility;
@@ -306,7 +317,7 @@
         scheduleCalculation();
     }
     function syncItemSummary() {
-        const overcap = state.overcapStat ? " | Trained stat over 1200: primary gain halved" : "";
+        const overcap = overcapSummaryText(state.overcapStats || {});
         if (!scenarioGimmicks().has("items")) {
             els.itemSummary.textContent = `No shop items in this scenario${overcap}`;
             return;
@@ -337,7 +348,8 @@
             active_scenario_effects: [],
             year_effect_ids: hasYear ? selectedYearEffectIds() : [],
             enforce_support_type_condition: !!state.enforceSupportTypes,
-            trained_stat_over_1200: !!state.overcapStat,
+            trained_stat_over_1200: false,
+            stats_over_1200: { ...(state.overcapStats || {}) },
             bonded: true
         };
     }
@@ -378,7 +390,13 @@
                 ${escapeHtml(statLabel(stat))} Weight
             </button>
         `).join("");
-        els.overcapStat.classList.toggle("is-active", !!state.overcapStat);
+        if (els.overcapStat) {
+            els.overcapStat.innerHTML = STATS.map(stat => `
+                <button class="training-sim-chip training-sim-chip-stat ${(state.overcapStats || {})[stat] ? "is-active" : ""}" type="button" data-overcap-stat="${stat}">
+                    ${escapeHtml(LABELS[stat])}
+                </button>
+            `).join("");
+        }
         els.supportTypeGate.checked = !!state.enforceSupportTypes;
         els.ownedOnly.checked = !!state.ownedOnly;
         applyGimmickVisibility();
@@ -526,9 +544,11 @@
                 const id = Number(row.support_card_id || row.id || 0);
                 const lb = clampLb(row.lb == null ? card.limit_break_count : row.lb);
                 const matching = cardMatchesTile(card, stat);
-                const fbOn = row.fb !== false;
+                const bondOn = row.bond !== false;
+                const fbOn = bondOn && row.fb !== false;
+                const bondChip = `<span class="training-sim-bond-chip ${bondOn ? "is-on" : "is-off"}" data-bond-toggle="${id}" title="${bondOn ? "Bond >= 80: bond-gated uniques are active" : "Bond below 80: bond-gated uniques and friendship are inactive"}">Bond</span>`;
                 const fbChip = matching
-                    ? `<span class="training-sim-fb-chip ${fbOn ? "is-on" : "is-off"}" data-fb-toggle="${id}" title="${fbOn ? "Click to disable friendship training" : "Click to enable friendship training"}">FB</span>`
+                    ? `<span class="training-sim-fb-chip ${fbOn ? "is-on" : "is-off"}" data-fb-toggle="${id}" title="${bondOn ? (fbOn ? "Click to disable friendship training" : "Click to enable friendship training") : "Enable Bond first to allow friendship training"}">FB</span>`
                     : `<span class="training-sim-fb-chip is-na" title="No friendship bonus (card type doesn't match training)">–</span>`;
                 return `
                     <div class="training-sim-placed-card ${typeClass(card.type)}" data-placed-card-id="${id}">
@@ -539,6 +559,7 @@
                             <select class="training-sim-lb-select" data-lb-card-id="${id}" title="Limit break level for ${escapeAttr(card.name || id)}">
                                 ${lbOptions(lb)}
                             </select>
+                            ${bondChip}
                             ${fbChip}
                         </div>
                     </div>
@@ -695,9 +716,10 @@
             state.megaphonePct = 0;
             state.weightFacilities = {};
             state.yearEffects = {};
-            state.overcapStat = false;
+            state.overcapStats = {};
             setGrowth({});
             localSet("trainingSimMegaphonePct", "0");
+            localSet("trainingSimOvercapStats", "{}");
             localSet("trainingSimOvercapStat", "0");
             saveYearEffects();
             renderAll();
@@ -724,9 +746,15 @@
             renderControls();
             scheduleCalculation();
         });
-        els.overcapStat.addEventListener("click", () => {
-            state.overcapStat = !state.overcapStat;
-            localSet("trainingSimOvercapStat", state.overcapStat ? "1" : "0");
+        els.overcapStat.addEventListener("click", event => {
+            const btn = event.target.closest("[data-overcap-stat]");
+            if (!btn) return;
+            const stat = btn.dataset.overcapStat;
+            state.overcapStats = normalizeOvercapStats(state.overcapStats || {});
+            state.overcapStats[stat] = !state.overcapStats[stat];
+            if (!state.overcapStats[stat]) delete state.overcapStats[stat];
+            localSet("trainingSimOvercapStats", JSON.stringify(state.overcapStats || {}));
+            localSet("trainingSimOvercapStat", "0");
             renderControls();
             scheduleCalculation();
         });
@@ -789,7 +817,25 @@
         els.areas.addEventListener("click", event => {
             // Clicks inside the breakdown expandable must not place cards/NPCs.
             if (event.target.closest(".training-sim-breakdown-details")) return;
-            if (event.target.closest(".training-sim-placed-card") && !event.target.closest("[data-remove-card-id], [data-fb-toggle]")) return;
+            if (event.target.closest(".training-sim-placed-card") && !event.target.closest("[data-remove-card-id], [data-bond-toggle], [data-fb-toggle]")) return;
+            const bondChip = event.target.closest("[data-bond-toggle]");
+            if (bondChip) {
+                event.preventDefault();
+                event.stopPropagation();
+                const id = Number(bondChip.dataset.bondToggle || 0);
+                STATS.forEach(stat => {
+                    (state.areas[stat] || []).forEach(row => {
+                        if (Number(row.support_card_id || 0) === id) {
+                            const next = row.bond === false;
+                            row.bond = next;
+                            row.fb = next;
+                        }
+                    });
+                });
+                renderAreas();
+                scheduleCalculation();
+                return;
+            }
             // FB chip: toggle friendship for that placed card (do NOT remove it).
             const fbChip = event.target.closest("[data-fb-toggle]");
             if (fbChip) {
@@ -798,7 +844,14 @@
                 const id = Number(fbChip.dataset.fbToggle || 0);
                 STATS.forEach(stat => {
                     (state.areas[stat] || []).forEach(row => {
-                        if (Number(row.support_card_id || 0) === id) row.fb = row.fb === false;
+                        if (Number(row.support_card_id || 0) === id) {
+                            if (row.bond === false) {
+                                row.bond = true;
+                                row.fb = true;
+                            } else {
+                                row.fb = row.fb === false;
+                            }
+                        }
                     });
                 });
                 renderAreas();

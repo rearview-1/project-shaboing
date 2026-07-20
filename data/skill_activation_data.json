@@ -106,7 +106,7 @@
     "effect_magnitude": 1.0,
     "effect_type": "carnival_stat",
     "jp_name": "カーニバルボーナス",
-    "name": "Carnival Bonus (obsolete)",
+    "name": "Carnival Bonus",
     "raw_effects": [
       {
         "type": 502,
@@ -150,7 +150,7 @@
     "effect_magnitude": 1.0,
     "effect_type": "carnival_stat",
     "jp_name": "カーニバルボーナス",
-    "name": "Carnival Bonus (obsolete)",
+    "name": "Carnival Bonus",
     "raw_effects": [
       {
         "type": 502,
@@ -440,7 +440,8 @@
     "skill_id": 100031,
     "source": "GameTora public data manifest",
     "tags": [
-      "ldr"
+      "ldr",
+      "nac"
     ]
   },
   "100041": {
@@ -736,7 +737,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "はらぺこ大将",
-    "name": "Hungry Commander",
+    "name": "Gluttonous Ruler",
     "raw_effects": [
       {
         "type": 9,
@@ -751,7 +752,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac"
+      "ldr",
+      "btw"
     ]
   },
   "100101211": {
@@ -777,7 +779,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "夢叶える末脚",
-    "name": "Dream-fulfilling Sprint",
+    "name": "Accelerating to My Dreams!",
     "raw_effects": [
       {
         "type": 27,
@@ -867,7 +869,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "真夏の思い切り",
-    "name": "Midsummer Resolution",
+    "name": "Sunshine 'n' Spirit!",
     "raw_effects": [
       {
         "type": 27,
@@ -905,7 +907,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "真夏の総大将",
-    "name": "Midsummer Commander",
+    "name": "Ruler of Summer",
     "raw_effects": [
       {
         "type": 27,
@@ -950,7 +952,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "怒涛の出陣",
-    "name": "Tempestuous Attack",
+    "name": "Overwhelming Advance",
     "raw_effects": [
       {
         "type": 27,
@@ -995,7 +997,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "日之本一のド根性",
-    "name": "Guts of the Rising Sun",
+    "name": "Gutsiest in Japan",
     "raw_effects": [
       {
         "type": 27,
@@ -1131,7 +1133,8 @@
     "tags": [
       "f_c",
       "cor",
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "100141": {
@@ -1453,7 +1456,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "start_reaction",
     "jp_name": "最大集中",
-    "name": "Perfect Concentration",
+    "name": "Fully Focused",
     "raw_effects": [
       {
         "type": 10,
@@ -1497,7 +1500,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "異次元の逃亡者",
-    "name": "Dimensional Runaway",
+    "name": "Otherworldly Front-Runner",
     "raw_effects": [
       {
         "type": 31,
@@ -1538,7 +1541,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "瑠璃色エスケイプ",
-    "name": "Lapis Lazuli Escape",
+    "name": "Ultramarine Getaway",
     "raw_effects": [
       {
         "type": 27,
@@ -1612,7 +1615,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "蒼天を駆けるラーファガ",
-    "name": "Sky-Striding Ráfaga",
+    "name": "Ráfaga Azul",
     "raw_effects": [
       {
         "type": 31,
@@ -1991,7 +1994,8 @@
     "skill_id": 100281,
     "source": "GameTora public data manifest",
     "tags": [
-      "sho"
+      "sho",
+      "nac"
     ]
   },
   "100291": {
@@ -2017,7 +2021,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ゆきあかり、おいかけて",
-    "name": "Chasing the Snowlight",
+    "name": "Snow Bright, Snow Flight",
     "raw_effects": [
       {
         "type": 27,
@@ -2094,7 +2098,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "天才的技巧",
-    "name": "Genius Technique",
+    "name": "Talented Technique",
     "raw_effects": [
       {
         "type": 31,
@@ -2201,7 +2205,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "皇帝を超えて",
-    "name": "皇帝を超えて",
+    "name": "Surpassing the Emperor",
     "raw_effects": [
       {
         "type": 31,
@@ -2250,7 +2254,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "レースの天才",
-    "name": "Racing Genius",
+    "name": "Racing Prodigy",
     "raw_effects": [
       {
         "type": 9,
@@ -2295,7 +2299,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "地平の彼方まで",
-    "name": "Beyond the Horizon",
+    "name": "To the Ends of the Earth",
     "raw_effects": [
       {
         "type": 9,
@@ -2908,7 +2912,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "かっ飛ばすわよ！",
-    "name": "Blasting Off!",
+    "name": "Let's Floor It, Baby!",
     "raw_effects": [
       {
         "type": 27,
@@ -2945,7 +2949,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "紅蓮のオーバーレブ",
-    "name": "Crimson Over-revving",
+    "name": "Revved Up Red-Hot",
     "raw_effects": [
       {
         "type": 27,
@@ -3019,7 +3023,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "ドキッ☆じゃじゃウマ娘！",
-    "name": "Dazzling☆Wild Girl",
+    "name": "You Can't Handle Me ☆",
     "raw_effects": [
       {
         "type": 9,
@@ -3102,7 +3106,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "お立ち台の支配者",
-    "name": "Ruler of the Stage",
+    "name": "Queen of the Stage",
     "raw_effects": [
       {
         "type": 27,
@@ -3259,7 +3263,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "『I'm possible』",
-    "name": "『I'm Possible』",
+    "name": "I'm Possible!",
     "raw_effects": [
       {
         "type": 27,
@@ -3313,7 +3317,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "Ding Dong Boo",
-    "name": "Ding Dong Boo",
+    "name": "Ding Dong, Boo!",
     "raw_effects": [
       {
         "type": 27,
@@ -3331,7 +3335,8 @@
     "skill_id": 100431,
     "source": "GameTora public data manifest",
     "tags": [
-      "dir"
+      "dir",
+      "nac"
     ]
   },
   "100441": {
@@ -3358,7 +3363,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "いただき☆ストレリチア！",
-    "name": "Victory Belongs to Me—Strelitzia! ☆",
+    "name": "Victory belongs to me—Strelitzia! ☆",
     "raw_effects": [
       {
         "type": 27,
@@ -3487,7 +3492,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "掲げよ、己が魂の剣を！",
-    "name": "Raise Thy Soul's Sword!",
+    "name": "Raise My Soul's Blade!",
     "raw_effects": [
       {
         "type": 27,
@@ -3577,7 +3582,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "剣ヶ峰より、狂気に嗤え",
-    "name": "Laugh in the Face of Danger",
+    "name": "Laugh at the Odds",
     "raw_effects": [
       {
         "type": 27,
@@ -3655,7 +3660,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "輝くトップスタァ",
-    "name": "Sparkling Top Star",
+    "name": "Dazzling Star",
     "raw_effects": [
       {
         "type": 27,
@@ -3868,7 +3873,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "煌めきのトップスタァ",
-    "name": "Glittering Top Star",
+    "name": "Glittering Star",
     "raw_effects": [
       {
         "type": 27,
@@ -4025,9 +4030,9 @@
       "l_2",
       "l_3",
       "f_c",
-      "nac",
       "f_s",
-      "str"
+      "str",
+      "nac"
     ]
   },
   "100521": {
@@ -4097,7 +4102,7 @@
     "effect_magnitude": 0.1,
     "effect_type": "acceleration",
     "jp_name": "熱血！！風紀アタック",
-    "name": "Hot-Blooded Disciplinary Attack!",
+    "name": "Red-Hot Discipline!",
     "raw_effects": [
       {
         "type": 31,
@@ -4189,7 +4194,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "target_speed",
     "jp_name": "万彩☆マーベラス★世界",
-    "name": "Colorful☆Marvelous★World",
+    "name": "Magical☆Marvelous★World",
     "raw_effects": [
       {
         "type": 27,
@@ -4286,7 +4291,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "叙情、旅路の果てに",
-    "name": "Lyricism at Journey's End",
+    "name": "Lyrical Journey",
     "raw_effects": [
       {
         "type": 27,
@@ -4390,9 +4395,9 @@
       "l_2",
       "l_3",
       "cor",
-      "nac",
       "l_1",
-      "f_c"
+      "f_c",
+      "nac"
     ]
   },
   "100601": {
@@ -4456,7 +4461,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "笠松の食いしん坊",
-    "name": "Glutton of Kasamatsu",
+    "name": "Kasamatsu's Bottomless Pit",
     "raw_effects": [
       {
         "type": 9,
@@ -4543,7 +4548,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "怪物的コーナリング",
-    "name": "Monstrous Cornering",
+    "name": "Cornered by the Beast",
     "raw_effects": [
       {
         "type": 31,
@@ -4584,7 +4589,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "ドカ食い養生",
-    "name": "Gluttonous Regimen",
+    "name": "Full Belly, Full Energy",
     "raw_effects": [
       {
         "type": 9,
@@ -4625,7 +4630,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "クリスマスの奇跡体験",
-    "name": "First-hand Christmas Miracle",
+    "name": "Holiday Miracle",
     "raw_effects": [
       {
         "type": 27,
@@ -4693,7 +4698,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac"
+      "mil",
+      "lng"
     ]
   },
   "100603211": {
@@ -4997,7 +5003,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "アゲてアゲてぷちょへんざ！",
-    "name": "Everybody Put Your Hands Up!",
+    "name": "Hands in the Air Like Ya Don't Care!",
     "raw_effects": [
       {
         "type": 27,
@@ -5051,7 +5057,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "エンジン全開！大噴射！",
-    "name": "Engine, Full Throttle! Turbo Time!",
+    "name": "Turbo BLAST!",
     "raw_effects": [
       {
         "type": 27,
@@ -5294,7 +5300,7 @@
     "effect_magnitude": 10.0,
     "effect_type": "field_of_view",
     "jp_name": "564アイズで視界クッキリ！",
-    "name": "Clear View with 564 Eyes!",
+    "name": "Her Lordship Seeth All",
     "raw_effects": [
       {
         "type": 8,
@@ -5338,7 +5344,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "エクストリーム下校術",
-    "name": "Extreme After-School Technique",
+    "name": "It's All Goin' Downhill from Here!",
     "raw_effects": [
       {
         "type": 9,
@@ -5379,7 +5385,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "神秘体験！ゴルシワープ",
-    "name": "Mysterious Gold Ship Warp!",
+    "name": "Golshi's Out-of-Body Experience",
     "raw_effects": [
       {
         "type": 27,
@@ -5417,7 +5423,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "イカ揚げ、いかがですか！？",
-    "name": "Squid for a Quid!",
+    "name": "Have Some Squid, Kid!",
     "raw_effects": [
       {
         "type": 27,
@@ -5798,7 +5804,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "花開き、世界",
-    "name": "Blossoming World",
+    "name": "World in Bloom",
     "raw_effects": [
       {
         "type": 27,
@@ -5816,7 +5822,8 @@
     "skill_id": 100761,
     "source": "GameTora public data manifest",
     "tags": [
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "100771": {
@@ -5868,7 +5875,8 @@
     "skill_id": 100771,
     "source": "GameTora public data manifest",
     "tags": [
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "100781": {
@@ -5906,7 +5914,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "風光る",
-    "name": "A Spring in My Step",
+    "name": "Sunny Breeze",
     "raw_effects": [
       {
         "type": 31,
@@ -6033,6 +6041,7 @@
     "skill_id": 100801,
     "source": "GameTora public data manifest",
     "tags": [
+      "dir",
       "nac"
     ]
   },
@@ -6063,7 +6072,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "スキットルブレイク",
-    "name": "Flasks Up",
+    "name": "A Swig of Strength",
     "raw_effects": [
       {
         "type": 9,
@@ -6105,7 +6114,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "抜群の豪脚",
-    "name": "Unrivaled Strides",
+    "name": "Feet of Fury",
     "raw_effects": [
       {
         "type": 31,
@@ -6151,7 +6160,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "ぶっ差してやるぜ！",
-    "name": "I'll Leave You in the Dust!",
+    "name": "Cuttin' Through!",
     "raw_effects": [
       {
         "type": 31,
@@ -6195,7 +6204,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "最速のトップギア",
-    "name": "Fastest Top Gear",
+    "name": "Kick It into Top Gear!",
     "raw_effects": [
       {
         "type": 27,
@@ -6356,7 +6365,8 @@
     "tags": [
       "mil",
       "f_c",
-      "cor"
+      "cor",
+      "nac"
     ]
   },
   "100831": {
@@ -6446,7 +6456,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "current_speed",
     "jp_name": "霹靂のアウフヘーベン",
-    "name": "Thunderstorm Sublation",
+    "name": "Sublimated Thunder",
     "raw_effects": [
       {
         "type": 22,
@@ -6460,7 +6470,8 @@
     "skill_id": 100841,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "100851": {
@@ -6492,7 +6503,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "current_speed",
     "jp_name": "至上であれ",
-    "name": "Reign Supreme",
+    "name": "Ever Supreme",
     "raw_effects": [
       {
         "type": 22,
@@ -6641,7 +6652,8 @@
     "skill_id": 100881,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "100891": {
@@ -6792,7 +6804,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "パーフェクトチューン",
-    "name": "Perfect Tune",
+    "name": "Perfectly Tuned",
     "raw_effects": [
       {
         "type": 27,
@@ -6837,7 +6849,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "アタシが勝つんだから！",
-    "name": "This is my win!",
+    "name": "First Place Is MINE!",
     "raw_effects": [
       {
         "type": 9,
@@ -6878,7 +6890,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "おてんば女王",
-    "name": "Tomboy Queen",
+    "name": "Rough Queen",
     "raw_effects": [
       {
         "type": 9,
@@ -6967,7 +6979,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "開かれる夢の扉",
-    "name": "Door of Dreams",
+    "name": "Door to My Dream",
     "raw_effects": [
       {
         "type": 27,
@@ -7123,7 +7135,8 @@
     "skill_id": 100921,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "100931": {
@@ -7227,7 +7240,8 @@
     "skill_id": 100941,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "100951": {
@@ -7384,7 +7398,8 @@
       "med",
       "l_2",
       "l_3",
-      "cor"
+      "cor",
+      "nac"
     ]
   },
   "100981": {
@@ -7420,7 +7435,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "理運開かりて翔る",
-    "name": "Luck Comes to the Prepared",
+    "name": "Luck Runs My Way",
     "raw_effects": [
       {
         "type": 27,
@@ -7479,7 +7494,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "かがやけ☆とまこまい",
-    "name": "Shine ☆ Tomakomai",
+    "name": "Shine On, Tomakomai! ☆",
     "raw_effects": [
       {
         "type": 31,
@@ -7551,7 +7566,8 @@
     "skill_id": 101001,
     "source": "GameTora public data manifest",
     "tags": [
-      "dir"
+      "dir",
+      "nac"
     ]
   },
   "101001111": {
@@ -7577,7 +7593,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "狙い撃ちデス！",
-    "name": "Sharpshooting!",
+    "name": "Shootin' Straight Ahead!",
     "raw_effects": [
       {
         "type": 27,
@@ -7651,7 +7667,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "アドベンチャーの先導者",
-    "name": "Adventure Leader",
+    "name": "Takin' Y'all on a Wild Ride!",
     "raw_effects": [
       {
         "type": 27,
@@ -7692,7 +7708,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "真剣勝負デス！",
-    "name": "No Holds Barred!",
+    "name": "May the Best Uma Win!",
     "raw_effects": [
       {
         "type": 31,
@@ -7803,7 +7819,8 @@
     "skill_id": 101003211,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "ldr",
+      "mil"
     ]
   },
   "101021": {
@@ -7949,7 +7966,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "暁の御旗『葛城栄主』！",
-    "name": "Flag of Dawn: Katsuragi Ace",
+    "name": "Sunrise Banner—Katsuragi Ace!",
     "raw_effects": [
       {
         "type": 27,
@@ -7972,7 +7989,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "cor",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "101051": {
@@ -8022,7 +8040,8 @@
     "skill_id": 101051,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "101061": {
@@ -8058,7 +8077,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "Bang☆ミラクるわせ！",
-    "name": "Bang☆Miracle Maker!",
+    "name": "Bang! Miracle Shot ☆",
     "raw_effects": [
       {
         "type": 27,
@@ -8073,7 +8092,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "lng",
-      "f_c"
+      "f_c",
+      "nac"
     ]
   },
   "101071": {
@@ -8219,7 +8239,8 @@
     "tags": [
       "sho",
       "cor",
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "101101": {
@@ -8360,7 +8381,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "不退転の意思",
-    "name": "Conviction",
+    "name": "Indomitable Spirit",
     "raw_effects": [
       {
         "type": 31,
@@ -8405,7 +8426,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "キュアリーヒール",
-    "name": "Curely Heal",
+    "name": "Comforting Heal",
     "raw_effects": [
       {
         "type": 9,
@@ -8450,7 +8471,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "勇気の魔法",
-    "name": "Conjuring Courage",
+    "name": "The Magic of Courage",
     "raw_effects": [
       {
         "type": 9,
@@ -8703,7 +8724,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_2",
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "101131": {
@@ -8805,7 +8827,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "mil",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "101151": {
@@ -8856,7 +8879,9 @@
     "skill_id": 101151,
     "source": "GameTora public data manifest",
     "tags": [
-      "cha"
+      "cha",
+      "med",
+      "lng"
     ]
   },
   "101161": {
@@ -8962,6 +8987,7 @@
     "source": "GameTora public data manifest",
     "tags": [
       "f_s",
+      "cha",
       "nac"
     ]
   },
@@ -9013,7 +9039,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "med",
-      "tur"
+      "tur",
+      "nac"
     ]
   },
   "101191": {
@@ -9146,7 +9173,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "勝利への咆哮",
-    "name": "Victory Roar",
+    "name": "Cry of Victory",
     "raw_effects": [
       {
         "type": 27,
@@ -9226,7 +9253,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "怒濤のポロロッカ",
-    "name": "Tempestuous Pororoca",
+    "name": "Pororoca Roar",
     "raw_effects": [
       {
         "type": 27,
@@ -9263,7 +9290,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "熱烈エンゲージ！",
-    "name": "Passionate Engagement!",
+    "name": "Engaging Engine!",
     "raw_effects": [
       {
         "type": 27,
@@ -9301,7 +9328,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "闘魂入刀！",
-    "name": "Fiery Cake-Cutting!",
+    "name": "Cake-Cuttin' Time!",
     "raw_effects": [
       {
         "type": 31,
@@ -9413,7 +9440,8 @@
     "tags": [
       "l_3",
       "sho",
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "101241": {
@@ -9515,7 +9543,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "str",
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "101291": {
@@ -9622,6 +9651,9 @@
     "source": "GameTora public data manifest",
     "tags": [
       "str",
+      "mil",
+      "tur",
+      "med",
       "nac"
     ]
   },
@@ -9648,7 +9680,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "メジロの心得",
-    "name": "Mejiro's Wisdom",
+    "name": "As Befits a Mejiro",
     "raw_effects": [
       {
         "type": 27,
@@ -9689,7 +9721,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "名優の余裕",
-    "name": "Star's Composure",
+    "name": "Top-Class Composure",
     "raw_effects": [
       {
         "type": 9,
@@ -9734,7 +9766,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "アクティブレスト",
-    "name": "Active Rest",
+    "name": "Rigorous Rest",
     "raw_effects": [
       {
         "type": 9,
@@ -9776,7 +9808,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "空の果てまで",
-    "name": "End of Sky",
+    "name": "Above the Cloudline",
     "raw_effects": [
       {
         "type": 27,
@@ -9813,7 +9845,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "夏の名優",
-    "name": "Summer Star",
+    "name": "Classy Summer",
     "raw_effects": [
       {
         "type": 27,
@@ -9850,7 +9882,7 @@
     "effect_magnitude": 0.095,
     "effect_type": "stamina_recovery",
     "jp_name": "一意専心にリフレッシュ！",
-    "name": "Wholehearted Refresher",
+    "name": "An Earnest Breather",
     "raw_effects": [
       {
         "type": 9,
@@ -9969,7 +10001,7 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac",
+      "med",
       "btw",
       "tur"
     ]
@@ -10035,6 +10067,60 @@
       "lng"
     ]
   },
+  "101341": {
+    "activation": 0,
+    "base_time_ms": 60000,
+    "category": "speed",
+    "color": "unique",
+    "condition": "(distance_type==3@distance_type==4 AND near_count>=2&phase==1&order_rate<=50) OR (near_count>=2&phase==1&order_rate<=50)",
+    "condition_groups": [
+      {
+        "base_time": 60000,
+        "condition": "near_count>=2&phase==1&order_rate<=50",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      },
+      {
+        "base_time": 60000,
+        "condition": "near_count>=2&phase==1&order_rate<=50",
+        "effects": [
+          {
+            "type": 27,
+            "value": 2500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "いずれあなたに咲くフローラ",
+    "name": "Flora That Will Bloom for You",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500
+      },
+      {
+        "type": 27,
+        "value": 2500
+      }
+    ],
+    "skill_id": 101341,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "med",
+      "lng",
+      "nac"
+    ]
+  },
   "101351": {
     "activation": 0,
     "base_time_ms": 60000,
@@ -10083,7 +10169,8 @@
     "skill_id": 101351,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "btw",
+      "cha"
     ]
   },
   "101361": {
@@ -10120,7 +10207,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "無垢の祈り・ホーリーライト",
-    "name": "無垢の祈り・ホーリーライト",
+    "name": "Innocent Prayer: Holy Light",
     "raw_effects": [
       {
         "type": 22,
@@ -10135,7 +10222,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_2",
-      "nac"
+      "mil",
+      "med"
     ]
   },
   "101371": {
@@ -10195,7 +10283,8 @@
     "skill_id": 101371,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "med",
+      "lng"
     ]
   },
   "101401111": {
@@ -10225,7 +10314,7 @@
     "effect_magnitude": 15.0,
     "effect_type": "field_of_view",
     "jp_name": "鷹ノ目",
-    "name": "Falcon Eyes",
+    "name": "Eyes of the Condor",
     "raw_effects": [
       {
         "type": 8,
@@ -10270,7 +10359,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "余裕のパフォーマンス",
-    "name": "Flawless Performance",
+    "name": "Performing Perfecto!",
     "raw_effects": [
       {
         "type": 9,
@@ -10311,7 +10400,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "豪勇無双",
-    "name": "Unparalleled Bravery",
+    "name": "Heroic Flurry",
     "raw_effects": [
       {
         "type": 31,
@@ -10521,7 +10610,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "降臨！世紀末覇王！",
-    "name": "Centurial Overlord Descends!",
+    "name": "Entrance of the Centurial Overlord!",
     "raw_effects": [
       {
         "type": 27,
@@ -10558,7 +10647,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "歌劇王の行進",
-    "name": "March of the Opera King",
+    "name": "The Leading Actor",
     "raw_effects": [
       {
         "type": 27,
@@ -10595,7 +10684,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "円舞曲のマエストロ",
-    "name": "Waltz Maestro",
+    "name": "Maestro of the Waltz",
     "raw_effects": [
       {
         "type": 9,
@@ -10679,7 +10768,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "ボクは遅れずにやってくる！",
-    "name": "I Won't Fall Behind!",
+    "name": "Never a Beat Late!",
     "raw_effects": [
       {
         "type": 27,
@@ -10717,7 +10806,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "一刀両断",
-    "name": "Decisive Cleave",
+    "name": "Decisive Strike",
     "raw_effects": [
       {
         "type": 27,
@@ -10754,7 +10843,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "餓狼牙",
-    "name": "Hungry Wolf's Fang",
+    "name": "In the Wolf's Maw",
     "raw_effects": [
       {
         "type": 27,
@@ -10791,7 +10880,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "BLAZING WOLF",
-    "name": "BLAZING WOLF",
+    "name": "Blazing Wolf",
     "raw_effects": [
       {
         "type": 27,
@@ -10829,7 +10918,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "渇望する怪物",
-    "name": "Craving Monster",
+    "name": "Ravenous Beast",
     "raw_effects": [
       {
         "type": 31,
@@ -10867,7 +10956,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "current_speed",
     "jp_name": "皇帝の眼差し",
-    "name": "Emperor's Gaze",
+    "name": "Eyes of an Emperor",
     "raw_effects": [
       {
         "type": 22,
@@ -10950,7 +11039,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "鎧袖一触",
-    "name": "Hands-Down Victory",
+    "name": "Unquestioned Might",
     "raw_effects": [
       {
         "type": 27,
@@ -10987,7 +11076,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "神色自若",
-    "name": "Perfect Composure",
+    "name": "Unwavering Expression",
     "raw_effects": [
       {
         "type": 9,
@@ -11028,7 +11117,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "風霜高潔",
-    "name": "Noble Hardships",
+    "name": "Autumn Grace",
     "raw_effects": [
       {
         "type": 1,
@@ -11068,7 +11157,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "女帝の権謀",
-    "name": "The Empress' Ploy",
+    "name": "As the Empress Wills",
     "raw_effects": [
       {
         "type": 27,
@@ -11109,7 +11198,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "水月鏡花",
-    "name": "Moonlit Water, Mirror Flower",
+    "name": "Untouchable Beauty",
     "raw_effects": [
       {
         "type": 28,
@@ -11150,7 +11239,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "女帝の矜持",
-    "name": "The Empress' Pride",
+    "name": "Dignified Empress",
     "raw_effects": [
       {
         "type": 27,
@@ -11191,7 +11280,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "上弦のソムリエール",
-    "name": "Crescent Moon Sommelier",
+    "name": "Moonlight Sommelier",
     "raw_effects": [
       {
         "type": 31,
@@ -11336,7 +11425,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "限界ウママニア",
-    "name": "Uma Mania Max",
+    "name": "Ultimate Uma Simp",
     "raw_effects": [
       {
         "type": 27,
@@ -11380,7 +11469,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "最前列は譲れない！",
-    "name": "The Front Row Is Non-Negotiable!",
+    "name": "Best View of Anyone!",
     "raw_effects": [
       {
         "type": 28,
@@ -11479,7 +11568,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "超特急入稿！",
-    "name": "Super Express Submission!",
+    "name": "Run Like the Fic's Due Tomorrow!",
     "raw_effects": [
       {
         "type": 27,
@@ -11562,7 +11651,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "尊みを求めてふっかーーつ！",
-    "name": "Revived For Moe!",
+    "name": "Back for More Moe!",
     "raw_effects": [
       {
         "type": 27,
@@ -11603,7 +11692,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ファストリトリーブ",
-    "name": "Fast Retrieve",
+    "name": "Quick Reel",
     "raw_effects": [
       {
         "type": 27,
@@ -11677,7 +11766,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "脱出大作戦",
-    "name": "Operation Escape",
+    "name": "Breakaway Scheme",
     "raw_effects": [
       {
         "type": 27,
@@ -11718,7 +11807,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "逃げろ～♪",
-    "name": "Run~Away~♪",
+    "name": "Run If You Can ♪",
     "raw_effects": [
       {
         "type": 27,
@@ -11842,7 +11931,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "雷騰雲奔",
-    "name": "Stormstrider",
+    "name": "Gone in a Flash",
     "raw_effects": [
       {
         "type": 27,
@@ -11924,7 +12013,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "尻尾の有頂天",
-    "name": "Tail of Ecstasy",
+    "name": "Paradise Tail",
     "raw_effects": [
       {
         "type": 27,
@@ -11960,7 +12049,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "先達に献ぐ祈りの頌",
-    "name": "Ode to Our Predecessors",
+    "name": "A Prayer for Our Predecessors",
     "raw_effects": [
       {
         "type": 27,
@@ -11998,7 +12087,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "さあ、ウチとやろうや！",
-    "name": "'ight, let's get em!",
+    "name": "C'mon, Let's Do This!",
     "raw_effects": [
       {
         "type": 27,
@@ -12148,7 +12237,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "天空落とし",
-    "name": "Sky Drop",
+    "name": "Heavenly Descent",
     "raw_effects": [
       {
         "type": 31,
@@ -12185,7 +12274,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "思い出を力に変えて",
-    "name": "Memories Become Power",
+    "name": "Emboldening Memories",
     "raw_effects": [
       {
         "type": 27,
@@ -12226,7 +12315,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "モリガンの矛戟",
-    "name": "Morrígan's Spear",
+    "name": "Spear of Morrígan",
     "raw_effects": [
       {
         "type": 31,
@@ -12318,7 +12407,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "想定通り、余裕十分",
-    "name": "Exactly As Planned",
+    "name": "All According to Plan",
     "raw_effects": [
       {
         "type": 9,
@@ -12355,7 +12444,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "計画的クールダウン",
-    "name": "Scheduled Cooldown",
+    "name": "Strategic Cooldown",
     "raw_effects": [
       {
         "type": 9,
@@ -12392,7 +12481,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "VIPな後ろ姿",
-    "name": "VIP Back View",
+    "name": "Very Important Positioning",
     "raw_effects": [
       {
         "type": 9,
@@ -12428,7 +12517,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "全力サンタクロース",
-    "name": "Full Power Santa Claus",
+    "name": "Speedy Santa",
     "raw_effects": [
       {
         "type": 27,
@@ -12562,7 +12651,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "You copy?",
-    "name": "You Copy?",
+    "name": "You copy?",
     "raw_effects": [
       {
         "type": 9,
@@ -12609,7 +12698,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "I copy!",
-    "name": "I Copy!",
+    "name": "I copy!",
     "raw_effects": [
       {
         "type": 31,
@@ -12659,7 +12748,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "純白のささやき",
-    "name": "Snow White Whisper",
+    "name": "Soft White Whisper",
     "raw_effects": [
       {
         "target": 9,
@@ -12703,7 +12792,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "バレルロール",
-    "name": "Barrel Roll",
+    "name": "Barrel Roll!",
     "raw_effects": [
       {
         "type": 9,
@@ -12953,7 +13042,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "オイテイカナイデ",
-    "name": "Don't Leave Me",
+    "name": "Don't Leave Me...",
     "raw_effects": [
       {
         "target": 9,
@@ -13091,7 +13180,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "超常体験",
-    "name": "超常体験",
+    "name": "Paranormal Experience",
     "raw_effects": [
       {
         "type": 22,
@@ -13130,7 +13219,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "コノヨナラザル",
-    "name": "コノヨナラザル",
+    "name": "Not of This World",
     "raw_effects": [
       {
         "type": 31,
@@ -13167,7 +13256,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "クロックアップ",
-    "name": "Overclocking",
+    "name": "Overclock",
     "raw_effects": [
       {
         "type": 31,
@@ -13207,7 +13296,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "困難を乗り越える者",
-    "name": "Overcomer of Difficulties",
+    "name": "Overcome Any Strife",
     "raw_effects": [
       {
         "type": 9,
@@ -13252,7 +13341,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "完璧なエラー対処術",
-    "name": "Perfect Bugfixing Technique",
+    "name": "Malfunction Mitigation",
     "raw_effects": [
       {
         "type": 27,
@@ -13334,7 +13423,7 @@
     "effect_magnitude": 10.0,
     "effect_type": "all_stats",
     "jp_name": "パーフェクトブート",
-    "name": "Perfect Boot",
+    "name": "Perfect Boost",
     "raw_effects": [
       {
         "type": 10,
@@ -13374,7 +13463,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "マッスルアンセム",
-    "name": "Muscle Anthem",
+    "name": "Let Those Muscles SING!",
     "raw_effects": [
       {
         "type": 27,
@@ -13411,7 +13500,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "ライジングバルクアップ",
-    "name": "Rising Bulk Up",
+    "name": "Bulk Up & Away!",
     "raw_effects": [
       {
         "type": 27,
@@ -13449,7 +13538,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "夢叶える決意を授けましょう",
-    "name": "Granting Dream-fulfilling Determination",
+    "name": "Helping Grant Your Dream",
     "raw_effects": [
       {
         "type": 31,
@@ -13486,7 +13575,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "至高の勝利を召し上がれ",
-    "name": "Serving Victory Supreme",
+    "name": "Give You a Taste of Glory",
     "raw_effects": [
       {
         "type": 27,
@@ -13607,7 +13696,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "下ごしらえ万全！",
-    "name": "Flawless Mise en Place!",
+    "name": "Full Tank!",
     "raw_effects": [
       {
         "type": 28,
@@ -13656,7 +13745,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "ボーノな健啖家",
-    "name": "Bono-style Gluttony",
+    "name": "Always Hungry for More!",
     "raw_effects": [
       {
         "type": 9,
@@ -13839,7 +13928,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "憧れのシチーガール",
-    "name": "Admired City Girl",
+    "name": "Like They Do in the City!",
     "raw_effects": [
       {
         "type": 31,
@@ -13879,7 +13968,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "雪国仕込みの直滑降",
-    "name": "Seasoned Sledder's Swoop",
+    "name": "Snow Gals Know Howta Sled!",
     "raw_effects": [
       {
         "type": 31,
@@ -14108,7 +14197,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "決意のヒーロー",
-    "name": "Determined Hero",
+    "name": "Heroic Determination",
     "raw_effects": [
       {
         "type": 31,
@@ -14153,7 +14242,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "黒の刺客",
-    "name": "Black Assassin",
+    "name": "Dark Assassin",
     "raw_effects": [
       {
         "type": 9,
@@ -14198,7 +14287,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "がんばるぞー…おー！",
-    "name": "I'll Do My Beeest!",
+    "name": "I Can Do This!",
     "raw_effects": [
       {
         "type": 9,
@@ -14245,7 +14334,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "トリック&トリート",
-    "name": "Trick & Treat",
+    "name": "Trick and Treat",
     "raw_effects": [
       {
         "target": 20,
@@ -14381,7 +14470,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "じゃじゃウマお姉ちゃん",
-    "name": "Wild Onee-chan",
+    "name": "Stubborn Sis",
     "raw_effects": [
       {
         "type": 9,
@@ -14428,7 +14517,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "荒ぶる風神",
-    "name": "Raging Wind God",
+    "name": "Wind God's Wrath",
     "raw_effects": [
       {
         "type": 27,
@@ -14476,7 +14565,7 @@
     "effect_magnitude": 10.0,
     "effect_type": "all_stats",
     "jp_name": "オーダーはバッチリ！",
-    "name": "Perfect Order!",
+    "name": "Perfect ♪ Order Up!",
     "raw_effects": [
       {
         "type": 10,
@@ -14520,7 +14609,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "華麗なサーブ",
-    "name": "Brilliant Serving",
+    "name": "Slick Serving",
     "raw_effects": [
       {
         "type": 27,
@@ -14631,7 +14720,8 @@
     "skill_id": 103103211,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "103201111": {
@@ -14657,7 +14747,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "可能性の徒",
-    "name": "Pupil of Possibility",
+    "name": "Latent One",
     "raw_effects": [
       {
         "type": 27,
@@ -14698,7 +14788,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "効率的休息法",
-    "name": "Efficient Recreation",
+    "name": "Efficient Rest Methodology",
     "raw_effects": [
       {
         "type": 9,
@@ -14749,7 +14839,7 @@
     "effect_magnitude": 100.0,
     "effect_type": "speed_stat_up",
     "jp_name": "ラプラスの悪魔",
-    "name": "Laplace's Demon",
+    "name": "Devil's Laplace",
     "raw_effects": [
       {
         "type": 1,
@@ -14795,7 +14885,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "眩耀のルクシオン",
-    "name": "Dazzling Luxon",
+    "name": "Blinding Luxon",
     "raw_effects": [
       {
         "type": 27,
@@ -15000,7 +15090,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "静かな誓い",
-    "name": "Silent Oath",
+    "name": "Quiet Promise",
     "raw_effects": [
       {
         "type": 9,
@@ -15041,7 +15131,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "己身焦がすほうき星",
-    "name": "Immolated Comet",
+    "name": "Self-Destructive Comet",
     "raw_effects": [
       {
         "type": 27,
@@ -15181,7 +15271,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "火消の梯子登り",
-    "name": "Firefighter's Hashigo-nori",
+    "name": "Firefighter's Ascent",
     "raw_effects": [
       {
         "type": 27,
@@ -15221,7 +15311,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "熟練の砂塵使い",
-    "name": "Sandstorm Wielder",
+    "name": "Expert on the Dirt",
     "raw_effects": [
       {
         "type": 9,
@@ -15349,7 +15439,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "大見得切り",
-    "name": "Dramatic Finale",
+    "name": "Standout Step",
     "raw_effects": [
       {
         "type": 31,
@@ -15448,7 +15538,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "たゆまぬ努力",
-    "name": "Tireless Effort",
+    "name": "Never Ever Give Up",
     "raw_effects": [
       {
         "type": 31,
@@ -15533,7 +15623,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "千万バリキ！！！",
-    "name": "Ten Million Horsepower!!!",
+    "name": "Superpowered Engines!",
     "raw_effects": [
       {
         "type": 27,
@@ -15570,7 +15660,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "きっと飛べる！",
-    "name": "You'll Fly for Sure!",
+    "name": "I Can Fly!",
     "raw_effects": [
       {
         "type": 27,
@@ -15737,7 +15827,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "アップリフティング",
-    "name": "Uplifting",
+    "name": "Uplift",
     "raw_effects": [
       {
         "type": 27,
@@ -15965,7 +16055,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "current_speed",
     "jp_name": "閃光のマギア",
-    "name": "Flash Magier",
+    "name": "Blinding Magia",
     "raw_effects": [
       {
         "type": 28,
@@ -16006,7 +16096,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "誇りを懸けて",
-    "name": "Betting My Pride",
+    "name": "On My Honor",
     "raw_effects": [
       {
         "type": 27,
@@ -16043,7 +16133,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "勝利のレシピ",
-    "name": "Recipe of Victory",
+    "name": "Recipe for Victory",
     "raw_effects": [
       {
         "type": 22,
@@ -16117,7 +16207,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "黒い閃光",
-    "name": "Black Flash",
+    "name": "Dark Flash",
     "raw_effects": [
       {
         "type": 27,
@@ -16279,7 +16369,7 @@
     "effect_magnitude": -5.0,
     "effect_type": "field_of_view",
     "jp_name": "#カワイイかく乱♪",
-    "name": "#Cute Perturbation♪",
+    "name": "#CuteChaos♪",
     "raw_effects": [
       {
         "target": 10,
@@ -16329,7 +16419,7 @@
     "effect_magnitude": -0.25,
     "effect_type": "current_speed",
     "jp_name": "#夢中になっちゃえ♪",
-    "name": "#Go Crazy♪",
+    "name": "#GotYouDownBad♪",
     "raw_effects": [
       {
         "target": 10,
@@ -16379,7 +16469,7 @@
     "effect_magnitude": -0.25,
     "effect_type": "current_speed",
     "jp_name": "#カレンに染まってみる？",
-    "name": "#WannaGetCurren'd?",
+    "name": "#ThinkOfMe",
     "raw_effects": [
       {
         "target": 10,
@@ -16464,7 +16554,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "#ビューティースプリント",
-    "name": "#Beauty Sprint",
+    "name": "#BeautifulSprint",
     "raw_effects": [
       {
         "type": 31,
@@ -16510,7 +16600,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "ノンストッププリンセス",
-    "name": "Non-stop Princess",
+    "name": "Unstoppable Princess",
     "raw_effects": [
       {
         "type": 31,
@@ -16554,7 +16644,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "暴れ龍",
-    "name": "Raging Dragon",
+    "name": "Rising Road Rage",
     "raw_effects": [
       {
         "type": 27,
@@ -16739,7 +16829,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "先見の明",
-    "name": "Prescience",
+    "name": "Pristine Foresight",
     "raw_effects": [
       {
         "type": 9,
@@ -16889,7 +16979,7 @@
     "effect_magnitude": -0.3,
     "effect_type": "acceleration",
     "jp_name": "鮮やかな布陣",
-    "name": "Vivid Battle Formation",
+    "name": "Golden Formation",
     "raw_effects": [
       {
         "target": 9,
@@ -16937,7 +17027,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "虎視眈々",
-    "name": "Eagle-eyed",
+    "name": "Geared to Strike",
     "raw_effects": [
       {
         "type": 9,
@@ -17092,7 +17182,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "バクシン的スプリント！",
-    "name": "Bakushin Sprint!",
+    "name": "Bakushin SPRINT!",
     "raw_effects": [
       {
         "type": 31,
@@ -17133,7 +17223,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "バクシン的リード！",
-    "name": "Bakushin Lead!",
+    "name": "Bakushin LEAD!",
     "raw_effects": [
       {
         "type": 27,
@@ -17170,7 +17260,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "猪突猛進！バクシンロード！",
-    "name": "Red-Hot Rush! Bakushin Road!",
+    "name": "Full Charge! BAKUSHIIIN!",
     "raw_effects": [
       {
         "type": 27,
@@ -17207,7 +17297,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "驀進！爆進！バクシーン！",
-    "name": "Bakushin! Bakushin! Bakushiiin!",
+    "name": "Baku-speed! BakuSHIIIIN!",
     "raw_effects": [
       {
         "type": 22,
@@ -17305,7 +17395,7 @@
     "skill_id": 104103211,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "sho"
     ]
   },
   "10411": {
@@ -17371,7 +17461,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "世界を貫く至高の輝き",
-    "name": "World-wide Supreme Brilliance",
+    "name": "The World Is My Oyster",
     "raw_effects": [
       {
         "type": 27,
@@ -17413,7 +17503,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "パール流ダンスバトル",
-    "name": "Pearl-style Dance Battle",
+    "name": "Pearlescent Danceoff",
     "raw_effects": [
       {
         "type": 27,
@@ -17572,7 +17662,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "全速前進なのだ！",
-    "name": "Full Speed Ahead, Nanoda!",
+    "name": "Just Run Like Crazy!",
     "raw_effects": [
       {
         "type": 27,
@@ -17613,7 +17703,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "いたずらマイスター",
-    "name": "Masterful Prankster",
+    "name": "Mischevious Maestro",
     "raw_effects": [
       {
         "type": 1,
@@ -17778,7 +17868,7 @@
     "effect_magnitude": -0.25,
     "effect_type": "current_speed",
     "jp_name": "チャームマジック",
-    "name": "Charm Magic",
+    "name": "Magic Charm",
     "raw_effects": [
       {
         "target": 4,
@@ -18046,7 +18136,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "あま～い幻惑",
-    "name": "Sweet Bewitching",
+    "name": "Sweet Trance",
     "raw_effects": [
       {
         "type": 27,
@@ -18083,7 +18173,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "癒しのマエストロ",
-    "name": "Healing Maestro",
+    "name": "Motherly Maestro",
     "raw_effects": [
       {
         "type": 9,
@@ -18126,7 +18216,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "お世話のプロフェッショナル",
-    "name": "Professional Pamperer",
+    "name": "Expert Caretaker",
     "raw_effects": [
       {
         "type": 27,
@@ -18173,7 +18263,7 @@
     "effect_magnitude": -0.03,
     "effect_type": "stamina_recovery",
     "jp_name": "魅惑のマミーウィスパー",
-    "name": "Charming Mummy Whisper",
+    "name": "Mummy's Sweet Whispers",
     "raw_effects": [
       {
         "target": 9,
@@ -18330,7 +18420,7 @@
     "effect_magnitude": 0.045,
     "effect_type": "lane_movement",
     "jp_name": "大注目のウマドル参上★",
-    "name": "The Dazzling Umadol's Here★",
+    "name": "Umadol★Onstage!",
     "raw_effects": [
       {
         "type": 28,
@@ -18408,7 +18498,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ウマドルパワー急上昇↑↑",
-    "name": "Umadol Power Trend ↑↑",
+    "name": "Umadol ♪ Chart Topper!",
     "raw_effects": [
       {
         "type": 27,
@@ -18453,7 +18543,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "夢に向かって急上昇！",
-    "name": "Trending Towards Your Dreams!",
+    "name": "Rising to Umadol Stardom!",
     "raw_effects": [
       {
         "type": 27,
@@ -18531,7 +18621,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "絶対的センター！",
-    "name": "Absolute Center!",
+    "name": "Always Center Stage!",
     "raw_effects": [
       {
         "type": 31,
@@ -18674,7 +18764,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "英雄への道標",
-    "name": "Hero Handbook",
+    "name": "Halfway to Heroism",
     "raw_effects": [
       {
         "type": 9,
@@ -18878,7 +18968,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "ノってこ！",
-    "name": "Get Those Vibes Up!",
+    "name": "Lezzgo!",
     "raw_effects": [
       {
         "type": 31,
@@ -18924,7 +19014,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "トレンドプランナー",
-    "name": "Trend Planner",
+    "name": "Trendsetter",
     "raw_effects": [
       {
         "type": 9,
@@ -18980,7 +19070,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "ワンチャンまくったる！",
-    "name": "Taking Every Chance!",
+    "name": "I Can Totes Shake 'Em!",
     "raw_effects": [
       {
         "type": 31,
@@ -19039,7 +19129,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "あたししか勝たん！",
-    "name": "Can't Top Me!",
+    "name": "I'm Literally the Best!",
     "raw_effects": [
       {
         "type": 27,
@@ -19249,7 +19339,7 @@
     "effect_magnitude": -1.0,
     "effect_type": "stamina_recovery",
     "jp_name": "乾坤一擲の大博打",
-    "name": "All or Nothing",
+    "name": "It's All or Nothing",
     "raw_effects": [
       {
         "type": 27,
@@ -19316,7 +19406,7 @@
     "effect_magnitude": 100.0,
     "effect_type": "speed_stat_up",
     "jp_name": "鉄火のギャンブラー",
-    "name": "Hot-blooded Gambler",
+    "name": "Takin' Each Gamble",
     "raw_effects": [
       {
         "type": 1,
@@ -19488,7 +19578,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "鬼気森然",
-    "name": "Menacing Presence",
+    "name": "Cutting-Edge Senses",
     "raw_effects": [
       {
         "type": 9,
@@ -19533,7 +19623,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "駆り立てる想い",
-    "name": "Spurring Emotions",
+    "name": "Heart of a Hunter",
     "raw_effects": [
       {
         "type": 31,
@@ -19619,7 +19709,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "起死回生の出力",
-    "name": "Recovery Output",
+    "name": "Bolt from the Brink",
     "raw_effects": [
       {
         "type": 31,
@@ -19734,7 +19824,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "風花疾走",
-    "name": "Flurry Dash",
+    "name": "Petals in the Breeze",
     "raw_effects": [
       {
         "type": 27,
@@ -19813,7 +19903,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "大輪の決意",
-    "name": "Large-Petaled Resolution",
+    "name": "Blooming Resolve",
     "raw_effects": [
       {
         "type": 31,
@@ -19903,7 +19993,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ヴェール揺らす春疾風",
-    "name": "Veil-Swaying Spring Storm",
+    "name": "Veil in the Spring Breeze",
     "raw_effects": [
       {
         "type": 27,
@@ -19998,7 +20088,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "まだまだだよ！",
-    "name": "Not Done Yet!",
+    "name": "I'll Keep Trying!",
     "raw_effects": [
       {
         "type": 9,
@@ -20089,7 +20179,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "見てて見てて！",
-    "name": "Look At Me, Look!",
+    "name": "Look, Look!",
     "raw_effects": [
       {
         "type": 28,
@@ -20179,7 +20269,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "がんばるもん！",
-    "name": "Trying My Best!",
+    "name": "I'll Do My Very Best!",
     "raw_effects": [
       {
         "type": 31,
@@ -20261,7 +20351,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "風紀の登龍門",
-    "name": "Gateway To Discipline",
+    "name": "Peak Discipline",
     "raw_effects": [
       {
         "type": 27,
@@ -20346,7 +20436,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "押忍ッ！気合十分っス！",
-    "name": "Osu! I'm Fired Up!",
+    "name": "Ready for a Red-Hot Tech!",
     "raw_effects": [
       {
         "type": 27,
@@ -20397,7 +20487,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "熱血進化ライディング！",
-    "name": "Hot-blooded Riding!",
+    "name": "Red-Hot Transforma-Runner!",
     "raw_effects": [
       {
         "type": 31,
@@ -20448,7 +20538,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "必殺！爆速スプリント！",
-    "name": "Special Move! Explosive Sprint!",
+    "name": "Ultimate Ultra-Sprint!",
     "raw_effects": [
       {
         "type": 31,
@@ -20608,7 +20698,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "ワクワク☆マーベラスゾーン",
-    "name": "Exciting☆Marvelous Zone",
+    "name": "Marvelous ☆ Thrill",
     "raw_effects": [
       {
         "type": 27,
@@ -20706,7 +20796,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "進め！世界マーベラス計画☆",
-    "name": "Marvelous World Plan☆",
+    "name": "Make the World Marvelous ☆",
     "raw_effects": [
       {
         "type": 31,
@@ -20875,7 +20965,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "吉兆です！",
-    "name": "Lucky Omen!",
+    "name": "Lucky Sign!",
     "raw_effects": [
       {
         "type": 27,
@@ -20920,7 +21010,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "七福即生",
-    "name": "Seven Heavenly Fortunes",
+    "name": "Lucky Number Seven",
     "raw_effects": [
       {
         "type": 1,
@@ -20968,7 +21058,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "怒涛の超幸運パワー！",
-    "name": "Tempestuous Ultra Luck Power!",
+    "name": "Crazy Extra Mega Lucky!",
     "raw_effects": [
       {
         "type": 27,
@@ -21060,7 +21150,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ばっちり開運体験！",
-    "name": "First-hand Rising Fortune!",
+    "name": "Bring On the Luck!",
     "raw_effects": [
       {
         "type": 27,
@@ -21144,7 +21234,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "current_speed",
     "jp_name": "天翔る足取り",
-    "name": "Soaring Step",
+    "name": "Soaring Steps",
     "raw_effects": [
       {
         "type": 22,
@@ -21186,7 +21276,7 @@
     "effect_magnitude": 5.0,
     "effect_type": "field_of_view",
     "jp_name": "弾む大地",
-    "name": "Supple Land",
+    "name": "Spring from the Earth",
     "raw_effects": [
       {
         "type": 31,
@@ -21369,7 +21459,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "怒涛のスピード",
-    "name": "Tempestuous Speed",
+    "name": "Right on the Dot",
     "raw_effects": [
       {
         "type": 27,
@@ -21410,7 +21500,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "諦めない、ですぅ～！",
-    "name": "I'm Not Giving Up!",
+    "name": "I-I'm Doing My Best!",
     "raw_effects": [
       {
         "type": 9,
@@ -21455,7 +21545,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "ライバルがいるから！",
-    "name": "I've Got a Rival After All!",
+    "name": "For My Rival!",
     "raw_effects": [
       {
         "type": 31,
@@ -21599,7 +21689,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "クールな視線",
-    "name": "Cool Gaze",
+    "name": "Cold Look",
     "raw_effects": [
       {
         "target": 4,
@@ -21736,7 +21826,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "もっと冒険してみたい！",
-    "name": "I Want To Be More Adventurous!",
+    "name": "I Want to Explore More!",
     "raw_effects": [
       {
         "type": 27,
@@ -21812,7 +21902,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "起死回生の一歩",
-    "name": "First Step To Recovery",
+    "name": "First Step from the Brink",
     "raw_effects": [
       {
         "type": 31,
@@ -21849,7 +21939,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "魅惑のシニカルガール",
-    "name": "Charming Cynical Girl",
+    "name": "Cynical Charm",
     "raw_effects": [
       {
         "type": 31,
@@ -21887,7 +21977,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "目指せ！主人公！",
-    "name": "Aim for the Leading Role!",
+    "name": "Be the Lead!",
     "raw_effects": [
       {
         "type": 27,
@@ -21924,7 +22014,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "頑張るしかないよね",
-    "name": "Guess I've Gotta Try",
+    "name": "Just Gotta Do What I Can",
     "raw_effects": [
       {
         "type": 27,
@@ -21970,7 +22060,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "ノンストップエール",
-    "name": "Non-stop Cheer",
+    "name": "Keep the Cheers Comin'",
     "raw_effects": [
       {
         "type": 31,
@@ -22176,7 +22266,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "電撃の撫で切り",
-    "name": "Electrifying Sweep",
+    "name": "Shocking Sweep",
     "raw_effects": [
       {
         "type": 27,
@@ -22221,7 +22311,7 @@
     "effect_magnitude": 15.0,
     "effect_type": "field_of_view",
     "jp_name": "王の大局観",
-    "name": "King's Perspective",
+    "name": "Kingly View",
     "raw_effects": [
       {
         "type": 8,
@@ -22262,7 +22352,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "竜の雲を得る如し",
-    "name": "Like Riding a Dragon's Cloud",
+    "name": "Ascend Glory",
     "raw_effects": [
       {
         "type": 27,
@@ -22304,7 +22394,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "春風吹きて、桜舞う",
-    "name": "As Spring Blooms, the Sakura Dance",
+    "name": "Sakura Blossoms in the Breeze",
     "raw_effects": [
       {
         "type": 1,
@@ -22497,7 +22587,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "ゴーイングマイウェイ",
-    "name": "Going My Way",
+    "name": "Goin' My Way!",
     "raw_effects": [
       {
         "type": 9,
@@ -22546,7 +22636,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "えい！えい！むん！",
-    "name": "Ei! Ei! Mun!",
+    "name": "Ei, Ei, Mun!",
     "raw_effects": [
       {
         "type": 27,
@@ -22628,7 +22718,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "大どんでんがえし",
-    "name": "Big Comeback",
+    "name": "Turning Things Right Around!",
     "raw_effects": [
       {
         "type": 31,
@@ -22978,7 +23068,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "パないっしょ？",
-    "name": "Dope Stuff!",
+    "name": "WILD, Amirite?",
     "raw_effects": [
       {
         "type": 27,
@@ -23014,7 +23104,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "神逃げの心得",
-    "name": "Godly Runner's Wisdom",
+    "name": "Breakaway on Lock",
     "raw_effects": [
       {
         "type": 27,
@@ -23192,7 +23282,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "マジ爆上げっしょ！",
-    "name": "Hella Vibes Up!",
+    "name": "LOL I'm on FIRE!",
     "raw_effects": [
       {
         "type": 27,
@@ -23229,7 +23319,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "とりまやったれ～！",
-    "name": "Just Do It!",
+    "name": "DW I'm on It!",
     "raw_effects": [
       {
         "type": 27,
@@ -23343,7 +23433,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "出力1000万%！！",
-    "name": "Ten Million Percent Output!!",
+    "name": "1000% Output!",
     "raw_effects": [
       {
         "type": 27,
@@ -23384,7 +23474,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "ターボについてこーい！",
-    "name": "Keep Up with Turbo!",
+    "name": "Turbo's Leadin' the Charge!",
     "raw_effects": [
       {
         "type": 31,
@@ -23430,7 +23520,7 @@
     "effect_magnitude": 0.05,
     "effect_type": "target_speed",
     "jp_name": "エンジン点火！",
-    "name": "Engine Ignition!",
+    "name": "Engines LIT!",
     "raw_effects": [
       {
         "type": 27,
@@ -23475,7 +23565,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "金剛不壊",
-    "name": "Adamantine",
+    "name": "Indestructable",
     "raw_effects": [
       {
         "type": 9,
@@ -23565,7 +23655,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "右回りの輪舞曲",
-    "name": "Clockwise Rondo",
+    "name": "Rondo to the Right",
     "raw_effects": [
       {
         "type": 1,
@@ -23609,7 +23699,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "無我の境地",
-    "name": "Realm of No-Self",
+    "name": "Beyond My Station",
     "raw_effects": [
       {
         "type": 31,
@@ -23660,7 +23750,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "明けぬ夜はない！",
-    "name": "Dawn Always Comes!",
+    "name": "The Dawn Always Comes!",
     "raw_effects": [
       {
         "target": 9,
@@ -23796,7 +23886,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "祭りだワッショイ！",
-    "name": "Festival Shout!",
+    "name": "Get the Festival Going!",
     "raw_effects": [
       {
         "type": 31,
@@ -23832,7 +23922,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "爆風一閃！",
-    "name": "Blast Flash",
+    "name": "Bright Blast",
     "raw_effects": [
       {
         "type": 27,
@@ -23906,7 +23996,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "未来へ飛び立ちましょう！",
-    "name": "Leap Towards The Future!",
+    "name": "Leap Ahead to the Future",
     "raw_effects": [
       {
         "type": 27,
@@ -23943,7 +24033,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "必勝の前口上！",
-    "name": "Preamble of Victory!",
+    "name": "Introducing the Victor!",
     "raw_effects": [
       {
         "type": 31,
@@ -24083,7 +24173,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "お花見当たり年！",
-    "name": "Pretty Blossoms, Pretty Year!",
+    "name": "Good Year for Sakura!",
     "raw_effects": [
       {
         "type": 27,
@@ -24161,7 +24251,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "けふ九重に満開です",
-    "name": "In Ninefold Bloom",
+    "name": "The Sakura Bloom Regally Today",
     "raw_effects": [
       {
         "type": 1,
@@ -24202,7 +24292,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "桜花爛漫一直線",
-    "name": "Trail of Blooming Sakura",
+    "name": "Bloom Down the Branch",
     "raw_effects": [
       {
         "type": 27,
@@ -24243,7 +24333,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "負けたくない！",
-    "name": "I Don't Want to Lose!",
+    "name": "I Don't Wanna Lose!",
     "raw_effects": [
       {
         "type": 27,
@@ -24284,7 +24374,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "揺るがぬアスター",
-    "name": "Unwavering Aster",
+    "name": "Unyielding Aster",
     "raw_effects": [
       {
         "type": 27,
@@ -24322,7 +24412,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "一等星のアラベスク",
-    "name": "Brightest Star's Arabesque",
+    "name": "Arabesque of the Brightest Star",
     "raw_effects": [
       {
         "type": 27,
@@ -24488,7 +24578,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "power_stat_up",
     "jp_name": "すべてを焼き焦がす星",
-    "name": "すべてを焼き焦がす星",
+    "name": "The Star That Scorches All",
     "raw_effects": [
       {
         "type": 3,
@@ -24600,7 +24690,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "永遠の輝き",
-    "name": "Eternal Brilliance",
+    "name": "Eternal Light",
     "raw_effects": [
       {
         "type": 9,
@@ -24641,7 +24731,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "刹那への覚悟",
-    "name": "Moment's Readiness",
+    "name": "Give This Moment Everything",
     "raw_effects": [
       {
         "type": 27,
@@ -24683,7 +24773,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "美しき燐光",
-    "name": "Beautiful Phosphorescence",
+    "name": "Elegant Phosphorescence",
     "raw_effects": [
       {
         "type": 9,
@@ -24773,7 +24863,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "淡く儚い残照",
-    "name": "Ephemeral Afterglow",
+    "name": "Fleeting Afterglow",
     "raw_effects": [
       {
         "type": 27,
@@ -24817,7 +24907,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "昂る焔",
-    "name": "Stirring Flame",
+    "name": "Growing Flame",
     "raw_effects": [
       {
         "type": 27,
@@ -24858,7 +24948,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "八重の向こう意気",
-    "name": "Layered Determination",
+    "name": "Yaeno's Fighting Spirit",
     "raw_effects": [
       {
         "type": 27,
@@ -25164,7 +25254,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "不屈のお嬢様",
-    "name": "Indomitable Dame",
+    "name": "Ladylike Resolve",
     "raw_effects": [
       {
         "type": 9,
@@ -25205,7 +25295,7 @@
     "effect_magnitude": -0.15,
     "effect_type": "current_speed",
     "jp_name": "動かざること羊蹄山の若し",
-    "name": "Immovable as Mt. Youtei",
+    "name": "Immovable as a Mountain",
     "raw_effects": [
       {
         "type": 9,
@@ -25348,7 +25438,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "桜前線進行中！",
-    "name": "Advancing Sakura Front!",
+    "name": "Open All the Buds",
     "raw_effects": [
       {
         "type": 27,
@@ -25385,7 +25475,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "current_speed",
     "jp_name": "一花咲かせましょう！",
-    "name": "Let's Bloom in the Moment!",
+    "name": "Blossom for Us!",
     "raw_effects": [
       {
         "type": 22,
@@ -25442,7 +25532,8 @@
     "skill_id": 107602111,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "med",
+      "lng"
     ]
   },
   "107602211": {
@@ -25696,6 +25787,104 @@
       "l_1"
     ]
   },
+  "107703111": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==4&phase_firsthalf_random==1&running_style==2)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&phase_firsthalf_random==1&running_style==2",
+        "effects": [
+          {
+            "type": 22,
+            "value": 4500
+          },
+          {
+            "type": 9,
+            "value": 350
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.45,
+    "effect_type": "current_speed",
+    "jp_name": "湯気立つ勝負道",
+    "name": "Steaming Road to Victory",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 4500
+      },
+      {
+        "type": 9,
+        "value": 350
+      }
+    ],
+    "skill_id": 107703111,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng",
+      "l_1",
+      "ldr"
+    ]
+  },
+  "107703211": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==4&running_style==2&phase_firsthalf_random==2&lastspurt==2) OR (is_activate_other_skill_detail==1&is_last_straight==1)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==4&running_style==2&phase_firsthalf_random==2&lastspurt==2",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      },
+      {
+        "base_time": 30000,
+        "condition": "is_activate_other_skill_detail==1&is_last_straight==1",
+        "effects": [
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "いざ、開店です！",
+    "name": "Now Open for Business!",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      },
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 107703211,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "lng",
+      "ldr",
+      "l_2"
+    ]
+  },
   "107801111": {
     "activation": 1,
     "base_time_ms": 40000,
@@ -25719,7 +25908,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ウインドシアー",
-    "name": "Wind Shear",
+    "name": "Shearing Gust",
     "raw_effects": [
       {
         "type": 27,
@@ -25756,7 +25945,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "神渡し",
-    "name": "Divine Crossing",
+    "name": "As Nature Wills",
     "raw_effects": [
       {
         "type": 27,
@@ -26516,7 +26705,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "質実剛健",
-    "name": "Ironclad",
+    "name": "Simple and Sturdy",
     "raw_effects": [
       {
         "type": 31,
@@ -26569,7 +26758,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "革命をもたらす威容",
-    "name": "Revolutionary Presence",
+    "name": "Imposing Innovation",
     "raw_effects": [
       {
         "type": 27,
@@ -26707,7 +26896,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "嵐を呼ぶ破壊神",
-    "name": "Storm-Calling God of Destruction",
+    "name": "The Stormcaller of Destruction",
     "raw_effects": [
       {
         "type": 27,
@@ -26748,7 +26937,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "酔い痴れよ、世界",
-    "name": "Imbibe in Ecstasy, World!",
+    "name": "Intoxicate the World",
     "raw_effects": [
       {
         "type": 1,
@@ -26906,7 +27095,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "華麗であれ",
-    "name": "Be Majestic",
+    "name": "Ever Graceful",
     "raw_effects": [
       {
         "type": 27,
@@ -27013,7 +27202,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "常に最たる輝きを",
-    "name": "Pursuing Greater Brilliance",
+    "name": "Always the Most Brilliant",
     "raw_effects": [
       {
         "type": 31,
@@ -27286,7 +27475,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "必勝のピッチアップ",
-    "name": "Victory Pitch-Up",
+    "name": "Raise the Pitch",
     "raw_effects": [
       {
         "type": 31,
@@ -27326,7 +27515,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "記憶に刻む足取り",
-    "name": "Unforgettable Step",
+    "name": "Leave a Footprint in Your Memory",
     "raw_effects": [
       {
         "type": 27,
@@ -28709,7 +28898,6 @@
     "skill_id": 109402211,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac",
       "med",
       "btw"
     ]
@@ -29051,7 +29239,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "コパッと開運！",
-    "name": "Copano-style Rising Fortunes!",
+    "name": "Lucky Rickey!",
     "raw_effects": [
       {
         "type": 27,
@@ -29098,7 +29286,7 @@
     "effect_magnitude": 100.0,
     "effect_type": "speed_stat_up",
     "jp_name": "龍脈の波濤",
-    "name": "Surging Ley Lines",
+    "name": "Longmai Pulse",
     "raw_effects": [
       {
         "type": 1,
@@ -29304,7 +29492,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "苫小牧グルメで舌鼓！",
-    "name": "Feast of Tomakomai",
+    "name": "Thinkin' About Tomakomai Food",
     "raw_effects": [
       {
         "type": 9,
@@ -29345,7 +29533,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "観光大使の面目躍如！",
-    "name": "Tourism Ambassador's Prestige",
+    "name": "Be a Good Ambassador!",
     "raw_effects": [
       {
         "type": 27,
@@ -29583,7 +29771,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "闘魂注入",
-    "name": "Refueled Fighting Spirit",
+    "name": "A Dose of Ambition",
     "raw_effects": [
       {
         "type": 27,
@@ -29663,7 +29851,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "女神の砂浴び",
-    "name": "Goddess' Dust Bath",
+    "name": "Divine on the Dirt",
     "raw_effects": [
       {
         "type": 27,
@@ -29844,7 +30032,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "current_speed",
     "jp_name": "水平線のその先へ",
-    "name": "Beyond the Ocean's Infinity",
+    "name": "Ahead of the Horizon",
     "raw_effects": [
       {
         "type": 22,
@@ -30052,7 +30240,7 @@
     "effect_magnitude": 2.0,
     "effect_type": "random_rare_skill",
     "jp_name": "Adventure of 564",
-    "name": "Adventure of 564",
+    "name": "564 Escapades",
     "raw_effects": [
       {
         "type": 27,
@@ -30304,7 +30492,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "大盛り！ファーストバイト！",
-    "name": "Extra Large First Bite!",
+    "name": "First Bite of the Feast!",
     "raw_effects": [
       {
         "type": 27,
@@ -30485,7 +30673,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "灰色の臨界点",
-    "name": "Critical Point: Gray",
+    "name": "Free From the Ashes",
     "raw_effects": [
       {
         "type": 27,
@@ -30502,7 +30690,8 @@
       "lng",
       "l_2",
       "l_3",
-      "f_c"
+      "f_c",
+      "nac"
     ]
   },
   "110171": {
@@ -30604,7 +30793,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "萌到讓我活過來了！",
-    "name": "Revived by Moe!",
+    "name": "THE MOE AAAA Thanks for My Life",
     "raw_effects": [
       {
         "type": 27,
@@ -30973,7 +31162,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "火神鳴",
-    "name": "Thunderous Firestarter",
+    "name": "Lightning Flare",
     "raw_effects": [
       {
         "type": 27,
@@ -31195,7 +31384,8 @@
       "l_2",
       "l_3",
       "f_s",
-      "f_c"
+      "f_c",
+      "nac"
     ]
   },
   "110261": {
@@ -31281,7 +31471,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "あなたに捧げるフリーポア",
-    "name": "Latte Art For You",
+    "name": "A Warm Cup for You",
     "raw_effects": [
       {
         "type": 27,
@@ -31353,7 +31543,8 @@
     "tags": [
       "sho",
       "l_0",
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110291": {
@@ -31403,7 +31594,8 @@
     "skill_id": 110291,
     "source": "GameTora public data manifest",
     "tags": [
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110301": {
@@ -31507,7 +31699,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "cor",
-      "nac"
+      "med",
+      "ldr"
     ]
   },
   "110301211": {
@@ -31611,7 +31804,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "フレッシュ☆パーラー",
-    "name": "Fresh ☆ Parlor",
+    "name": "Fresh☆Parlor",
     "raw_effects": [
       {
         "type": 27,
@@ -31767,7 +31960,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "灯穂",
-    "name": "Bristling Lights",
+    "name": "Firelight",
     "raw_effects": [
       {
         "type": 27,
@@ -31810,7 +32003,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "夢の先へ、届け！",
-    "name": "Delivering Beyond the Dreams!",
+    "name": "Ticket to Your Dreams!",
     "raw_effects": [
       {
         "type": 27,
@@ -31879,9 +32072,9 @@
       "l_2",
       "l_3",
       "f_c",
-      "nac",
       "f_s",
-      "str"
+      "str",
+      "nac"
     ]
   },
   "110371": {
@@ -32071,7 +32264,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "acceleration",
     "jp_name": "してやったり！",
-    "name": "Beat You to It!",
+    "name": "Aced It!",
     "raw_effects": [
       {
         "type": 31,
@@ -32119,7 +32312,7 @@
     "effect_magnitude": 0.55,
     "effect_type": "target_speed",
     "jp_name": "逃げっ切りの1人旅",
-    "name": "Solitary Getaway",
+    "name": "Runnin' the Race Solo",
     "raw_effects": [
       {
         "type": 27,
@@ -32478,7 +32671,8 @@
     "skill_id": 110461,
     "source": "GameTora public data manifest",
     "tags": [
-      "dir"
+      "dir",
+      "nac"
     ]
   },
   "110471": {
@@ -32538,8 +32732,8 @@
     "tags": [
       "l_2",
       "l_3",
-      "nac",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "110481": {
@@ -32575,7 +32769,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "target_speed",
     "jp_name": "GALmem.ふぉーえば♪",
-    "name": "GALmem. forever♪",
+    "name": "Us Girlies Keep Winnin'! ♪",
     "raw_effects": [
       {
         "type": 27,
@@ -32669,7 +32863,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "Hephaistos",
-    "name": "Hephaistos",
+    "name": "Hephaestus",
     "raw_effects": [
       {
         "type": 27,
@@ -32708,7 +32902,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "銀河のその先へ、あなたと",
-    "name": "Beyond the Milky Way With You",
+    "name": "Beyond the Stars with You",
     "raw_effects": [
       {
         "type": 27,
@@ -32746,7 +32940,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "星の海を駆けて",
-    "name": "Crossing the Sea of Stars",
+    "name": "Cross the Sea of Stars",
     "raw_effects": [
       {
         "type": 22,
@@ -32986,7 +33180,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "奥義・常夏バーニング！！",
-    "name": "Secret Technique: Everlasting Summer!!",
+    "name": "Scorching Summer Tech!",
     "raw_effects": [
       {
         "type": 27,
@@ -33000,7 +33194,8 @@
     "skill_id": 110531,
     "source": "GameTora public data manifest",
     "tags": [
-      "sho"
+      "sho",
+      "nac"
     ]
   },
   "110551": {
@@ -33171,7 +33366,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "Spooky-Scary-Happy",
-    "name": "Spooky-Scary-Happy",
+    "name": "Spooky, Scary, Happy",
     "raw_effects": [
       {
         "type": 27,
@@ -33311,7 +33506,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "焦らず、気負わず",
-    "name": "Keep Calm, Don't Overthink",
+    "name": "No Pressure, No Rush",
     "raw_effects": [
       {
         "type": 9,
@@ -33393,7 +33588,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ちょっといいこと、集めて",
-    "name": "Collecting Little Joys",
+    "name": "Collect All the Little Miracles",
     "raw_effects": [
       {
         "type": 27,
@@ -33580,7 +33775,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "ごろりん！？パワードライブ",
-    "name": "Rolling Power Drive!",
+    "name": "Tumbly Power Drive!",
     "raw_effects": [
       {
         "type": 27,
@@ -33599,7 +33794,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "cor",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "110631": {
@@ -33769,7 +33965,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "mil",
-      "l_0"
+      "l_0",
+      "nac"
     ]
   },
   "110671": {
@@ -33799,7 +33996,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "玄雲散らす、黄金甲矢",
-    "name": "Arrow of Gold, Break up the Dark Clouds",
+    "name": "Rain Cloud Bolt",
     "raw_effects": [
       {
         "type": 27,
@@ -33843,7 +34040,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "あっぱれ大盤振る舞い！",
-    "name": "Lavish Feast",
+    "name": "Bring on the Banquet!",
     "raw_effects": [
       {
         "type": 22,
@@ -33887,7 +34084,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "咲け咲け！私！",
-    "name": "Bloom! Blossom! Sakura!",
+    "name": "Watch! Me! BLOOM!",
     "raw_effects": [
       {
         "type": 31,
@@ -33947,7 +34144,8 @@
     "skill_id": 110701,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "110701111": {
@@ -34353,7 +34551,8 @@
       "lng",
       "l_2",
       "l_3",
-      "f_c"
+      "f_c",
+      "nac"
     ]
   },
   "110771": {
@@ -34463,7 +34662,8 @@
     "skill_id": 110781,
     "source": "GameTora public data manifest",
     "tags": [
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110801": {
@@ -34655,7 +34855,8 @@
     "skill_id": 110821,
     "source": "GameTora public data manifest",
     "tags": [
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110831": {
@@ -34707,7 +34908,8 @@
     "skill_id": 110831,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "110841": {
@@ -34759,7 +34961,8 @@
     "tags": [
       "l_2",
       "l_3",
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110851": {
@@ -34809,7 +35012,8 @@
     "skill_id": 110851,
     "source": "GameTora public data manifest",
     "tags": [
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "110861": {
@@ -35361,7 +35565,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_3",
-      "sho"
+      "sho",
+      "nac"
     ]
   },
   "110941": {
@@ -35412,7 +35617,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "med",
-      "l_1"
+      "l_1",
+      "nac"
     ]
   },
   "110981": {
@@ -35509,7 +35715,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "dir",
-      "cor"
+      "cor",
+      "nac"
     ]
   },
   "111001": {
@@ -35559,7 +35766,8 @@
     "skill_id": 111001,
     "source": "GameTora public data manifest",
     "tags": [
-      "dir"
+      "dir",
+      "nac"
     ]
   },
   "111001111": {
@@ -35786,7 +35994,8 @@
     "tags": [
       "l_2",
       "l_3",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "111041": {
@@ -36258,7 +36467,7 @@
     "effect_magnitude": 0.5,
     "effect_type": "target_speed",
     "jp_name": "不凋なるCattleya",
-    "name": "不凋なるCattleya",
+    "name": "Unwithering Cattleya",
     "raw_effects": [
       {
         "type": 27,
@@ -36272,7 +36481,7 @@
     "skill_id": 111161,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "med"
     ]
   },
   "111191": {
@@ -36323,7 +36532,8 @@
     "skill_id": 111191,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "nac",
+      "lng"
     ]
   },
   "111201111": {
@@ -37057,7 +37267,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "――さあ、踊りましょう",
-    "name": "――さあ、踊りましょう",
+    "name": "Now, Let Us Dance",
     "raw_effects": [
       {
         "type": 22,
@@ -37076,7 +37286,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "cor",
-      "nac"
+      "mil",
+      "med"
     ]
   },
   "111602211": {
@@ -37112,7 +37323,7 @@
     "effect_magnitude": 0.65,
     "effect_type": "target_speed",
     "jp_name": "最強淑女の誇り",
-    "name": "最強淑女の誇り",
+    "name": "The Strongest Lady’s Pride",
     "raw_effects": [
       {
         "type": 27,
@@ -37164,6 +37375,52 @@
     "source": "GameTora public data manifest",
     "tags": [
       "cha"
+    ]
+  },
+  "111701121": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(running_style==4&distance_type==4&phase==1&is_overtake==1)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "running_style==4&distance_type==4&phase==1&is_overtake==1",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          },
+          {
+            "type": 9,
+            "value": 350
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "凱歌へのプレパラシオン",
+    "name": "Preparation for Triumph",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500
+      },
+      {
+        "type": 9,
+        "value": 350
+      }
+    ],
+    "skill_id": 111701121,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "cha",
+      "lng",
+      "l_1"
     ]
   },
   "111701211": {
@@ -37935,7 +38192,8 @@
     "skill_id": 112402111,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac",
+      "mil",
+      "med",
       "l_2",
       "l_3"
     ]
@@ -38386,7 +38644,11 @@
     "tags": [
       "l_1",
       "tur",
-      "slo"
+      "slo",
+      "ldr",
+      "mil",
+      "med",
+      "btw"
     ]
   },
   "113101111": {
@@ -38783,6 +39045,122 @@
       "ldr"
     ]
   },
+  "113401111": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(running_style==2&phase_random==1&order_rate<=50) OR (running_style==2&phase_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "running_style==2&phase_random==1&order_rate<=50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          },
+          {
+            "type": 27,
+            "value": 1500
+          }
+        ]
+      },
+      {
+        "base_time": 24000,
+        "condition": "running_style==2&phase_random==1",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "舞いひらく花路",
+    "name": "Flower Path in Bloom",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      },
+      {
+        "type": 27,
+        "value": 1500
+      },
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 113401111,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "ldr",
+      "l_1"
+    ]
+  },
+  "113401211": {
+    "activation": 1,
+    "base_time_ms": 40000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==3@distance_type==4 AND phase>=2&is_finalcorner==1&is_popularity_top_character_activate_advantage_skill==-1&base_wiz>=1200) OR (distance_type==3@distance_type==4 AND phase>=2&is_finalcorner==1&is_popularity_top_character_activate_advantage_skill==-1)",
+    "condition_groups": [
+      {
+        "base_time": 40000,
+        "condition": "phase>=2&is_finalcorner==1&is_popularity_top_character_activate_advantage_skill==-1&base_wiz>=1200",
+        "effects": [
+          {
+            "type": 22,
+            "value": 4000
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      },
+      {
+        "base_time": 40000,
+        "condition": "phase>=2&is_finalcorner==1&is_popularity_top_character_activate_advantage_skill==-1",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.4,
+    "effect_type": "current_speed",
+    "jp_name": "想い束ね、前へ",
+    "name": "Bouquet of Wishes, Forward",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 4000
+      },
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 113401211,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_2",
+      "l_3",
+      "f_s",
+      "f_c",
+      "med",
+      "lng"
+    ]
+  },
   "113501111": {
     "activation": 1,
     "base_time_ms": 24000,
@@ -38982,7 +39360,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "覚醒せし聖女",
-    "name": "覚醒せし聖女",
+    "name": "Saintess Awakened",
     "raw_effects": [
       {
         "type": 27,
@@ -39046,7 +39424,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "天与の恩寵",
-    "name": "天与の恩寵",
+    "name": "Heaven-Bestowed Grace",
     "raw_effects": [
       {
         "type": 31,
@@ -39435,7 +39813,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "短距離レースへの想い",
-    "name": "Short-Distance Racing Passion",
+    "name": "Sprint Race Enthusiast",
     "raw_effects": [
       {
         "type": 1,
@@ -39472,7 +39850,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "guts_stat_up",
     "jp_name": "ダートレースへの想い",
-    "name": "Dirt Racing Passion",
+    "name": "Dirt Race Enthusiast",
     "raw_effects": [
       {
         "type": 4,
@@ -39601,9 +39979,9 @@
       "l_2",
       "l_3",
       "f_c",
-      "nac",
       "f_s",
-      "str"
+      "str",
+      "nac"
     ]
   },
   "120041": {
@@ -39653,7 +40031,8 @@
     "skill_id": 120041,
     "source": "GameTora public data manifest",
     "tags": [
-      "mil"
+      "mil",
+      "nac"
     ]
   },
   "120051": {
@@ -39703,7 +40082,8 @@
     "skill_id": 120051,
     "source": "GameTora public data manifest",
     "tags": [
-      "med"
+      "med",
+      "nac"
     ]
   },
   "120061": {
@@ -39756,6 +40136,7 @@
     "skill_id": 120061,
     "source": "GameTora public data manifest",
     "tags": [
+      "mil",
       "nac"
     ]
   },
@@ -39941,7 +40322,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "きらめくは海、まばゆきは君",
-    "name": "The Sea Glitters, but You're Dazzling",
+    "name": "Your Smile Sparkles as the Waves",
     "raw_effects": [
       {
         "type": 27,
@@ -40002,7 +40383,8 @@
     "skill_id": 120231,
     "source": "GameTora public data manifest",
     "tags": [
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "120241": {
@@ -40085,7 +40467,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "迷える時も、幽かなる時も",
-    "name": "迷える時も、幽かなる時も",
+    "name": "In Times You're Wandering the Night",
     "raw_effects": [
       {
         "type": 9,
@@ -40155,7 +40537,8 @@
       "l_3",
       "cor",
       "f_c",
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "120311": {
@@ -40263,7 +40646,8 @@
       "l_3",
       "f_s",
       "f_c",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "120351": {
@@ -40479,7 +40863,9 @@
     "skill_id": 120411,
     "source": "GameTora public data manifest",
     "tags": [
-      "sho"
+      "sho",
+      "run",
+      "ldr"
     ]
   },
   "120451": {
@@ -40540,7 +40926,8 @@
       "l_1",
       "med",
       "cor",
-      "lng"
+      "lng",
+      "nac"
     ]
   },
   "120461": {
@@ -40708,7 +41095,8 @@
       "l_2",
       "l_3",
       "cor",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "120601": {
@@ -40762,7 +41150,8 @@
       "l_3",
       "f_s",
       "f_c",
-      "med"
+      "med",
+      "nac"
     ]
   },
   "120611": {
@@ -40907,6 +41296,66 @@
       "lng"
     ]
   },
+  "120771": {
+    "activation": 0,
+    "base_time_ms": 50000,
+    "category": "speed",
+    "color": "unique",
+    "condition": "(activate_count_heal>=3&distance_rate>=60&phase==1&distance_type==4&running_style==2&order_rate<=50) OR (activate_count_heal>=3&distance_rate>=60&phase==1&distance_type==4&running_style==2)",
+    "condition_groups": [
+      {
+        "base_time": 50000,
+        "condition": "activate_count_heal>=3&distance_rate>=60&phase==1&distance_type==4&running_style==2&order_rate<=50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          },
+          {
+            "type": 31,
+            "value": 3000
+          }
+        ]
+      },
+      {
+        "base_time": 50000,
+        "condition": "activate_count_heal>=3&distance_rate>=60&phase==1&distance_type==4&running_style==2",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "一杯全力、お届けします！",
+    "name": "One Bowl, Full Power Delivery!",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      },
+      {
+        "type": 31,
+        "value": 3000
+      },
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 120771,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "lng",
+      "ldr"
+    ]
+  },
   "1300011": {
     "activation": 0,
     "base_time_ms": -1,
@@ -40938,7 +41387,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "all_stats",
     "jp_name": "ボルテージヒーロー",
-    "name": "Voltage Hero",
+    "name": "Energetic Hero",
     "raw_effects": [
       {
         "type": 32,
@@ -40986,7 +41435,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "all_stats",
     "jp_name": "サンライズヒーロー",
-    "name": "Sunrise Hero",
+    "name": "Sunny Hero",
     "raw_effects": [
       {
         "type": 32,
@@ -41096,7 +41545,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "インサイドヒーロー",
-    "name": "Inside Hero",
+    "name": "Inner Hero",
     "raw_effects": [
       {
         "type": 27,
@@ -41164,7 +41613,7 @@
     "effect_magnitude": 100.0,
     "effect_type": "speed_stat_up",
     "jp_name": "アウトサイドヒーロー",
-    "name": "Outside Hero",
+    "name": "Outer Hero",
     "raw_effects": [
       {
         "type": 1,
@@ -41232,7 +41681,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "リンケージヒーロー",
-    "name": "Linkage Hero",
+    "name": "Friendly Hero",
     "raw_effects": [
       {
         "type": 31,
@@ -41290,7 +41739,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "current_speed",
     "jp_name": "スパートヒーロー",
-    "name": "Spurt Hero",
+    "name": "Dashing Hero",
     "raw_effects": [
       {
         "type": 22,
@@ -43681,7 +44130,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "青嵐",
-    "name": "Summer Gale",
+    "name": "Summer Gust",
     "raw_effects": [
       {
         "type": 1,
@@ -49252,7 +49701,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "紫電一閃",
-    "name": "Lightning Flash",
+    "name": "Shocking Flash",
     "raw_effects": [
       {
         "type": 27,
@@ -50015,7 +50464,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "豪風円刃",
-    "name": "Cyclone Slash",
+    "name": "Crescent Gust",
     "raw_effects": [
       {
         "type": 27,
@@ -51907,7 +52356,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "陣風円刃",
-    "name": "Gale Slash",
+    "name": "Crescent Gale",
     "raw_effects": [
       {
         "type": 27,
@@ -52990,7 +53439,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "鋭脚一閃",
-    "name": "Incisive Flash",
+    "name": "Sharp Streak",
     "raw_effects": [
       {
         "type": 27,
@@ -53101,7 +53550,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "鋭脚円刃",
-    "name": "Incisive Slash",
+    "name": "Sharp Arc",
     "raw_effects": [
       {
         "type": 27,
@@ -54788,7 +55237,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "盤石の構え",
-    "name": "Unshakable Stance",
+    "name": "Solid Preparation",
     "raw_effects": [
       {
         "type": 31,
@@ -55090,7 +55539,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "いいとこ入った！",
-    "name": "In the Right Place!",
+    "name": "Perfect Spot!",
     "raw_effects": [
       {
         "type": 27,
@@ -56861,7 +57310,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "至高のダウンヒラー",
-    "name": "Supreme Downhiller",
+    "name": "Master of Declines",
     "raw_effects": [
       {
         "type": 27,
@@ -56979,7 +57428,7 @@
     "effect_magnitude": 0.075,
     "effect_type": "stamina_recovery",
     "jp_name": "一意専心",
-    "name": "Single-Minded",
+    "name": "Heart All Set",
     "raw_effects": [
       {
         "type": 9,
@@ -57017,7 +57466,7 @@
     "effect_magnitude": 0.035,
     "effect_type": "stamina_recovery",
     "jp_name": "抜かりなし",
-    "name": "Faultless",
+    "name": "All Set",
     "raw_effects": [
       {
         "type": 9,
@@ -57055,7 +57504,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "川崎レース場◎",
-    "name": "Kawasaki Racetrack ◎",
+    "name": "Kawasaki Racecourse ◎",
     "raw_effects": [
       {
         "type": 2,
@@ -57091,7 +57540,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "川崎レース場○",
-    "name": "Kawasaki Racetrack ○",
+    "name": "Kawasaki Racecourse ○",
     "raw_effects": [
       {
         "type": 2,
@@ -57127,7 +57576,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "川崎レース場×",
-    "name": "Kawasaki Racetrack ×",
+    "name": "Kawasaki Racecourse ×",
     "raw_effects": [
       {
         "type": 2,
@@ -57163,7 +57612,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "船橋レース場◎",
-    "name": "Funabashi Racetrack ◎",
+    "name": "Funabashi Racecourse ◎",
     "raw_effects": [
       {
         "type": 2,
@@ -57199,7 +57648,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "船橋レース場○",
-    "name": "Funabashi Racetrack ○",
+    "name": "Funabashi Racecourse ○",
     "raw_effects": [
       {
         "type": 2,
@@ -57235,7 +57684,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "船橋レース場×",
-    "name": "Funabashi Racetrack ×",
+    "name": "Funabashi Racecourse ×",
     "raw_effects": [
       {
         "type": 2,
@@ -57271,7 +57720,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "盛岡レース場◎",
-    "name": "Morioka Racetrack ◎",
+    "name": "Morioka Racecourse ◎",
     "raw_effects": [
       {
         "type": 2,
@@ -57307,7 +57756,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "盛岡レース場○",
-    "name": "Morioka Racetrack ○",
+    "name": "Morioka Racecourse ○",
     "raw_effects": [
       {
         "type": 2,
@@ -57343,7 +57792,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "盛岡レース場×",
-    "name": "Morioka Racetrack ×",
+    "name": "Morioka Racecourse ×",
     "raw_effects": [
       {
         "type": 2,
@@ -57379,7 +57828,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "wit_stat_up",
     "jp_name": "ナイター◎",
-    "name": "Nocturnal ◎",
+    "name": "Night Races ◎",
     "raw_effects": [
       {
         "type": 5,
@@ -57415,7 +57864,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "wit_stat_up",
     "jp_name": "ナイター○",
-    "name": "Nocturnal ○",
+    "name": "Night Races ○",
     "raw_effects": [
       {
         "type": 5,
@@ -57451,7 +57900,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "wit_stat_up",
     "jp_name": "ナイター×",
-    "name": "Nocturnal ×",
+    "name": "Night Races ×",
     "raw_effects": [
       {
         "type": 5,
@@ -57487,7 +57936,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "wit_stat_up",
     "jp_name": "小回り◎",
-    "name": "Tight Turns ◎",
+    "name": "Sharp Turns ◎",
     "raw_effects": [
       {
         "type": 5,
@@ -57523,7 +57972,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "wit_stat_up",
     "jp_name": "小回り○",
-    "name": "Tight Turns ○",
+    "name": "Sharp Turns ○",
     "raw_effects": [
       {
         "type": 5,
@@ -57559,7 +58008,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "wit_stat_up",
     "jp_name": "小回り×",
-    "name": "Tight Turns ×",
+    "name": "Sharp Turns ×",
     "raw_effects": [
       {
         "type": 5,
@@ -57595,7 +58044,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "交流重賞◎",
-    "name": "Exchange Races ◎",
+    "name": "Collaborative Graded Races ◎",
     "raw_effects": [
       {
         "type": 1,
@@ -57631,7 +58080,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "交流重賞○",
-    "name": "Exchange Races ○",
+    "name": "Collaborative Graded Races ○",
     "raw_effects": [
       {
         "type": 1,
@@ -57667,7 +58116,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "交流重賞×",
-    "name": "Exchange Races ×",
+    "name": "Collaborative Graded Races ×",
     "raw_effects": [
       {
         "type": 1,
@@ -57747,7 +58196,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "勝利の機運",
-    "name": "Victory Opportunity",
+    "name": "Chance of Victory",
     "raw_effects": [
       {
         "type": 27,
@@ -57784,7 +58233,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "明るい兆し",
-    "name": "Promising Omen",
+    "name": "Sunny Sign",
     "raw_effects": [
       {
         "type": 27,
@@ -57821,7 +58270,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "捲土重来",
-    "name": "Redoubled Efforts",
+    "name": "Can't Keep Me Down",
     "raw_effects": [
       {
         "type": 27,
@@ -57858,7 +58307,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "盛り返し",
-    "name": "Turnaround",
+    "name": "Comeback",
     "raw_effects": [
       {
         "type": 27,
@@ -57895,7 +58344,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "全速前進！",
-    "name": "Full Speed Ahead!",
+    "name": "Full Speed!",
     "raw_effects": [
       {
         "type": 27,
@@ -57932,7 +58381,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "まっしぐら",
-    "name": "At Full Speed",
+    "name": "Full Tilt",
     "raw_effects": [
       {
         "type": 27,
@@ -57969,7 +58418,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "明鏡止水",
-    "name": "Clear and Serene",
+    "name": "Crystal Clear",
     "raw_effects": [
       {
         "type": 27,
@@ -58006,7 +58455,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "冴える思考",
-    "name": "Clear Head",
+    "name": "Rational",
     "raw_effects": [
       {
         "type": 27,
@@ -58043,7 +58492,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "優雅な砂浴び",
-    "name": "Leisurely Dust Bath",
+    "name": "Dancer in the Dirt",
     "raw_effects": [
       {
         "type": 27,
@@ -58079,7 +58528,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "砂浴び○",
-    "name": "Dust Bath ○",
+    "name": "Down in the Dirt ○",
     "raw_effects": [
       {
         "type": 27,
@@ -58115,7 +58564,7 @@
     "effect_magnitude": -0.2,
     "effect_type": "current_speed",
     "jp_name": "砂浴び×",
-    "name": "Dust Bath ×",
+    "name": "Down in the Dirt ×",
     "raw_effects": [
       {
         "type": 21,
@@ -58151,7 +58600,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "目指せセンター！",
-    "name": "Aim for the Center!",
+    "name": "Be the Center!",
     "raw_effects": [
       {
         "type": 31,
@@ -58188,7 +58637,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "意気込み十分",
-    "name": "Full of Zeal",
+    "name": "Got the Spirit!",
     "raw_effects": [
       {
         "type": 31,
@@ -58225,7 +58674,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "爆走モード！",
-    "name": "Blast Mode!",
+    "name": "Run Like Crazy!",
     "raw_effects": [
       {
         "type": 31,
@@ -58262,7 +58711,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "急浮上",
-    "name": "Rapid Ascent",
+    "name": "Rapid Gain",
     "raw_effects": [
       {
         "type": 31,
@@ -58309,7 +58758,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "抜群の踏み込み",
-    "name": "Outstanding Step",
+    "name": "Strong Steps",
     "raw_effects": [
       {
         "type": 1,
@@ -58359,7 +58808,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "踏み込み上手",
-    "name": "Skillful Step",
+    "name": "Solid Steps",
     "raw_effects": [
       {
         "type": 1,
@@ -58403,7 +58852,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "泥んこマイスター",
-    "name": "Mud Master",
+    "name": "Maestro of the Mud",
     "raw_effects": [
       {
         "type": 1,
@@ -58443,7 +58892,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "泥遊び◎",
-    "name": "Mud Play ◎",
+    "name": "Muddy ◎",
     "raw_effects": [
       {
         "type": 1,
@@ -58479,7 +58928,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "泥遊び○",
-    "name": "Mud Play ○",
+    "name": "Muddy ○",
     "raw_effects": [
       {
         "type": 1,
@@ -58515,7 +58964,7 @@
     "effect_magnitude": -40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "泥遊び×",
-    "name": "Mud Play ×",
+    "name": "Muddy ×",
     "raw_effects": [
       {
         "type": 1,
@@ -58553,7 +59002,7 @@
     "effect_magnitude": -0.25,
     "effect_type": "current_speed",
     "jp_name": "砂上の舞姫",
-    "name": "Dancer of the Sands",
+    "name": "Dust Cloud Idol",
     "raw_effects": [
       {
         "target": 10,
@@ -58595,7 +59044,7 @@
     "effect_magnitude": -0.15,
     "effect_type": "current_speed",
     "jp_name": "土煙",
-    "name": "Cloud of Dust",
+    "name": "Dust Cloud",
     "raw_effects": [
       {
         "target": 10,
@@ -58637,7 +59086,7 @@
     "effect_magnitude": -0.25,
     "effect_type": "current_speed",
     "jp_name": "油断大敵",
-    "name": "Don't Let Your Guard Down",
+    "name": "Catch 'Em Off Guard",
     "raw_effects": [
       {
         "target": 23,
@@ -58678,7 +59127,7 @@
     "effect_magnitude": -0.15,
     "effect_type": "current_speed",
     "jp_name": "圧迫感",
-    "name": "Pressing Feeling",
+    "name": "Oppression",
     "raw_effects": [
       {
         "target": 23,
@@ -58754,7 +59203,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "攻めの姿勢",
-    "name": "Attack Stance",
+    "name": "On the Attack",
     "raw_effects": [
       {
         "type": 27,
@@ -58795,7 +59244,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ブレイクスルー",
-    "name": "Breakthrough",
+    "name": "Breakin' Ahead",
     "raw_effects": [
       {
         "type": 27,
@@ -58840,7 +59289,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "打開策",
-    "name": "Breakthrough Plan",
+    "name": "Breakin' Out",
     "raw_effects": [
       {
         "type": 27,
@@ -58885,7 +59334,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "出力1000％！",
-    "name": "1000% Output!",
+    "name": "Givin' It 1000%",
     "raw_effects": [
       {
         "type": 27,
@@ -58930,7 +59379,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "しゃかりき",
-    "name": "Frantic State",
+    "name": "Mad Dash",
     "raw_effects": [
       {
         "type": 27,
@@ -58971,7 +59420,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "電光石火",
-    "name": "Lightning Speed",
+    "name": "Flash Forward",
     "raw_effects": [
       {
         "type": 31,
@@ -59010,7 +59459,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "一足飛び",
-    "name": "Mighty Leap",
+    "name": "Leap Forward",
     "raw_effects": [
       {
         "type": 31,
@@ -59049,7 +59498,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "風雲の志",
-    "name": "Winds of Change",
+    "name": "Ambitious Breeze",
     "raw_effects": [
       {
         "type": 27,
@@ -59086,7 +59535,7 @@
     "effect_magnitude": 0.05,
     "effect_type": "target_speed",
     "jp_name": "向上心",
-    "name": "Ambitions",
+    "name": "Aspire",
     "raw_effects": [
       {
         "type": 27,
@@ -59127,7 +59576,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "無我夢中",
-    "name": "Lose Yourself",
+    "name": "Claw Forward",
     "raw_effects": [
       {
         "type": 31,
@@ -59172,7 +59621,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "がむしゃら",
-    "name": "Devil-May-Care",
+    "name": "Scramble",
     "raw_effects": [
       {
         "type": 31,
@@ -59217,7 +59666,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "快進撃",
-    "name": "Steady Advance",
+    "name": "Solid Strike",
     "raw_effects": [
       {
         "type": 27,
@@ -59263,7 +59712,7 @@
     "effect_magnitude": 0.1,
     "effect_type": "acceleration",
     "jp_name": "確かな足取り",
-    "name": "Firm Step",
+    "name": "Steady Gait",
     "raw_effects": [
       {
         "type": 27,
@@ -59331,7 +59780,7 @@
     "effect_magnitude": 80.0,
     "effect_type": "speed_stat_up",
     "jp_name": "勝負師",
-    "name": "Gambler",
+    "name": "Risk-Maker",
     "raw_effects": [
       {
         "type": 1,
@@ -59413,7 +59862,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "やまっけ",
-    "name": "Gambling Spirit",
+    "name": "Risk-Taker",
     "raw_effects": [
       {
         "type": 1,
@@ -59505,7 +59954,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "キレる脚",
-    "name": "Razor-Sharp Stride",
+    "name": "Pedal to the Metal",
     "raw_effects": [
       {
         "type": 27,
@@ -59541,7 +59990,7 @@
     "effect_magnitude": 0.45,
     "effect_type": "target_speed",
     "jp_name": "踏ませぬ影",
-    "name": "Untouchable Shadow",
+    "name": "Can't Even Catch My Shadow",
     "raw_effects": [
       {
         "type": 27,
@@ -59577,7 +60026,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "粘り腰",
-    "name": "Steadfast",
+    "name": "Firm Resolve",
     "raw_effects": [
       {
         "type": 27,
@@ -59650,7 +60099,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "食らいつき",
-    "name": "Tooth and Tail",
+    "name": "Latch On",
     "raw_effects": [
       {
         "type": 27,
@@ -59688,7 +60137,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "怪物",
-    "name": "Monster",
+    "name": "Beast Mode",
     "raw_effects": [
       {
         "type": 31,
@@ -59727,7 +60176,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "本領発揮",
-    "name": "True Worth",
+    "name": "My True Strength",
     "raw_effects": [
       {
         "type": 31,
@@ -59766,7 +60215,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "抜群の切れ味",
-    "name": "Unrivaled Wits",
+    "name": "Razor-Sharp Steps",
     "raw_effects": [
       {
         "type": 31,
@@ -59804,7 +60253,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "切れ味",
-    "name": "Witful",
+    "name": "Sharp Steps",
     "raw_effects": [
       {
         "type": 31,
@@ -59841,7 +60290,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "遮二無二",
-    "name": "Reckless",
+    "name": "Reckless Charge",
     "raw_effects": [
       {
         "type": 27,
@@ -59878,7 +60327,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "向こう見ず",
-    "name": "Rushing in Blind",
+    "name": "No Looking Back",
     "raw_effects": [
       {
         "type": 27,
@@ -59915,7 +60364,7 @@
     "effect_magnitude": 10.0,
     "effect_type": "rush_chance",
     "jp_name": "1番人気でヤバたん",
-    "name": "Favorite, For Reals?!",
+    "name": "Gonna Be Ur #1 FRFR",
     "raw_effects": [
       {
         "type": 29,
@@ -59951,7 +60400,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "天衣無縫",
-    "name": "Seamless",
+    "name": "Beautiful Form",
     "raw_effects": [
       {
         "type": 22,
@@ -59989,7 +60438,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "型破り",
-    "name": "Mold Breaker",
+    "name": "Break the Mold",
     "raw_effects": [
       {
         "type": 22,
@@ -60027,7 +60476,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "優位形成",
-    "name": "Ascendance",
+    "name": "Superb Gait",
     "raw_effects": [
       {
         "type": 27,
@@ -60065,7 +60514,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "しとやかな足取り",
-    "name": "Graceful Step",
+    "name": "Graceful Gait",
     "raw_effects": [
       {
         "type": 27,
@@ -60115,7 +60564,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "威風堂々",
-    "name": "Dignified",
+    "name": "Vying for the Throne",
     "raw_effects": [
       {
         "type": 27,
@@ -60275,7 +60724,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "快速",
-    "name": "Rapid",
+    "name": "High Speed",
     "raw_effects": [
       {
         "type": 22,
@@ -60315,7 +60764,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "一発必中",
-    "name": "One-shot",
+    "name": "Sure Shot",
     "raw_effects": [
       {
         "type": 27,
@@ -60352,7 +60801,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "ロックオン",
-    "name": "Lock On",
+    "name": "Locked On",
     "raw_effects": [
       {
         "type": 27,
@@ -60389,7 +60838,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "未来を拓く奇跡",
-    "name": "Miracle Pathmaker",
+    "name": "Miracle for My Future",
     "raw_effects": [
       {
         "type": 31,
@@ -60430,7 +60879,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "脱兎の先へ",
-    "name": "Ahead of the Game",
+    "name": "Light-Footed as a Hare",
     "raw_effects": [
       {
         "type": 9,
@@ -60475,7 +60924,7 @@
     "effect_magnitude": 0.05,
     "effect_type": "target_speed",
     "jp_name": "脇目も振らず",
-    "name": "Stay the Course",
+    "name": "Undistracted",
     "raw_effects": [
       {
         "type": 9,
@@ -60554,7 +61003,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "大急ぎ",
-    "name": "Great Haste",
+    "name": "Hurry Up!",
     "raw_effects": [
       {
         "type": 22,
@@ -60701,7 +61150,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "溢れる情熱",
-    "name": "Overflowing Passion",
+    "name": "Unrestrained Passion",
     "raw_effects": [
       {
         "type": 27,
@@ -60738,7 +61187,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "突撃魂",
-    "name": "Blitzing Spirit",
+    "name": "Rampaging Passion",
     "raw_effects": [
       {
         "type": 27,
@@ -60775,7 +61224,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "進出開始",
-    "name": "On the Move",
+    "name": "Start the Charge",
     "raw_effects": [
       {
         "type": 27,
@@ -60812,7 +61261,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "千里の道",
-    "name": "Thousand-Mile Journey",
+    "name": "A Journey in a Step",
     "raw_effects": [
       {
         "type": 27,
@@ -60849,7 +61298,7 @@
     "effect_magnitude": 0.05,
     "effect_type": "target_speed",
     "jp_name": "一歩から",
-    "name": "From the First Step",
+    "name": "First Step",
     "raw_effects": [
       {
         "type": 27,
@@ -60890,7 +61339,7 @@
     "effect_magnitude": 60.0,
     "effect_type": "speed_stat_up",
     "jp_name": "雲蒸竜変",
-    "name": "Cloud Dragon's Metamorphosis",
+    "name": "Part the Clouds",
     "raw_effects": [
       {
         "type": 1,
@@ -60935,7 +61384,7 @@
     "effect_magnitude": 20.0,
     "effect_type": "speed_stat_up",
     "jp_name": "自信家",
-    "name": "Self-Assured",
+    "name": "Confident",
     "raw_effects": [
       {
         "type": 1,
@@ -60976,7 +61425,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "昂る鼓動",
-    "name": "Surging Beat",
+    "name": "Rising Pulse",
     "raw_effects": [
       {
         "type": 22,
@@ -61014,7 +61463,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "込み上げる熱",
-    "name": "Rising Passion",
+    "name": "Rising Heat",
     "raw_effects": [
       {
         "type": 22,
@@ -61089,7 +61538,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "心弾んで",
-    "name": "High Hopes",
+    "name": "Beating Heart",
     "raw_effects": [
       {
         "type": 31,
@@ -61130,7 +61579,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "ブチ☆アゲ↑バイブス",
-    "name": "Seriously☆Good↑Vibes",
+    "name": "Send It! ☆",
     "raw_effects": [
       {
         "type": 27,
@@ -61175,7 +61624,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "バイブス上昇",
-    "name": "Up the Vibes",
+    "name": "Pop Off!",
     "raw_effects": [
       {
         "type": 27,
@@ -61216,7 +61665,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "誰より前へ！",
-    "name": "Further Than Anyone",
+    "name": "Before Anyone!",
     "raw_effects": [
       {
         "type": 31,
@@ -61252,7 +61701,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "一番乗り",
-    "name": "Early Bird",
+    "name": "Goin' First",
     "raw_effects": [
       {
         "type": 31,
@@ -61349,7 +61798,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "speed_stat_up",
     "jp_name": "探求心",
-    "name": "Inquisitive Mind",
+    "name": "Adventurer",
     "raw_effects": [
       {
         "type": 1,
@@ -65872,7 +66321,7 @@
     "effect_magnitude": 0.3,
     "effect_type": "acceleration",
     "jp_name": "舞い降りる翼",
-    "name": "舞い降りる翼",
+    "name": "Descending Wings",
     "raw_effects": [
       {
         "type": 31,
@@ -67561,7 +68010,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "一所懸命",
-    "name": "一所懸命",
+    "name": "With All My Might",
     "raw_effects": [
       {
         "type": 27,
@@ -68101,6 +68550,44 @@
     "source": "GameTora public data manifest",
     "tags": [
       "med"
+    ]
+  },
+  "203641": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(distance_type==3&phase_firsthalf_random==2&order_rate<=50@distance_type==4&phase_firsthalf_random==2&order_rate<=50)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==3&phase_firsthalf_random==2&order_rate<=50@distance_type==4&phase_firsthalf_random==2&order_rate<=50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "current_speed",
+    "jp_name": "曙光",
+    "name": "Dawnlight",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 3500
+      }
+    ],
+    "skill_id": 203641,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "med",
+      "l_2",
+      "lng"
     ]
   },
   "203642": {
@@ -71592,7 +72079,8 @@
     "skill_id": 204141,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "med",
+      "lng"
     ]
   },
   "204142": {
@@ -71629,7 +72117,8 @@
     "skill_id": 204142,
     "source": "GameTora public data manifest",
     "tags": [
-      "nac"
+      "med",
+      "lng"
     ]
   },
   "204151": {
@@ -71740,7 +72229,8 @@
     "tags": [
       "l_2",
       "l_3",
-      "nac"
+      "run",
+      "ldr"
     ]
   },
   "204162": {
@@ -71779,7 +72269,8 @@
     "tags": [
       "l_2",
       "l_3",
-      "nac"
+      "run",
+      "ldr"
     ]
   },
   "204171": {
@@ -71805,7 +72296,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "元気溌剌",
-    "name": "元気溌剌",
+    "name": "Bursting with Energy",
     "raw_effects": [
       {
         "type": 27,
@@ -72597,7 +73088,7 @@
     "effect_magnitude": 0.035,
     "effect_type": "stamina_recovery",
     "jp_name": "超長距離回復◎",
-    "name": "超長距離回復◎",
+    "name": "Ultra-Long-Distance Recovery ◎",
     "raw_effects": [
       {
         "type": 9,
@@ -72633,7 +73124,7 @@
     "effect_magnitude": 0.015,
     "effect_type": "stamina_recovery",
     "jp_name": "超長距離回復○",
-    "name": "超長距離回復○",
+    "name": "Ultra-Long-Distance Recovery ○",
     "raw_effects": [
       {
         "type": 9,
@@ -72844,7 +73335,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac"
+      "mil",
+      "med"
     ]
   },
   "204331": {
@@ -73073,7 +73565,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac"
+      "ldr",
+      "btw"
     ]
   },
   "204372": {
@@ -73111,7 +73604,8 @@
     "source": "GameTora public data manifest",
     "tags": [
       "l_1",
-      "nac"
+      "ldr",
+      "btw"
     ]
   },
   "204381": {
@@ -73137,7 +73631,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "current_speed",
     "jp_name": "光輝燦然",
-    "name": "光輝燦然",
+    "name": "Dazzling Brilliance",
     "raw_effects": [
       {
         "type": 22,
@@ -73173,7 +73667,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "current_speed",
     "jp_name": "輝きを放って",
-    "name": "輝きを放って",
+    "name": "Radiating Brilliance",
     "raw_effects": [
       {
         "type": 22,
@@ -73183,6 +73677,100 @@
     "skill_id": 204382,
     "source": "GameTora public data manifest",
     "tags": [
+      "lng"
+    ]
+  },
+  "204391": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(distance_type==3@distance_type==4 AND phase_firsthalf_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "phase_firsthalf_random==1",
+        "effects": [
+          {
+            "type": 9,
+            "value": 550
+          },
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      }
+    ],
+    "cost": 190,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "current_speed",
+    "jp_name": "悠々自適",
+    "name": "Carefree Ease",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 550
+      },
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 204391,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "med",
+      "lng"
+    ]
+  },
+  "204392": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(distance_type==3@distance_type==4 AND phase_firsthalf_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "phase_firsthalf_random==1",
+        "effects": [
+          {
+            "type": 9,
+            "value": 150
+          },
+          {
+            "type": 22,
+            "value": 350
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      }
+    ],
+    "cost": 190,
+    "duration_meters": null,
+    "effect_magnitude": 0.035,
+    "effect_type": "current_speed",
+    "jp_name": "息抜き上手",
+    "name": "Breaktime Pro",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 150
+      },
+      {
+        "type": 22,
+        "value": 350
+      }
+    ],
+    "skill_id": 204392,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "med",
       "lng"
     ]
   },
@@ -73318,7 +73906,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "絶塵",
-    "name": "絶塵",
+    "name": "Before Dust Can Rise",
     "raw_effects": [
       {
         "type": 31,
@@ -73355,7 +73943,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "影より速く",
-    "name": "影より速く",
+    "name": "Faster Than Shadow",
     "raw_effects": [
       {
         "type": 31,
@@ -73402,7 +73990,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "追尾",
-    "name": "追尾",
+    "name": "Tracking",
     "raw_effects": [
       {
         "type": 27,
@@ -73453,7 +74041,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "聖女の試練",
-    "name": "聖女の試練",
+    "name": "Saintess's Trial",
     "raw_effects": [
       {
         "type": 27,
@@ -73505,7 +74093,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "聖女の挑戦",
-    "name": "聖女の挑戦",
+    "name": "Saintess's Challenge",
     "raw_effects": [
       {
         "type": 27,
@@ -73546,7 +74134,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "いざ我が道へ！",
-    "name": "いざ我が道へ！",
+    "name": "Now, Onto My Path!",
     "raw_effects": [
       {
         "type": 27,
@@ -73558,6 +74146,44 @@
     "tags": [
       "mil",
       "l_0"
+    ]
+  },
+  "204472": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(distance_type==3&corner_random==3&order_rate<=50@distance_type==4&corner_random==3&order_rate<=50)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==3&corner_random==3&order_rate<=50@distance_type==4&corner_random==3&order_rate<=50",
+        "effects": [
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 180,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "current_speed",
+    "jp_name": "奮い立つ心",
+    "name": "Roused Spirit",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 204472,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "med",
+      "cor",
+      "lng"
     ]
   },
   "210011": {
@@ -74135,7 +74761,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "キミと勝ちたい",
-    "name": "I Want to Win With You",
+    "name": "I Wanna Win with You",
     "raw_effects": [
       {
         "type": 27,
@@ -74183,7 +74809,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "夢の途中",
-    "name": "Halfway to a Dream",
+    "name": "On the Way to Our Dream",
     "raw_effects": [
       {
         "type": 27,
@@ -74226,7 +74852,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "限界の先へ",
-    "name": "Beyond the Limits",
+    "name": "Past My Limits",
     "raw_effects": [
       {
         "type": 27,
@@ -74265,7 +74891,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "前だけ見据えて",
-    "name": "Eyes on the Horizon",
+    "name": "Eyes on the Goal",
     "raw_effects": [
       {
         "type": 27,
@@ -74303,7 +74929,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "レースの真髄・速",
-    "name": "Essence of Racing・Speed",
+    "name": "Racing Spirit: Speed",
     "raw_effects": [
       {
         "type": 27,
@@ -74344,7 +74970,7 @@
     "effect_magnitude": 0.25,
     "effect_type": "target_speed",
     "jp_name": "レースの真髄・体",
-    "name": "Essence of Racing・Stamina",
+    "name": "Racing Spirit: Stamina",
     "raw_effects": [
       {
         "type": 27,
@@ -74385,7 +75011,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "レースの真髄・力",
-    "name": "Essence of Racing・Power",
+    "name": "Racing Spirit: Power",
     "raw_effects": [
       {
         "type": 27,
@@ -74422,7 +75048,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "レースの真髄・根",
-    "name": "Essence of Racing・Guts",
+    "name": "Racing Spirit: Guts",
     "raw_effects": [
       {
         "type": 31,
@@ -74458,7 +75084,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "レースの真髄・賢",
-    "name": "Essence of Racing・Wisdom",
+    "name": "Racing Spirit: Wit",
     "raw_effects": [
       {
         "type": 27,
@@ -74502,7 +75128,7 @@
     "effect_magnitude": 40.0,
     "effect_type": "stamina_stat_up",
     "jp_name": "レースの真髄・心",
-    "name": "Essence of Racing・Energy",
+    "name": "Racing Spirit: Mood",
     "raw_effects": [
       {
         "type": 2,
@@ -74586,7 +75212,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "陽の加護",
-    "name": "Blessing of the Sun",
+    "name": "Sun's Blessing",
     "raw_effects": [
       {
         "type": 27,
@@ -74625,7 +75251,7 @@
     "effect_magnitude": 0.4,
     "effect_type": "acceleration",
     "jp_name": "大海の叡智",
-    "name": "Wisdom of the Ocean",
+    "name": "Wisdom of the Sea",
     "raw_effects": [
       {
         "type": 31,
@@ -74664,7 +75290,7 @@
     "effect_magnitude": 0.2,
     "effect_type": "acceleration",
     "jp_name": "海の加護",
-    "name": "Blessing of the Ocean",
+    "name": "Sea's Blessing",
     "raw_effects": [
       {
         "type": 31,
@@ -74703,7 +75329,7 @@
     "effect_magnitude": 0.35,
     "effect_type": "target_speed",
     "jp_name": "大地の叡智",
-    "name": "Wisdom of the Land",
+    "name": "Wisdom of the Earth",
     "raw_effects": [
       {
         "type": 27,
@@ -74742,7 +75368,7 @@
     "effect_magnitude": 0.15,
     "effect_type": "target_speed",
     "jp_name": "地の加護",
-    "name": "Blessing of the Land",
+    "name": "Earth's Blessing",
     "raw_effects": [
       {
         "type": 27,
@@ -75464,6 +76090,82 @@
       }
     ],
     "skill_id": 210382,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_3",
+      "nac"
+    ]
+  },
+  "210391": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "gold",
+    "condition": "(is_lastspurt==1&phase_firsthalf_random==3)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "is_lastspurt==1&phase_firsthalf_random==3",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500,
+            "value_scale": 40
+          }
+        ]
+      }
+    ],
+    "cost": 200,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "極上の感謝を！",
+    "name": "Premium Helping of Gratitude",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500,
+        "value_scale": 40
+      }
+    ],
+    "skill_id": 210391,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_3",
+      "nac"
+    ]
+  },
+  "210392": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "white",
+    "condition": "(is_lastspurt==1&phase_firsthalf_random==3)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "is_lastspurt==1&phase_firsthalf_random==3",
+        "effects": [
+          {
+            "type": 27,
+            "value": 1500
+          }
+        ]
+      }
+    ],
+    "cost": 200,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "target_speed",
+    "jp_name": "恩返し、召し上がれ",
+    "name": "Serving of Gratitude",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 1500
+      }
+    ],
+    "skill_id": 210392,
     "source": "GameTora public data manifest",
     "tags": [
       "l_3",
@@ -77767,6 +78469,254 @@
       "med",
       "l_1",
       "lng"
+    ]
+  },
+  "414011": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(behind_near_lane_time>=3&accumulatetime>=10)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "cd": 300000,
+        "condition": "behind_near_lane_time>=3&accumulatetime>=10",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.45,
+    "effect_type": "target_speed",
+    "jp_name": "バリカタ、一丁上がり！",
+    "name": "Extra-Firm, Coming Right Up!",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 4500
+      }
+    ],
+    "skill_id": 414011,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "nac"
+    ]
+  },
+  "414021": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==3@distance_type==4 AND phase_firsthalf_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "phase_firsthalf_random==1",
+        "effects": [
+          {
+            "type": 9,
+            "value": 750
+          },
+          {
+            "type": 22,
+            "value": 1500
+          }
+        ],
+        "precondition": "distance_type==3@distance_type==4"
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.15,
+    "effect_type": "current_speed",
+    "jp_name": "じっくり仕込みの一杯",
+    "name": "Slow-Crafted Bowl",
+    "raw_effects": [
+      {
+        "type": 9,
+        "value": 750
+      },
+      {
+        "type": 22,
+        "value": 1500
+      }
+    ],
+    "skill_id": 414021,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "med",
+      "lng"
+    ]
+  },
+  "414031": {
+    "activation": 1,
+    "base_time_ms": 40000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==3&phase_random==1@distance_type==4&phase_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 40000,
+        "condition": "distance_type==3&phase_random==1@distance_type==4&phase_random==1",
+        "effects": [
+          {
+            "type": 27,
+            "value": 3500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.35,
+    "effect_type": "target_speed",
+    "jp_name": "麺の極意、見つけたり",
+    "name": "Secrets of the Noodle Path",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 3500
+      }
+    ],
+    "skill_id": 414031,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "med",
+      "l_1",
+      "lng"
+    ]
+  },
+  "414041": {
+    "activation": 1,
+    "base_time_ms": 18000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(phase_random==1&distance_type==3&base_speed>=1000&base_stamina>=1000&base_power>=1000&base_guts>=1000&base_wiz>=1000) OR (phase_random==1)",
+    "condition_groups": [
+      {
+        "base_time": 18000,
+        "condition": "phase_random==1&distance_type==3&base_speed>=1000&base_stamina>=1000&base_power>=1000&base_guts>=1000&base_wiz>=1000",
+        "effects": [
+          {
+            "type": 22,
+            "value": 5500
+          }
+        ]
+      },
+      {
+        "base_time": 18000,
+        "condition": "phase_random==1",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.55,
+    "effect_type": "current_speed",
+    "jp_name": "湯切りの妙技",
+    "name": "Exquisite Water Draining",
+    "raw_effects": [
+      {
+        "type": 22,
+        "value": 5500
+      },
+      {
+        "type": 27,
+        "value": 4500
+      }
+    ],
+    "skill_id": 414041,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "l_1",
+      "med",
+      "nac"
+    ]
+  },
+  "414051": {
+    "activation": 1,
+    "base_time_ms": 24000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==2&phase_random==1&order_rate<=50)",
+    "condition_groups": [
+      {
+        "base_time": 24000,
+        "condition": "distance_type==2&phase_random==1&order_rate<=50",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.45,
+    "effect_type": "target_speed",
+    "jp_name": "秘伝の味変アレンジ！",
+    "name": "Secret Flavor Remix!",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 4500
+      }
+    ],
+    "skill_id": 414051,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "mil",
+      "l_1"
+    ]
+  },
+  "414061": {
+    "activation": 1,
+    "base_time_ms": 30000,
+    "category": "speed",
+    "color": "evolution",
+    "condition": "(distance_type==2&is_lastspurt==1&phase_firsthalf_random==3)",
+    "condition_groups": [
+      {
+        "base_time": 30000,
+        "condition": "distance_type==2&is_lastspurt==1&phase_firsthalf_random==3",
+        "effects": [
+          {
+            "type": 27,
+            "value": 4500
+          }
+        ]
+      }
+    ],
+    "cost": 0,
+    "duration_meters": null,
+    "effect_magnitude": 0.45,
+    "effect_type": "target_speed",
+    "jp_name": "元気特盛りのおもてなし",
+    "name": "Heaping Helping of Cheer",
+    "raw_effects": [
+      {
+        "type": 27,
+        "value": 4500
+      }
+    ],
+    "skill_id": 414061,
+    "source": "GameTora public data manifest",
+    "tags": [
+      "mil",
+      "l_3"
     ]
   }
 }

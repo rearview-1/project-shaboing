@@ -4543,11 +4543,18 @@ def _training_sim_gain_delta(left, right):
     }
 
 
-def _training_sim_apply_overcap_halving(gains, training_stat, enabled=False):
+def _training_sim_apply_overcap_halving(gains, training_stat, enabled=False, stats_over_1200=None):
     out = dict(gains or {})
+    overcap_stats = {
+        str(stat or "").strip().lower()
+        for stat, active in (stats_over_1200 or {}).items()
+        if active and str(stat or "").strip().lower() in TRAINING_SIM_STATS
+    }
     stat = str(training_stat or "").strip().lower()
     if enabled and stat in TRAINING_SIM_STATS:
-        out[stat] = int(int(out.get(stat) or 0) // 2)
+        overcap_stats.add(stat)
+    for overcap_stat in overcap_stats:
+        out[overcap_stat] = int(int(out.get(overcap_stat) or 0) // 2)
     return out
 
 
@@ -4555,19 +4562,22 @@ def _training_sim_area_cards(raw_cards):
     cards = []
     for row in raw_cards or []:
         fb = True
+        bond = True
         if isinstance(row, TrainingSimCardPlacement):
             sid = int(row.support_card_id or 0)
             lb = int(row.lb if row.lb is not None else 4)
             fb = bool(row.fb)
+            bond = bool(row.bond)
         elif isinstance(row, dict):
             sid = safe_int(row.get("support_card_id") or row.get("id") or 0)
             lb = safe_int(row.get("lb") if row.get("lb") is not None else row.get("limit_break_count") or 4)
             fb = row.get("fb") is not False
+            bond = row.get("bond") is not False
         else:
             sid = safe_int(row)
             lb = 4
         if sid > 0:
-            cards.append({"support_card_id": sid, "lb": max(0, min(4, lb)), "fb": fb})
+            cards.append({"support_card_id": sid, "lb": max(0, min(4, lb)), "fb": fb, "bond": bond})
     return cards[:6]
 
 
@@ -4832,6 +4842,7 @@ class TrainingSimCardPlacement(BaseModel):
     support_card_id: int = 0
     lb: int = 4
     fb: bool = True  # friendship bonus enabled (uma.guide FB chip)
+    bond: bool = True  # bond >= 80; controls bond-gated uniques and friendship eligibility
 
 class TrainingSimRequest(BaseModel):
     scenario: str = "14"
@@ -4848,6 +4859,7 @@ class TrainingSimRequest(BaseModel):
     year_effect_ids: list[str] = Field(default_factory=list)
     enforce_support_type_condition: bool = True
     trained_stat_over_1200: bool = False
+    stats_over_1200: dict[str, bool] = Field(default_factory=dict)
     bonded: bool = True
 
 class ProfileDatasetIngestRequest(BaseModel):
@@ -5020,9 +5032,10 @@ async def training_sim_calculate(req: TrainingSimRequest):
             **common_kwargs,
         )
         overcap_enabled = bool(req.trained_stat_over_1200)
-        base_gains = _training_sim_apply_overcap_halving(base_gains, stat, overcap_enabled)
-        card_gains = _training_sim_apply_overcap_halving(card_gains, stat, overcap_enabled)
-        total_gains = _training_sim_apply_overcap_halving(total_gains, stat, overcap_enabled)
+        stats_over_1200 = req.stats_over_1200 or {}
+        base_gains = _training_sim_apply_overcap_halving(base_gains, stat, overcap_enabled, stats_over_1200)
+        card_gains = _training_sim_apply_overcap_halving(card_gains, stat, overcap_enabled, stats_over_1200)
+        total_gains = _training_sim_apply_overcap_halving(total_gains, stat, overcap_enabled, stats_over_1200)
         cards = []
         for placement in placements:
             support_card_id = placement["support_card_id"]
@@ -5030,6 +5043,7 @@ async def training_sim_calculate(req: TrainingSimRequest):
             row["support_card_id"] = support_card_id
             row["lb"] = placement["lb"]
             row["fb"] = placement.get("fb", True)
+            row["bond"] = placement.get("bond", True)
             cards.append(row)
         areas[stat] = {
             "stat": stat,
@@ -5067,6 +5081,10 @@ async def training_sim_calculate(req: TrainingSimRequest):
         "year_effects_skipped": year_effect_state.get("skipped") or [],
         "unknown_year_effect_ids": year_effect_state.get("unknown") or [],
         "trained_stat_over_1200": bool(req.trained_stat_over_1200),
+        "stats_over_1200": {
+            stat: bool((req.stats_over_1200 or {}).get(stat))
+            for stat in TRAINING_SIM_STATS
+        },
         "support_type_count": int(year_effect_state.get("support_type_count") or 0),
         "support_types": year_effect_state.get("support_types") or [],
         "enforce_support_type_condition": bool(year_effect_state.get("enforce_support_type_condition")),

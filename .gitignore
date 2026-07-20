@@ -44,3 +44,6 @@ tmp_*.json
 
 # Code-audit raw agent reports (local intermediates)
 CODE_AUDIT_RAW_BATCH*.md
+
+# test scratch (never preserve)
+/.pytest_tmp/

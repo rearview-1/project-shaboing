@@ -7339,6 +7339,7 @@
 }
 
 .training-sim-placed-card {
+    position: relative;
     display: flex;
     gap: 7px;
     align-items: center;
@@ -7346,7 +7347,7 @@
     border-radius: 8px;
     background: rgba(0,0,0,0.18);
     color: var(--text);
-    cursor: pointer;
+    cursor: default;
     min-width: 0;
     padding: 5px;
 }
@@ -7357,6 +7358,92 @@
     white-space: nowrap;
     font-size: 10px;
     font-weight: 800;
+}
+
+.training-sim-placed-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.training-sim-placed-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 17px;
+    height: 17px;
+    border: 0;
+    border-radius: 50%;
+    background: #e15c78;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 17px;
+    padding: 0;
+    text-align: center;
+}
+
+.training-sim-placed-remove:hover {
+    background: #ff6f8d;
+}
+
+.training-sim-lb-select {
+    min-width: 54px;
+    border: 1px solid color-mix(in srgb, var(--tile-color, var(--accent)) 65%, transparent);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.36);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 5px;
+    text-transform: uppercase;
+}
+
+.training-sim-lb-select:focus {
+    outline: 1px solid color-mix(in srgb, var(--tile-color, var(--accent)) 80%, transparent);
+    outline-offset: 1px;
+}
+
+.training-sim-fb-chip,
+.training-sim-bond-chip {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 4px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.18);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-align: center;
+    cursor: pointer;
+}
+
+.training-sim-bond-chip {
+    min-width: 34px;
+}
+
+.training-sim-fb-chip.is-on,
+.training-sim-bond-chip.is-on {
+    color: #6dd700;
+    border-color: rgba(109, 215, 0, 0.65);
+    background: rgba(109, 215, 0, 0.12);
+}
+
+.training-sim-fb-chip.is-off,
+.training-sim-bond-chip.is-off {
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.04);
+    text-decoration: line-through;
+}
+
+.training-sim-fb-chip.is-na {
+    color: var(--text-dim);
+    cursor: default;
+    opacity: 0.55;
 }
 
 .training-sim-npc-pill {

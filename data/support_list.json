@@ -2693,5 +2693,20 @@
     "name": "Blast Onepiece",
     "rarity": "SSR",
     "type": "Stamina"
+  },
+  "30304": {
+    "name": "Meisho Doto",
+    "rarity": "SSR",
+    "type": "Stamina"
+  },
+  "30305": {
+    "name": "Tazuna Hayakawa",
+    "rarity": "SSR",
+    "type": "Friend"
+  },
+  "30306": {
+    "name": "Nice Nature",
+    "rarity": "SSR",
+    "type": "Intelligence"
   }
 }

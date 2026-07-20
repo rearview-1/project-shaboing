@@ -42,7 +42,10 @@
                     <span>Growth Rates</span>
                     <strong id="training-sim-growth-summary">None</strong>
                 </button>
-                <button id="training-sim-overcap-stat" class="training-sim-chip training-sim-overcap-chip" type="button" title="Trained stat over 1200: primary gain halved">Stat over 1200</button>
+                <div class="training-sim-field training-sim-overcap-field">
+                    <span>Stats Over 1200</span>
+                    <div id="training-sim-overcap-stat" class="training-sim-chip-row training-sim-overcap-row" title="Each selected stat has its own gain halved, including substats."></div>
+                </div>
                 <div class="training-sim-topbar-actions">
                     <button id="training-sim-clear-cards" class="btn btn-sm" type="button">Clear Cards</button>
                     <button id="training-sim-reset" class="btn btn-sm" type="button">Reset All</button>
@@ -66,7 +69,7 @@
                 <section class="training-sim-areas-section">
                     <div class="training-sim-section-head">
                         <span class="training-sim-title">Training Tiles</span>
-                        <span id="training-sim-tiles-hint" class="training-sim-subtitle">Pick a card → click a tile to place it. Click a placed card to remove.</span>
+                        <span id="training-sim-tiles-hint" class="training-sim-subtitle">Pick a card, click a tile to place it. Use X to remove.</span>
                     </div>
                     <div id="training-sim-areas" class="training-sim-areas"></div>
                 </section>

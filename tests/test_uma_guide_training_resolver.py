@@ -70,13 +70,28 @@ def test_known_card_uniques_resolve():
     assert _uma_card_effect(sw, 1, _uma_el_level(4, "SR"), matching=True) == 37.5
 
 
-def test_all_cards_present_in_training_data():
-    """Every support card the sim knows about must have uma.guide training data,
-    so no card silently falls back to a guess."""
+def test_type101_unique_respects_bond_state():
+    """Taiki's type-101 unique is bond-gated: at bond >=80 it grants
+    Speed Bonus +1 and Skill Pt Bonus +1; below bond it should not."""
+    data = _train_data()
+    taiki = data["30053"]
+    level = _uma_el_level(4, "SSR")
+
+    assert _uma_card_effect(taiki, 3, level, matching=True, bonded=True) == 2
+    assert _uma_card_effect(taiki, 30, level, matching=True, bonded=True) == 1
+    assert _uma_card_effect(taiki, 3, level, matching=True, bonded=False) == 1
+    assert _uma_card_effect(taiki, 30, level, matching=True, bonded=False) == 0
+
+
+def test_all_cards_resolve_training_data_or_full_lb_fallback():
+    """Every support card the sim knows about must have either compact
+    uma.guide training data or expanded lb_levels fallback data, so no card
+    silently falls back to a zero-effect guess."""
     bonuses = json.loads((_DATA / "support_card_bonuses.json").read_text(encoding="utf-8"))
     data = _train_data()
     missing = [cid for cid in bonuses if str(cid).isdigit() and str(cid) not in data]
-    assert not missing, f"{len(missing)} cards missing training data: {missing[:10]}"
+    unresolvable = [cid for cid in missing if not (bonuses.get(str(cid)) or {}).get("lb_levels")]
+    assert not unresolvable, f"{len(unresolvable)} cards missing all training data: {unresolvable[:10]}"
 
 
 def test_every_training_relevant_unique_is_acknowledged():

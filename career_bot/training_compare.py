@@ -23,6 +23,18 @@ from career_bot.career_simulator import _normalize_support_type, _uma_card_effec
 
 STAT_KEYS = ("speed", "stamina", "power", "guts", "wit")
 GAIN_KEYS = (*STAT_KEYS, "sp", "energy")
+FX_TO_BONUS_KEY = {
+    1: "friendship_bonus",
+    2: "mood_effect",
+    3: "speed_bonus",
+    4: "stamina_bonus",
+    5: "power_bonus",
+    6: "guts_bonus",
+    7: "wit_bonus",
+    8: "training_effectiveness",
+    28: "energy_cost_reduction",
+    30: "skill_pt_bonus",
+}
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -103,7 +115,7 @@ class TrainingTileCalculator:
         base = dict((facilities.get(training_key) or {}).get(str(facility_level)) or {})
         _apply_base_scenario_effects(base, active_effects)
         friendship = 1.0
-        mood_eff = train_eff = energy_red = 0.0
+        mood_eff = train_eff = energy_red = wit_recovery = 0.0
         bonuses = {"speed": 0.0, "stamina": 0.0, "power": 0.0, "guts": 0.0, "wit": 0.0, "sp": 0.0}
         stat_fx = {"speed": 3, "stamina": 4, "power": 5, "guts": 6, "wit": 7, "sp": 30}
         normalized_deck = _normalize_deck(deck, default_lb)
@@ -115,22 +127,41 @@ class TrainingTileCalculator:
             for row in (deck or [])
             if isinstance(row, dict) and row.get("fb") is False
         }
+        bond_off = {
+            int(row.get("support_card_id") or row.get("card_id") or row.get("id") or 0)
+            for row in (deck or [])
+            if isinstance(row, dict) and row.get("bond") is False
+        }
         has_friendship_training = False
         for support_id, lb in normalized_deck:
             record = self.support_train_data.get(str(support_id))
-            if not record:
+            bonus_record = self.support_bonus_data.get(str(support_id)) or {}
+            if not record and not bonus_record:
                 continue
-            level = _uma_el_level(lb, record.get("r"))
-            ctype = _normalize_support_type((self.support_bonus_data.get(str(support_id)) or {}).get("type"))
-            matching = (int(record.get("t") or 0) == 3) or (ctype == training_key)
+            card_bonded = bool(bonded) and support_id not in bond_off
+            ctype = _normalize_support_type(bonus_record.get("type"))
+            if record:
+                level = _uma_el_level(lb, record.get("r"))
+                matching = (int(record.get("t") or 0) == 3) or (ctype == training_key)
+                card_effect = lambda fx: _uma_card_effect(record, fx, level, matching, bonded=card_bonded)
+            else:
+                matching = ctype == training_key or ctype in {"friend", "group"}
+                card_effect = lambda fx: _bonus_record_effect(bonus_record, lb, FX_TO_BONUS_KEY.get(fx, ""), bonded=card_bonded)
             for stat, fx in stat_fx.items():
-                bonuses[stat] += _uma_card_effect(record, fx, level, matching)
-            mood_eff += _uma_card_effect(record, 2, level, matching)
-            train_eff += _uma_card_effect(record, 8, level, matching)
-            energy_red += _uma_card_effect(record, 28, level, matching)
-            if matching and bonded and support_id not in fb_off:
+                bonuses[stat] += card_effect(fx)
+            mood_eff += card_effect(2)
+            train_eff += card_effect(8)
+            energy_red += card_effect(28)
+            if matching and card_bonded and support_id not in fb_off:
                 has_friendship_training = True
-                friend_val = _uma_card_effect(record, 1, level, matching)
+                if training_key == "wit":
+                    wit_recovery += _bonus_record_effect(
+                        bonus_record,
+                        lb,
+                        "wit_friendship_recovery",
+                        bonded=card_bonded,
+                    )
+                friend_val = card_effect(1)
                 if friend_val > 0:
                     friendship *= 1.0 + friend_val / 100.0
         stat_bonus_effects, scalar_effects = _scenario_bonus_effects(active_effects)
@@ -165,6 +196,8 @@ class TrainingTileCalculator:
         energy = float(base.get("energy") or 0)
         energy *= float(scalar_effects.get("energy_multiplier") or 1.0)
         energy += float(scalar_effects.get("energy_add") or 0)
+        if training_key == "wit" and has_friendship_training:
+            energy += wit_recovery
         w = energy * (1.0 - energy_red / 100.0) if energy < 0 else energy
         out["energy"] = int(math.floor(w - math.floor(abs(w) * float(item_energy_pct) / 100.0)) if w < 0 else int(w))
         return out
@@ -455,6 +488,39 @@ def _normalize_deck(cards: Iterable[int | tuple[int, int] | dict[str, Any]], def
     return out
 
 
+def _bonus_record_effect(record: dict[str, Any], lb: int, key: str, *, bonded: bool = True) -> float:
+    """Fallback effect lookup from support_card_bonuses.json.
+
+    The compact uma.guide table is preferred because it encodes the decompiled
+    card curves. For newly released cards that exist only in the expanded
+    lb_levels table, this keeps the simulator from silently dropping every card
+    stat. Unconditional uniques are already merged into lb_levels by the
+    extractor; only conditional decoded uniques are applied here.
+    """
+    if not record or not key:
+        return 0.0
+    try:
+        target_lb = max(0, min(4, int(lb or 0)))
+    except (TypeError, ValueError):
+        target_lb = 4
+    levels = record.get("lb_levels") or []
+    row = next((item for item in levels if int((item or {}).get("lb") or 0) == target_lb), None)
+    if row is None and levels:
+        row = levels[min(target_lb, len(levels) - 1)]
+    value = float((row or {}).get(key) or 0)
+    for unique in record.get("unique_effects") or []:
+        if str((unique or {}).get("condition") or "") != "bond_gte":
+            continue
+        if not bonded:
+            continue
+        grants = unique.get("grants") or {}
+        try:
+            value += float(grants.get(key) or 0)
+        except (TypeError, ValueError):
+            continue
+    return value
+
+
 def _training_curves_from_gamewith(data_dir: Path, selector: str) -> dict[str, Any] | None:
     data = _load_json(data_dir / "gamewith_scenario_training_curves.json", {})
     scenarios = data.get("scenarios") or []
@@ -533,7 +599,7 @@ def tile_gain(
         active_scenario_effects=active_scenario_effects,
     )
     return calc.tile_gain(
-        _normalize_deck(deck, default_lb),
+        deck,
         _canonical_stat(training_stat),
         facility_level=int(facility_level),
         mood=float(mood),

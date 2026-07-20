@@ -120,12 +120,78 @@ def test_bond_gated_unique_effect_activates_at_threshold():
     assert active.get("skill_pt_bonus") == 1
 
 
+def test_new_nice_nature_wit_card_mlb_and_bond_unique_modeled():
+    data_path = Path(__file__).resolve().parents[1] / "data" / "support_card_bonuses.json"
+    data = json.loads(data_path.read_text(encoding="utf-8"))
+    nature = data["30306"]
+    lb4 = nature["lb_levels"][-1]
+
+    assert nature["name"] == "Nice Nature"
+    assert nature["type"] == "Intelligence"
+    assert lb4["friendship_bonus"] == 30
+    assert lb4["mood_effect"] == 50
+    assert lb4["wit_bonus"] == 1
+    assert lb4["training_effectiveness"] == 20
+    assert lb4["initial_speed"] == 25
+    assert lb4["initial_friendship"] == 35
+    assert lb4["race_bonus"] == 10
+    assert lb4["fan_bonus"] == 20
+    assert lb4["hint_levels"] == 4
+    assert lb4["hint_freq"] == 100
+    assert lb4["specialty_priority"] == 80
+    assert lb4["skill_pt_bonus"] == 2
+    assert lb4["wit_friendship_recovery"] == 5
+    assert nature["unique_effects"] == [{
+        "condition": "bond_gte",
+        "grants": {"wit_bonus": 1},
+        "threshold": 80,
+        "type": 101,
+        "unlock_level": 0,
+    }]
+
+    preset = {
+        "name": "new_nice_nature_unique_test",
+        "scenario_id": 4,
+        "sim_use_latest_session_context": False,
+        "_run_context": {
+            "support_card_ids": [30306],
+            "trainee_card_id": 102001,
+        },
+    }
+    sim = CareerSimulator(
+        preset=preset,
+        deck=[{"support_card_id": 30306, "lb_level": 4}],
+        seed=42,
+    )
+    card = next(c for c in sim.sim_support_cards if c["support_card_id"] == 30306)
+    partner_id = int(card["partner_id"])
+
+    sim.state["bonds"][partner_id] = 79
+    inactive = sim._effective_card_effects(card, training_stat="wit", partner_cards=[card])
+    assert inactive.get("wit_bonus") == 1
+    assert inactive.get("skill_pt_bonus") == 2
+
+    sim.state["bonds"][partner_id] = 80
+    active = sim._effective_card_effects(card, training_stat="wit", partner_cards=[card])
+    assert active.get("wit_bonus") == 2
+    assert active.get("skill_pt_bonus") == 2
+
+
 # -------------------- failure_protection --------------------
 
 def test_failure_protection_reduces_training_failure_rate():
     """When a card with failure_protection appears on a training tile,
     the tile's failure_rate is reduced by the protection amount."""
     sim = _make_sim()
+    riko = next(c for c in sim.sim_support_cards if c["support_card_id"] == 30036)
+    original_partner_cards_for_tile = sim._partner_cards_for_tile
+
+    def deterministic_partner_cards(stat_name):
+        if stat_name == "speed":
+            return [riko]
+        return original_partner_cards_for_tile(stat_name)
+
+    sim._partner_cards_for_tile = deterministic_partner_cards
     # Force a known failure rate by setting low HP and the synth path
     sim.state["hp"] = 30  # raw failure = (100-30)/3 = 23
     cmds = sim._make_training_commands()

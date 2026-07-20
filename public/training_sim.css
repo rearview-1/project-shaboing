@@ -335,8 +335,10 @@
 .training-sim-basic-pill b { text-transform: uppercase; margin-right: 6px; }
 .training-sim-gimmick-status { margin-top: 8px; display: block; }
 
-/* FB (friendship) chip on placed cards — uma.guide parity */
-.training-sim-fb-chip {
+/* Bond/FB chips on placed cards — bond controls bond-gated uniques; FB controls
+   the matching-card friendship fold. */
+.training-sim-fb-chip,
+.training-sim-bond-chip {
     display: inline-block;
     min-width: 20px;
     padding: 1px 4px;
@@ -348,12 +350,17 @@
     text-align: center;
     cursor: pointer;
 }
-.training-sim-fb-chip.is-on {
+.training-sim-bond-chip {
+    min-width: 34px;
+}
+.training-sim-fb-chip.is-on,
+.training-sim-bond-chip.is-on {
     color: #6dd700;
     border-color: rgba(109, 215, 0, 0.65);
     background: rgba(109, 215, 0, 0.12);
 }
-.training-sim-fb-chip.is-off {
+.training-sim-fb-chip.is-off,
+.training-sim-bond-chip.is-off {
     color: var(--text-dim);
     background: rgba(255,255,255,0.04);
     text-decoration: line-through;

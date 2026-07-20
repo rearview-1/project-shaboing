@@ -15951,7 +15951,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10079-daiichi-ruby",
     "support_card_id": 10079,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Power",
     "unique_effects": []
   },
@@ -16153,7 +16153,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10080-ksmiracle",
     "support_card_id": 10080,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Guts",
     "unique_effects": []
   },
@@ -16558,7 +16558,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10082-symboli-kris-s",
     "support_card_id": 10082,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Stamina",
     "unique_effects": []
   },
@@ -16756,7 +16756,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10083-light-hello",
     "support_card_id": 10083,
-    "title": "[イベントプロデューサー]",
+    "title": "[Event Producer]",
     "type": "Friend",
     "unique_effects": []
   },
@@ -16958,7 +16958,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10084-tanino-gimlet",
     "support_card_id": 10084,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Power",
     "unique_effects": []
   },
@@ -17163,7 +17163,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10085-sakura-laurel",
     "support_card_id": 10085,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Stamina",
     "unique_effects": []
   },
@@ -17368,7 +17368,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10086-yamanin-zephyr",
     "support_card_id": 10086,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Guts",
     "unique_effects": []
   },
@@ -17571,7 +17571,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10087-aston-machan",
     "support_card_id": 10087,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Speed",
     "unique_effects": []
   },
@@ -17776,7 +17776,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10088-mejiro-ramonu",
     "support_card_id": 10088,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Intelligence",
     "unique_effects": []
   },
@@ -17979,7 +17979,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10089-jungle-pocket",
     "support_card_id": 10089,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Speed",
     "unique_effects": []
   },
@@ -18386,7 +18386,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10091-katsuragi-ace",
     "support_card_id": 10091,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Speed",
     "unique_effects": []
   },
@@ -18590,7 +18590,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10092-copano-rickey",
     "support_card_id": 10092,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Guts",
     "unique_effects": []
   },
@@ -18795,7 +18795,7 @@
     "rarity": "R",
     "source_url": "https://gametora.com/umamusume/supports/10093-wonder-acute",
     "support_card_id": 10093,
-    "title": "[トレセン学園]",
+    "title": "[Tracen Academy]",
     "type": "Power",
     "unique_effects": []
   },
@@ -39560,7 +39560,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20050-seiun-sky",
     "support_card_id": 20050,
-    "title": "[ゆるっと、まにまに]",
+    "title": "[Bobbing with the Waves]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -39776,7 +39776,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20051-ksmiracle",
     "support_card_id": 20051,
-    "title": "[The 3rd MIRACLE]",
+    "title": "[The 3rd Miracle]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -39991,7 +39991,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20052-tsurumaru-tsuyoshi",
     "support_card_id": 20052,
-    "title": "[『フレフレ、ツヨシ！』]",
+    "title": "[Go, Go! Tsuyoshi!]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -40206,7 +40206,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20053-narita-top-road",
     "support_card_id": 20053,
-    "title": "[ストップ、委員長！]",
+    "title": "[Stop, Prez!]",
     "type": "Power",
     "unique_effects": [
       {
@@ -40425,7 +40425,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20054-tm-opera-o",
     "support_card_id": 20054,
-    "title": "[偉大なるフォトグラフィーア]",
+    "title": "[Mighty Fotografia]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -40646,7 +40646,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20055-aston-machan",
     "support_card_id": 20055,
-    "title": "[添付ファイル、温めますか？]",
+    "title": "[A Clip to Keep Your Heart Warm]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -40864,7 +40864,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20056-jungle-pocket",
     "support_card_id": 20056,
-    "title": "[デッド・エンド【通せん坊】]",
+    "title": "[Dead End: Blocking the Path]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -41080,7 +41080,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20057-mejiro-dober",
     "support_card_id": 20057,
-    "title": "[ふわり、さらり]",
+    "title": "[Gentle and Sleek]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -41299,7 +41299,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20058-symboli-rudolf",
     "support_card_id": 20058,
-    "title": "[放課後、君が笑った]",
+    "title": "[Your Laugh After School]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -41518,7 +41518,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20059-agnes-tachyon",
     "support_card_id": 20059,
-    "title": "[嗚呼素晴らしき甘味哉]",
+    "title": "[Ah, Wonderful Saccharinity]",
     "type": "Power",
     "unique_effects": [
       {
@@ -41735,7 +41735,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20060-hishi-akebono",
     "support_card_id": 20060,
-    "title": "[甘～い浮き輪を召し上がれ]",
+    "title": "[Try a Sweet Swim Ring]",
     "type": "Power",
     "unique_effects": [
       {
@@ -41972,7 +41972,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20061-gold-ship",
     "support_card_id": 20061,
-    "title": "[ゴルシ印のスペシャリテ]",
+    "title": "[Golshi's House Specialty]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -42191,7 +42191,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20062-maruzensky",
     "support_card_id": 20062,
-    "title": "[激マブ！ドライブ♪]",
+    "title": "[One Bomb Drive ♪]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -42410,7 +42410,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20063-silence-suzuka",
     "support_card_id": 20063,
-    "title": "[夕立の向こうからのぞく]",
+    "title": "[Summer Evening Shower]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -42630,7 +42630,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20064-copano-rickey",
     "support_card_id": 20064,
-    "title": "[ラッキーの神様は早起き]",
+    "title": "[Gods of Luck Are Early to Rise]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -42848,7 +42848,7 @@
     "rarity": "SR",
     "source_url": "https://gametora.com/umamusume/supports/20065-grass-wonder",
     "support_card_id": 20065,
-    "title": "[よい茶の飲み置き]",
+    "title": "[The Splendid Aftertaste of Good Tea]",
     "type": "Power",
     "unique_effects": [
       {
@@ -58079,7 +58079,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30037-symboli-rudolf",
     "support_card_id": 30037,
-    "title": "[絶対皇帝]",
+    "title": "[The Unequivocal Emperor]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -60682,7 +60682,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30052-light-hello",
     "support_card_id": 30052,
-    "title": "[from the GROUND UP]",
+    "title": "[From the Ground Up]",
     "type": "Friend",
     "unique_effects": [
       {
@@ -72565,7 +72565,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30107-maruzensky",
     "support_card_id": 30107,
-    "title": "[おセンチ注意報♪]",
+    "title": "[Sentimental Flare ♪]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -72785,7 +72785,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30108-nakayama-festa",
     "support_card_id": 30108,
-    "title": "[一天地六に身を任せ]",
+    "title": "[Trusting the Dice]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -72997,7 +72997,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30109-sakura-chiyono-o",
     "support_card_id": 30109,
-    "title": "[チョベリグ心あれば桜心]",
+    "title": "[A Good Heart Blossoms to Its Fullest]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -73211,7 +73211,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30110-manhattan-cafe",
     "support_card_id": 30110,
-    "title": "[It's on the house.]",
+    "title": "[It's on the House]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -73427,7 +73427,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30111-tokai-teio",
     "support_card_id": 30111,
-    "title": "[テイオー・オー・オー！！！]",
+    "title": "[Teio-Oo-Oo!!!]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -73861,7 +73861,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30113-biwa-hayahide",
     "support_card_id": 30113,
-    "title": "[ユークロニア・アーキテクト]",
+    "title": "[Uchronia Architect]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -74081,7 +74081,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30114-daiichi-ruby",
     "support_card_id": 30114,
-    "title": "[嗚呼華麗ナル一族]",
+    "title": "[Ah, Such Majesty]",
     "type": "Power",
     "unique_effects": [
       {
@@ -74298,7 +74298,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30115-mejiro-palmer",
     "support_card_id": 30115,
-    "title": "[月下の悪魔ちゃん♪]",
+    "title": "[Moonlit Devil ♪]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -74517,7 +74517,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30116-daitaku-helios",
     "support_card_id": 30116,
-    "title": "[お日さま天使ちゃん♪]",
+    "title": "[Sunlit Angel ♪]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -74732,7 +74732,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30117-shinko-windy",
     "support_card_id": 30117,
-    "title": "[とびだせ！恐怖の魔王軍]",
+    "title": "[Onwards, Demon Queen Lackeys!]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -75160,7 +75160,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30119-mejiro-ardan",
     "support_card_id": 30119,
-    "title": "[夜風に舞うは祈りの花]",
+    "title": "[Hopeful Petals Dancing in the Night]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -75376,7 +75376,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30120-yaeno-muteki",
     "support_card_id": 30120,
-    "title": "[天まで焦がせ祈りの火]",
+    "title": "[Pious Flame, Heavens Scorcher]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -75805,7 +75805,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30122-eishin-flash",
     "support_card_id": 30122,
-    "title": "[Danke schön]",
+    "title": "[Danke Schön]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -76024,7 +76024,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30123-narita-brian",
     "support_card_id": 30123,
-    "title": "[GLAD TIDINGS]",
+    "title": "[Glad Tidings]",
     "type": "Power",
     "unique_effects": [
       {
@@ -76240,7 +76240,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30124-air-groove",
     "support_card_id": 30124,
-    "title": "[Are you merry?]",
+    "title": "[Are You Merry?]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -76458,7 +76458,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30125-sakura-laurel",
     "support_card_id": 30125,
-    "title": "[ここからはDon't stop!]",
+    "title": "[Don't Stop Anymore!]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -76675,7 +76675,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30126-yamanin-zephyr",
     "support_card_id": 30126,
-    "title": "[誰も知らない風へ]",
+    "title": "[To Winds Untraveled]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -76893,7 +76893,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30127-special-week",
     "support_card_id": 30127,
-    "title": "[ハネ退け魔を退け願い込め]",
+    "title": "[Outrunning Misfortune]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -77108,7 +77108,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30128-sweep-tosho",
     "support_card_id": 30128,
-    "title": "[気まぐれ絶佳]",
+    "title": "[Capricious Excellence]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -77322,7 +77322,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30129-grass-wonder",
     "support_card_id": 30129,
-    "title": "[遥か流るる冬夏青青]",
+    "title": "[From Icy Blues to Verdant Hues]",
     "type": "Power",
     "unique_effects": [
       {
@@ -77536,7 +77536,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30130-ksmiracle",
     "support_card_id": 30130,
-    "title": "[To you]",
+    "title": "[To You]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -77752,7 +77752,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30131-marvelous-sunday",
     "support_card_id": 30131,
-    "title": "[マーベラス☆ショコラSHOW]",
+    "title": "[Marvelous☆Chocolate Show]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -77968,7 +77968,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30132-biko-pegasus",
     "support_card_id": 30132,
-    "title": "[変身！ギャルソンフォーム！]",
+    "title": "[Transform! Garçon Form!]",
     "type": "Power",
     "unique_effects": [
       {
@@ -78184,7 +78184,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30133-hishi-akebono",
     "support_card_id": 30133,
-    "title": "[フォンデンテで笑って]",
+    "title": "[Fondente Smile]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -78402,7 +78402,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30134-mejiro-ramonu",
     "support_card_id": 30134,
-    "title": "[燦爛]",
+    "title": "[Radiant]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -78620,7 +78620,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30135-katsuragi-ace",
     "support_card_id": 30135,
-    "title": "[掲げよ、燃え盛る灯を]",
+    "title": "[Hold Aloft the Blazing Torch]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -78834,7 +78834,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30136-symboli-kris-s",
     "support_card_id": 30136,
-    "title": "[Unyielding resolve]",
+    "title": "[Unyielding Resolve]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -79053,7 +79053,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30137-ancestors-guides",
     "support_card_id": 30137,
-    "title": "[永劫続く栄光へ]",
+    "title": "[Chasing Eternal Glory]",
     "type": "Group",
     "unique_effects": [
       {
@@ -79280,7 +79280,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30138-nice-nature",
     "support_card_id": 30138,
-    "title": "[今は瞳を閉じないで]",
+    "title": "[Don't Close Your Eyes Now]",
     "type": "Power",
     "unique_effects": [
       {
@@ -79498,7 +79498,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30139-mejiro-mcqueen",
     "support_card_id": 30139,
-    "title": "[心、夜風にさらわれて]",
+    "title": "[Heart Aflutter in the Evening Breeze]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -79713,7 +79713,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30140-tokai-teio",
     "support_card_id": 30140,
-    "title": "[比翼のワルツ]",
+    "title": "[Soaring Waltz]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -79930,7 +79930,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30141-mihono-bourbon",
     "support_card_id": 30141,
-    "title": "[ミッション『心の栄養補給』]",
+    "title": "[Mission: Nourishing the Soul]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -80144,7 +80144,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30142-sakura-laurel",
     "support_card_id": 30142,
-    "title": "[刻下、桜花爛漫]",
+    "title": "[Among Cherry Blossoms in Bloom]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -80358,7 +80358,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30143-ikuno-dictus",
     "support_card_id": 30143,
-    "title": "[たどり着いた景色]",
+    "title": "[The View at Journey's End]",
     "type": "Power",
     "unique_effects": [
       {
@@ -80791,7 +80791,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30146-oguri-cap",
     "support_card_id": 30146,
-    "title": "[駆けよ、駆けよ、駆けよ！！]",
+    "title": "[Run Forth! Dash On! Ever Forward!]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -81005,7 +81005,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30147-jungle-pocket",
     "support_card_id": 30147,
-    "title": "[The frontier]",
+    "title": "[The Frontier]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -81440,7 +81440,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30149-aston-machan",
     "support_card_id": 30149,
-    "title": "[オートクチュール・メモリー]",
+    "title": "[Haute Couture Memory]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -81653,7 +81653,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30150-vodka",
     "support_card_id": 30150,
-    "title": "[ハート・イグニッション！！]",
+    "title": "[Heart Ignition!]",
     "type": "Stamina",
     "unique_effects": [
       {
@@ -81867,7 +81867,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30151-mayano-top-gun",
     "support_card_id": 30151,
-    "title": "[Chill chill night*]",
+    "title": "[Chill Chill Night]",
     "type": "Power",
     "unique_effects": [
       {
@@ -82302,7 +82302,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30153-gold-city",
     "support_card_id": 30153,
-    "title": "[優しい月]",
+    "title": "[Gentle Moon]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -82519,7 +82519,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30154-mejiro-palmer",
     "support_card_id": 30154,
-    "title": "[カモメのように]",
+    "title": "[As the Seagulls Soar]",
     "type": "Speed",
     "unique_effects": [
       {
@@ -82736,7 +82736,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30155-daitaku-helios",
     "support_card_id": 30155,
-    "title": "[#夏 #新しい自分]",
+    "title": "[#Summer #NewMe]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -82953,7 +82953,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30156-wonder-acute",
     "support_card_id": 30156,
-    "title": "[ライフロング・ワンダー]",
+    "title": "[Lifelong Wonder]",
     "type": "Power",
     "unique_effects": [
       {
@@ -83170,7 +83170,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30157-manhattan-cafe",
     "support_card_id": 30157,
-    "title": "[君と見る泡沫]",
+    "title": "[The Bubbles We Gaze upon Together]",
     "type": "Intelligence",
     "unique_effects": [
       {
@@ -83387,7 +83387,7 @@
     "rarity": "SSR",
     "source_url": "https://gametora.com/umamusume/supports/30158-jungle-pocket",
     "support_card_id": 30158,
-    "title": "[トばすぜホットサマー！]",
+    "title": "[Summer Splash]",
     "type": "Guts",
     "unique_effects": [
       {
@@ -114185,6 +114185,7 @@
   },
   "30301": {
     "event_skills": [
+      203352,
       203541,
       204171,
       201032
@@ -114406,6 +114407,7 @@
   },
   "30302": {
     "event_skills": [
+      202422,
       203241,
       203561,
       204381,
@@ -114628,6 +114630,7 @@
   },
   "30303": {
     "event_skills": [
+      202471,
       201172
     ],
     "hint_skills": [
@@ -114834,6 +114837,660 @@
         "condition": "bond_gte",
         "grants": {
           "training_effectiveness": 10
+        },
+        "threshold": 80,
+        "type": 101,
+        "unlock_level": 0
+      }
+    ]
+  },
+  "30304": {
+    "event_skills": [
+      201591,
+      200331,
+      203651,
+      203641,
+      204391,
+      201322
+    ],
+    "hint_skills": [
+      200332,
+      200352,
+      201591,
+      201651,
+      202012,
+      202172,
+      202602,
+      203642,
+      203652,
+      204392,
+      204472
+    ],
+    "lb_levels": [
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 10,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 60,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 25,
+        "initial_guts": 25,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 0,
+        "max_guts": 0,
+        "max_level": 30,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 10,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 10,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 10,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 60,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 25,
+        "initial_guts": 25,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 1,
+        "max_guts": 0,
+        "max_level": 35,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 20,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 10,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 10,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 60,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 25,
+        "initial_guts": 25,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 2,
+        "max_guts": 0,
+        "max_level": 40,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 40,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 10,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 10,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 60,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 25,
+        "initial_guts": 25,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 3,
+        "max_guts": 0,
+        "max_level": 45,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 40,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 60,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 20,
+        "friendship_bonus": 40,
+        "guts_bonus": 0,
+        "hint_freq": 100,
+        "hint_levels": 4,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 35,
+        "initial_guts": 30,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 4,
+        "max_guts": 0,
+        "max_level": 50,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 40,
+        "power_bonus": 0,
+        "race_bonus": 10,
+        "skill_pt_bonus": 2,
+        "specialty_priority": 120,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 15,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      }
+    ],
+    "name": "Meisho Doto",
+    "rarity": "SSR",
+    "source_url": "https://gametora.com/umamusume/supports/30304-meisho-doto",
+    "support_card_id": 30304,
+    "title": "[その執念は怒濤が如く]",
+    "type": "Stamina",
+    "unique_effects": [
+      {
+        "condition": "bond_gte",
+        "grants": {
+          "guts_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 80,
+        "type": 101,
+        "unlock_level": 0
+      }
+    ]
+  },
+  "30305": {
+    "event_skills": [
+      203852,
+      201661,
+      201662,
+      202792
+    ],
+    "hint_skills": [],
+    "lb_levels": [
+      {
+        "energy_cost_reduction": 15,
+        "event_effectiveness": 20,
+        "event_recovery": 40,
+        "failure_protection": 10,
+        "fan_bonus": 1,
+        "friendship_bonus": 0,
+        "guts_bonus": 0,
+        "hint_freq": 0,
+        "hint_levels": 0,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 1,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 0,
+        "max_guts": 0,
+        "max_level": 30,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 0,
+        "power_bonus": 0,
+        "race_bonus": 1,
+        "skill_pt_bonus": 0,
+        "specialty_priority": 0,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 15,
+        "event_effectiveness": 20,
+        "event_recovery": 40,
+        "failure_protection": 10,
+        "fan_bonus": 10,
+        "friendship_bonus": 0,
+        "guts_bonus": 0,
+        "hint_freq": 0,
+        "hint_levels": 0,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 1,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 1,
+        "max_guts": 0,
+        "max_level": 35,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 0,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 0,
+        "specialty_priority": 0,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 15,
+        "event_effectiveness": 20,
+        "event_recovery": 40,
+        "failure_protection": 10,
+        "fan_bonus": 15,
+        "friendship_bonus": 0,
+        "guts_bonus": 0,
+        "hint_freq": 0,
+        "hint_levels": 0,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 1,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 2,
+        "max_guts": 0,
+        "max_level": 40,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 0,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 0,
+        "specialty_priority": 0,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 15,
+        "event_effectiveness": 20,
+        "event_recovery": 40,
+        "failure_protection": 15,
+        "fan_bonus": 15,
+        "friendship_bonus": 0,
+        "guts_bonus": 0,
+        "hint_freq": 0,
+        "hint_levels": 0,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 15,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 3,
+        "max_guts": 0,
+        "max_level": 45,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 0,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 0,
+        "specialty_priority": 0,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      },
+      {
+        "energy_cost_reduction": 30,
+        "event_effectiveness": 30,
+        "event_recovery": 60,
+        "failure_protection": 15,
+        "fan_bonus": 15,
+        "friendship_bonus": 0,
+        "guts_bonus": 0,
+        "hint_freq": 0,
+        "hint_levels": 0,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 30,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 0,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 4,
+        "max_guts": 0,
+        "max_level": 50,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 0,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 0,
+        "specialty_priority": 0,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 20,
+        "wit_bonus": 0,
+        "wit_friendship_recovery": 0
+      }
+    ],
+    "name": "Tazuna Hayakawa",
+    "rarity": "SSR",
+    "source_url": "https://gametora.com/umamusume/supports/30305-tazuna-hayakawa",
+    "support_card_id": 30305,
+    "title": "[一杯のノスタルジア]",
+    "type": "Friend",
+    "unique_effects": [
+      {
+        "condition": "bond_gte",
+        "grants": {
+          "skill_pt_bonus": 1,
+          "stamina_bonus": 1
+        },
+        "threshold": 60,
+        "type": 101,
+        "unlock_level": 0
+      }
+    ]
+  },
+  "30306": {
+    "event_skills": [
+      200462,
+      202381,
+      203672,
+      203681
+    ],
+    "hint_skills": [
+      201391,
+      201381,
+      202092,
+      202612,
+      203252,
+      203512,
+      203572,
+      203682,
+      203742,
+      203792,
+      203812,
+      203832,
+      204222
+    ],
+    "lb_levels": [
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 10,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 40,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 15,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 10,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 0,
+        "max_guts": 0,
+        "max_level": 30,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 40,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 35,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 10,
+        "wit_bonus": 1,
+        "wit_friendship_recovery": 3
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 15,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 60,
+        "hint_levels": 2,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 20,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 15,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 1,
+        "max_guts": 0,
+        "max_level": 35,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 45,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 45,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 15,
+        "wit_bonus": 1,
+        "wit_friendship_recovery": 3
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 15,
+        "friendship_bonus": 25,
+        "guts_bonus": 0,
+        "hint_freq": 80,
+        "hint_levels": 3,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 25,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 20,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 2,
+        "max_guts": 0,
+        "max_level": 40,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 50,
+        "power_bonus": 0,
+        "race_bonus": 5,
+        "skill_pt_bonus": 1,
+        "specialty_priority": 60,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 15,
+        "wit_bonus": 1,
+        "wit_friendship_recovery": 4
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 20,
+        "friendship_bonus": 30,
+        "guts_bonus": 0,
+        "hint_freq": 100,
+        "hint_levels": 4,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 35,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 25,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 3,
+        "max_guts": 0,
+        "max_level": 45,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 50,
+        "power_bonus": 0,
+        "race_bonus": 10,
+        "skill_pt_bonus": 2,
+        "specialty_priority": 80,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 20,
+        "wit_bonus": 1,
+        "wit_friendship_recovery": 5
+      },
+      {
+        "energy_cost_reduction": 0,
+        "event_effectiveness": 0,
+        "event_recovery": 0,
+        "failure_protection": 0,
+        "fan_bonus": 20,
+        "friendship_bonus": 30,
+        "guts_bonus": 0,
+        "hint_freq": 100,
+        "hint_levels": 4,
+        "hint_quantity_bonus": 0,
+        "initial_friendship": 35,
+        "initial_guts": 0,
+        "initial_power": 0,
+        "initial_speed": 25,
+        "initial_stamina": 0,
+        "initial_wit": 0,
+        "lb": 4,
+        "max_guts": 0,
+        "max_level": 50,
+        "max_power": 0,
+        "max_speed": 0,
+        "max_stamina": 0,
+        "max_wit": 0,
+        "minigame_effectiveness": 0,
+        "mood_effect": 50,
+        "power_bonus": 0,
+        "race_bonus": 10,
+        "skill_pt_bonus": 2,
+        "specialty_priority": 80,
+        "speed_bonus": 0,
+        "stamina_bonus": 0,
+        "training_effectiveness": 20,
+        "wit_bonus": 1,
+        "wit_friendship_recovery": 5
+      }
+    ],
+    "name": "Nice Nature",
+    "rarity": "SSR",
+    "source_url": "https://game8.jp/umamusume/796336",
+    "support_card_id": 30306,
+    "title": "[両手いっぱい、小倉愛]",
+    "type": "Intelligence",
+    "unique_effects": [
+      {
+        "condition": "bond_gte",
+        "grants": {
+          "wit_bonus": 1
         },
         "threshold": 80,
         "type": 101,
